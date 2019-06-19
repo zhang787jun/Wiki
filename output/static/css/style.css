@@ -10,9 +10,7 @@ Tags: simple, single-columns, code, codehighlight, white, markdown
 
 /* Global Configuration */
 /* IE6 ignores this and uses default size of 16pt */
-html>body {
-    font-size: 14px;
-}
+html>body { font-size: 14px; }
 
 html {
     font-size: 100%;
@@ -27,66 +25,25 @@ body {
     background-color: whitesmoke;
 }
 
-a {
-    color: #0645ad;
-    text-decoration: none;
-}
+a { color: #0645ad; text-decoration: none; }
+a:visited { color: #0b0080; }
+a:hover { color: #06e; text-decoration: underline; }
+a:active { color: #faa700; }
 
-a:visited {
-    color: #0b0080;
-}
+p { margin: 0 0 1.5em 0; text-align: justify; }
 
-a:hover {
-    color: #06e;
-    text-decoration: underline;
-}
-
-a:active {
-    color: #faa700;
-}
-
-p {
-    margin: 0 0 1.5em 0;
-    text-align: justify;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+h1, h2, h3, h4, h5, h6 {
     font-weight: normal;
     color: #111;
     line-height: 1em;
 }
 
-h1 {
-    font-size: 2.0em;
-}
-
-h2 {
-    font-size: 1.6em;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 5px;
-    overflow: hidden
-}
-
-h3 {
-    font-size: 1.4em;
-}
-
-h4 {
-    font-size: 1.2em;
-}
-
-h5 {
-    font-size: 1.0em;
-}
-
-h6 {
-    font-size: 0.8em;
-}
+h1 { font-size: 2.0em; }
+h2 { font-size: 1.6em; border-bottom: 1px solid #ddd; padding-bottom: 5px; overflow:hidden }
+h3 { font-size: 1.4em; }
+h4 { font-size: 1.2em; }
+h5 { font-size: 1.0em; }
+h6 { font-size: 0.8em; }
 
 blockquote {
     color: #666;
@@ -101,25 +58,17 @@ hr {
     padding: 0;
 }
 
-b,
-strong {
-    font-weight: bold;
-}
+b, strong { font-weight: bold; }
 
-ul,
-ol {
+ul, ol {
     margin: 1.5em 0;
     padding-left: 1.5em;
     line-height: 1.5em;
 }
 
-ul li {
-    list-style-type: square;
-}
+ul li { list-style-type: square; }
 
-ul li p {
-    margin: 0;
-}
+ul li p { margin: 0; }
 
 img {
     border: 0;
@@ -141,8 +90,7 @@ td {
 }
 
 /* Optimization for pre and code tag */
-pre,
-code {
+pre, code { 
     font-family: Consolas, "DejaVu Sans Mono", "Lucida Console", Monaco, Andale Mono, "MS Gothic", monospace;
     font-size: 13px;
     border-radius: 3px;
@@ -158,20 +106,15 @@ code {
     padding: 1px 3px;
 }
 
-pre {
+pre { 
     border: 1px solid #eee;
     padding: 8px 12px;
     white-space: pre;
-    white-space: -moz-pre-wrap;
-    /* Firefox */
-    white-space: -pre-wrap;
-    /* ancient Opera */
-    white-space: -o-pre-wrap;
-    /* newer Opera */
-    white-space: pre-wrap;
-    /* Chrome; W3C standard */
-    word-wrap: break-word;
-    /* IE */
+    white-space: -moz-pre-wrap; /* Firefox */
+    white-space: -pre-wrap;     /* ancient Opera */
+    white-space: -o-pre-wrap;   /* newer Opera */
+    white-space: pre-wrap;      /* Chrome; W3C standard */
+    word-wrap: break-word;      /* IE */
 }
 
 pre code {
@@ -194,8 +137,7 @@ pre code {
     -moz-box-shadow: 2px 2px 8px #aaa;
 }
 
-#wiki_title,
-#title {
+#wiki_title, #title {
     text-align: center;
     font-size: 2em;
     line-height: 1.5em;
@@ -207,7 +149,8 @@ pre code {
     border-bottom: 1px dashed #eee;
 }
 
-#header {}
+#header {
+}
 
 #footer {
     margin: 10px auto;
@@ -228,9 +171,7 @@ li.pagelist:before {
     content: "\0BB \020";
 }
 
-#index ul {
-    margin: 0;
-}
+#index ul { margin: 0; }
 
 /* Table of Contents */
 .toc {
@@ -243,7 +184,7 @@ li.pagelist:before {
     font-size: 90%;
 }
 
-.toc>.toctitle {
+.toc > .toctitle {
     display: block;
     text-align: center;
     font-weight: bold;

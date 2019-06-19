@@ -4,7 +4,7 @@ layout: page
 date: 2099-06-02 00:00
 ---
 # Leetcode 刷题
-[toc]
+[TOC]
 
 ## 306. 累加数
 

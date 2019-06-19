@@ -9,7 +9,9 @@ date: 2099-06-02 00:00
 
 参考资料
 https://learngitbranching.js.org/
+https://git-scm.com/book/zh/v2
 《GitHub入门与实践》
+
 <img src="./images/Git_V2.16.2.png" >
 
 ## 新建，初始化代码库
@@ -24,12 +26,8 @@ git init [project-name]
 git clone [url]
 ```
 
-<<<<<<< HEAD
-## 增加/删除文件
-=======
 ## 仓库内文件管理
 ### 增加/删除文件到暂存区
->>>>>>> release
 ```shell
 # 添加指定文件到暂存区
 git add [file1] [file2] ...
@@ -53,10 +51,6 @@ git rm --cached [file]
 # 改名文件，并且将这个改名放入暂存区
 git mv [file-original] [file-renamed]
 ```
-<<<<<<< HEAD
-
-## 代码提交
-=======
 ### 忽略文件
 在仓库内添加`.gitignore` 文件
 ```
@@ -77,7 +71,6 @@ vim .gitignore
 
 
 ### 代码提交
->>>>>>> release
 ```shell
 # 提交暂存区到仓库区
 git commit -m [message]
@@ -100,10 +93,7 @@ git commit --amend [file1] [file2] ...
 ```
 
 ## 分支管理
-<<<<<<< HEAD
-=======
 ### 查看
->>>>>>> release
 ```shell
 # 列出所有本地分支
 git branch
@@ -113,13 +103,9 @@ git branch -r
 
 # 列出所有本地分支和远程分支
 git branch -a
-<<<<<<< HEAD
-
-=======
 ```
 ### 创建
 ```shell
->>>>>>> release
 # 新建一个分支，但依然停留在当前分支
 git branch [branch-name]
 
@@ -134,38 +120,28 @@ git checkout --orphan  [branch-name]
 
 # 新建一个分支，与指定的远程分支建立追踪关系
 git branch --track [branch-name] [remote-branch]
-<<<<<<< HEAD
-
-=======
 ```
 ### 切换分支
 ```shell 
->>>>>>> release
 # 切换到指定分支，并更新工作区
 git checkout [branch-name]
 
 # 切换到上一个分支
 git checkout -
-<<<<<<< HEAD
-
-=======
 ```
 ### 合并分支
 ```shell 
->>>>>>> release
 # 建立追踪关系，在现有分支与指定的远程分支之间
 git branch --set-upstream [branch-name] [remote-branch]
 
 # 合并指定分支到当前分支
 git merge [branch-name]
 
+
+
 # 选择一个commit，合并进当前分支
 git cherry-pick [commit]
 
-<<<<<<< HEAD
-# 删除分支
-git branch -d [branch-name]
-=======
 git rebase
 小结
 
@@ -174,12 +150,25 @@ git rebase
     rebase的目的是使得我们在查看历史提交的变化时更容易，因为分叉的提交需要三方对比。
 
 ```
+### 文件覆盖
+
+```shell
+git checkout (-p|--patch) [<tree-ish>] [--] [<paths>…​]
+
+git checkout branch_2
+git checkout branch_1 file_1
+
+将工作区的 <paths> 覆盖成索引指向的内容。
+当可选项[<tree ish>]给出的时候，符合 <paths>的路径将在索引上和工作区更新
+
+由于上次合并失败，索引可能包含未合并的条目。默认情况下，如果尝试从索引中签出这样的条目，签出操作将失败，并且不会签出任何内容。使用-f将忽略这些未合并的条目。合并的特定方面的内容可以通过使用--ours或--their从索引中签出。使用-m，可以放弃对工作树文件所做的更改，以重新创建原始的冲突合并结果。
+```
+
 ###  删除
 ```shell
 # 删除分支
 git branch -d [branch-name]
 git branch -D [branch-name] # 强制删除
->>>>>>> release
 
 # 删除远程分支
 git push origin --delete [branch-name]
@@ -258,12 +247,6 @@ git show [commit]:[filename]
 git reflog
 ```
 
-<<<<<<< HEAD
-## 远程同步
-``` shell 
-# 下载远程仓库的所有变动
-git fetch [remote]
-=======
 ### log管理
 #### 1. 清空 log
 ```shell
@@ -302,30 +285,11 @@ git adog
 ``` shell 
 # 下载远程仓库的所有变动
 git fetch [remote shortname]
->>>>>>> release
 
 # 显示所有远程仓库
 git remote -v
 
 # 显示某个远程仓库的信息
-<<<<<<< HEAD
-git remote show [remote]
-
-# 增加一个新的远程仓库，并命名
-git remote add [shortname] [url]
-
-# 取回远程仓库的变化，并与本地分支合并
-git pull [remote] [branch]
-
-# 上传本地指定分支到远程仓库
-git push [remote] [branch]
-
-# 强行推送当前分支到远程仓库，即使有冲突
-git push [remote] --force
-
-# 推送所有分支到远程仓库
-git push [remote] --all
-=======
 git remote show [remote shortname]
 
 # 增加一个新的远程仓库，并命名
@@ -345,7 +309,6 @@ git push [remote shortname] --force
 git push [remote shortname] --all
 
 das?
->>>>>>> release
 ```
 
 ## 版本退回
@@ -391,29 +354,6 @@ git revert [commit]
 git stash
 git stash pop
 ```
-<<<<<<< HEAD
-## 清除log
-```shell
-# 创建新的分支
-git checkout --orphan  new_branch
-
-#添加所有文件变化至暂存空间
-git add -A
-
-#提交并添加提交记录
-git commit -am "commit message"
-#删除master分支
-git branch -D <master-name>
-
-#重新命名当前独立分支为 master
-git branch -m <master>
-
-#推送到远端分支
-git push -f origin <master>
-```
-=======
-
->>>>>>> release
 
 # git 开发模式
 
