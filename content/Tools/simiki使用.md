@@ -6,9 +6,8 @@ date: 2099-06-02 00:00
 [TOC]
 # Simiki 使用教程
 
-# Simiki #
-
-
+# Simiki #f
+fh
 Simiki is a simple wiki framework, written in [Python](https://www.python.org/).
 
 * Easy to use. Creating a wiki only needs a few steps
