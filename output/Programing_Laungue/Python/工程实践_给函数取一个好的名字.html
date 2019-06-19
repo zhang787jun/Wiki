@@ -1,0 +1,188 @@
+<!DOCTYPE HTML>
+<html>
+<<<<<<< HEAD
+
+<head>
+  <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+  <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+  <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+
+  <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+  <link rel="alternate" type="application/atom+xml" href="atom.xml" title="Atom feed">
+  <title>工程实践：给函数取一个好的名字 - Jun's personal knowledge wiki</title>
+  <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+  <meta name="description" content="A wiki website" />
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+</head>
+
+<body>
+  <div id="container">
+    
+<div id="header">
+  <div class="post-nav"><a href="/Wiki/">Home</a>&nbsp;&#187;&nbsp;<a href="/Wiki/#Programing_Laungue\Python">Programing_Laungue\Python</a>&nbsp;&#187;&nbsp;工程实践：给函数取一个好的名字
+    <span class="updated">Page Updated&nbsp;
+      2099-06-02 00:00
+    </span></div>
+</div>
+<div class="clearfix"></div>
+
+<div class="page_title">工程实践：给函数取一个好的名字</div>
+
+=======
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+        <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+        <title>工程实践：给函数取一个好的名字 - Jun's personal knowledge wiki</title>
+        <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki"/>
+        <meta name="description" content="A wiki website"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Programing_Laungue\Python">Programing_Laungue\Python</a>&nbsp;»&nbsp;工程实践：给函数取一个好的名字</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">工程实践：给函数取一个好的名字</div>
+  <div id="content">
+>>>>>>> release
+  <h1 id="_1">工程实践：给函数取一个"好"的名字</h1>
+<div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#_1">工程实践：给函数取一个"好"的名字</a><ul>
+<li><a href="#1">1. 常见的函数命名风格</a><ul>
+<li><a href="#11-java">1.1 驼峰命名 Java：</a></li>
+<li><a href="#12-pascal-c">1.2 帕斯卡Pascal命名 C#：</a></li>
+<li><a href="#13-python">1.3 python</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 函数命名的最高境界</a></li>
+<li><a href="#3">3. 函数命名最佳实践</a><ul>
+<li><a href="#31">3.1 动词选取要精准</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="1">1. 常见的函数命名风格</h2>
+<h3 id="11-java">1.1 驼峰命名 Java：</h3>
+<p>多个单词组成一个名称时，第一个单词全部小写，后面单词首字母大写；如：<br />
+<code>public void setUserName(String userName)</code>;</p>
+<h3 id="12-pascal-c">1.2 帕斯卡Pascal命名 C#：</h3>
+<p>多个单词组成一个名称时，每个单词的首字母大写；<br />
+<code>public void SetUserName(String userName)</code>;</p>
+<h3 id="13-python">1.3 python</h3>
+<p>python区分大小写：除了类名和异常首字母大写，其他都是小写；单词之间用下划线分割；特别之处是下划线开头和下划线结尾</p>
+<table>
+<thead>
+<tr>
+<th align="right">编号</th>
+<th align="right">类别</th>
+<th align="right">规则</th>
+<th align="right">示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">1.</td>
+<td align="right">模块名</td>
+<td align="right">完全小写，单词之间用_分割</td>
+<td align="right">参考：logging</td>
+</tr>
+<tr>
+<td align="right">2.</td>
+<td align="right">包名</td>
+<td align="right">完全小写，单词之间用_分割</td>
+<td align="right">参考python：logging</td>
+</tr>
+<tr>
+<td align="right">3.</td>
+<td align="right">类名</td>
+<td align="right">首字母大写</td>
+<td align="right">参考：python class LogRecord(object):</td>
+</tr>
+<tr>
+<td align="right">4.</td>
+<td align="right">普通变量:</td>
+<td align="right">完全小写，单词之间用_分割</td>
+<td align="right">参考：exc_info</td>
+</tr>
+<tr>
+<td align="right">5.</td>
+<td align="right">实例变量:</td>
+<td align="right">以_开头*，完全小写，单词之间用_分割，</td>
+<td align="right">参考:_exc_info</td>
+</tr>
+<tr>
+<td align="right">6.</td>
+<td align="right">私有实例变量: 以_开头（2个下划线），完全小写，单词之间用分割</td>
+<td align="right">参考:__private_var, 外部访问会报错</td>
+<td align="right"></td>
+</tr>
+<tr>
+<td align="right">7.</td>
+<td align="right">普通函数: 完全小写，单词之间用_分割</td>
+<td align="right">参考:get_name()</td>
+<td align="right"></td>
+</tr>
+<tr>
+<td align="right">8.</td>
+<td align="right">私有函数: 以__开头（2个下划线），完全小写，单词之间用分割</td>
+<td align="right">参考:__get_name() ，外部访问会报错</td>
+<td align="right"></td>
+</tr>
+</tbody>
+</table>
+<p><em>以一个下划线开头的标识符(_xxx)，不能访问的类属性，但可通过类提供的接口进行访问， 不会被语句 “from module import </em>” 语句加载</p>
+<blockquote>
+<p>注意：<br />
+1. _单下划线开头：弱“内部使用”标识，如：”from M import <em>”，将不导入所有以下划线开头的对象，包括包、模块、成员<br />
+2. 单下划线结尾_：只是为了避免与python关键字的命名冲突<br />
+3. __双下划线开头：模块内的成员，表示私有成员，外部无法直接调用<br />
+4. 包和模块：模块应该使用尽可能短的、全小写命名，可以在模块命名时使用下划线以增强可读性。同样包的命名也应该是这样的，虽然其并不鼓励下划线。<br />
+5. 类：几乎毫无例外的，类名都使用首字母大写开头(Pascal命名风格)的规范。使用_单下划线开头的类名为内部使用，上面说的from M import </em>默认不被告导入的情况。<br />
+6. 异常：因为异常也是一个类，所以遵守类的命名规则。此外，如果异常实际上指代一个错误的话，应该使用“Error”做后缀</p>
+</blockquote>
+<h2 id="2">2. 函数命名的最高境界</h2>
+<p>清晰明确<br />
+|                                                     例子 |                       评价 |<br />
+| -------------------------------------------------------: | -------------------------: |<br />
+|                 public void setUserName(String userName) |                       明确 |<br />
+| public String addCharacter(String originString, char ch) | 不确定在哪加，句首？尾部？ |</p>
+<h2 id="3">3. 函数命名最佳实践</h2>
+<h3 id="31">3.1 动词选取要精准</h3>
+<p>https://juejin.im/post/5c94e438e51d452aba21f4e6</p>
+<<<<<<< HEAD
+  </div>
+  <div id="footer">
+    <span>
+      <p>Copyright © 2019 zhang787jun.
+        Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.</p>
+      <p>Site Generated 2019-06-18 13:11:13</p>
+    </span>
+  </div>
+
+  
+  
+</body>
+
+=======
+</div>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2019 zhang787jun.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+            </span>
+        </div>
+        
+    </body>
+>>>>>>> release
+</html>
