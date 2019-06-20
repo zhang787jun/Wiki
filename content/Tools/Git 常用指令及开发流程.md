@@ -4,7 +4,7 @@ layout: page
 date: 2099-06-02 00:00
 ---
 [TOC]
-# git常用指令
+# Git常用指令
 
 
 参考资料
@@ -281,10 +281,10 @@ git adog
 ```
 
 
-## 远程同步
-``` shell 
-# 下载远程仓库的所有变动
-git fetch [remote shortname]
+## 远程仓库管理
+
+### 设置/查看远程仓库 
+```shell
 
 # 显示所有远程仓库
 git remote -v
@@ -294,6 +294,16 @@ git remote show [remote shortname]
 
 # 增加一个新的远程仓库，并命名
 git remote add [remote shortname] [url]
+```
+### 同步
+
+``` shell 
+# 下载远程仓库的所有变动
+git fetch [remote shortname]
+
+# 下载远程仓库[branch_name] 分支到本地[local branch_name]分支
+git fetch [remote shortname] [remote branch_name]:[local branch_name]
+git fetch origin master:master
 
 # 取回远程仓库的变化，并与本地分支合并
 # pull=fetch+merge 
@@ -308,7 +318,6 @@ git push [remote shortname] --force
 # 推送所有分支到远程仓库
 git push [remote shortname] --all
 
-das?
 ```
 
 ## 版本退回
