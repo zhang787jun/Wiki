@@ -1,0 +1,137 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+        <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+        <title>安全与算法 - Jun's personal knowledge wiki</title>
+        <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki"/>
+        <meta name="description" content="A wiki website"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Basic_CS">Basic_CS</a>&nbsp;»&nbsp;安全与算法</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">安全与算法</div>
+  <div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#_1">安全与算法</a><ul>
+<li><a href="#1">1. 安全问题</a></li>
+<li><a href="#2">2. 密码学基础</a><ul>
+<li><a href="#21">2.1 哈希函数</a></li>
+<li><a href="#22">2.2 共享密钥（对称加密）</a></li>
+<li><a href="#23">2.3 公开密钥（非对称加密）</a></li>
+<li><a href="#24">2.4 混合加密</a></li>
+<li><a href="#25-herman">2.5 迪菲Herman 加密</a></li>
+<li><a href="#26">2.6 消息验证码</a></li>
+<li><a href="#26_1">2.6 数字签名</a></li>
+<li><a href="#26_2">2.6 数字证书</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 实践与应用</a><ul>
+<li><a href="#31-uuid">3.1 uuid</a><ul>
+<li><a href="#1uuid1">1、uuid1()——基于时间戳</a></li>
+<li><a href="#2uuid2dcepython">2、uuid2()——基于分布式计算环境DCE（Python中没有这个函数）</a></li>
+<li><a href="#3uuid3md5">3、uuid3()——基于名字的MD5散列值</a></li>
+<li><a href="#4uuid4">4、uuid4()——基于随机数</a></li>
+<li><a href="#5uuid5sha-1">5、uuid5()——基于名字的SHA-1散列值</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="_1">安全与算法</h1>
+<h2 id="1">1. 安全问题</h2>
+<p>数据传输的4个安全问题 </p>
+<p>1   窃听  加密<br />
+2   假冒  数字签名/消息认证码<br />
+3   篡改  数字签名/消息认证码<br />
+4   事后否认    数字签名</p>
+<h2 id="2">2. 密码学基础</h2>
+<h3 id="21">2.1 哈希函数</h3>
+<h3 id="22">2.2 共享密钥（对称加密）</h3>
+<h3 id="23">2.3 公开密钥（非对称加密）</h3>
+<h3 id="24">2.4 混合加密</h3>
+<h3 id="25-herman">2.5 迪菲Herman 加密</h3>
+<h3 id="26">2.6 消息验证码</h3>
+<h3 id="26_1">2.6 数字签名</h3>
+<h3 id="26_2">2.6 数字证书</h3>
+<h2 id="3">3. 实践与应用</h2>
+<h3 id="31-uuid">3.1 uuid</h3>
+<p>UID含义是通用唯一识别码 (Universally Unique Identifier)，这 是一个软件建构的标准，也是被开源软件基金会 (Open Software Foundation, OSF) 的组织在分布式计算环境 (Distributed Computing Environment, DCE) 领域的一部份。<br />
+uuid是指在一台机器上生成的数字，它保证对在同一时空中的所有机器都是唯一的。</p>
+<h4 id="1uuid1">1、uuid1()——基于时间戳</h4>
+<p>由MAC地址、当前时间戳、随机数生成。可以保证全球范围内的唯一性，<br />
+               但MAC的使用同时带来安全性问题，局域网中可以使用IP来代替MAC。</p>
+<h4 id="2uuid2dcepython">2、uuid2()——基于分布式计算环境DCE（Python中没有这个函数）</h4>
+<p>算法与uuid1相同，不同的是把时间戳的前4位置换为POSIX的UID。<br />
+                实际中很少用到该方法。</p>
+<h4 id="3uuid3md5">3、uuid3()——基于名字的MD5散列值</h4>
+<p>通过计算名字和命名空间的MD5散列值得到，保证了同一命名空间中不同名字的唯一性，<br />
+                和不同命名空间的唯一性，但同一命名空间的同一名字生成相同的uuid。    </p>
+<h4 id="4uuid4">4、uuid4()——基于随机数</h4>
+<p>由伪随机数得到，有一定的重复概率，该概率可以计算出来。</p>
+<h4 id="5uuid5sha-1">5、uuid5()——基于名字的SHA-1散列值</h4>
+<p>算法与uuid3相同，不同的是使用 Secure Hash Algorithm 1 算法</p>
+<div class="hlcode"><pre><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span> <span class="nn">uuid</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c"># make a UUID based on the host ID and current time</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">a</span><span class="o">=</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid1</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">a</span>
+<span class="n">UUID</span><span class="p">(</span><span class="s">&#39;a8098c1a-f86e-11da-bd1a-00112444be1e&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span><span class="nb">type</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="k">class</span> <span class="err">&#39;</span><span class="nc">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="s">&#39;&gt;</span>
+<span class="o">&gt;&gt;&gt;</span><span class="nb">dir</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="n">a</span><span class="o">.</span><span class="n">int</span>
+<span class="n">a</span><span class="o">.</span><span class="n">hex</span>
+<span class="o">...</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c"># make a UUID using an MD5 hash of a namespace UUID and a name</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid3</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">NAMESPACE_DNS</span><span class="p">,</span> <span class="s">&#39;python.org&#39;</span><span class="p">)</span>
+<span class="n">UUID</span><span class="p">(</span><span class="s">&#39;6fa459ea-ee8a-3ca4-894e-db77e160355e&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c"># make a random UUID</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+<span class="n">UUID</span><span class="p">(</span><span class="s">&#39;16fd2706-8baf-433b-82eb-8c7fada847da&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c"># make a UUID using a SHA-1 hash of a namespace UUID and a name</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid5</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">NAMESPACE_DNS</span><span class="p">,</span> <span class="s">&#39;python.org&#39;</span><span class="p">)</span>
+<span class="n">UUID</span><span class="p">(</span><span class="s">&#39;886313e1-3b8a-5372-9b90-0c9aee199e5d&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c"># make a UUID from a string of hex digits (braces and hyphens ignored)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span><span class="s">&#39;{00010203-0405-0607-0809-0a0b0c0d0e0f}&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c"># convert a UUID to a string of hex digits in standard form</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="s">&#39;00010203-0405-0607-0809-0a0b0c0d0e0f&#39;</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c"># get the raw 16 bytes of the UUID</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">x</span><span class="o">.</span><span class="n">bytes</span>
+<span class="s">&#39;</span><span class="se">\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f</span><span class="s">&#39;</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c"># make a UUID from a 16-byte string</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span><span class="nb">bytes</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">bytes</span><span class="p">)</span>
+<span class="n">UUID</span><span class="p">(</span><span class="s">&#39;00010203-0405-0607-0809-0a0b0c0d0e0f&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2019 zhang787jun.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+            </span>
+        </div>
+        
+    </body>
+</html>

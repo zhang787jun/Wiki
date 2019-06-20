@@ -1,0 +1,462 @@
+<!DOCTYPE HTML>
+<html>
+    <head>
+        <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+        <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+        <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+        <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+        <title>Python的多任务编程 - Jun's personal knowledge wiki</title>
+        <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki"/>
+        <meta name="description" content="A wiki website"/>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+
+    <body>
+        <div id="container">
+            
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Programing_Language\Python">Programing_Language\Python</a>&nbsp;»&nbsp;Python的多任务编程</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Python的多任务编程</div>
+  <div id="content">
+  <h1 id="_1">多任务编程</h1>
+<p>东西不够，生命有限，互相依赖，需要协调</p>
+<div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#_1">多任务编程</a><ul>
+<li><a href="#1">1. 任务在计算机上的完成（进程、线程）</a><ul>
+<li><a href="#11">1.1 进程</a></li>
+<li><a href="#111-multiprocessing">1.1.1 多进程(multiprocessing)</a></li>
+<li><a href="#112">1.1.2 进程管理</a><ul>
+<li><a href="#1121">1.1.2.1  进程锁</a></li>
+<li><a href="#1122-ipc">1.1.2.2 进程间通信（IPC）</a></li>
+</ul>
+</li>
+<li><a href="#113-daemon">1.1.3 守护进程(daemon)</a></li>
+<li><a href="#12">1.2 线程</a><ul>
+<li><a href="#121-multi_thread">1.2.1 多线程（multi_Thread）</a></li>
+<li><a href="#122">1.2.2  线程管理</a><ul>
+<li><a href="#122-threadlocal">1.2.2  线程锁 ThreadLocal</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#3-">3. 可迭代、迭代器、生成器--&gt;协程</a><ul>
+<li><a href="#11_1">1.1 可迭代</a></li>
+<li><a href="#12_1">1.2 迭代器</a></li>
+<li><a href="#13">1.3 生成器</a><ul>
+<li><a href="#131">1.3.1 如何创建一个生成器，主要有如下两种方法</a></li>
+<li><a href="#132">1.3.2 如何运行/激活生成器</a></li>
+<li><a href="#133">1.3.3 生成器的执行状态</a></li>
+<li><a href="#134">1.3.4  生成器的异常处理</a></li>
+<li><a href="#135-yield">1.3.5 从生成器过渡到协程：yield</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4">4. 协程</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p><strong>问题：</strong> 有多任务怎么办？</p>
+<h2 id="1">1. 任务在计算机上的完成（进程、线程）</h2>
+<p><strong>进程Process</strong> 是计算机中的程序关于某数据集合上的一次运行活动，是系统进行资源分配和调度的基本单位，是操作系统结构的基础。</p>
+<p><strong>线程thread</strong> 是操作系统能够进行运算调度的最小单位。它被包含在进程之中，是进程中的实际运作单位</p>
+<p>进程=[线程1+线程2+...+线程n]<br />
+|         项目 |             进程 |                                                                                                     线程 |<br />
+| -----------: | ---------------: | -------------------------------------------------------------------------------------------------------: |<br />
+|     地址空间 | 进程之间相互独立 |                                                                       同一进程下个线程共享，无法分配资源 |<br />
+|         通信 |    进程间通信IPC | 线程间可以直接读写进程数据段（如全局变量）来进行通信——需要进程同步和互斥手段的辅助，以保证数据的一致性。 |<br />
+|   调度和切换 |               慢 |                                                                                                       快 |<br />
+| 多线程系统中 |     是可执行实体 |                                                                                 线程不是一个可执行的实体 |</p>
+<h3 id="11">1.1 进程</h3>
+<h3 id="111-multiprocessing">1.1.1 多进程(multiprocessing)</h3>
+<p>参考 https://www.liaoxuefeng.com/wiki/1016959663602400/1017628290184064</p>
+<p>父进程：当前进程（python解释器）<br />
+子进程：将父进程复制一份</p>
+<p>如果用多进程实现Master-Worker，主进程就是Master，其他进程就是Worker。</p>
+<div class="hlcode"><pre><span class="n">graph</span> <span class="n">TB</span>
+   <span class="n">A</span><span class="p">[</span><span class="err">主进程</span><span class="n">Master</span><span class="p">]</span>
+   <span class="n">B</span><span class="p">[</span><span class="err">其他进程</span><span class="mi">1</span><span class="n">Worker1</span><span class="p">]</span>
+   <span class="n">C</span><span class="p">[</span><span class="err">其他进程</span><span class="mi">2</span><span class="n">Worker2</span><span class="p">]</span>
+   <span class="n">A</span><span class="o">--&gt;</span><span class="n">B</span>
+   <span class="n">A</span><span class="o">--&gt;</span><span class="n">C</span>
+</pre></div>
+
+
+<p>进程创建需要占用系统内存来存放PCB的数据结构，所以，一个系统能够创建的进程总数是有限的，进程的最大数目取决于系统内存的大小，由系统安装时已经确定(若后期内存增加了，系统能够创建的进程总数也应增加，但是一般需要重新启动)。而用户数目、外设数量和文件等均与此无关。</p>
+<div class="hlcode"><pre><span class="n">from</span> <span class="n">multiprocessing</span> <span class="n">import</span> <span class="n">Process</span>
+<span class="n">import</span> <span class="n">os</span>
+
+<span class="cp"># 子进程要执行的代码</span>
+<span class="n">def</span> <span class="n">run_proc</span><span class="p">(</span><span class="n">name</span><span class="p">)</span><span class="o">:</span>
+    <span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="n">Run</span> <span class="n">child</span> <span class="n">process</span> <span class="o">%</span><span class="n">s</span> <span class="p">(</span><span class="o">%</span><span class="n">s</span><span class="p">)...</span><span class="err">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">os</span><span class="p">.</span><span class="n">getpid</span><span class="p">()))</span>
+
+<span class="k">if</span> <span class="n">__name__</span><span class="o">==</span><span class="err">&#39;</span><span class="n">__main__</span><span class="err">&#39;</span><span class="o">:</span>
+    <span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="n">Parent</span> <span class="n">process</span> <span class="o">%</span><span class="n">s</span><span class="p">.</span><span class="err">&#39;</span> <span class="o">%</span> <span class="n">os</span><span class="p">.</span><span class="n">getpid</span><span class="p">())</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">Process</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">run_proc</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="err">&#39;</span><span class="n">test</span><span class="err">&#39;</span><span class="p">,))</span>
+    <span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="n">Child</span> <span class="n">process</span> <span class="n">will</span> <span class="n">start</span><span class="p">.</span><span class="err">&#39;</span><span class="p">)</span>
+    <span class="n">p</span><span class="p">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">p</span><span class="p">.</span><span class="n">join</span><span class="p">()</span>
+    <span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="n">Child</span> <span class="n">process</span> <span class="n">end</span><span class="p">.</span><span class="err">&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>执行结果如下：</p>
+<div class="hlcode"><pre><span class="n">Parent</span> <span class="n">process</span> <span class="mf">928.</span>
+<span class="n">Process</span> <span class="n">will</span> <span class="n">start</span><span class="p">.</span>
+<span class="n">Run</span> <span class="n">child</span> <span class="n">process</span> <span class="n">test</span> <span class="p">(</span><span class="mi">929</span><span class="p">)...</span>
+<span class="n">Process</span> <span class="n">end</span><span class="p">.</span>
+</pre></div>
+
+
+<h3 id="112">1.1.2 进程管理</h3>
+<p>进程管理指的是操作系统调整多个进程的功能</p>
+<h4 id="1121">1.1.2.1  进程锁</h4>
+<p><strong>进程锁</strong>:也是为了控制同一操作系统中多个进程访问一个共享资源，只是因为程序的独立性，各个进程是无法控制其他进程对资源的访问的，但是可以使用本地系统的信号量控制（操作系统基本知识）。</p>
+<h4 id="1122-ipc">1.1.2.2 进程间通信（IPC）</h4>
+<p>IPC方法包括管道（PIPE）、消息排队、旗语、共用内存以及套接字（Socket）</p>
+<h3 id="113-daemon">1.1.3 守护进程(daemon)</h3>
+<p>守护进程(daemon)是一类在后台运行的特殊进程，用于执行特定的系统任务。</p>
+<h3 id="12">1.2 线程</h3>
+<p><strong>线程thread</strong> 是操作系统能够进行运算调度的最小单位。它被包含在进程之中，是进程中的实际运作单位</p>
+<h4 id="121-multi_thread">1.2.1 多线程（multi_Thread）</h4>
+<p>如果用多线程实现Master-Worker，主线程就是Master，其他线程就是Worker。</p>
+<div class="hlcode"><pre><span class="n">import</span> <span class="n">time</span><span class="p">,</span> <span class="n">threading</span>
+
+<span class="cp"># 新线程执行的代码:</span>
+
+<span class="n">def</span> <span class="n">loop</span><span class="p">()</span><span class="o">:</span>
+    <span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="kr">thread</span> <span class="o">%</span><span class="n">s</span> <span class="n">is</span> <span class="n">running</span><span class="p">...</span><span class="err">&#39;</span> <span class="o">%</span> <span class="n">threading</span><span class="p">.</span><span class="n">current_thread</span><span class="p">().</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="o">:</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="kr">thread</span> <span class="o">%</span><span class="n">s</span> <span class="o">&gt;&gt;&gt;</span> <span class="o">%</span><span class="n">s</span><span class="err">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">threading</span><span class="p">.</span><span class="n">current_thread</span><span class="p">().</span><span class="n">name</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+        <span class="n">time</span><span class="p">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="kr">thread</span> <span class="o">%</span><span class="n">s</span> <span class="n">ended</span><span class="p">.</span><span class="err">&#39;</span> <span class="o">%</span> <span class="n">threading</span><span class="p">.</span><span class="n">current_thread</span><span class="p">().</span><span class="n">name</span><span class="p">)</span>
+
+<span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="kr">thread</span> <span class="o">%</span><span class="n">s</span> <span class="n">is</span> <span class="n">running</span><span class="p">...</span><span class="err">&#39;</span> <span class="o">%</span> <span class="n">threading</span><span class="p">.</span><span class="n">current_thread</span><span class="p">().</span><span class="n">name</span><span class="p">)</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">threading</span><span class="p">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">loop</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="err">&#39;</span><span class="n">LoopThread</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="n">t</span><span class="p">.</span><span class="n">start</span><span class="p">()</span>
+<span class="n">t</span><span class="p">.</span><span class="n">join</span><span class="p">()</span>
+<span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="kr">thread</span> <span class="o">%</span><span class="n">s</span> <span class="n">ended</span><span class="p">.</span><span class="err">&#39;</span> <span class="o">%</span> <span class="n">threading</span><span class="p">.</span><span class="n">current_thread</span><span class="p">().</span><span class="n">name</span><span class="p">)</span>
+</pre></div>
+
+
+<p>执行结果如下：</p>
+<div class="hlcode"><pre><span class="kr">thread</span> <span class="n">MainThread</span> <span class="n">is</span> <span class="n">running</span><span class="p">...</span>
+<span class="kr">thread</span> <span class="n">LoopThread</span> <span class="n">is</span> <span class="n">running</span><span class="p">...</span>
+<span class="kr">thread</span> <span class="n">LoopThread</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">1</span>
+<span class="kr">thread</span> <span class="n">LoopThread</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">2</span>
+<span class="kr">thread</span> <span class="n">LoopThread</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">3</span>
+<span class="kr">thread</span> <span class="n">LoopThread</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">4</span>
+<span class="kr">thread</span> <span class="n">LoopThread</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">5</span>
+<span class="kr">thread</span> <span class="n">LoopThread</span> <span class="n">ended</span><span class="p">.</span>
+<span class="kr">thread</span> <span class="n">MainThread</span> <span class="n">ended</span><span class="p">.</span>
+</pre></div>
+
+
+<h4 id="122">1.2.2  线程管理</h4>
+<h5 id="122-threadlocal">1.2.2  线程锁 ThreadLocal</h5>
+<p>二者的区别还是很明显的：请求发出后，是否需要等待请求结果，才能继续执行其他操作。</p>
+<p>进程（Process）、线程（Thread）、协程（）</p>
+<p>总结一下就是，多任务的实现有3种方式：<br />
+1. 多进程模式；<br />
+2. 多线程模式；<br />
+3. 多进程+多线程模式。<br />
+4. 单进程单线程的异步编程模型</p>
+<table>
+<thead>
+<tr>
+<th align="right">模式</th>
+<th align="right">优点</th>
+<th align="right">缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">多进程</td>
+<td align="right"><strong>稳定性高</strong>，因为一个子进程崩溃了，不会影响主进程和其他子进程。（当然主进程挂了所有进程就全挂了</td>
+<td align="right"><strong>创建进程的代价大</strong></td>
+</tr>
+<tr>
+<td align="right">多线程</td>
+<td align="right">快一点，但是也快不到哪去</td>
+<td align="right">任何一个线程挂掉都可能直接造成整个进程崩溃</td>
+</tr>
+<tr>
+<td align="right">多进程+多线程的混合模式</td>
+<td align="right">理论上解决 稳定性和效率问题</td>
+<td align="right"></td>
+</tr>
+<tr>
+<td align="right">协程</td>
+<td align="right">单线程的异步编程模型，解决系统总的进程数量十分有限</td>
+<td align="right"></td>
+</tr>
+</tbody>
+</table>
+<p><strong>对应到Python语言，单线程的异步编程模型称为<code>协程</code>，有了协程的支持，就可以基于事件驱动编写高效的多任务程序。我们会在后面讨论如何编写协程。</strong></p>
+<h2 id="3-">3. 可迭代、迭代器、生成器--&gt;协程</h2>
+<table>
+<thead>
+<tr>
+<th align="right">名称</th>
+<th align="right">例子</th>
+<th align="right">特征内置函数</th>
+<th align="right">适用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">可迭代对象</td>
+<td align="right">字符串，list，dict，tuple，deque等都是<strong>可迭代的</strong></td>
+<td align="right"><code>__iter__</code></td>
+<td align="right">for</td>
+</tr>
+<tr>
+<td align="right">迭代器</td>
+<td align="right">特定的数据结构</td>
+<td align="right"><code>__iter__</code> <code>__next__</code></td>
+<td align="right">for next()</td>
+</tr>
+<tr>
+<td align="right">生成器(generator)</td>
+<td align="right">生成器是种特殊的迭代器，这种一边循环一边计算的机制，称为生成器：generator。</td>
+<td align="right"><code>__iter__</code> <code>__next__</code> <code>close</code>,<code>gi_yieldfrom</code>,<code>send</code>,<code>throw</code></td>
+<td align="right"><code>yield</code></td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+<td align="right"></td>
+</tr>
+</tbody>
+</table>
+<h3 id="11_1">1.1 可迭代</h3>
+<p>字符串、列表、字典等 是 <strong>可迭代对象</strong> 但不是迭代器，也不是生成器。</p>
+<blockquote>
+<p><strong>扩展知识</strong>:<br />
+可迭代对象，是其内部实现了，<code>__iter__</code> 这个方法，这个方法可使用for来循环。</p>
+</blockquote>
+<h3 id="12_1">1.2 迭代器</h3>
+<p>所以Iterator的计算是惰性的，只有在需要返回下一个数据时它才会计算。我们不能提前知道序列的长度</p>
+<p><code>__init__</code> 函数内包括：</p>
+<div class="hlcode"><pre><span class="err">`</span><span class="n">__iter__</span><span class="err">`</span><span class="o">:</span><span class="err">可以直接使用</span><span class="n">for</span><span class="err">来实现循环</span>
+<span class="err">`</span><span class="n">__next__</span><span class="err">`</span><span class="o">:</span><span class="err">可以直接使用</span><span class="n">next</span><span class="p">()</span><span class="err">方法来实现</span>
+</pre></div>
+
+
+<p><strong>示例</strong></p>
+<div class="hlcode"><pre><span class="n">class</span> <span class="n">Fib</span><span class="o">:</span>
+    <span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">prev</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">curr</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">def</span> <span class="n">__iter__</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="n">self</span>
+
+    <span class="n">def</span> <span class="n">__next__</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="n">self</span><span class="p">.</span><span class="n">curr</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">prev</span> <span class="o">=</span> <span class="n">self</span><span class="p">.</span><span class="n">prev</span> <span class="o">+</span> <span class="n">self</span><span class="p">.</span><span class="n">curr</span><span class="p">,</span> <span class="n">self</span><span class="p">.</span><span class="n">curr</span>
+        <span class="k">return</span> <span class="n">self</span><span class="p">.</span><span class="n">curr</span>
+
+<span class="n">fib</span> <span class="o">=</span> <span class="n">Fib</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="n">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">:</span>
+    <span class="n">print</span><span class="p">(</span><span class="n">next</span><span class="p">(</span><span class="n">fib</span><span class="p">))</span>
+</pre></div>
+
+
+<p>输出：</p>
+<div class="hlcode"><pre><span class="mi">1</span>
+<span class="mi">2</span>
+<span class="mi">3</span>
+<span class="mi">5</span>
+<span class="mi">8</span>
+<span class="mi">13</span>
+<span class="mi">21</span>
+<span class="mi">34</span>
+<span class="mi">55</span>
+</pre></div>
+
+
+<h3 id="13">1.3 生成器</h3>
+<p>生成器，是在迭代器的基础上（可以用for循环，可以使用next()），再实现了yield。</p>
+<p>yield 是什么东西呢，它相当于我们函数里的return。在每次next()，或者for遍历的时候，都会yield这里将新的值返回回去，并在这里阻塞，等待下一次的调用。正是由于这个机制，才使用生成器在Python编程中大放异彩。实现节省内存，实现异步编程。<br />
+这种一边循环一边计算的机制，称为生成器：generator。</p>
+<p>但是不需要像迭代器一样实现__iter__和__next__方法，只需要使用关键字yield就可以。</p>
+<div class="hlcode"><pre><span class="n">def</span> <span class="n">fib</span><span class="p">()</span><span class="o">:</span>
+    <span class="n">prev</span><span class="p">,</span> <span class="n">curr</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span>
+    <span class="k">while</span> <span class="n">True</span><span class="o">:</span>
+        <span class="n">yield</span> <span class="n">curr</span>
+        <span class="n">curr</span><span class="p">,</span> <span class="n">prev</span> <span class="o">=</span> <span class="n">prev</span> <span class="o">+</span> <span class="n">curr</span><span class="p">,</span> <span class="n">curr</span>
+
+<span class="n">f</span> <span class="o">=</span> <span class="n">fib</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">i</span> <span class="n">in</span> <span class="n">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span><span class="o">:</span>
+    <span class="n">print</span><span class="p">(</span><span class="n">next</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+</pre></div>
+
+
+<p>输出：</p>
+<div class="hlcode"><pre><span class="mi">1</span>
+<span class="mi">2</span>
+<span class="mi">3</span>
+<span class="mi">5</span>
+<span class="mi">8</span>
+<span class="mi">13</span>
+<span class="mi">21</span>
+<span class="mi">34</span>
+<span class="mi">55</span>
+</pre></div>
+
+
+<h4 id="131">1.3.1 如何创建一个生成器，主要有如下两种方法</h4>
+<ol>
+<li>使用列表生成式<div class="hlcode"><pre><span class="n">L</span> <span class="o">=</span> <span class="p">(</span><span class="n">x</span> <span class="o">*</span> <span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="n">in</span> <span class="n">range</span><span class="p">(</span><span class="mi">10</span><span class="p">))</span>
+<span class="n">print</span><span class="p">(</span><span class="n">isinstance</span><span class="p">(</span><span class="n">L</span><span class="p">,</span> <span class="n">Generator</span><span class="p">))</span>  <span class="err">#</span> <span class="n">True</span>
+</pre></div>
+
+
+</li>
+</ol>
+<blockquote>
+<p>使用列表生成式，注意不是[]，而是()</p>
+</blockquote>
+<ol>
+<li>实现了yield的函数(生成器函数)<div class="hlcode"><pre><span class="n">def</span> <span class="n">mygen</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">:</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">now</span> <span class="o">&lt;</span> <span class="n">n</span><span class="o">:</span>
+        <span class="n">yield</span> <span class="n">now</span>
+        <span class="n">now</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="err">&#39;</span><span class="n">__main__</span><span class="err">&#39;</span><span class="o">:</span>
+    <span class="n">gen</span> <span class="o">=</span> <span class="n">mygen</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">print</span><span class="p">(</span><span class="n">isinstance</span><span class="p">(</span><span class="n">gen</span><span class="p">,</span> <span class="n">Generator</span><span class="p">))</span>  <span class="err">#</span> <span class="n">True</span>
+</pre></div>
+
+
+</li>
+</ol>
+<h4 id="132">1.3.2 如何运行/激活生成器</h4>
+<p>由于生成器并不是一次生成所有元素，而是一次一次的执行返回，那么如何刺激生成器执行(或者说激活)呢？<br />
+激活主要有两个方法:<br />
+1. 使用next()<br />
+2. 使用generator.send(None)</p>
+<p>示例：</p>
+<div class="hlcode"><pre>    <span class="n">def</span> <span class="n">mygen</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">:</span>
+        <span class="n">now</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">now</span> <span class="o">&lt;</span> <span class="n">n</span><span class="o">:</span>
+            <span class="n">yield</span> <span class="n">now</span>
+            <span class="n">now</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="err">&#39;</span><span class="n">__main__</span><span class="err">&#39;</span><span class="o">:</span>
+        <span class="n">gen</span> <span class="o">=</span> <span class="n">mygen</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+
+        <span class="err">#</span> <span class="err">通过交替执行，来说明这两种方法是等价的。</span>
+        <span class="n">print</span><span class="p">(</span><span class="n">gen</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="n">None</span><span class="p">))</span>
+        <span class="n">print</span><span class="p">(</span><span class="n">next</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span>
+        <span class="n">print</span><span class="p">(</span><span class="n">gen</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="n">None</span><span class="p">))</span>
+        <span class="n">print</span><span class="p">(</span><span class="n">next</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span>
+</pre></div>
+
+
+<p>输出</p>
+<div class="hlcode"><pre>    <span class="mi">0</span>
+    <span class="mi">1</span>
+    <span class="mi">2</span>
+    <span class="mi">3</span>
+</pre></div>
+
+
+<h4 id="133">1.3.3 生成器的执行状态</h4>
+<p>生成器在其生命周期中，会有如下四个状态</p>
+<p>GEN_CREATED   # 等待开始执行<br />
+  GEN_RUNNING    # 解释器正在执行（只有在多线程应用中才能看到这个状态）<br />
+  GEN_SUSPENDED  # 在yield表达式处暂停<br />
+  GEN_CLOSED     # 执行结束</p>
+<h4 id="134">1.3.4  生成器的异常处理</h4>
+<p>在生成器工作过程中，若生成器不满足生成元素的条件，就会/应该 抛出异常（StopIteration）。</p>
+<p>通过列表生成式构建的生成器，其内部已经自动帮我们实现了抛出异常这一步。<br />
+所以我们在自己定义一个生成器的时候，我们也应该在不满足生成元素条件的时候，抛出异常。</p>
+<div class="hlcode"><pre><span class="n">def</span> <span class="n">mygen</span><span class="p">(</span><span class="n">n</span><span class="p">)</span><span class="o">:</span>
+    <span class="n">now</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">now</span> <span class="o">&lt;</span> <span class="n">n</span><span class="o">:</span>
+        <span class="n">yield</span> <span class="n">now</span>
+        <span class="n">now</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="n">raise</span> <span class="n">StopIteration</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="err">&#39;</span><span class="n">__main__</span><span class="err">&#39;</span><span class="o">:</span>
+    <span class="n">gen</span> <span class="o">=</span> <span class="n">mygen</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">next</span><span class="p">(</span><span class="n">gen</span><span class="p">)</span>
+    <span class="n">next</span><span class="p">(</span><span class="n">gen</span><span class="p">)</span>
+    <span class="n">next</span><span class="p">(</span><span class="n">gen</span><span class="p">)</span>
+</pre></div>
+
+
+<h4 id="135-yield">1.3.5 从生成器过渡到协程：yield</h4>
+<ol>
+<li>生成器暂停</li>
+<li>生成器发送<br />
+<strong>1+2 实现协程</strong></li>
+</ol>
+<p>通过上面的介绍，我们知道生成器为我们引入了<strong>暂停函数</strong>执行（yield）的功能。当有了暂停的功能之后，人们就想能不能在生成器暂停的时候向其<strong>发送一点东西</strong>（其实上面也有提及：send(None)）。这种向暂停的生成器发送信息的功能通过 PEP 342 进入 Python 2.5 中，并催生了 Python 中协程的诞生。根据 wikipedia 中的定义</p>
+<p>协程是为非抢占式多任务产生子程序的计算机程序组件，协程允许不同入口点在不同位置暂停或开始执行程序。</p>
+<p>注意从本质上而言，<strong>协程并不属于语言中的概念，而是编程模型上的概念</strong>。<br />
+协程和线程，有相似点，多个协程之间和线程一样，只会交叉串行执行；也有不同点，<strong>线程之间要频繁进行切换，加锁，解锁</strong>，从复杂度和效率来看，和协程相比，这确是一个痛点。协程通过使用 yield 暂停生成器，可以将程序的执行流程交给其他的子程序，从而实现不同子程序的之间的交替执行。<br />
+下面通过一个简明的演示来看看，如何向生成器中发送消息。</p>
+<div class="hlcode"><pre><span class="n">def</span> <span class="n">jumping_range</span><span class="p">(</span><span class="n">N</span><span class="p">)</span><span class="o">:</span>
+    <span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">while</span> <span class="n">index</span> <span class="o">&lt;</span> <span class="n">N</span><span class="o">:</span>
+        <span class="err">#</span> <span class="err">通过</span><span class="n">send</span><span class="p">()</span><span class="err">发送的信息将赋值给</span><span class="n">jump</span>
+        <span class="n">jump</span> <span class="o">=</span> <span class="n">yield</span> <span class="n">index</span>
+        <span class="k">if</span> <span class="n">jump</span> <span class="n">is</span> <span class="n">None</span><span class="o">:</span>
+            <span class="n">jump</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">index</span> <span class="o">+=</span> <span class="n">jump</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="err">&#39;</span><span class="n">__main__</span><span class="err">&#39;</span><span class="o">:</span>
+    <span class="n">itr</span> <span class="o">=</span> <span class="n">jumping_range</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">print</span><span class="p">(</span><span class="n">next</span><span class="p">(</span><span class="n">itr</span><span class="p">))</span>
+    <span class="n">print</span><span class="p">(</span><span class="n">itr</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">print</span><span class="p">(</span><span class="n">next</span><span class="p">(</span><span class="n">itr</span><span class="p">))</span>
+    <span class="n">print</span><span class="p">(</span><span class="n">itr</span><span class="p">.</span><span class="n">send</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+</pre></div>
+
+
+<p>输出：</p>
+<div class="hlcode"><pre>    <span class="mi">0</span>
+    <span class="mi">2</span>
+    <span class="mi">3</span>
+    <span class="mi">2</span>
+</pre></div>
+
+
+<p>这里解释下为什么这么输出。重点是<code>jump = yield index</code>这个语句。<br />
+分成两部分：</p>
+<div class="hlcode"><pre><span class="n">yield</span> <span class="n">index</span> <span class="err">是将</span><span class="n">index</span> <span class="n">return</span><span class="err">给外部调用程序。</span>
+<span class="n">jump</span> <span class="o">=</span> <span class="n">yield</span> <span class="err">可以接收外部程序通过</span><span class="n">send</span><span class="p">()</span><span class="err">发送的信息，并赋值给</span><span class="n">jump</span>
+</pre></div>
+
+
+<p>以上这些，都是讲协程并发的基础必备知识，请一定要亲自去实践并理解它，不然后面的内容，将会变得枯燥无味，晦涩难懂。</p>
+<p>下一章，我将讲一个Python3.5新引入的语法：yield from。篇幅也比较多，所以就单独拿出来讲。</p>
+<p>协程是在单线程里实现任务的切换的<br />
+利用同步的方式去实现异步<br />
+不再需要锁，提高了并发性能</p>
+<h2 id="4">4. 协程</h2>
+<p>单线程的异步编程模型称为协程（Coroutine），<br />
+微线程</p>
+<p>1 线程（Thread）=协程（Coroutine）+协程（Coroutine）+协程（Coroutine）</p>
+</div>
+
+        </div>
+        <div id="footer">
+            <span>
+                Copyright © 2019 zhang787jun.
+                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+            </span>
+        </div>
+        
+    </body>
+</html>
