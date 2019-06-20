@@ -2,9 +2,19 @@
 title: "Simiki 使用教程"
 layout: page
 date: 2099-06-02 00:00
----
+---\
 [TOC]
 # Simiki 使用教程
+
+---
+title: "Getting Started"
+layout: page
+date: 2099-06-02 00:00
+---
+
+[TOC]
+
+# Simiki #
 
 
 Simiki is a simple wiki framework, written in [Python](https://www.python.org/).
