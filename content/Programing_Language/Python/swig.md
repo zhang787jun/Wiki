@@ -1,11 +1,11 @@
 ---
-title: "swig--Python/C++ 混合编程技术"
+title: "swig--Tensorflow等框架背后的Python/C++ 混合编程技术"
 layout: page
 date: 2099-06-02 00:00
 ---
-
 [TOC]
-# swig--Python/C++ 混合编程技术
+
+# swig--Tensorflow等框架背后的Python/C++ 混合编程技术
 
 参考：
 https://github.com/swig/swig
@@ -217,6 +217,15 @@ hello
 
 #say_hello()函数返回的 是 _example.Example_say_hello(self)
 ```
+
+## Tensorflow 中的应用
+
+Tensorflow框架开放python作为其前端调用程序语言，后台依然是C++在运行,基于python的内存/运算管理 均不能反应在TF程序中。
+
+<img src="/attach/images/python/tensorflow_structure.png">
+<img src="/attach/images/python/tensorflow_swig.png">
+<img src="/attach/images/python/tensorflow_structure2.png">
+
 
 
 

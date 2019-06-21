@@ -1,0 +1,118 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>python中特有数据结构及特性 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
+    </script>
+
+
+
+</head>
+
+<body>
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Programing_Language\Python">Programing_Language\Python</a>&nbsp;»&nbsp;python中特有数据结构及特性</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">python中特有数据结构及特性</div>
+  <div id="content">
+  <h1 id="python">python中特有数据结构及特性</h1>
+<h2 id="_1">字典</h2>
+<p>hash 表 实现 </p>
+<h2 id="with">with 上下文管理器</h2>
+<div class="hlcode"><pre><span class="k">with</span> <span class="err">上下文管理器对象：</span>
+    　<span class="err">语句体</span>
+
+<span class="nb">dir</span><span class="p">(</span><span class="err">上下文管理器对象</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="o">...</span>
+<span class="n">__enter__</span>
+<span class="n">__exit__</span>
+<span class="o">...</span>
+</pre></div>
+
+
+<p>当with遇到上下文管理器对象，就会在执行语句体之前，先执行上下文管理器对象的<code>__enter__</code>方法，然后再执行语句体，执行完语句体后，最后执行<code>__exit__</code>方法</p>
+<h2 id="_2">修饰器@</h2>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">Timer</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">newFunc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">args2</span><span class="p">):</span>
+        <span class="n">t1</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+        <span class="n">back</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">args2</span><span class="p">)</span>
+        <span class="k">print</span> <span class="p">(</span><span class="s">&quot; This function【{}】cost time:{} </span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">-</span><span class="n">t1</span><span class="p">))</span>
+        <span class="c">#logger.info (&quot; This function【{}】cost time:{} \n&quot;.format(func.__name__,datetime.datetime.now()-t1))</span>
+        <span class="k">return</span> <span class="n">back</span>
+    <span class="k">return</span> <span class="n">newFunc</span>
+
+<span class="nd">@Timer</span>
+<span class="k">def</span> <span class="nf">Pi</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+    <span class="c">#N=10**7</span>
+    <span class="n">N</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+    <span class="n">data</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+    <span class="n">inside</span><span class="o">=</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">data</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+    <span class="n">pi</span><span class="o">=</span><span class="mi">4</span><span class="o">*</span><span class="n">inside</span><span class="o">/</span><span class="n">N</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s">&quot;pi is </span><span class="si">%.5f</span><span class="s">&quot;</span><span class="o">%</span><span class="n">pi</span><span class="p">)</span>
+</pre></div>
+
+
+<h1 id="_3">类</h1>
+<p>obj = 12 </p>
+<h1 id="obj-can-be-an-object-from-any-class-even-objectnewobject">obj can be an object from any class, even object.<strong>new</strong>(object)</h1>
+<p>class returnExistedObj(object):<br />
+    def <strong>new</strong>(cls):<br />
+        print("<strong>new</strong> is called")<br />
+        return obj</p>
+<div class="hlcode"><pre><span class="n">def</span> <span class="n">__init</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="o">:</span>
+    <span class="n">print</span><span class="p">(</span><span class="s">&quot;__init__ is called&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>returnExistedObj()</p>
+<p>执行结果如下：<br />
+<strong>new</strong> is called<br />
+12</p>
+<p>同时另一个需要注意的点是：<br />
+如果我们在__new__函数中不返回任何对象，则__init__函数也不会被调用。<br />
+如下面代码所示：<br />
+class notReturnObj(object):<br />
+    def <strong>new</strong>(cls):<br />
+        print("<strong>new</strong> is called")</p>
+<div class="hlcode"><pre><span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="o">:</span>
+    <span class="n">print</span><span class="p">(</span><span class="s">&quot;__init__ is called&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>print(notReturnObj())</p>
+<p>执行结果如下：<br />
+<strong>new</strong> is called<br />
+None</p>
+<p>可见如果__new__函数不返回对象的话，不会有任何对象被创建，__init__函数也不会被调用来初始化对象。<br />
+总结几个点</p>
+<p>__init__不能有返回值<br />
+__new__函数直接上可以返回别的类的实例。如上面例子中的returnExistedObj类的__new__函数返回了一个int值。<br />
+只有在__new__返回一个新创建属于该类的实例时当前类的__init__才会被调用。如下面例子所示：</p>
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2019 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+    
+</body>
+
+</html>

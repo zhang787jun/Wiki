@@ -1,51 +1,43 @@
 <!DOCTYPE HTML>
 <html>
-    <head>
-        <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
-        <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
-        <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
-        <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
-        <title>工程实践：给函数取一个好的名字 - Jun's personal knowledge wiki</title>
-        <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki"/>
-        <meta name="description" content="A wiki website"/>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    </head>
 
-    <body>
-        <div id="container">
-            
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>工程实践：给函数取一个好的名字 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
+    </script>
+
+
+
+</head>
+
+<body>
+    <div id="container">
+        
 <div id="header">
   <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Programing_Language\Python">Programing_Language\Python</a>&nbsp;»&nbsp;工程实践：给函数取一个好的名字</div>
 </div>
 <div class="clearfix"></div>
 <div id="title">工程实践：给函数取一个好的名字</div>
   <div id="content">
-  <h1 id="_1">工程实践：给函数取一个"好"的名字</h1>
+  <h1 id="_1">工程实践：给函数取一个好的名字</h1>
 <div class="toc"><span class="toctitle">Table of Contents</span><ul>
-<li><a href="#_1">工程实践：给函数取一个"好"的名字</a><ul>
-<li><a href="#1">1. 常见的函数命名风格</a><ul>
-<li><a href="#11-java">1.1 驼峰命名 Java：</a></li>
-<li><a href="#12-pascal-c">1.2 帕斯卡Pascal命名 C#：</a></li>
-<li><a href="#13-python">1.3 python</a></li>
-</ul>
-</li>
-<li><a href="#2">2. 函数命名的最高境界</a></li>
-<li><a href="#3">3. 函数命名最佳实践</a><ul>
-<li><a href="#31">3.1 动词选取要精准</a></li>
-</ul>
-</li>
+<li><a href="#_1">工程实践：给函数取一个好的名字</a><ul>
+<li><a href="#1">1. 常见的函数命名风格</a></li>
 </ul>
 </li>
 </ul>
 </div>
 <h2 id="1">1. 常见的函数命名风格</h2>
-<h3 id="11-java">1.1 驼峰命名 Java：</h3>
-<p>多个单词组成一个名称时，第一个单词全部小写，后面单词首字母大写；如：<br />
-<code>public void setUserName(String userName)</code>;</p>
-<h3 id="12-pascal-c">1.2 帕斯卡Pascal命名 C#：</h3>
-<p>多个单词组成一个名称时，每个单词的首字母大写；<br />
-<code>public void SetUserName(String userName)</code>;</p>
-<h3 id="13-python">1.3 python</h3>
 <p>python区分大小写：除了类名和异常首字母大写，其他都是小写；单词之间用下划线分割；特别之处是下划线开头和下划线结尾</p>
 <table>
 <thead>
@@ -117,24 +109,17 @@
 5. 类：几乎毫无例外的，类名都使用首字母大写开头(Pascal命名风格)的规范。使用_单下划线开头的类名为内部使用，上面说的from M import </em>默认不被告导入的情况。<br />
 6. 异常：因为异常也是一个类，所以遵守类的命名规则。此外，如果异常实际上指代一个错误的话，应该使用“Error”做后缀</p>
 </blockquote>
-<h2 id="2">2. 函数命名的最高境界</h2>
-<p>清晰明确<br />
-|                                                     例子 |                       评价 |<br />
-| -------------------------------------------------------: | -------------------------: |<br />
-|                 public void setUserName(String userName) |                       明确 |<br />
-| public String addCharacter(String originString, char ch) | 不确定在哪加，句首？尾部？ |</p>
-<h2 id="3">3. 函数命名最佳实践</h2>
-<h3 id="31">3.1 动词选取要精准</h3>
-<p>https://juejin.im/post/5c94e438e51d452aba21f4e6</p>
+<p>参考： https://juejin.im/post/5c94e438e51d452aba21f4e6</p>
 </div>
 
-        </div>
-        <div id="footer">
-            <span>
-                Copyright © 2019 zhang787jun.
-                Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
-            </span>
-        </div>
-        
-    </body>
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2019 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+    
+</body>
+
 </html>
