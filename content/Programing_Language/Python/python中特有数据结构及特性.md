@@ -6,6 +6,10 @@ date: 2099-06-02 00:00
 
 # python中特有数据结构及特性
 
+##python 实现经典数据结构
+参考：https://github.com/TheAlgorithms/Python/tree/master/data_structures
+
+
 ## 字典 
 hash 表 实现 
 
@@ -48,6 +52,7 @@ def Pi(N):
 ```
 
 #类 
+```python
 
 obj = 12 
 # obj can be an object from any class, even object.__new__(object)
@@ -88,3 +93,4 @@ None
 __init__不能有返回值
 __new__函数直接上可以返回别的类的实例。如上面例子中的returnExistedObj类的__new__函数返回了一个int值。
 只有在__new__返回一个新创建属于该类的实例时当前类的__init__才会被调用。如下面例子所示：
+```

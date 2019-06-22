@@ -34,7 +34,7 @@
 <div class="toc"><span class="toctitle">Table of Contents</span><ul>
 <li><a href="#_1">多任务编程</a><ul>
 <li><a href="#1">1. 任务在计算机上的完成（进程、线程）</a><ul>
-<li><a href="#11">1.1 进程</a></li>
+<li><a href="#11">1.1 进程</a><ul>
 <li><a href="#111-multiprocessing">1.1.1 多进程(multiprocessing)</a></li>
 <li><a href="#112">1.1.2 进程管理</a><ul>
 <li><a href="#1121">1.1.2.1  进程锁</a></li>
@@ -42,6 +42,8 @@
 </ul>
 </li>
 <li><a href="#113-daemon">1.1.3 守护进程(daemon)</a></li>
+</ul>
+</li>
 <li><a href="#12">1.2 线程</a><ul>
 <li><a href="#121-multi_thread">1.2.1 多线程（multi_Thread）</a></li>
 <li><a href="#122">1.2.2  线程管理</a><ul>
@@ -52,7 +54,7 @@
 </li>
 </ul>
 </li>
-<li><a href="#3-">3. 可迭代、迭代器、生成器--&gt;协程</a><ul>
+<li><a href="#2-python-">2. Python概念：可迭代、迭代器、生成器--&gt;协程</a><ul>
 <li><a href="#11_1">1.1 可迭代</a></li>
 <li><a href="#12_1">1.2 迭代器</a></li>
 <li><a href="#13">1.3 生成器</a><ul>
@@ -82,7 +84,7 @@
 |   调度和切换 |               慢 |                                                                                                       快 |<br />
 | 多线程系统中 |     是可执行实体 |                                                                                 线程不是一个可执行的实体 |</p>
 <h3 id="11">1.1 进程</h3>
-<h3 id="111-multiprocessing">1.1.1 多进程(multiprocessing)</h3>
+<h4 id="111-multiprocessing">1.1.1 多进程(multiprocessing)</h4>
 <p>参考 https://www.liaoxuefeng.com/wiki/1016959663602400/1017628290184064</p>
 <p>父进程：当前进程（python解释器）<br />
 子进程：将父进程复制一份</p>
@@ -122,13 +124,13 @@
 </pre></div>
 
 
-<h3 id="112">1.1.2 进程管理</h3>
+<h4 id="112">1.1.2 进程管理</h4>
 <p>进程管理指的是操作系统调整多个进程的功能</p>
-<h4 id="1121">1.1.2.1  进程锁</h4>
+<h5 id="1121">1.1.2.1  进程锁</h5>
 <p><strong>进程锁</strong>:也是为了控制同一操作系统中多个进程访问一个共享资源，只是因为程序的独立性，各个进程是无法控制其他进程对资源的访问的，但是可以使用本地系统的信号量控制（操作系统基本知识）。</p>
-<h4 id="1122-ipc">1.1.2.2 进程间通信（IPC）</h4>
+<h5 id="1122-ipc">1.1.2.2 进程间通信（IPC）</h5>
 <p>IPC方法包括管道（PIPE）、消息排队、旗语、共用内存以及套接字（Socket）</p>
-<h3 id="113-daemon">1.1.3 守护进程(daemon)</h3>
+<h4 id="113-daemon">1.1.3 守护进程(daemon)</h4>
 <p>守护进程(daemon)是一类在后台运行的特殊进程，用于执行特定的系统任务。</p>
 <h3 id="12">1.2 线程</h3>
 <p><strong>线程thread</strong> 是操作系统能够进行运算调度的最小单位。它被包含在进程之中，是进程中的实际运作单位</p>
@@ -209,7 +211,7 @@
 </tbody>
 </table>
 <p><strong>对应到Python语言，单线程的异步编程模型称为<code>协程</code>，有了协程的支持，就可以基于事件驱动编写高效的多任务程序。我们会在后面讨论如何编写协程。</strong></p>
-<h2 id="3-">3. 可迭代、迭代器、生成器--&gt;协程</h2>
+<h2 id="2-python-">2. Python概念：可迭代、迭代器、生成器--&gt;协程</h2>
 <table>
 <thead>
 <tr>

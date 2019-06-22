@@ -248,7 +248,7 @@
 </ul>
 </li>
 <li><a href="#164_1">16.4 常用实例</a><ul>
-<li><a href="#1-flops">1. 浮点运算次数 flops</a></li>
+<li><a href="#1-flop">1. 浮点运算次数 flop</a></li>
 <li><a href="#2_12">2. 总参数量</a></li>
 <li><a href="#3_6">3. 统计模型内存和耗时情况</a></li>
 <li><a href="#4-profile">4. 给出使用profile工具给出建议</a></li>
@@ -2824,16 +2824,16 @@ ProfileOptionBuilder.select(attributes)</p>
 
 
 <h3 id="164_1">16.4 常用实例</h3>
-<h4 id="1-flops">1. 浮点运算次数 flops</h4>
+<h4 id="1-flop">1. 浮点运算次数 flop</h4>
 <div class="hlcode"><pre>    <span class="k">def</span> <span class="nf">get_flops</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
         <span class="n">run_meta</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">RunMetadata</span><span class="p">()</span>
         <span class="n">opts</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">ProfileOptionBuilder</span><span class="o">.</span><span class="n">float_operation</span><span class="p">()</span>
 
         <span class="c"># We use the Keras session graph in the call to the profiler.</span>
-        <span class="n">flops</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">graph</span><span class="o">=</span><span class="n">K</span><span class="o">.</span><span class="n">get_session</span><span class="p">()</span><span class="o">.</span><span class="n">graph</span><span class="p">,</span>
+        <span class="n">flop</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">graph</span><span class="o">=</span><span class="n">K</span><span class="o">.</span><span class="n">get_session</span><span class="p">()</span><span class="o">.</span><span class="n">graph</span><span class="p">,</span>
                                     <span class="n">run_meta</span><span class="o">=</span><span class="n">run_meta</span><span class="p">,</span> <span class="n">cmd</span><span class="o">=</span><span class="s">&#39;op&#39;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">opts</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">flops</span><span class="o">.</span><span class="n">total_float_ops</span>  <span class="c"># Prints the &quot;flops&quot; of the model.</span>
+        <span class="k">return</span> <span class="n">flop</span><span class="o">.</span><span class="n">total_float_ops</span>  <span class="c"># Prints the &quot;flop&quot; of the model.</span>
 </pre></div>
 
 

@@ -315,12 +315,12 @@ dataset = tf.contrib.data.CsvDataset(filenames, record_defaults)
 构建怎么样的迭代器？惰性的，不能知道序列的长度
 
 
-| 迭代器类型      | 难度  | 应用场景                                                                 |
+| 迭代器类型      | 难度  |                                                                 应用场景 |
 | --------------- | :---: | -----------------------------------------------------------------------: |
-| one-shot        | 0     | 仅支持对整个数据集访问一遍，不需要显式的初始化(不需要多写一行初始化命令) |
-| initializable   | 1     | 支持动态数据集（通过参数或其他设置，获得动态数据集,即再初始化）          |
-| reinitializable | 2     | 支持多个相同数据结构的数据集                                             |
-| feedable        | 3     | 支持调用机制                                                             |
+| one-shot        |   0   | 仅支持对整个数据集访问一遍，不需要显式的初始化(不需要多写一行初始化命令) |
+| initializable   |   1   |          支持动态数据集（通过参数或其他设置，获得动态数据集,即再初始化） |
+| reinitializable |   2   |                                             支持多个相同数据结构的数据集 |
+| feedable        |   3   |                                                             支持调用机制 |
 
 
 
@@ -342,11 +342,11 @@ dataset = tf.contrib.data.CsvDataset(filenames, record_defaults)
             assert i == value、
 next_element 就是一个tensor,与tf.placehold/tf.constant 一样
 
-| code                                             | type                                   |
+|                                             code |                                   type |
 | -----------------------------------------------: | -------------------------------------: |
-| `next_element = iterator.get_next()`             | tensorflow.python.framework.ops.Tensor |
+|             `next_element = iterator.get_next()` | tensorflow.python.framework.ops.Tensor |
 | `x=tf.placeholder(dtype=tf.float32,shape=(1,2))` | tensorflow.python.framework.ops.Tensor |
-| `y=tf.constant([1,2,3])`                         | tensorflow.python.framework.ops.Tensor |
+|                         `y=tf.constant([1,2,3])` | tensorflow.python.framework.ops.Tensor |
 
 
 
@@ -544,11 +544,11 @@ repeat: 整個資料集要重覆提取幾次鎮
 
 Tensorflow把数据输送到计算图的方式主要有三种：
 
-| 编号 | 方式         | 说明                                                                                                                                                                                                                                                                                                                                                                                                                                                                                | 优缺点                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| 编号 |         方式 |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                说明 | 优缺点                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
 | ---: | -----------: | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | **Constant** | 把Dataset中的数据以const的形式存放在tensorflow的计算图中，主要使用的是tf.constant 函数。                                                                                                                                                                                                                                                                                                                                                                                            | 这种形式主要适用于小数据集，由于数据固化到了计算图中，所以它的数据读取速度是最快的。                                                                                                                                                                                                                                                                                                                                                                       |
-| 2    | **Feeding**  | <p align="left">在每次session.run 时，把numpy形式的数据输入到feed_dict参数中。这种方式主要包括两种存在的状态。<br>1：数据一次性全部load到内存中。自己维护一个DataProvider 类，每次都会获取一部分训练数据。需要注意的是training的时候最好把数据集shuffle，test的时最好不shuffle。<br/> <br>2：训练数据无法一次性全部load到内存中时，分批次load数据。自己维护的DataProvider 类要做好队列的管理。这种形式一个小的trick是每次载入的数据使用多次进行训练，这样可以减少重复地读取数据。</p> | 优点：<br>    1. 当数据集较小的时候，数据可以全部载入到内存，这时数据的处理速度就会比较快。<br>    2. 训练和测试几乎可以共用一套代码，仅需要把反馈网络去掉，不使用参数更新即可。<br>    3. 在预测的时候，一般数据不会是文件的形式，所以只能使用feeding方式。<br>缺点：<br>    1.自己维护DataProvider类相对麻烦，而且自己写的类原生是不支持多进程的（主要是Python API的问题）<br>    2.单进程读取数据较慢，很多时间花费在数据读取上，所以训练时间相对较长。 |
-| 3    | **Queue**    | 从文件中读取数据，使用QueueRunner形式从文件中读取。tensorflow以一种黑箱的方式读取数据,必要的时候会启动多进程（需要设置，这些代码是用c++封装的，多线程支持的效果比较好）。                                                                                                                                                                                                                                                                                                           |
+|    1 | **Constant** |                                                                                                                                                                                                                                                                                                                                                                                            把Dataset中的数据以const的形式存放在tensorflow的计算图中，主要使用的是tf.constant 函数。 | 这种形式主要适用于小数据集，由于数据固化到了计算图中，所以它的数据读取速度是最快的。                                                                                                                                                                                                                                                                                                                                                                       |
+|    2 |  **Feeding** | <p align="left">在每次session.run 时，把numpy形式的数据输入到feed_dict参数中。这种方式主要包括两种存在的状态。<br>1：数据一次性全部load到内存中。自己维护一个DataProvider 类，每次都会获取一部分训练数据。需要注意的是training的时候最好把数据集shuffle，test的时最好不shuffle。<br/> <br>2：训练数据无法一次性全部load到内存中时，分批次load数据。自己维护的DataProvider 类要做好队列的管理。这种形式一个小的trick是每次载入的数据使用多次进行训练，这样可以减少重复地读取数据。</p> | 优点：<br>    1. 当数据集较小的时候，数据可以全部载入到内存，这时数据的处理速度就会比较快。<br>    2. 训练和测试几乎可以共用一套代码，仅需要把反馈网络去掉，不使用参数更新即可。<br>    3. 在预测的时候，一般数据不会是文件的形式，所以只能使用feeding方式。<br>缺点：<br>    1.自己维护DataProvider类相对麻烦，而且自己写的类原生是不支持多进程的（主要是Python API的问题）<br>    2.单进程读取数据较慢，很多时间花费在数据读取上，所以训练时间相对较长。 |
+|    3 |    **Queue** |                                                                                                                                                                                                                                                                                                           从文件中读取数据，使用QueueRunner形式从文件中读取。tensorflow以一种黑箱的方式读取数据,必要的时候会启动多进程（需要设置，这些代码是用c++封装的，多线程支持的效果比较好）。 |
 
 **加载数据的选择**
 取大量小文件会显著影响 I/O 性能。
@@ -707,17 +707,17 @@ feature的解析方式:
 
 | 编号 | 解析方式       |
 | ---: | :------------- |
-| 1    | 定长特征解析   |
-| 2    | 不定长特征解析 |
+|    1 | 定长特征解析   |
+|    2 | 不定长特征解析 |
 
 1. 定长特征解析：`tf.FixedLenFeature(shape, dtype, default_value)`
 ```python
 tf.FixedLenFeature(shape:tuple=(1,2), dtype=tf.float32, default_value=None)
 ```
-| 形参          | 备注                                                                                                            |
+|          形参 | 备注                                                                                                            |
 | ------------: | :-------------------------------------------------------------------------------------------------------------- |
-| shape         | 1. 可当reshape来用，如vector的shape从(3,)改动成了(1,3)。<br>2. 如果写入的feature使用了.tostring() 其shape就是() |
-| dtype         | 必须是tf.float32， tf.int64， tf.string中的一种。                                                               |
+|         shape | 1. 可当reshape来用，如vector的shape从(3,)改动成了(1,3)。<br>2. 如果写入的feature使用了.tostring() 其shape就是() |
+|         dtype | 必须是tf.float32， tf.int64， tf.string中的一种。                                                               |
 | default_value | feature值缺失时所指定的值。                                                                                     |
 
 注：
@@ -800,10 +800,10 @@ ProtoBuf 实际上支持两种不同的文件保存格式。
 主要是：
 #### 1. 图信息
 
-| 名称     | 解释                                                        | 组成                                                                 |
-| -------: | ----------------------------------------------------------: | -------------------------------------------------------------------: |
-| Graph    | 被定义为“一些 Operation（节点） 和 Tensor（边缘） 的集合” | Node(op+placeholder)+Edge                                            |
-| GraphDef | 序列化的Graph                                               | NodeDef 的 Protocol Buffer，NodeDef对应 op的Node 和placeholder的node |
+|     名称 |                                                      解释 |                                                                 组成 |
+| -------: | --------------------------------------------------------: | -------------------------------------------------------------------: |
+|    Graph | 被定义为“一些 Operation（节点） 和 Tensor（边缘） 的集合” |                                            Node(op+placeholder)+Edge |
+| GraphDef |                                             序列化的Graph | NodeDef 的 Protocol Buffer，NodeDef对应 op的Node 和placeholder的node |
 
 ##### 1.1 节点--op
 
@@ -832,12 +832,12 @@ Tensor中主要包含两类信息：
 
 MetaGraphDef：
 
-| 组成          | 内容                                                                           | 例如                                                                              |
+|          组成 |                                                                           内容 |                                                                              例如 |
 | ------------: | -----------------------------------------------------------------------------: | --------------------------------------------------------------------------------: |
-| MetaInfoDef   | 存一些元信息                                                                   | 版本和其他用户信息                                                                |
-| GraphDef      | Graph的序列化信息，MetaGraph的核心内容之一                                     | Node(Placeholder + op)                                                            |
-| SaverDef      | 图的Saver信息                                                                  | 最多同时保存的check-point数量；需保存的Tensor名字等，但并不保存Tensor中的实际内容 |
-| CollectionDef | 任何需要特殊注意的 Python 对象，需要特殊的标注以方便import_meta_graph 后取回。 | “train_op”,"prediction"等等                                                     |
+|   MetaInfoDef |                                                                   存一些元信息 |                                                                版本和其他用户信息 |
+|      GraphDef |                                     Graph的序列化信息，MetaGraph的核心内容之一 |                                                            Node(Placeholder + op) |
+|      SaverDef |                                                                  图的Saver信息 | 最多同时保存的check-point数量；需保存的Tensor名字等，但并不保存Tensor中的实际内容 |
+| CollectionDef | 任何需要特殊注意的 Python 对象，需要特殊的标注以方便import_meta_graph 后取回。 |                                                       “train_op”,"prediction"等等 |
 
 
 
@@ -906,12 +906,12 @@ save(
 ```
 
 
-| 文件名                            | 文件类型   | 描述                             | 包含                                            |
+|                            文件名 |   文件类型 |                             描述 |                                            包含 |
 | --------------------------------: | ---------: | -------------------------------: | ----------------------------------------------: |
-| checkpoint                        | 文本文件   | 可直接记事本打开，记录检查点信息 | model_checkpoint_path;all_model_checkpoint_path |
-| model.ckpt-0.meta                 | 二进制文件 | 图结构                           |
-| model.ckpt-20.index               | 二进制文件 | 数据 index                       |
-| model.ckpt-20.data-00000-of-00002 | 二进制文件 | 数据                             |
+|                        checkpoint |   文本文件 | 可直接记事本打开，记录检查点信息 | model_checkpoint_path;all_model_checkpoint_path |
+|                 model.ckpt-0.meta | 二进制文件 |                           图结构 |
+|               model.ckpt-20.index | 二进制文件 |                       数据 index |
+| model.ckpt-20.data-00000-of-00002 | 二进制文件 |                             数据 |
 
 
 
@@ -2470,18 +2470,17 @@ type(profile_opt_dict)
 >>>dict 
 ```
 ###  16.4 常用实例
-#### 1. 浮点运算次数 flops
+#### 1. 浮点运算次数 flop
 ```python
     def get_flops(model):
         run_meta = tf.RunMetadata()
         opts = tf.profiler.ProfileOptionBuilder.float_operation()
 
         # We use the Keras session graph in the call to the profiler.
-        flops = tf.profiler.profile(graph=K.get_session().graph,
+        flop = tf.profiler.profile(graph=K.get_session().graph,
                                     run_meta=run_meta, cmd='op', options=opts)
 
-        return flops.total_float_ops  # Prints the "flops" of the model.
-
+        return flop.total_float_ops  # Prints the "flop" of the model.
 ```
 #### 2. 总参数量
 ```python

@@ -30,6 +30,8 @@
 <div id="title">python中特有数据结构及特性</div>
   <div id="content">
   <h1 id="python">python中特有数据结构及特性</h1>
+<h2 id="python_1">python 实现经典数据结构</h2>
+<p>参考：https://github.com/TheAlgorithms/Python/tree/master/data_structures</p>
 <h2 id="_1">字典</h2>
 <p>hash 表 实现 </p>
 <h2 id="with">with 上下文管理器</h2>
@@ -68,41 +70,46 @@
 
 
 <h1 id="_3">类</h1>
-<p>obj = 12 </p>
-<h1 id="obj-can-be-an-object-from-any-class-even-objectnewobject">obj can be an object from any class, even object.<strong>new</strong>(object)</h1>
-<p>class returnExistedObj(object):<br />
-    def <strong>new</strong>(cls):<br />
-        print("<strong>new</strong> is called")<br />
-        return obj</p>
-<div class="hlcode"><pre><span class="n">def</span> <span class="n">__init</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="o">:</span>
-    <span class="n">print</span><span class="p">(</span><span class="s">&quot;__init__ is called&quot;</span><span class="p">)</span>
+<div class="hlcode"><pre><span class="n">obj</span> <span class="o">=</span> <span class="mi">12</span> 
+<span class="c"># obj can be an object from any class, even object.__new__(object)</span>
+
+<span class="k">class</span> <span class="nc">returnExistedObj</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;__new__ is called&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span>
+
+    <span class="k">def</span> <span class="nf">__init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;__init__ is called&quot;</span><span class="p">)</span>
+
+<span class="n">returnExistedObj</span><span class="p">()</span>
+
+<span class="err">执行结果如下：</span>
+<span class="n">__new__</span> <span class="ow">is</span> <span class="n">called</span>
+<span class="mi">12</span>
+
+<span class="err">同时另一个需要注意的点是：</span>
+<span class="err">如果我们在</span><span class="n">__new__</span><span class="err">函数中不返回任何对象，则</span><span class="n">__init__</span><span class="err">函数也不会被调用。</span>
+<span class="err">如下面代码所示：</span>
+<span class="k">class</span> <span class="nc">notReturnObj</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__new__</span><span class="p">(</span><span class="n">cls</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;__new__ is called&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&quot;__init__ is called&quot;</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">notReturnObj</span><span class="p">())</span>
+
+<span class="err">执行结果如下：</span>
+<span class="n">__new__</span> <span class="ow">is</span> <span class="n">called</span>
+<span class="bp">None</span>
+
+<span class="err">可见如果</span><span class="n">__new__</span><span class="err">函数不返回对象的话，不会有任何对象被创建，</span><span class="n">__init__</span><span class="err">函数也不会被调用来初始化对象。</span>
+<span class="err">总结几个点</span>
+
+<span class="n">__init__</span><span class="err">不能有返回值</span>
+<span class="n">__new__</span><span class="err">函数直接上可以返回别的类的实例。如上面例子中的</span><span class="n">returnExistedObj</span><span class="err">类的</span><span class="n">__new__</span><span class="err">函数返回了一个</span><span class="n">int</span><span class="err">值。</span>
+<span class="err">只有在</span><span class="n">__new__</span><span class="err">返回一个新创建属于该类的实例时当前类的</span><span class="n">__init__</span><span class="err">才会被调用。如下面例子所示：</span>
 </pre></div>
-
-
-<p>returnExistedObj()</p>
-<p>执行结果如下：<br />
-<strong>new</strong> is called<br />
-12</p>
-<p>同时另一个需要注意的点是：<br />
-如果我们在__new__函数中不返回任何对象，则__init__函数也不会被调用。<br />
-如下面代码所示：<br />
-class notReturnObj(object):<br />
-    def <strong>new</strong>(cls):<br />
-        print("<strong>new</strong> is called")</p>
-<div class="hlcode"><pre><span class="n">def</span> <span class="n">__init__</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="o">:</span>
-    <span class="n">print</span><span class="p">(</span><span class="s">&quot;__init__ is called&quot;</span><span class="p">)</span>
-</pre></div>
-
-
-<p>print(notReturnObj())</p>
-<p>执行结果如下：<br />
-<strong>new</strong> is called<br />
-None</p>
-<p>可见如果__new__函数不返回对象的话，不会有任何对象被创建，__init__函数也不会被调用来初始化对象。<br />
-总结几个点</p>
-<p>__init__不能有返回值<br />
-__new__函数直接上可以返回别的类的实例。如上面例子中的returnExistedObj类的__new__函数返回了一个int值。<br />
-只有在__new__返回一个新创建属于该类的实例时当前类的__init__才会被调用。如下面例子所示：</p>
 </div>
 
     </div>
