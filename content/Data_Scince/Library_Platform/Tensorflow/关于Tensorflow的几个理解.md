@@ -969,6 +969,80 @@ PB 文件是表示 MetaGraph 的 protocol buffer格式的文件
 #### 1.保存
 
 1. 通过 get_default_graph().as_graph_def() 得到当前图的计算节点（Node）信息
+```python
+graph=tf.get_default_graph()
+graph_def=graph.as_graph_def()
+type(graph_def)
+>>> tensorflow.core.framework.graph_pb2.GraphDef
+
+graph_def
+>>>
+  node {
+    name: "start"
+    op: "Const"
+    attr {
+      key: "dtype"
+      value {
+        type: DT_INT64
+      }
+    }
+    attr {
+      key: "value"
+      value {
+        tensor {
+          dtype: DT_INT64
+          tensor_shape {
+          }
+          int64_val: 0
+        }
+      }
+    }
+  }
+  library {
+    function {
+      signature {
+        name: "_make_dataset_YADYq1MF2s4"
+        output_arg {
+          name: "modeldataset"
+          type: DT_VARIANT
+        }
+        description: "Factory function for a dataset."
+        is_stateful: true
+      }
+      node_def {
+        name: "RangeDataset/start"
+        op: "Const"
+        attr {
+          key: "dtype"
+          value {
+            type: DT_INT64
+          }
+        }
+        attr {
+          key: "value"
+          value {
+            tensor {
+              dtype: DT_INT64
+              tensor_shape {
+              }
+              int64_val: 0
+            }
+          }
+        }
+      }
+      ret {
+        key: "modeldataset"
+        value: "ModelDataset:handle:0"
+      }
+    }
+  }
+  versions {
+    producer: 27
+    min_consumer: 12
+  }
+
+
+```
 
 2. 通过 graph_util.convert_variables_to_constants 将相关节点的values固定值
    
