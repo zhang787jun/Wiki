@@ -9,6 +9,10 @@ tag: Tensorflow,框架,AI,
 
 # Tensorflow 里的优化器
 
+
+优化器（Optimizer）。实际上代表的是一组Operation，因为将Optimizer加入图之后，tensorflow会自动为图加入两类Operation，分别是compute_gradients()和apply_gradients()。前者接收代表损失的Tensor输入, 输出梯度Tensor，后者对梯度Tensor作一些聚合并据此用tf.assign()对模型参数变量进行更新
+
+
 ## tf.train.Optimizer
 
 

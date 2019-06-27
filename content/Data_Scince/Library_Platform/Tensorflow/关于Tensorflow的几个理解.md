@@ -847,6 +847,10 @@ MetaGraphDef：
 .ckpt格式文件只能在tensorflow 框架下使用
 其主要操作为saver
 
+Only save variables, not graph
+Checkpoints map variable names to tensors
+
+
         saver = tf.train.Saver()
 
 saver是一个tensorflow.python.training.saver.Saver 类 
@@ -1257,6 +1261,8 @@ percentage_below(...): Computes the percentage of values less than the given thr
 
 ## 8. 代码的可读性--作用域(scope)-(tf.name_scope/tf.variable_scope)
 
+TensorFlow doesn’t know what nodes should be grouped together, unless you tell it to
+TensorFlow 并不知道那个node 需要本整合
 为了解决这个问题，我们引入了 name_scope 和 variable_scope， 二者又分别承担着不同的责任：
 
 * name_scope: * 为了更好地管理变量的命名空间而提出的。比如在 tensorboard 中，因为引入了 name_scope， 我们的 Graph 看起来才井然有序,name_scope主要是给variable_name加前缀，也可以给op_name 加前缀；。

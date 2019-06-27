@@ -39,3 +39,23 @@ TensorFlow的一大特点是，图的构造和执行相分离。用户添加完�
 
 
 图运行：对于每一个计算设备，worker依照op在kernel中的实现，完成op的运算。设备间数据通信可以使用send/recv节点，而worker间通信，则使用GRPC或RDMA协议。
+
+| 一级目录文件          | 说明                                                                                                         |
+| :-------------------- | :----------------------------------------------------------------------------------------------------------- |
+| ACKNOWLEDGMENTS       | TensorFlow 版权声明                                                                                          |
+| ADOPTERS.md           | 使用 TensorFlow 的人员或组织列表                                                                             |
+| AUTHORS               | TensorFlow 作者的官方列表                                                                                    |
+| BUILD                 |
+| CONTRIBUTING.md       | TensorFlow 贡献指导                                                                                          |
+| ISSUE_TEMPLATE.md     | 提 ISSUE 的模板                                                                                              |
+| LICENSE               | 版权许可                                                                                                     |
+| README.md             | RELEASE.md                                                                                                   |
+| 每次发版的 change log |
+| WORKSPACE             | 配置移动端开发环境                                                                                           |
+| bower.BUILD           |
+| configure             | models.BUILD                                                                                                 |
+| tensorflow            | 主目录，后面分析的重点                                                                                       |
+| third_party           | 第三方库，包括 eigen3（特征运算的库，包括 SVD、LU 分解等）、gpus（支持 cuda）、 hadoop、jpeg、llvm、py、sycl |
+| tools                 | 构建 cuda 支持 └── util                                                                                      |
+
+
