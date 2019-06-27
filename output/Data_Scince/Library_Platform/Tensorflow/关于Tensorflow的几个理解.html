@@ -1211,6 +1211,8 @@ ProtoBuf 实际上支持两种不同的文件保存格式。<br />
 <h3 id="1ckptcheckpoint">1.ckpt类型（checkpoint）</h3>
 <p>.ckpt格式文件只能在tensorflow 框架下使用<br />
 其主要操作为saver</p>
+<p>Only save variables, not graph<br />
+Checkpoints map variable names to tensors</p>
 <div class="hlcode"><pre>    <span class="n">saver</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">train</span><span class="p">.</span><span class="n">Saver</span><span class="p">()</span>
 </pre></div>
 
@@ -1368,12 +1370,83 @@ saver.save(sess, 'my-model', global_step=1000) ==&gt; filename: 'my-model-1000'<
 <p>PB 文件是表示 MetaGraph 的 protocol buffer格式的文件</p>
 <h4 id="1_5">1.保存</h4>
 <ol>
-<li>
-<p>通过 get_default_graph().as_graph_def() 得到当前图的计算节点（Node）信息</p>
-</li>
-<li>
-<p>通过 graph_util.convert_variables_to_constants 将相关节点的values固定值</p>
-<div class="hlcode"><pre><span class="s-Atom">var_list</span> <span class="o">=</span> <span class="s-Atom">tf</span><span class="p">.</span><span class="nf">trainable_variables</span><span class="p">()</span>
+<li>通过 get_default_graph().as_graph_def() 得到当前图的计算节点（Node）信息</li>
+</ol>
+<div class="hlcode"><pre><span class="n">graph</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">get_default_graph</span><span class="p">()</span>
+<span class="n">graph_def</span><span class="o">=</span><span class="n">graph</span><span class="o">.</span><span class="n">as_graph_def</span><span class="p">()</span>
+<span class="nb">type</span><span class="p">(</span><span class="n">graph_def</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">tensorflow</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">framework</span><span class="o">.</span><span class="n">graph_pb2</span><span class="o">.</span><span class="n">GraphDef</span>
+
+<span class="n">graph_def</span>
+<span class="o">&gt;&gt;&gt;</span>
+  <span class="n">node</span> <span class="p">{</span>
+    <span class="n">name</span><span class="p">:</span> <span class="s">&quot;start&quot;</span>
+    <span class="n">op</span><span class="p">:</span> <span class="s">&quot;Const&quot;</span>
+    <span class="n">attr</span> <span class="p">{</span>
+      <span class="n">key</span><span class="p">:</span> <span class="s">&quot;dtype&quot;</span>
+      <span class="n">value</span> <span class="p">{</span>
+        <span class="nb">type</span><span class="p">:</span> <span class="n">DT_INT64</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+    <span class="n">attr</span> <span class="p">{</span>
+      <span class="n">key</span><span class="p">:</span> <span class="s">&quot;value&quot;</span>
+      <span class="n">value</span> <span class="p">{</span>
+        <span class="n">tensor</span> <span class="p">{</span>
+          <span class="n">dtype</span><span class="p">:</span> <span class="n">DT_INT64</span>
+          <span class="n">tensor_shape</span> <span class="p">{</span>
+          <span class="p">}</span>
+          <span class="n">int64_val</span><span class="p">:</span> <span class="mi">0</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="n">library</span> <span class="p">{</span>
+    <span class="n">function</span> <span class="p">{</span>
+      <span class="n">signature</span> <span class="p">{</span>
+        <span class="n">name</span><span class="p">:</span> <span class="s">&quot;_make_dataset_YADYq1MF2s4&quot;</span>
+        <span class="n">output_arg</span> <span class="p">{</span>
+          <span class="n">name</span><span class="p">:</span> <span class="s">&quot;modeldataset&quot;</span>
+          <span class="nb">type</span><span class="p">:</span> <span class="n">DT_VARIANT</span>
+        <span class="p">}</span>
+        <span class="n">description</span><span class="p">:</span> <span class="s">&quot;Factory function for a dataset.&quot;</span>
+        <span class="n">is_stateful</span><span class="p">:</span> <span class="n">true</span>
+      <span class="p">}</span>
+      <span class="n">node_def</span> <span class="p">{</span>
+        <span class="n">name</span><span class="p">:</span> <span class="s">&quot;RangeDataset/start&quot;</span>
+        <span class="n">op</span><span class="p">:</span> <span class="s">&quot;Const&quot;</span>
+        <span class="n">attr</span> <span class="p">{</span>
+          <span class="n">key</span><span class="p">:</span> <span class="s">&quot;dtype&quot;</span>
+          <span class="n">value</span> <span class="p">{</span>
+            <span class="nb">type</span><span class="p">:</span> <span class="n">DT_INT64</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="n">attr</span> <span class="p">{</span>
+          <span class="n">key</span><span class="p">:</span> <span class="s">&quot;value&quot;</span>
+          <span class="n">value</span> <span class="p">{</span>
+            <span class="n">tensor</span> <span class="p">{</span>
+              <span class="n">dtype</span><span class="p">:</span> <span class="n">DT_INT64</span>
+              <span class="n">tensor_shape</span> <span class="p">{</span>
+              <span class="p">}</span>
+              <span class="n">int64_val</span><span class="p">:</span> <span class="mi">0</span>
+            <span class="p">}</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+      <span class="n">ret</span> <span class="p">{</span>
+        <span class="n">key</span><span class="p">:</span> <span class="s">&quot;modeldataset&quot;</span>
+        <span class="n">value</span><span class="p">:</span> <span class="s">&quot;ModelDataset:handle:0&quot;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="n">versions</span> <span class="p">{</span>
+    <span class="n">producer</span><span class="p">:</span> <span class="mi">27</span>
+    <span class="n">min_consumer</span><span class="p">:</span> <span class="mi">12</span>
+  <span class="p">}</span>
+</pre></div>
+
+
+<ol>
+<li>通过 graph_util.convert_variables_to_constants 将相关节点的values固定值<div class="hlcode"><pre><span class="s-Atom">var_list</span> <span class="o">=</span> <span class="s-Atom">tf</span><span class="p">.</span><span class="nf">trainable_variables</span><span class="p">()</span>
 <span class="s-Atom">constant_graph</span> <span class="o">=</span> <span class="s-Atom">tf</span><span class="p">.</span><span class="s-Atom">graph_util</span><span class="p">.</span><span class="nf">convert_variables_to_constants</span><span class="p">(</span><span class="s-Atom">sess</span><span class="p">,</span> <span class="s-Atom">sess</span><span class="p">.</span><span class="s-Atom">graph_def</span><span class="p">,</span> <span class="p">[</span><span class="s-Atom">var_list</span><span class="p">[</span><span class="s-Atom">i</span><span class="p">].</span><span class="s-Atom">name</span><span class="p">[:-</span><span class="m">2</span><span class="p">]</span> <span class="s-Atom">for</span> <span class="s-Atom">i</span> <span class="s-Atom">in</span> <span class="nf">range</span><span class="p">(</span><span class="nf">len</span><span class="p">(</span><span class="s-Atom">var_list</span><span class="p">))])</span>
 </pre></div>
 
@@ -1596,7 +1669,9 @@ percentage_below(...): Computes the percentage of values less than the given thr
 </li>
 </ol>
 <h2 id="8-scope-tfname_scopetfvariable_scope">8. 代码的可读性--作用域(scope)-(tf.name_scope/tf.variable_scope)</h2>
-<p>为了解决这个问题，我们引入了 name_scope 和 variable_scope， 二者又分别承担着不同的责任：</p>
+<p>TensorFlow doesn’t know what nodes should be grouped together, unless you tell it to<br />
+TensorFlow 并不知道那个node 需要本整合<br />
+为了解决这个问题，我们引入了 name_scope 和 variable_scope， 二者又分别承担着不同的责任：</p>
 <ul>
 <li>name_scope: * 为了更好地管理变量的命名空间而提出的。比如在 tensorboard 中，因为引入了 name_scope， 我们的 Graph 看起来才井然有序,name_scope主要是给variable_name加前缀，也可以给op_name 加前缀；。</li>
 <li>variable_scope: * 大大大部分情况下，跟 tf.get_variable() 配合使用，实现变量共享的功能,，name_scope 是给 op_name 加前缀。</li>

@@ -6,7 +6,7 @@
     <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
     <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
-    <title>scikit-learn Notebook - Jun's personal knowledge wiki</title>
+    <title>虚拟环境及python的版本管理 - Jun's personal knowledge wiki</title>
     <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
     <meta name="description" content="A wiki website" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -24,14 +24,14 @@
     <div id="container">
         
 <div id="header">
-  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Scince\Library_Platform\Scikit-Learn">Data_Scince\Library_Platform\Scikit-Learn</a>&nbsp;»&nbsp;scikit-learn Notebook</div>
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Programing_Language\Python">Programing_Language\Python</a>&nbsp;»&nbsp;虚拟环境及python的版本管理</div>
 </div>
 <div class="clearfix"></div>
-<div id="title">scikit-learn Notebook</div>
+<div id="title">虚拟环境及python的版本管理</div>
   <div id="content">
-  <h1 id="scikit-learn-notebook">scikit-learn Notebook</h1>
-<p>通过 sklearn 进行大规模机器学习<br />
-sklearn 是 python 中一个非常著名的机器学习库，但是一般都是在单机上使用而不支持分布式计算，因此往往跟大规模的机器学习扯不上关系。这里通过 sklearn 进行的大规模机器学习指的也不是分布式机器学习，而是指当数据量比内存要大时怎么通过 sklearn 进行机器学习，更准确来说是 out-of-core learning， 这里涉及到的一个核心思想是将数据转化为流式输入，然后通过 SGD 更新模型的参数，当然其中还涉及到一些其他的细节和trick，下面会详细描述。</p>
+  <h1 id="python">虚拟环境及python的版本管理</h1>
+<p>virtualenv就是一个搭建虚拟化的python环境，便于不同的项目在同一台机器上开发运行。</p>
+<p>virtualenv更多的还是适用于本地开发不同的项目，但是在生产环境中还是使用docker给不同的项目创建不同的容器，各自分开运行为好，不宜放在一个单独的物理机中运行。</p>
 </div>
 
     </div>
