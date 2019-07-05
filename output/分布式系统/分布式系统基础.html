@@ -1,0 +1,197 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>分布式系统基础 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
+    </script>
+
+
+
+</head>
+
+<body>
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#分布式系统">分布式系统</a>&nbsp;»&nbsp;分布式系统基础</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">分布式系统基础</div>
+  <div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#_1">分布式系统</a><ul>
+<li><a href="#6">核心6问</a></li>
+<li><a href="#1">1. 分布式系统分类</a><ul>
+<li><a href="#11-dos">1.1 分布式操作系统 DOS</a></li>
+<li><a href="#12-nos">1.2 分布式网络系统 NOS</a></li>
+<li><a href="#13-nos">1.3 分布式中间件 NOS</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 分布式系统架构</a></li>
+<li><a href="#3-">3. 分布式系统--容错技术</a></li>
+<li><a href="#4-">4. 分布式系统--通信技术</a><ul>
+<li><a href="#_2">同一节点内</a></li>
+<li><a href="#_3">不同节点内</a></li>
+</ul>
+</li>
+<li><a href="#5-">5. 分布式系统--进程线程管理</a></li>
+<li><a href="#6-">6. 分布式系统--同步机制</a><ul>
+<li><a href="#_4">资源分为：</a></li>
+<li><a href="#_5">同步机制的评价</a></li>
+<li><a href="#_6">互斥问题</a></li>
+</ul>
+</li>
+<li><a href="#7-">7. 分布式系统--独一性命名</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="_1">分布式系统</h1>
+<h2 id="6">核心6问</h2>
+<p>团队愿景（集群是用来干嘛的）<br />
+团队结构（集群由哪些节点组成）<br />
+团队沟通（节点之间怎么通信）<br />
+团队运作（一个工作job分配下来是怎样运作的）<br />
+公共资源分配（共享资源如何处理）<br />
+队员冲突处理（容错机制）</p>
+<h2 id="1">1. 分布式系统分类</h2>
+<h3 id="11-dos">1.1 分布式操作系统 DOS</h3>
+<h3 id="12-nos">1.2 分布式网络系统 NOS</h3>
+<h3 id="13-nos">1.3 分布式中间件 NOS</h3>
+<h2 id="2">2. 分布式系统架构</h2>
+<h2 id="3-">3. 分布式系统--容错技术</h2>
+<p>错误的类型<br />
+    1. 暂时性错误<br />
+    2. 间歇性<br />
+    3. 永久性</p>
+<p>预防错误的冗余设置<br />
+    1. 硬件冗余<br />
+    2. 软件冗余<br />
+    3. 信息冗余<br />
+    4. 时间冗余</p>
+<p>故障的基本处理方案：<br />
+    1. 主动复制 将所有的复制模块协同进行，<br />
+    2. 被动复制 只有一个模块处于被动状态，其他模块的交互状态由这一模块的检查点定期检查<br />
+    3. 半主动复制</p>
+<p>被动复制中的节点故障处理<br />
+| No. |                                                    |                                     |                          |<br />
+| --- | -------------------------------------------------- | ----------------------------------- | ------------------------ |<br />
+| 1   | 向后式恢复   恢复到上一个正常状态的checkpoint 检查点 | 适用于 系统故障无法预知和去掉的情况 | 代价低，常用             |<br />
+| 2   | 向前式恢复                                         | 假定故障是已知的 或可以获得的，     | 将这些故障去掉，继续运行 |</p>
+<h2 id="4-">4. 分布式系统--通信技术</h2>
+<h3 id="_2">同一节点内</h3>
+<p>Unix 提供了信号、管道、命名管道、消息列队、共享内存等通讯机制</p>
+<p>消息列队<br />
+消息的链表</p>
+<p>共享内存<br />
+多个进程共享一个指定的存储区</p>
+<h3 id="_3">不同节点内</h3>
+<p>提供了网络套接字等<br />
+    1. socket通信<br />
+    2. PVM/MPI通信<br />
+    3. 中间件模式的通信<br />
+        a. rpc<br />
+基于web服务的通信</p>
+<h2 id="5-">5. 分布式系统--进程线程管理</h2>
+<h2 id="6-">6. 分布式系统--同步机制</h2>
+<h3 id="_4">资源分为：</h3>
+<div class="hlcode"><pre><span class="mf">1.</span> <span class="err">各进程可以同时访问</span>
+<span class="mf">2.</span> <span class="err">不允许多个进程访问的</span><span class="o">--&gt;</span><span class="err">需要同步机制进行控制管理</span>
+</pre></div>
+
+
+<h3 id="_5">同步机制的评价</h3>
+<div class="hlcode"><pre><span class="mf">1.</span> <span class="err">响应时间和吞吐量</span>
+<span class="mf">2.</span> <span class="err">恢复能力</span>
+<span class="mf">3.</span> <span class="err">开销</span>
+<span class="mf">4.</span> <span class="err">公平性</span>
+<span class="mf">5.</span> <span class="err">可拓展性</span>
+<span class="mf">6.</span> <span class="err">连接方式</span>
+<span class="mf">7.</span> <span class="err">初始化</span>
+<span class="mf">8.</span> <span class="err">排序方法</span>
+</pre></div>
+
+
+<h3 id="_6">互斥问题</h3>
+<p>互斥问题 ：定义一些基本的操作来解决共享资源的多个并发过程的冲突问题<br />
+主要目标：保证在任意时刻，只有一个进程对限制性资源的访问<br />
+互斥算法需要满足的三个条件：<br />
+    1 . 依据获得资源进程必须先释放后，另一个进程才能获得<br />
+    2. 不同请求应该该相应顺序得到满足。该顺序规则应该，提前规定，如安装逻辑时钟的要求<br />
+    3. 若获得资源的每个进程都最终释放资源，则每个请求最终得到满足</p>
+<h2 id="7-">7. 分布式系统--独一性命名</h2>
+<p>大规模分布式并行处理系统是由许多松耦合的处理单元组成的，要注意的是，这里指的是处理单元而非处理器。每个单元内的CPU都有自己私有的资源，如总线、内存、硬盘等。这种结构最大的特点在于不共享资源。在不共享资源（Share Nothing）的分布式架构下，节点可以实现无限扩展，即计算能力和存储的扩展性可以成倍增长。</p>
+<p>分布式 操作系统</p>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Description</th>
+<th>Main Goal</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DOS</td>
+<td>Tightly-coupled operating system for multiprocessors and homogeneous multicomputers</td>
+<td>Hide and manage hardware resources  隐藏和管理硬件资源</td>
+</tr>
+<tr>
+<td>高度耦合操作系统</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>NOS</td>
+<td>Loosely-coupled operating system for heterogeneous multicomputers (LAN and WAN)</td>
+<td>Offer local services to remote clients</td>
+</tr>
+<tr>
+<td>网络操作系统</td>
+<td></td>
+<td>将当地服务发布到远程</td>
+</tr>
+<tr>
+<td>Middleware</td>
+<td>位于平台（OS+硬件）与应用之间的通用服务</td>
+<td>·Provide distribution transparenc提供分布式传输</td>
+</tr>
+<tr>
+<td>中间件</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>分布式中间件</p>
+<p>没有一个比较清晰的定义，一般指位于平台（OS+硬件）与应用之间的通用服务。<br />
+基于目的和实现机制的不同，将平台分为以下几类</p>
+<p>|1. 远程过程调用（rpc）<br />
+|2. 面向消息的中间件（Message-Oriented Middleware）<br />
+|<br />
+|3. 事务处理监控（transaction process monitors）<br />
+|事务管理与协调，负载平衡、失败恢复</p>
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2019 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+    
+</body>
+
+</html>
