@@ -32,24 +32,29 @@
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
 <li><a href="#_1">分布式系统</a><ul>
 <li><a href="#6">核心6问</a></li>
+<li><a href="#_2">基本概念</a></li>
 <li><a href="#1">1. 分布式系统分类</a><ul>
 <li><a href="#11-dos">1.1 分布式操作系统 DOS</a></li>
 <li><a href="#12-nos">1.2 分布式网络系统 NOS</a></li>
 <li><a href="#13-nos">1.3 分布式中间件 NOS</a></li>
 </ul>
 </li>
-<li><a href="#2">2. 分布式系统架构</a></li>
+<li><a href="#2">2. 分布式系统架构</a><ul>
+<li><a href="#_3">中心化系统架构</a></li>
+<li><a href="#_4">去中兴化系统架构</a></li>
+</ul>
+</li>
 <li><a href="#3-">3. 分布式系统--容错技术</a></li>
 <li><a href="#4-">4. 分布式系统--通信技术</a><ul>
-<li><a href="#_2">同一节点内</a></li>
-<li><a href="#_3">不同节点内</a></li>
+<li><a href="#_5">同一节点内</a></li>
+<li><a href="#_6">不同节点内</a></li>
 </ul>
 </li>
 <li><a href="#5-">5. 分布式系统--进程线程管理</a></li>
 <li><a href="#6-">6. 分布式系统--同步机制</a><ul>
-<li><a href="#_4">资源分为：</a></li>
-<li><a href="#_5">同步机制的评价</a></li>
-<li><a href="#_6">互斥问题</a></li>
+<li><a href="#_7">资源分为：</a></li>
+<li><a href="#_8">同步机制的评价</a></li>
+<li><a href="#_9">互斥问题</a></li>
 </ul>
 </li>
 <li><a href="#7-">7. 分布式系统--独一性命名</a></li>
@@ -65,11 +70,38 @@
 团队运作（一个工作job分配下来是怎样运作的）<br />
 公共资源分配（共享资源如何处理）<br />
 队员冲突处理（容错机制）</p>
+<h2 id="_2">基本概念</h2>
+<p><strong>什么是分布式系统</strong></p>
+<blockquote>
+<p>以一定结构规则可以相互连接的好多节点（服务器）</p>
+</blockquote>
+<p><strong>副本（replica/copy）</strong></p>
+<blockquote>
+<p>指在分布式系统中为<strong>数据</strong>或<strong>服务</strong>提供的冗余。</p>
+</blockquote>
+<ol>
+<li>
+<p>数据副本 <br />
+   指在不同的节点上持久化同一份数据，当出现某一个节点的存储的数据丢失时，可以从副本上读到数据。数据副本是分布式系统解决数据丢失异常的唯一手段。<br />
+   如 备份的数据库，GFS里面的chuck 都是数据副本</p>
+</li>
+<li>
+<p>服务副本<br />
+   指数个节点提供某种相同的服务，这种服务一般并不依赖于节点的本地存储，其所需数据一般来自其他节点。  MapReduce里面 WorkNode， 分布式Tensorflow 里的多个Work node /device 都是服务副本</p>
+</li>
+</ol>
+<p><strong>副本控制协议</strong><br />
+指按特定的协议流程控制副本数据的读写行为，使得副本满足一定的可用性和一致性要求的分布式协议。</p>
 <h2 id="1">1. 分布式系统分类</h2>
 <h3 id="11-dos">1.1 分布式操作系统 DOS</h3>
 <h3 id="12-nos">1.2 分布式网络系统 NOS</h3>
 <h3 id="13-nos">1.3 分布式中间件 NOS</h3>
 <h2 id="2">2. 分布式系统架构</h2>
+<p>副本控制协议主要分为两大类：“中心化(centralized)副本控制协议”和“去中心化(decentralized)副本控制协议”。 <br />
+所以 分布式系统架构主要有"中心化"和“去中心化”两类</p>
+<h3 id="_3">中心化系统架构</h3>
+<h3 id="_4">去中兴化系统架构</h3>
+<p>• 在这种架构下，集群中的领导是动态选择出来的，而不是人为预先指定的，而且在集群发生故障的情况下，集群的成员会自发举行会议选举新的领导。典型案例如：zookeeper、以及Go语言实现的Etcd。</p>
 <h2 id="3-">3. 分布式系统--容错技术</h2>
 <p>错误的类型<br />
     1. 暂时性错误<br />
@@ -90,13 +122,13 @@
 | 1   | 向后式恢复   恢复到上一个正常状态的checkpoint 检查点 | 适用于 系统故障无法预知和去掉的情况 | 代价低，常用             |<br />
 | 2   | 向前式恢复                                         | 假定故障是已知的 或可以获得的，     | 将这些故障去掉，继续运行 |</p>
 <h2 id="4-">4. 分布式系统--通信技术</h2>
-<h3 id="_2">同一节点内</h3>
+<h3 id="_5">同一节点内</h3>
 <p>Unix 提供了信号、管道、命名管道、消息列队、共享内存等通讯机制</p>
 <p>消息列队<br />
 消息的链表</p>
 <p>共享内存<br />
 多个进程共享一个指定的存储区</p>
-<h3 id="_3">不同节点内</h3>
+<h3 id="_6">不同节点内</h3>
 <p>提供了网络套接字等<br />
     1. socket通信<br />
     2. PVM/MPI通信<br />
@@ -105,13 +137,13 @@
 基于web服务的通信</p>
 <h2 id="5-">5. 分布式系统--进程线程管理</h2>
 <h2 id="6-">6. 分布式系统--同步机制</h2>
-<h3 id="_4">资源分为：</h3>
+<h3 id="_7">资源分为：</h3>
 <div class="hlcode"><pre><span class="mf">1.</span> <span class="err">各进程可以同时访问</span>
 <span class="mf">2.</span> <span class="err">不允许多个进程访问的</span><span class="o">--&gt;</span><span class="err">需要同步机制进行控制管理</span>
 </pre></div>
 
 
-<h3 id="_5">同步机制的评价</h3>
+<h3 id="_8">同步机制的评价</h3>
 <div class="hlcode"><pre><span class="mf">1.</span> <span class="err">响应时间和吞吐量</span>
 <span class="mf">2.</span> <span class="err">恢复能力</span>
 <span class="mf">3.</span> <span class="err">开销</span>
@@ -123,7 +155,7 @@
 </pre></div>
 
 
-<h3 id="_6">互斥问题</h3>
+<h3 id="_9">互斥问题</h3>
 <p>互斥问题 ：定义一些基本的操作来解决共享资源的多个并发过程的冲突问题<br />
 主要目标：保证在任意时刻，只有一个进程对限制性资源的访问<br />
 互斥算法需要满足的三个条件：<br />
