@@ -31,11 +31,30 @@ tag: Tensorflow,框架,AI,
 ### 物理拓扑结构
 1. 基础：
    各节点有完整的的网络配置、CPU、内存、GPU配置（可选）
-2. 
+
+###（PS架构）
+
+Parameter server架构（PS架构）是深度学习最常采用的分布式训练架构。在PS架构中，集群中的节点被分为两类：parameter server和worker。其中parameter server存放模型的参数，而worker负责计算参数的梯度。在每个迭代过程，worker从parameter sever中获得参数，然后将计算的梯度返回给parameter server，parameter server聚合从worker传回的梯度，然后更新参数，并将新的参数广播给worker。
+
+PS架构中，当worker数量较多时，ps节点的网络带宽将成为系统的瓶颈。
+
+Ring AllReduce架构中各个设备都是worker，没有中心节点来聚合所有worker计算的梯度。Ring AllReduce算法将 device 放置在一个逻辑环路（logical ring）中。每个 device 从上行的device 接收数据，并向下行的 deivce 发送数据，因此可以充分利用每个 device 的上下行带宽。
+
+###　Ring AllReduce架构
+
+2017年2月百度在PaddlePaddle平台上首次引入了ring-allreduce的架构，随后将其提交到tensorflow的contrib package中。
+同年8月，Uber为tensorflow平台开源了一个更加易用和高效的ring allreduce分布式训练库Horovod。
+最后，tensorflow官方终于也在1.11版本中支持了allreduce的分布式训练策略CollectiveAllReduceStrategy，其跟estimator配合使用非常方便，只需要构造tf.estimator.RunConfig对象时传入CollectiveAllReduceStrategy参数即可。
+
 
 
 ## 3. 团队沟通--通信
 grpc
+
+
+内部通讯
+
+
 
 ## 4. 团队运作--job
 集群可以完成一个或多个工作job，每一个Job由一些任务task组成
@@ -69,7 +88,7 @@ DAG 可以直接复制（或部分复制）到各节点上，各节点得到模�
 1. 变量更新-->适合CPU 
 2. 矩阵运算--> 合适GPU
 
-1. 从模型并行的角度
+#### 1. 从模型并行的角度
 让合适的设备（节点）干合适的事情，将完整的运算DAG图分成：
 parameter job
 worker job
@@ -77,14 +96,32 @@ worker job
 parameter job 部署在 parameter Device(参数设备，可以是节点，也可以是某个CPU/GPU 计算设备)
 worker job 部署在 Work Device（工作设备，也可以是某个CPU/GPU 计算设备）
 
-2. 从数据并行的角度
+基于设备性能瓶颈，parameter job、worker job可以再划分子图
 
-数据输入在 worker job 部分，
-模型保存在 parameter job部分
+#### 2. 从数据并行的角度
 
+哪有图的完整复制replica，那就有数据并行
+数据并行带来的问题在于最终的模型是一个模型，再确定DAG模型的基础上，参数更新机制就成为关键。
 
+##### 1. 同步更新
+数据并行后，等待各个模型副本（model replica）计算结果回归到参数设备上，通过一定规则（如求平均值）统一后，在分发给各个模型副本 。
 
+同步训练看起来很不错，但是实际上需要各个设备的计算能力要均衡，而且要求集群的通信也要均衡，类似于木桶效应，一个拖油瓶会严重拖慢训练进度，所以同步训练方式相对来说训练速度会慢一些。
 
+##### 2. 异步更新
+各个模型副本（model replica）单独计算，无需等待。整个模型参数取时间上最新的。在每一轮迭代时，不同设备会读取参数最新的取值，但因为不同设备读取参数取值的时间不一样，所以得到的值也有可能不一样。
+
+t0 时刻--刚开始，大家都一样参数为P0，任务给 D1 D2 D3 完成
+t1 时刻--D1 先算完 P1 参数P->P1
+t2 时刻--D2 后算完P2，并不知道P0更新了，参数P1->P2
+t3 时刻--D3 开始算了，直接P2 输入，算出P3
+
+但是异步情况下，某个设备完成一步训练后，可能发现模型参数已经被其它设备更新过了，此时这个设备计算出的梯度就过期了。
+
+虽然异步模式理论上存在缺陷，但因为训练深度学习模型时使用的随机梯度下降本身就是梯度下降的一个近似解法，而且即使是梯度下降也无法保证达到全局最优值。在实际应用中，在相同时间内使用异步模式训练的模型不一定比同步模式差。所以这两种训练模式在实践中都有非常广泛的应用。
+
+#### 3. 数据模型并行
+如果可以 parameter job 放一个设备，worker job  通过模型复制 到多个设备中
 
 
 ## 6. 容错机制
