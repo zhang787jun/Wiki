@@ -29,16 +29,28 @@
 <div class="clearfix"></div>
 <div id="title">Tensorflow底层及基本架构</div>
   <div id="content">
-  <p>参考 ：<br />
-https://blog.csdn.net/qq_30262201/article/details/79106198<br />
-整个框架以C API为界，分为前端和后端两大部分。</p>
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#tensorflow">Tensorflow底层及基本架构</a><ul>
+<li><a href="#1-tensorflow">1. Tensorflow 框架</a></li>
+<li><a href="#2-tensorflow">2. Tensorflow 程序的运行</a></li>
+<li><a href="#_1">参考资料</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="tensorflow">Tensorflow底层及基本架构</h1>
+<h2 id="1-tensorflow">1. Tensorflow 框架</h2>
+<p><img alt="" src="../../../../attach/images/2019-07-07-13-56-27.png" /></p>
+<p><img alt="" src="../../../../attach/images/2019-07-07-14-00-20.png" /></p>
+<p>整个框架以C API为界，分为前端和后端两大部分。</p>
 <p>前端：提供编程模型，多语言的接口支持，比如Python Java C++等。通过C API建立前后端的连接，后面详细讲解。<br />
 后端：提供运行环境，完成计算图的执行。进一步分为4层</p>
 <p>运行时：分为分布式运行时和本地运行时，负责计算图的接收，构造，编排等。<br />
 计算层：提供各op算子的内核实现，例如conv2d, relu等<br />
 通信层：实现组件间数据通信，基于GRPC和RDMA两种通信方式<br />
 设备层：提供多种异构设备的支持，如CPU GPU TPU FPGA等</p>
-<p>TensorFlow的一大特点是，图的构造和执行相分离。用户添加完算子，构建好整图后，才开始进行训练和执行，也就是图的执行。大体流程如下</p>
+<h2 id="2-tensorflow">2. Tensorflow 程序的运行</h2>
+<p>TensorFlow的一大特点是，图的构造和执行相分离。用户添加完算子，构建好整DAG图后，才开始进行训练和执行，也就是图的执行。大体流程如下</p>
 <p>图构建：用户在client中基于TensorFlow的多语言编程接口，添加算子，完成计算图的构造。</p>
 <p>图传递：client开启session，通过它建立和master之间的连接。执行session.run()时，将构造好的graph序列化为graphDef后，以protobuf的格式传递给master。</p>
 <p>图剪枝：master根据session.run()传递的fetches和feeds列表，反向遍历全图full graph，实施剪枝，得到最小依赖子图</p>
@@ -115,6 +127,16 @@ https://blog.csdn.net/qq_30262201/article/details/79106198<br />
 </tr>
 </tbody>
 </table>
+<p><sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup></p>
+<h2 id="_1">参考资料</h2>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>https://blog.csdn.net/qq_30262201/article/details/79106198&#160;<a class="footnote-backref" href="#fnref:1" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
 </div>
 
     </div>
