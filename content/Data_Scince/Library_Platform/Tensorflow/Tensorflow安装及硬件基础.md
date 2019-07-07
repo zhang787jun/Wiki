@@ -319,4 +319,4 @@ lspci | grep -i nvidia
 ```shell
 docker run --runtime=nvidia -it -p 8888:8888 -p 6001:6001 -v /home/notebooks:/notebooks --rm tensorflow/tensorflow:latest-gpu-py3
 ```
-### 2.4  kubernetes 安装
+### 2.4  集群中安装

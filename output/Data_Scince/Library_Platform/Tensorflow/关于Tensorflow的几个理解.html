@@ -231,7 +231,6 @@
 <li><a href="#1641">16.4.1 记录内容选项</a><ul>
 <li><a href="#1_12">1. 记录时间和内存消耗</a></li>
 <li><a href="#2_11">2. 记录浮点运算情况</a></li>
-<li><a href="#3_5">3.</a></li>
 </ul>
 </li>
 <li><a href="#1642">16.4.2 输出选项</a></li>
@@ -250,7 +249,7 @@
 <li><a href="#164_1">16.4 常用实例</a><ul>
 <li><a href="#1-flop">1. 浮点运算次数 flop</a></li>
 <li><a href="#2_12">2. 总参数量</a></li>
-<li><a href="#3_6">3. 统计模型内存和耗时情况</a></li>
+<li><a href="#3_5">3. 统计模型内存和耗时情况</a></li>
 <li><a href="#4-profile">4. 给出使用profile工具给出建议</a></li>
 </ul>
 </li>
@@ -2848,7 +2847,6 @@ tf.tables_initializer</p>
 
 <h5 id="2_11">2. 记录浮点运算情况</h5>
 <p>ProfileOptionBuilder.float_operation()</p>
-<h5 id="3_5">3.</h5>
 <h4 id="1642">16.4.2 输出选项</h4>
 <p>输出文件格式<br />
 1. time line : 输出JSON events file, 再用chrome浏览器tracing功能进行查看，可视性很棒。<br />
@@ -2924,7 +2922,7 @@ ProfileOptionBuilder.select(attributes)</p>
 </pre></div>
 
 
-<h4 id="3_6">3. 统计模型内存和耗时情况</h4>
+<h4 id="3_5">3. 统计模型内存和耗时情况</h4>
 <div class="hlcode"><pre><span class="n">builder</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">ProfileOptionBuilder</span>
 <span class="n">opts</span> <span class="o">=</span> <span class="n">builder</span><span class="p">(</span><span class="n">builder</span><span class="o">.</span><span class="n">time_and_memory</span><span class="p">())</span>
 <span class="c">#opts.with_step(1)</span>

@@ -4,10 +4,20 @@ date: 2019-06-12 00:00
 render: True 
 tag: Tensorflow,框架,AI,
 ---
+[TOC]
+
+#Tensorflow底层及基本架构
+
+## 1. Tensorflow 框架
+
+![](../../../../attach/images/2019-07-07-13-56-27.png)
 
 
-参考 ：
-https://blog.csdn.net/qq_30262201/article/details/79106198
+
+![](../../../../attach/images/2019-07-07-14-00-20.png)
+
+
+
 整个框架以C API为界，分为前端和后端两大部分。
 
 前端：提供编程模型，多语言的接口支持，比如Python Java C++等。通过C API建立前后端的连接，后面详细讲解。
@@ -19,8 +29,9 @@ https://blog.csdn.net/qq_30262201/article/details/79106198
 设备层：提供多种异构设备的支持，如CPU GPU TPU FPGA等
 
 
+## 2. Tensorflow 程序的运行
 
-TensorFlow的一大特点是，图的构造和执行相分离。用户添加完算子，构建好整图后，才开始进行训练和执行，也就是图的执行。大体流程如下
+TensorFlow的一大特点是，图的构造和执行相分离。用户添加完算子，构建好整DAG图后，才开始进行训练和执行，也就是图的执行。大体流程如下
 
 
 图构建：用户在client中基于TensorFlow的多语言编程接口，添加算子，完成计算图的构造。
@@ -58,4 +69,8 @@ TensorFlow的一大特点是，图的构造和执行相分离。用户添加完�
 | third_party           | 第三方库，包括 eigen3（特征运算的库，包括 SVD、LU 分解等）、gpus（支持 cuda）、 hadoop、jpeg、llvm、py、sycl |
 | tools                 | 构建 cuda 支持 └── util                                                                                      |
 
+[^1]
 
+## 参考资料
+
+[^1]:https://blog.csdn.net/qq_30262201/article/details/79106198
