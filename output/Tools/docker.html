@@ -1,0 +1,121 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Docker实践 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
+    </script>
+
+
+
+</head>
+
+<body>
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Tools">Tools</a>&nbsp;»&nbsp;Docker实践</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Docker实践</div>
+  <div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#docker">Docker实践</a><ul>
+<li><a href="#1-docker">1. Docker 准备</a><ul>
+<li><a href="#for-windows">For windows</a></li>
+<li><a href="#for-ubuntu">For Ubuntu</a></li>
+</ul>
+</li>
+<li><a href="#2-docker">2. Docker 概念</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="docker">Docker实践</h1>
+<p>参考资料 <br />
+1. <a href="https://yeasy.gitbooks.io/docker_practice/content/">Docker — 从入门到实践</a></p>
+<h2 id="1-docker">1. Docker 准备</h2>
+<p>Docker CE 镜像源站<br />
+使用官方安装脚本自动安装 （仅适用于公网环境）<br />
+curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun</p>
+<h3 id="for-windows">For windows</h3>
+<ol>
+<li>安装／升级Docker客户端<br />
+对于Windows 10以下的用户，推荐使用Docker Toolbox<br />
+Windows安装文件：http://mirrors.aliyun.com/docker-toolbox/windows/docker-toolbox/<br />
+对于Windows 10以上的用户 推荐使用Docker for Windows<br />
+Windows安装文件：http://mirrors.aliyun.com/docker-toolbox/windows/docker-for-windows/</li>
+<li>配置镜像加速器<br />
+针对安装了Docker Toolbox的用户，您可以参考以下配置步骤：<br />
+创建一台安装有Docker环境的Linux虚拟机，指定机器名称为default，同时配置Docker加速器地址。</li>
+</ol>
+<div class="hlcode"><pre><span class="n">docker</span><span class="o">-</span><span class="n">machine</span> <span class="n">create</span> <span class="o">--</span><span class="n">engine</span><span class="o">-</span><span class="n">registry</span><span class="o">-</span><span class="n">mirror</span><span class="o">=</span><span class="n">http</span><span class="o">:</span><span class="c1">//hub-mirror.c.163.com -d virtualbox default</span>
+</pre></div>
+
+
+<p>查看机器的环境配置，并配置到本地，并通过Docker客户端访问Docker服务。</p>
+<div class="hlcode"><pre><span class="n">docker</span><span class="o">-</span><span class="n">machine</span> <span class="n">env</span> <span class="n">defaulteval</span> <span class="s">&quot;$(docker-machine env default)&quot;</span><span class="n">docker</span> <span class="n">info</span>
+</pre></div>
+
+
+<p>针对安装了Docker for Windows的用户，您可以参考以下配置步骤：<br />
+在系统右下角托盘图标内右键菜单选择 Settings，打开配置窗口后左侧导航菜单选择 Docker Daemon。编辑窗口内的JSON串，填写下方加速器地址：</p>
+<div class="hlcode"><pre><span class="p">{</span>
+  <span class="s">&quot;registry-mirrors&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s">&quot;http://hub-mirror.c.163.com&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>编辑完成后点击 Apply 保存按钮，等待Docker重启并应用配置的镜像加速器。<br />
+注意<br />
+Docker for Windows 和 Docker Toolbox互不兼容，如果同时安装两者的话，需要使用hyperv的参数启动。</p>
+<div class="hlcode"><pre><span class="n">docker</span><span class="o">-</span><span class="n">machine</span> <span class="n">create</span> <span class="o">--</span><span class="n">engine</span><span class="o">-</span><span class="n">registry</span><span class="o">-</span><span class="n">mirror</span><span class="o">=</span><span class="n">http</span><span class="o">:</span><span class="c1">//hub-mirror.c.163.com -d hyperv default</span>
+</pre></div>
+
+
+<p>Docker for Windows 有两种运行模式，一种运行Windows相关容器，一种运行传统的Linux容器。同一时间只能选择一种模式运行。</p>
+<p>docker-machine ssh </p>
+<p>sudo mkdir -p /etc/docker<br />
+sudo tee /etc/docker/daemon.json &lt;&lt;-'EOF'<br />
+{<br />
+  "registry-mirrors": ["http://hub-mirror.c.163.com"]<br />
+}<br />
+EOF<br />
+3.  相关文档<br />
+Docker 命令参考文档<br />
+Dockerfile 镜像构建参考文档</p>
+<p>来自 <a href="https://cr.console.aliyun.com/cn-hongkong/instances/mirrors">https://cr.console.aliyun.com/cn-hongkong/instances/mirrors</a> </p>
+<h3 id="for-ubuntu">For Ubuntu</h3>
+<ol>
+<li>安装／升级Docker客户端<br />
+推荐安装1.10.0以上版本的Docker客户端，参考文档 docker-ce</li>
+<li>配置镜像加速器<br />
+针对Docker客户端版本大于 1.10.0 的用户<br />
+您可以通过修改daemon配置文件/etc/docker/daemon.json来使用加速器<br />
+sudo mkdir -p /etc/docker</li>
+</ol>
+<h2 id="2-docker">2. Docker 概念</h2>
+<p><strong>Boot2Docker</strong> 是一个专为Docker而设计的轻量级Linux发型包，解决Windows或者OS X用户不能安装Docker的问题。 Boot2Docker完全运行于内存中，24M大小，启动仅5-6秒。</p>
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2019 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+    
+</body>
+
+</html>

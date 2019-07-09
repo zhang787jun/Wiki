@@ -1,0 +1,104 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>虚拟化技术基础 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
+    </script>
+
+
+
+</head>
+
+<body>
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#虚拟化与云计算">虚拟化与云计算</a>&nbsp;»&nbsp;虚拟化技术基础</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">虚拟化技术基础</div>
+  <div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#_1">虚拟化技术基础</a><ul>
+<li><a href="#1">1. 概况</a><ul>
+<li><a href="#11">1.1 定义</a></li>
+<li><a href="#12">1.2 分类</a><ul>
+<li><a href="#_2">按照接口类型</a><ul>
+<li><a href="#1_1">1.仿真系统</a></li>
+<li><a href="#2">2.完整/初级虚拟化</a></li>
+<li><a href="#3-para-virtualizationpv">3.准虚拟化  para virtualization（PV）</a></li>
+<li><a href="#4">4. 操作系统级虚拟化</a></li>
+<li><a href="#5">5.应用程序级虚拟化</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#2_1">2. 虚拟化是如何实现的</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="_1">虚拟化技术基础</h1>
+<h2 id="1">1. 概况</h2>
+<h3 id="11">1.1 定义</h3>
+<p>虚拟化是扩展或替换现有接口以模拟另一个系统的行为。<br />
+Virtualization: extend or replace an existing interface to mimic the behavior of another system. </p>
+<h3 id="12">1.2 分类</h3>
+<h4 id="_2">按照接口类型</h4>
+<h5 id="1_1">1.仿真系统</h5>
+<p>· 虚拟机 完全模拟硬件<br />
+· 虚拟机运行完全未修改的操作系统<br />
+— Bochs, VirtualPC for Mac, QEMU • </p>
+<h5 id="2">2.完整/初级虚拟化</h5>
+<p>– 虚拟机模拟"足够"的硬件运行未修改的操作系统OS 运行在独立的虚拟硬件上  AVM simulates “enough” hardware to allow an unmodified guest OS to be run in isolation • Same hardware CPU<br />
+ 案例：IBM VM 系列, VMWare Workstation, Parallels, VirtualBox</p>
+<h5 id="3-para-virtualizationpv">3.准虚拟化  para virtualization（PV）</h5>
+<p>–虚拟机不模拟硬件<br />
+–使用修改后的Guster操作系统，必须使用的特殊API<br />
+–虚拟机监控程序捕获并提供服务的虚拟化调用<br />
+案例：Xen、VMware esx服务器</p>
+<h5 id="4">4. 操作系统级虚拟化</h5>
+<p>–操作系统允许运行多个安全的虚拟服务器<br />
+– 子操作系统与主机操作系统相同，但似乎是孤立的<br />
+•应用程序看到独立的操作系统<br />
+–Solaris容器、BSD监狱、Linux Vserver、Linux容器、Docker</p>
+<h5 id="5">5.应用程序级虚拟化</h5>
+<p>–应用程序提供自己的未共享组件的副本<br />
+•（例如，自己的注册表文件、全局对象）<br />
+-ve防止冲突<br />
+–JVM、Mac上的Rosetta（也是模拟）、Wine(在Unix系统下运行Windows的软件)</p>
+<h2 id="2_1">2. 虚拟化是如何实现的</h2>
+<p>计算虚拟化的本质就是在虚拟系统和底层硬件之间抽象出CPU和内存等，以供虚拟机使用。<br />
+对于CPU的虚拟化，我们要了解CPU的几种运行模式。</p>
+<p>对于用户态程序和内核态程序分别运行在哪个特权级，下面一张图也给出了说明。</p>
+<p>• 虚拟机的内核运行在宿主机的用户态，CPU虚拟化的本质就是实现虚拟机的内核在调用时从用户态切换到内核态。</p>
+<p>I/O、更改MMU设置等敏感指令只能在内核模式下执行，在用户模式下执行时导致错误<br />
+在硬件辅助全虚拟化条件下，可以执行敏感指令</p>
+<p>• Intel 386：忽略用户模式下的敏感指令，不支持硬件辅助全虚拟化</p>
+<p>英特尔VT、AMD SVM 支持硬件辅助全虚拟化</p>
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2019 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+    
+</body>
+
+</html>

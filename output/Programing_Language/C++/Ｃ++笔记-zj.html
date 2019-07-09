@@ -1,0 +1,936 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>c++笔记 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
+    </script>
+
+
+
+</head>
+
+<body>
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Programing_Language\C++">Programing_Language\C++</a>&nbsp;»&nbsp;c++笔记</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">c++笔记</div>
+  <div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#c">c++笔记</a><ul>
+<li><a href="#c_1">C++简介</a></li>
+<li><a href="#c_2">安装C++</a><ul>
+<li><a href="#1">1. 文本编辑器</a></li>
+<li><a href="#2">2. 编译器</a><ul>
+<li><a href="#_1">关于程序的编译和链接</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#include">include <iostream></a></li>
+<li><a href="#include-sayh">include "say.h"</a></li>
+<li><a href="#include-sayh_1">include "say.h"</a></li>
+<li><a href="#include-sayh_2">include "say.h"</a><ul>
+<li><a href="#makefile">Makefile</a></li>
+<li><a href="#vscode-c">VScode 配置C++编译器</a></li>
+<li><a href="#c_3">第一个C++程序</a></li>
+<li><a href="#c_4">C++基础</a><ul>
+<li><a href="#1_1">1. 数据（变量+）</a><ul>
+<li><a href="#0">0. 基本的内置数据类型</a></li>
+<li><a href="#1_2">1. 字符串</a></li>
+<li><a href="#2_1">2. 数字</a></li>
+<li><a href="#3-tuple">3. 数组、tuple</a></li>
+<li><a href="#4-enumeration">4. 枚举(enumeration)类型</a></li>
+<li><a href="#1_3">附1 ：修饰符</a></li>
+<li><a href="#2typedef">附2：typedef 声明</a></li>
+<li><a href="#3">附3：初始化局部变量和全局变量</a></li>
+<li><a href="#4">附4: 定义常量</a></li>
+<li><a href="#delete">析构 delete</a></li>
+</ul>
+</li>
+<li><a href="#2_2">2. 计算（执行）</a><ul>
+<li><a href="#1_4">1.顺序执行</a><ul>
+<li><a href="#0_1">0. 输入输出</a></li>
+<li><a href="#1_5">1. 算术运算符</a></li>
+<li><a href="#2_3">2. 关系运算符</a></li>
+<li><a href="#3_1">3. 逻辑运算符</a></li>
+<li><a href="#4_1">4. 位运算符（二进制数字）</a></li>
+</ul>
+</li>
+<li><a href="#5">5. 引用</a></li>
+<li><a href="#6-new">6. New运算符（内存动态分配）</a><ul>
+<li><a href="#61">6.1 分配变量</a></li>
+<li><a href="#62">6.2 分配数组</a></li>
+</ul>
+</li>
+<li><a href="#2_4">2. 条件判断</a><ul>
+<li><a href="#if-if-else">if /if else</a></li>
+<li><a href="#swite">swite</a></li>
+</ul>
+</li>
+<li><a href="#3_2">3. 循环</a><ul>
+<li><a href="#for">for</a></li>
+</ul>
+</li>
+<li><a href="#while">while</a></li>
+<li><a href="#do-while">do while</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#3_3">3. 指针问题</a><ul>
+<li><a href="#_2">变量指针</a></li>
+<li><a href="#_3">函数指针</a></li>
+<li><a href="#_4">类指针</a></li>
+</ul>
+</li>
+<li><a href="#oop">面向对象编程 OOP</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="c">c++笔记</h1>
+<h2 id="c_1">C++简介</h2>
+<h2 id="c_2">安装C++</h2>
+<h3 id="1">1. 文本编辑器</h3>
+<h3 id="2">2. 编译器</h3>
+<h4 id="_1">关于程序的编译和链接</h4>
+<p>一般来说，无论是 C、C++、还是pas，首先要把源文件编译成中间代码文件，在Windows下也就是 .obj 文件，UNIX下是 .o 文件，即 Object File，这个动作叫做编译（compile）。然后再把大量的 Object File合成执行文件，这个动作叫作链接（link）。</p>
+<p>编译时，编译器需要的是语法的正确，函数与变量的声明的正确。对于后者，通常需要告诉编译器头文件的所在位置（头文件中应该只是声明，而定义应该放在C/C++文件中），只要所有的语法正确，编译器就可以编译出中间目标文件。一般来说，每个源文件应该对应于一个中间目标文件。都如果函数未被声明，编译器会给出一个警告，但可以生成Object File。但在链接程序时，链接器会在所有的 Object File中找寻函数的实现，如果找不到，那到就会报链接错误码（Linker Error）</p>
+<p>链接时，主要是链接函数和全局变量，链接器并不管函数所在的源文件，只管函数的中间目标文件，在大多数时候，由于源文件太多，编译生成的中间目标文件太多，而在链接时需要明显地指出中间目标文件名，这对于编译很不方便，所以，我们要给中间目标文件打个包，在Windows下这种包叫“库文件”（Library File)，也就是 .lib 文件，在UNIX下，是Archive File，也就是 .a 文件。</p>
+<p>单个源文件生成可执行程序<br />
+下面是一个保存在文件 helloworld.cpp 中一个简单的 C++ 程序的代码：</p>
+<div class="hlcode"><pre><span class="cm">/* helloworld.cpp */</span>
+<span class="cp">#include &lt;iostream&gt;</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span><span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;hello, world&quot;</span> <span class="o">&lt;&lt;</span> <span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+  <span class="k">return</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>程序使用定义在头文件 iostream 中的 cout，向标准输出写入一个简单的字符串。该代码可用以下命令编译为可执行文件：</p>
+<div class="hlcode"><pre><span class="n">g</span><span class="o">++</span> <span class="n">helloworld</span><span class="p">.</span><span class="n">cpp</span>
+</pre></div>
+
+
+<p>编译器 g++ 通过检查命令行中指定的文件的后缀名可识别其为 C++ 源代码文件。编译器默认的动作：编译源代码文件生成对象文件(object file)，链接对象文件和 libstdc++ 库中的函数得到可执行程序, 然后删除对象文件。</p>
+<p>由于命令行中未指定可执行程序的文件名，编译器采用默认的 a.out。程序可以这样来运行：</p>
+<p>$ ./a.out<br />
+hello, world<br />
+更普遍的做法是通过 -o 选项指定可执行程序的文件名。下面的命令将产生名为 helloworld 的可执行文件：</p>
+<p>$ g++ helloworld.cpp -o helloworld</p>
+<p>在命令行中输入程序名可使之运行：</p>
+<p>$ ./helloworld<br />
+hello, world<br />
+程序 g++ 是将 gcc 默认语言设为 C++ 的一个特殊的版本，链接时它自动使用 C++ 标准库而不用 C 标准库。通过遵循源码的命名规范并指定对应库的名字，用 gcc 来编译链接 C++ 程序是可行的，如下例所示：</p>
+<p>$ gcc helloworld.cpp -l stdc++ -o helloworld</p>
+<p>选项 -l (ell) 通过添加前缀 lib 和后缀 .a 将跟随它的名字变换为库的名字 libstdc++.a。而后它在标准库路径中查找该库。gcc 的编译过程和输出文件与 g++ 是完全相同的。</p>
+<p>在大多数系统中，GCC 安装时会安装一名为 c++ 的程序。如果被安装，它和 g++ 是等同，如下例所示，用法也一致：</p>
+<p>$ c++ helloworld.cpp -o helloworld</p>
+<p>多个源文件生成可执行程序<br />
+如果多于一个的源码文件在 g++ 命令中指定，它们都将被编译并被链接成一个单一的可执行文件。下面是一个名为 speak.h 的头文件；它包含一个仅含有一个函数的类的定义：</p>
+<div class="hlcode"><pre><span class="cm">/* speak.h */</span>
+<span class="cp">#include &lt;iostream&gt;</span>
+<span class="k">class</span> <span class="nc">Speak</span> <span class="p">{</span>
+ <span class="nl">public:</span>
+  <span class="kt">void</span> <span class="n">sayHello</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="p">);</span>
+<span class="p">};</span>
+</pre></div>
+
+
+<p>下面列出的是文件 speak.cpp 的内容：包含 sayHello() 函数的函数体：</p>
+<div class="hlcode"><pre><span class="cm">/* speak.cpp */</span>
+<span class="cp">#include &quot;speak.h&quot;</span>
+<span class="kt">void</span> <span class="n">Speak</span><span class="o">::</span><span class="n">sayHello</span><span class="p">(</span><span class="k">const</span> <span class="kt">char</span> <span class="o">*</span><span class="n">str</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">cout</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Hello &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">str</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>文件 hellospeak.cpp 内是一个使用 Speak 类的程序：</p>
+<div class="hlcode"><pre><span class="cm">/* hellospeak.cpp */</span>
+<span class="cp">#include &quot;speak.h&quot;</span>
+<span class="kt">int</span> <span class="nf">main</span><span class="p">(</span><span class="kt">int</span> <span class="n">argc</span><span class="p">,</span><span class="kt">char</span> <span class="o">*</span><span class="n">argv</span><span class="p">[])</span>
+<span class="p">{</span>
+    <span class="n">Speak</span> <span class="n">speak</span><span class="p">;</span>
+    <span class="n">speak</span><span class="p">.</span><span class="n">sayHello</span><span class="p">(</span><span class="s">&quot;world&quot;</span><span class="p">);</span>
+    <span class="k">return</span><span class="p">(</span><span class="mi">0</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>下面这条命令将上述两个源码文件编译链接成一个单一的可执行程序：</p>
+<div class="hlcode"><pre><span class="n">g</span><span class="o">++</span> <span class="n">hellospeak</span><span class="p">.</span><span class="n">cpp</span> <span class="n">speak</span><span class="p">.</span><span class="n">cpp</span> <span class="o">-</span><span class="n">o</span> <span class="n">hellospeak</span>
+</pre></div>
+
+
+<p>PS：这里说一下为什么在命令中没有提到 speak.h 这个文件，原因是在 speak.cpp 中包含有 #include"speak.h" 这句代码，它的意思是搜索系统头文件目录之前将先在当前目录中搜索文件 speak.h,而 speak.h 正在该目录中，不用再在命令中指定了。</p>
+<p>源文件生成对象文件<br />
+选项 -c 用来告诉编译器编译源代码但不要执行链接，输出结果为对象文件。文件默认名与源码文件名相同，只是将其后缀变为 .o。例如，下面的命令将编译源码文件 hellospeak.cpp 并生成对象文件 hellospeak.o：</p>
+<p>$ g++ -c hellospeak.cpp</p>
+<p>命令 g++ 也能识别 .o 文件并将其作为输入文件传递给链接器。下列命令将编译源码文件为对象文件并将其链接成单一的可执行程序：</p>
+<p>$ g++ -c hellospeak.cpp <br />
+$ g++ -c speak.cpp <br />
+$ g++ hellospeak.o speak.o -o hellospeak<br />
+选项 -o 不仅仅能用来命名可执行文件。它也用来命名编译器输出的其他文件。例如：除了中间的对象文件有不同的名字外，下列命令生将生成和上面完全相同的可执行文件：</p>
+<p>$ g++ -c hellospeak.cpp -o hspk1.o <br />
+$ g++ -c speak.cpp -o hspk2.o <br />
+$ g++ hspk1.o hspk2.o -o hellospeak<br />
+编译预处理<br />
+选项 -E 使 g++ 将源代码用编译预处理器处理后不再执行其他动作。下面的命令预处理源码文件 helloworld.cpp 并将结果显示在标准输出中：</p>
+<p>$ g++ -E helloworld.cpp</p>
+<p>本文前面所列出的 helloworld.cpp 的源代码，仅仅有六行，而且该程序除了显示一行文字外什么都不做，但是，预处理后的版本将超过 1200 行。这主要是因为头文件 iostream 被包含进来，而且它又包含了其他的头文件，除此之外，还有若干个处理输入和输出的类的定义。</p>
+<p>预处理过的文件的 GCC 后缀为 .ii，它可以通过 -o 选项来生成，例如：</p>
+<p>$ gcc -E helloworld.cpp -o helloworld.ii</p>
+<p>生成汇编代码<br />
+选项 -S 指示编译器将程序编译成汇编语言，输出汇编语言代码而後结束。下面的命令将由 C++ 源码文件生成汇编语言文件 helloworld.s：</p>
+<p>$ g++ -S helloworld.cpp</p>
+<p>生成的汇编语言依赖于编译器的目标平台。</p>
+<p>创建静态库<br />
+静态库是编译器生成的一系列对象文件的集合。链接一个程序时用库中的对象文件还是目录中的对象文件都是一样的。库中的成员包括普通函数，类定义，类的对象实例等等。静态库的另一个名字叫归档文件(archive)，管理这种归档文件的工具叫 ar 。</p>
+<p>在下面的例子中，我们先创建两个对象模块，然后用其生成静态库。</p>
+<p>头文件 say.h 包含函数 sayHello() 的原型和类 Say 的定义：</p>
+<p>/<em> say.h </em>/</p>
+<h1 id="include">include <iostream></h1>
+<p>void sayhello(void);<br />
+class Say {<br />
+ private:<br />
+  char <em>string;<br />
+ public:<br />
+  Say(char </em>str){<br />
+    string = str;<br />
+  }<br />
+  void sayThis(const char *str){<br />
+    std::cout &lt;&lt; str &lt;&lt; " from a static library\n";<br />
+  }<br />
+  void sayString(void);<br />
+};<br />
+下面是文件 say.cpp 是我们要加入到静态库中的两个对象文件之一的源码。它包含 Say 类中 sayString() 函数的定义体；类 Say 的一个实例 librarysay 的声明也包含在内：</p>
+<p>/<em> say.cpp </em>/</p>
+<h1 id="include-sayh">include "say.h"</h1>
+<p>void Say::sayString() {<br />
+  std::cout &lt;&lt; string &lt;&lt; "\n";<br />
+}</p>
+<p>Say librarysay("Library instance of Say");<br />
+源码文件 sayhello.cpp 是我们要加入到静态库中的第二个对象文件的源码。它包含函数 sayhello() 的定义：</p>
+<p>/<em> sayhello.cpp </em>/</p>
+<h1 id="include-sayh_1">include "say.h"</h1>
+<p>void sayhello(){<br />
+  std::cout &lt;&lt; "hello from a static library\n";<br />
+}<br />
+下面的命令序列将源码文件编译成对象文件，命令 ar 将其存进库中</p>
+<p>$ g++ -c sayhello.cpp<br />
+$ g++ -c say.cpp<br />
+$ ar -r libsay.a sayhello.o say.o<br />
+程序 ar 配合参数 -r 创建一个新库 libsay.a 并将命令行中列出的对象文件插入。采用这种方法，如果库不存在的话，参数 -r 将创建一个新的库，而如果库存在的话，将用新的模块替换原来的模块。</p>
+<p>下面是主程序 saymain.cpp，它调用库 libsay.a 中的代码：</p>
+<p>/<em> saymain.cpp </em>/</p>
+<h1 id="include-sayh_2">include "say.h"</h1>
+<p>int main(int argc, char *argv[]){<br />
+  extern Say librarysay; // 使用库的对象<br />
+  Say localsay = Say("Local instance of Say"); //使用库的类定义<br />
+  sayhello(); // 使用库的普通该函数<br />
+  librarysay.sayThis("howdy");<br />
+  librarysay.sayString();<br />
+  localsay.sayString();<br />
+  return(0);<br />
+}<br />
+该程序可以下面的命令来编译和链接：</p>
+<p>$ g++ saymain.cpp libsay.a -o saymain</p>
+<p>程序运行时，产生以下输出：</p>
+<p>hello from a static library<br />
+howdy from a static library<br />
+Library instance of Say<br />
+Local instance of Say<br />
+小结<br />
+上面介绍了手动通过命令编译 C++ 源文件，但是面对一些大工程，源码文件数量多且依赖关系复杂时，手动编译不太现实，这时候就要依赖 make 和 Makefile 对程序进行自动编译了，简单来说就是把编译规则写好在 Makefile 里，然后通过 make 进行自动编译，具体细节可参考这个教程 跟我一起写Makefile。</p>
+<h4 id="makefile">Makefile</h4>
+<p>Makefile 内容参考<br />
+https://wiki.ubuntu.org.cn/%E8%B7%9F%E6%88%91%E4%B8%80%E8%B5%B7%E5%86%99Makefile</p>
+<h4 id="vscode-c">VScode 配置C++编译器</h4>
+<p>https://www.zhihu.com/question/30315894</p>
+<h2 id="c_3">第一个C++程序</h2>
+<h2 id="c_4">C++基础</h2>
+<h3 id="1_1">1. 数据（变量+）</h3>
+<h4 id="0">0. 基本的内置数据类型</h4>
+<p>C++ 为程序员提供了种类丰富的内置数据类型和用户自定义的数据类型。下表列出了七种基本的 C++ 数据类型：</p>
+<table>
+<thead>
+<tr>
+<th align="right">类型</th>
+<th align="right">关键字</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">布尔型</td>
+<td align="right">bool</td>
+</tr>
+<tr>
+<td align="right">字符型</td>
+<td align="right">char</td>
+</tr>
+<tr>
+<td align="right">整型</td>
+<td align="right">int</td>
+</tr>
+<tr>
+<td align="right">浮点型</td>
+<td align="right">float</td>
+</tr>
+<tr>
+<td align="right">双浮点型</td>
+<td align="right">double</td>
+</tr>
+<tr>
+<td align="right">无类型</td>
+<td align="right"><strong>void</strong></td>
+</tr>
+<tr>
+<td align="right">宽字符型</td>
+<td align="right">wchar_t</td>
+</tr>
+</tbody>
+</table>
+<h4 id="1_2">1. 字符串</h4>
+<ol>
+<li>String <br />
+    char greeting[6] = {'H', 'e', 'l', 'l', 'o', '\0'};<br />
+    char greeting[] = "Hello";</li>
+</ol>
+<p>2.char 字符</p>
+<p><strong>Methods:</strong><br />
+序号|函数 &amp; 目的<br />
+1|strcpy(s1, s2);<br />
+复制字符串 s2 到字符串 s1。<br />
+2|strcat(s1, s2);<br />
+连接字符串 s2 到字符串 s1 的末尾。<br />
+3|strlen(s1);<br />
+返回字符串 s1 的长度。<br />
+4|strcmp(s1, s2);<br />
+如果 s1 和 s2 是相同的，则返回 0；如果 s1<s2 则返回值小于 0；如果 s1>s2 则返回值大于 0。<br />
+5|strchr(s1, ch);<br />
+返回一个指针，指向字符串 s1 中字符 ch 的第一次出现的位置。<br />
+6|strstr(s1, s2);<br />
+返回一个指针，指向字符串 s1 中字符串 s2 的第一次出现的位置。</p>
+<h4 id="2_1">2. 数字</h4>
+<p>定义<br />
+short  s :10<br />
+int    i :1000<br />
+long   l :1000000<br />
+float  f :230.47<br />
+double d :30949.4</p>
+<p>方法</p>
+<p>1|double cos(double);<br />
+该函数返回弧度角（double 型）的余弦。<br />
+2|double sin(double);<br />
+该函数返回弧度角（double 型）的正弦。<br />
+3|double tan(double);<br />
+该函数返回弧度角（double 型）的正切。<br />
+4|double log(double);<br />
+该函数返回参数的自然对数。<br />
+5|double pow(double, double);<br />
+假设第一个参数为 x，第二个参数为 y，则该函数返回 x 的 y 次方。<br />
+6|double hypot(double, double);<br />
+该函数返回两个参数的平方总和的平方根，也就是说，参数为一个直角三角形的两个直角边，函数会返回斜边的长度。<br />
+7|double sqrt(double);<br />
+该函数返回参数的平方根。<br />
+8|int abs(int);<br />
+该函数返回整数的绝对值。<br />
+9|double fabs(double);<br />
+该函数返回任意一个十进制数的绝对值。<br />
+10|double floor(double);<br />
+该函数返回一个小于或等于传入参数的最大整数。</p>
+<div class="hlcode"><pre><span class="vi">#include</span> <span class="o">&lt;</span><span class="nx">iostream</span><span class="o">&gt;</span>
+<span class="vi">#include</span> <span class="o">&lt;</span><span class="nx">cmath</span><span class="o">&gt;</span>
+<span class="nx">using</span> <span class="nx">namespace</span> <span class="nx">std</span><span class="p">;</span>
+
+<span class="nx">int</span> <span class="nx">main</span> <span class="p">()</span>
+<span class="p">{</span>
+<span class="c1">// 数字定义</span>
+<span class="nx">short</span>  <span class="n">s</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+<span class="nx">int</span>    <span class="n">i</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1000</span><span class="p">;</span>
+<span class="nx">long</span>   <span class="n">l</span> <span class="o">=</span> <span class="mi">100000</span><span class="p">;</span>
+<span class="nx">float</span>  <span class="n">f</span> <span class="o">=</span> <span class="mf">230.47</span><span class="p">;</span>
+<span class="nx">double</span> <span class="n">d</span> <span class="o">=</span> <span class="mf">200.374</span><span class="p">;</span>
+
+<span class="c1">// 数学运算</span>
+<span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;sin(d) :&quot;</span> <span class="o">&lt;&lt;</span> <span class="nb">sin</span><span class="p">(</span><span class="nb">d</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span>
+<span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;abs(i)  :&quot;</span> <span class="o">&lt;&lt;</span> <span class="nb">abs</span><span class="p">(</span><span class="nx">i</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span>
+<span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;floor(d) :&quot;</span> <span class="o">&lt;&lt;</span> <span class="nb">floor</span><span class="p">(</span><span class="nb">d</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span>
+<span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;sqrt(f) :&quot;</span> <span class="o">&lt;&lt;</span> <span class="nb">sqrt</span><span class="p">(</span><span class="nb">f</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span>
+<span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;pow( d, 2) :&quot;</span> <span class="o">&lt;&lt;</span> <span class="nb">pow</span><span class="p">(</span><span class="nb">d</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span>
+
+<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>C++ 随机数<br />
+在许多情况下，需要生成随机数。关于随机数生成器，有两个相关的函数。一个是 rand()，该函数只返回一个伪随机数。生成随机数之前必须先调用 srand() 函数。</p>
+<p>下面是一个关于生成随机数的简单实例。实例中使用了 time() 函数来获取系统时间的秒数，通过调用 rand() 函数来生成随机数：</p>
+<div class="hlcode"><pre><span class="vi">#include</span> <span class="o">&lt;</span><span class="nx">iostream</span><span class="o">&gt;</span>
+<span class="vi">#include</span> <span class="o">&lt;</span><span class="nx">ctime</span><span class="o">&gt;</span>
+<span class="vi">#include</span> <span class="o">&lt;</span><span class="nx">cstdlib</span><span class="o">&gt;</span>
+
+<span class="nx">using</span> <span class="nx">namespace</span> <span class="nx">std</span><span class="p">;</span>
+
+<span class="nx">int</span> <span class="nx">main</span> <span class="p">()</span>
+<span class="p">{</span>
+<span class="nx">int</span> <span class="nx">i</span><span class="p">,</span><span class="nx">j</span><span class="p">;</span>
+
+<span class="c1">// 设置种子</span>
+<span class="nb">srand</span><span class="p">(</span> <span class="p">(</span><span class="nx">unsigned</span><span class="p">)</span><span class="nb">time</span><span class="p">(</span> <span class="kt">NULL</span> <span class="p">)</span> <span class="p">);</span>
+
+<span class="cm">/* 生成 10 个随机数 */</span>
+<span class="nb">for</span><span class="p">(</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span> <span class="p">)</span>
+<span class="p">{</span>
+    <span class="c1">// 生成实际的随机数</span>
+    <span class="n">j</span><span class="o">=</span> <span class="nb">rand</span><span class="p">();</span>
+    <span class="nx">cout</span> <span class="o">&lt;&lt;</span><span class="s2">&quot;随机数： &quot;</span> <span class="o">&lt;&lt;</span> <span class="nx">j</span> <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h4 id="3-tuple">3. 数组、tuple</h4>
+<p>标准<br />
+    type arrayName [ arraySize ];<br />
+实例<br />
+    double balance[10];</p>
+<h4 id="4-enumeration">4. 枚举(enumeration)类型</h4>
+<div class="hlcode"><pre>    <span class="k">enum</span> <span class="err">枚举名</span><span class="p">{</span> 
+        <span class="err">标识符</span><span class="p">[</span><span class="o">=</span><span class="err">整型常数</span><span class="p">],</span> 
+        <span class="err">标识符</span><span class="p">[</span><span class="o">=</span><span class="err">整型常数</span><span class="p">],</span> 
+    <span class="p">...</span> 
+        <span class="err">标识符</span><span class="p">[</span><span class="o">=</span><span class="err">整型常数</span><span class="p">]</span>
+    <span class="p">}</span> <span class="err">枚举变量</span><span class="p">;</span>
+</pre></div>
+
+
+<h4 id="1_3">附1 ：修饰符</h4>
+<p>C++ 允许在 char、int 和 double 数据类型前放置修饰符。修饰符用于改变基本类型的含义，所以它更能满足各种情境的需求。<br />
+带修饰符的变量的大小会根据编译器和所使用的电脑而有所不同。</p>
+<table>
+<thead>
+<tr>
+<th align="right">修饰符</th>
+<th align="right">解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">signed</td>
+<td align="right">有正负数的</td>
+</tr>
+<tr>
+<td align="right">unsigned</td>
+<td align="right">没有正负数的</td>
+</tr>
+<tr>
+<td align="right">long</td>
+<td align="right"></td>
+</tr>
+<tr>
+<td align="right">short</td>
+<td align="right"></td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th align="right">修饰符</th>
+<th align="right">解释</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">const</td>
+<td align="right">const 类型的对象在程序执行期间不能被修改改变。</td>
+</tr>
+<tr>
+<td align="right">volatile</td>
+<td align="right">修饰符 volatile 告诉编译器不需要优化volatile声明的变量，让程序可以直接从内存中读取变量。对于一般的变量编译器会对变量进行优化，将内存中的变量值放在寄存器中以加快读写效率。</td>
+</tr>
+<tr>
+<td align="right">restrict</td>
+<td align="right">由 restrict 修饰的指针是唯一一种访问它所指向的对象的方式。只有 C99 增加了新的类型限定符 restrict。</td>
+</tr>
+</tbody>
+</table>
+<h4 id="2typedef">附2：typedef 声明</h4>
+<p>给int 等type 声明一个别名</p>
+<div class="hlcode"><pre><span class="k">typedef</span> <span class="n">type</span> <span class="n">newname</span><span class="p">;</span> 
+<span class="k">typedef</span> <span class="kt">int</span> <span class="n">feet</span><span class="p">;</span>
+<span class="n">feet</span> <span class="n">distance</span><span class="p">;</span>
+</pre></div>
+
+
+<h4 id="3">附3：初始化局部变量和全局变量</h4>
+<p>当局部变量被定义时，系统不会对其初始化，您必须自行对其初始化。定义全局变量时，系统会自动初始化为下列值：</p>
+<p>数据类型    初始化默认值<br />
+int 0<br />
+char    '\0'<br />
+float   0<br />
+double  0<br />
+pointer NULL<br />
+正确地初始化变量是一个良好的编程习惯，否则有时候程序可能会产生意想不到的结果。</p>
+<h4 id="4">附4: 定义常量</h4>
+<p>在 C++ 中，有两种简单的定义常量的方式：</p>
+<p>使用 #define 预处理器。<br />
+使用 const 关键字。</p>
+<h4 id="delete">析构 delete</h4>
+<p>delete 针对 new 动态内存分配<br />
+delete[] 针对 new [] 动态数组内存分配</p>
+<div class="hlcode"><pre>    <span class="k">typedef</span> <span class="kt">int</span> <span class="n">array_type</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+
+    <span class="c1">// create and destroy a int[1]</span>
+    <span class="n">array_type</span> <span class="o">*</span><span class="n">a</span> <span class="o">=</span> <span class="n">new</span> <span class="n">array_type</span><span class="p">;</span>
+    <span class="n">delete</span> <span class="p">[]</span> <span class="n">a</span><span class="p">;</span>
+
+    <span class="c1">// create and destroy an int</span>
+    <span class="kt">int</span> <span class="o">*</span><span class="n">b</span> <span class="o">=</span> <span class="n">new</span> <span class="kt">int</span><span class="p">;</span>
+    <span class="n">delete</span> <span class="n">b</span><span class="p">;</span>
+
+    <span class="c1">// create and destroy an int[1]</span>
+    <span class="kt">int</span> <span class="o">*</span><span class="n">c</span> <span class="o">=</span> <span class="n">new</span> <span class="kt">int</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span>
+    <span class="n">delete</span><span class="p">[]</span> <span class="n">c</span><span class="p">;</span>
+
+    <span class="c1">// create and destroy an int[1][2]</span>
+    <span class="kt">int</span> <span class="p">(</span><span class="o">*</span><span class="n">d</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">new</span> <span class="kt">int</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">2</span><span class="p">];</span>
+    <span class="n">delete</span> <span class="p">[]</span> <span class="n">d</span><span class="p">;</span>
+</pre></div>
+
+
+<h3 id="2_2">2. 计算（执行）</h3>
+<h4 id="1_4">1.顺序执行</h4>
+<p>语法特点，非解释性语言，不能逐行解释，需要；结尾</p>
+<h5 id="0_1">0. 输入输出</h5>
+<p>输出（cout） C out<br />
+cout 是与流插入运算符 &lt;&lt; 结合使用的<br />
+输入（cin） C in</p>
+<p>cin 是与流提取运算符 &gt;&gt; 结合使用的</p>
+<h5 id="1_5">1. 算术运算符</h5>
+<table>
+<thead>
+<tr>
+<th align="right">符号</th>
+<th align="right">含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">+</td>
+<td align="right">把两个操作数相加</td>
+</tr>
+<tr>
+<td align="right">-</td>
+<td align="right">从第一个操作数中减去第二个操作数</td>
+</tr>
+<tr>
+<td align="right">*</td>
+<td align="right">把两个操作数相乘</td>
+</tr>
+<tr>
+<td align="right">/</td>
+<td align="right">分子除以分母</td>
+</tr>
+<tr>
+<td align="right">%</td>
+<td align="right">取模运算符，整除后的余数</td>
+</tr>
+<tr>
+<td align="right">++</td>
+<td align="right">自增运算符，整数值增加 1</td>
+</tr>
+<tr>
+<td align="right">--</td>
+<td align="right">自减运算符，整数值减少 1</td>
+</tr>
+</tbody>
+</table>
+<h5 id="2_3">2. 关系运算符</h5>
+<table>
+<thead>
+<tr>
+<th align="right">符号</th>
+<th align="right">含义</th>
+<th align="right">例子</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">==</td>
+<td align="right">检查两个操作数的值是否相等，如果相等则条件为真。</td>
+<td align="right">(A == B) 不为真。</td>
+</tr>
+<tr>
+<td align="right">!=</td>
+<td align="right">检查两个操作数的值是否相等，如果不相等则条件为真。</td>
+<td align="right">(A != B) 为真。</td>
+</tr>
+<tr>
+<td align="right">&gt;</td>
+<td align="right">检查左操作数的值是否大于右操作数的值，如果是则条件为真。</td>
+<td align="right">(A &gt; B) 不为真。</td>
+</tr>
+<tr>
+<td align="right">&lt;</td>
+<td align="right">检查左操作数的值是否小于右操作数的值，如果是则条件为真。</td>
+<td align="right">(A &lt; B) 为真。</td>
+</tr>
+<tr>
+<td align="right">&gt;=</td>
+<td align="right">检查左操作数的值是否大于或等于右操作数的值，如果是则条件为真。</td>
+<td align="right">(A &gt;= B) 不为真。</td>
+</tr>
+<tr>
+<td align="right">&lt;=</td>
+<td align="right">检查左操作数的值是否小于或等于右操作数的值，如果是则条件为真。</td>
+<td align="right">(A &lt;= B) 为真。</td>
+</tr>
+</tbody>
+</table>
+<h5 id="3_1">3. 逻辑运算符</h5>
+<table>
+<thead>
+<tr>
+<th align="right">运算符</th>
+<th align="right">描述</th>
+<th align="right">实例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">&amp;&amp;</td>
+<td align="right">称为逻辑与运算符。如果两个操作数都非零，则条件为真。</td>
+<td align="right">(A &amp;&amp; B) 为假。</td>
+</tr>
+<tr>
+<td align="right">!</td>
+<td align="right">称为逻辑非运算符。用来逆转操作数的逻辑状态。如果条件为真则逻辑非运算符将使其为假。</td>
+<td align="right">!(A &amp;&amp; B) 为真。</td>
+</tr>
+</tbody>
+</table>
+<p>| 称为逻辑或运算符。如果两个操作数中有任意一个非零，则条件为真。 (A || B) 为真。</p>
+<h5 id="4_1">4. 位运算符（二进制数字）</h5>
+<p>功能：<br />
+使得某些位变为0，而其他位不为0<br />
+获取中间某些位置</p>
+<table>
+<thead>
+<tr>
+<th align="right">运算符</th>
+<th align="right">描述</th>
+<th align="right">实例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">&amp;</td>
+<td align="right">如果同时存在于两个操作数中，二进制 AND 运算符复制一位到结果中。</td>
+<td align="right">(A &amp; B) 将得到 12，即为 0000 1100</td>
+</tr>
+<tr>
+<td align="right"></td>
+<td align="right">如果存在于任一操作数中，二进制 OR 运算符复制一位到结果中。</td>
+<td align="right">(A</td>
+</tr>
+<tr>
+<td align="right">^</td>
+<td align="right">如果存在于其中一个操作数中但不同时存在于两个操作数中，二进制异或运算符复制一位到结果中。</td>
+<td align="right">(A ^ B) 将得到 49，即为 0011 0001</td>
+</tr>
+<tr>
+<td align="right">~</td>
+<td align="right">二进制补码运算符是一元运算符，具有"翻转"位效果，即0变成1，1变成0。</td>
+<td align="right">(~A ) 将得到 -61，即为 1100 0011，一个有符号二进制数的补码形式。</td>
+</tr>
+<tr>
+<td align="right">&lt;&lt;</td>
+<td align="right">二进制左移运算符。左操作数的值向左移动右操作数指定的位数。</td>
+<td align="right">A &lt;&lt; 2 将得到 240，即为 1111 0000</td>
+</tr>
+<tr>
+<td align="right">&gt;&gt;</td>
+<td align="right">二进制右移运算符。左操作数的值向右移动右操作数指定的位数。</td>
+<td align="right">A &gt;&gt; 2 将得到 15，即为 0000 1111</td>
+</tr>
+</tbody>
+</table>
+<h4 id="5">5. 引用</h4>
+<p>定义一个变量的别名 </p>
+<p>python 中直接命令 a=b</p>
+<p>常引用</p>
+<div class="hlcode"><pre>    <span class="vi">#include</span> <span class="o">&lt;</span><span class="nx">iostream</span><span class="o">&gt;</span>
+
+    <span class="nx">using</span> <span class="nx">namespace</span> <span class="nx">std</span><span class="p">;</span>
+
+    <span class="nx">int</span> <span class="nx">main</span> <span class="p">()</span>
+    <span class="p">{</span>
+    <span class="c1">// 声明简单的变量</span>
+    <span class="nx">int</span>    <span class="nx">i</span><span class="p">;</span>
+    <span class="nx">double</span> <span class="nb">d</span><span class="p">;</span>
+
+    <span class="c1">// 声明引用变量</span>
+    <span class="nx">int</span><span class="o">&amp;</span>    <span class="n">r</span> <span class="o">=</span> <span class="nx">i</span><span class="p">;</span>
+    <span class="nx">double</span><span class="o">&amp;</span> <span class="n">s</span> <span class="o">=</span> <span class="nb">d</span><span class="p">;</span>
+
+    <span class="n">i</span> <span class="o">=</span> <span class="mi">5</span><span class="p">;</span>
+    <span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;Value of i : &quot;</span> <span class="o">&lt;&lt;</span> <span class="nx">i</span> <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span>
+    <span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;Value of i reference(r) : &quot;</span> <span class="o">&lt;&lt;</span> <span class="nb">r</span>  <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span>
+
+    <span class="n">d</span> <span class="o">=</span> <span class="mf">11.7</span><span class="p">;</span>
+    <span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;Value of d : &quot;</span> <span class="o">&lt;&lt;</span> <span class="nb">d</span> <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span>
+    <span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;Value of d reference(s) : &quot;</span> <span class="o">&lt;&lt;</span> <span class="nb">s</span>  <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+</pre></div>
+
+
+<h4 id="6-new">6. New运算符（内存动态分配）</h4>
+<h5 id="61">6.1 分配变量</h5>
+<div class="hlcode"><pre><span class="n">P</span><span class="o">=</span><span class="n">new</span> <span class="n">T</span>
+</pre></div>
+
+
+<p>T:type 类型（如：int,float等）<br />
+变量 P：指针，且指针类型为T，大小与T相同 为sizeof（T）</p>
+<h5 id="62">6.2 分配数组</h5>
+<div class="hlcode"><pre><span class="n">P</span><span class="o">=</span><span class="n">new</span> <span class="n">T</span><span class="p">[</span><span class="n">N</span><span class="p">]</span>
+</pre></div>
+
+
+<p>T:type 类型（如：int,float等）<br />
+变量 P：指针，且指针类型为T，大小为 sizeof（T）*N</p>
+<p>记得要用delete 释放内存空间<br />
+        delete P<br />
+1. delete只正对动态分派内存的执政     <br />
+2. delete 对每个动态指针智能执行一次</p>
+<h4 id="2_4">2. 条件判断</h4>
+<h5 id="if-if-else">if /if else</h5>
+<p>标准规则：</p>
+<div class="hlcode"><pre>    <span class="k">if</span><span class="p">(</span><span class="n">boolean_expression</span><span class="p">)</span>
+    <span class="p">{</span>
+    <span class="c1">// 如果布尔表达式为真将执行的语句</span>
+    <span class="p">}</span>
+</pre></div>
+
+
+<p>实例：</p>
+<div class="hlcode"><pre>    <span class="vi">#include</span> <span class="o">&lt;</span><span class="nx">iostream</span><span class="o">&gt;</span>
+    <span class="nx">using</span> <span class="nx">namespace</span> <span class="nx">std</span><span class="p">;</span>
+
+    <span class="nx">int</span> <span class="nx">main</span> <span class="p">()</span>
+    <span class="p">{</span>
+    <span class="c1">// 局部变量声明</span>
+    <span class="nx">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span>
+
+    <span class="c1">// 使用 if 语句检查布尔条件</span>
+    <span class="k">if</span><span class="p">(</span> <span class="nx">a</span> <span class="o">&lt;</span> <span class="mi">20</span> <span class="p">)</span>
+    <span class="p">{</span>
+        <span class="c1">// 如果条件为真，则输出下面的语句</span>
+        <span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;a 小于 20&quot;</span> <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;a 的值是 &quot;</span> <span class="o">&lt;&lt;</span> <span class="nx">a</span> <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+</pre></div>
+
+
+<h5 id="swite">swite</h5>
+<p>标准规则</p>
+<div class="hlcode"><pre>    <span class="k">switch</span><span class="p">(</span><span class="n">expression</span><span class="p">){</span>
+        <span class="k">case</span> <span class="n">constant</span><span class="o">-</span><span class="n">expression</span>  :
+        <span class="n">statement</span><span class="p">(</span><span class="n">s</span><span class="p">);</span>
+        <span class="k">break</span><span class="p">;</span> <span class="c1">// 可选的</span>
+        <span class="k">case</span> <span class="n">constant</span><span class="o">-</span><span class="n">expression</span>  :
+        <span class="n">statement</span><span class="p">(</span><span class="n">s</span><span class="p">);</span>
+        <span class="k">break</span><span class="p">;</span> <span class="c1">// 可选的</span>
+
+        <span class="c1">// 您可以有任意数量的 case 语句</span>
+        <span class="k">default</span> <span class="o">:</span> <span class="c1">// 可选的</span>
+        <span class="n">statement</span><span class="p">(</span><span class="n">s</span><span class="p">);</span>
+    <span class="p">}</span>
+</pre></div>
+
+
+<p>实例：</p>
+<div class="hlcode"><pre>    <span class="vi">#include</span> <span class="o">&lt;</span><span class="nx">iostream</span><span class="o">&gt;</span>
+    <span class="nx">using</span> <span class="nx">namespace</span> <span class="nx">std</span><span class="p">;</span>
+
+    <span class="nx">int</span> <span class="nx">main</span> <span class="p">()</span>
+    <span class="p">{</span>
+    <span class="c1">// 局部变量声明</span>
+    <span class="nx">char</span> <span class="n">grade</span> <span class="o">=</span> <span class="s1">&#39;D&#39;</span><span class="p">;</span>
+
+    <span class="nx">switch</span><span class="p">(</span><span class="nx">grade</span><span class="p">)</span>
+    <span class="p">{</span>
+    <span class="k">case</span> <span class="s1">&#39;A&#39;</span> <span class="p">:</span>
+        <span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;很棒！&quot;</span> <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span> 
+        <span class="nx">break</span><span class="p">;</span>
+    <span class="k">case</span> <span class="s1">&#39;B&#39;</span> <span class="p">:</span>
+    <span class="k">case</span> <span class="s1">&#39;C&#39;</span> <span class="p">:</span>
+        <span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;做得好&quot;</span> <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span>
+        <span class="nx">break</span><span class="p">;</span>
+    <span class="k">case</span> <span class="s1">&#39;D&#39;</span> <span class="p">:</span>
+        <span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;您通过了&quot;</span> <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span>
+        <span class="nx">break</span><span class="p">;</span>
+    <span class="k">case</span> <span class="s1">&#39;F&#39;</span> <span class="p">:</span>
+        <span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;最好再试一下&quot;</span> <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span>
+        <span class="nx">break</span><span class="p">;</span>
+    <span class="nb">default</span> <span class="p">:</span>
+        <span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;无效的成绩&quot;</span> <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;您的成绩是 &quot;</span> <span class="o">&lt;&lt;</span> <span class="nx">grade</span> <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+</pre></div>
+
+
+<h4 id="3_2">3. 循环</h4>
+<h5 id="for">for</h5>
+<div class="hlcode"><pre>    <span class="nb">for</span> <span class="p">(</span> <span class="nb">init</span><span class="p">;</span> <span class="nx">condition</span><span class="p">;</span> <span class="nb">increment</span> <span class="p">)</span>
+    <span class="p">{</span>
+    <span class="nb">statement</span><span class="p">(</span><span class="nb">s</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="vi">#include</span> <span class="o">&lt;</span><span class="nx">iostream</span><span class="o">&gt;</span>
+    <span class="nx">using</span> <span class="nx">namespace</span> <span class="nx">std</span><span class="p">;</span>
+
+    <span class="nx">int</span> <span class="nx">main</span> <span class="p">()</span>
+    <span class="p">{</span>
+    <span class="c1">// for 循环执行</span>
+    <span class="nb">for</span><span class="p">(</span> <span class="nx">int</span> <span class="n">a</span> <span class="o">=</span> <span class="mi">10</span><span class="p">;</span> <span class="nx">a</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">;</span> <span class="n">a</span> <span class="o">=</span> <span class="nx">a</span> <span class="o">+</span> <span class="mi">1</span> <span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;a 的值：&quot;</span> <span class="o">&lt;&lt;</span> <span class="nx">a</span> <span class="o">&lt;&lt;</span> <span class="nx">endl</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+    <span class="p">}</span>
+</pre></div>
+
+
+<h4 id="while">while</h4>
+<p>先判断后循环<br />
+        while(condition)<br />
+        {<br />
+        statement(s);<br />
+        }</p>
+<h4 id="do-while">do while</h4>
+<p>先做后判断循环<br />
+    do<br />
+    {<br />
+    statement(s);</p>
+<div class="hlcode"><pre><span class="p">}</span><span class="k">while</span><span class="p">(</span> <span class="nx">condition</span> <span class="p">);</span>
+
+
+<span class="vi">#include</span> <span class="o">&lt;</span><span class="nx">iostream</span><span class="o">&gt;</span>
+<span class="nx">using</span> <span class="nx">namespace</span> <span class="nx">std</span><span class="p">;</span>
+
+<span class="c1">// main() 是程序开始执行的地方</span>
+
+<span class="nx">int</span> <span class="nx">main</span><span class="p">()</span>
+<span class="p">{</span>
+<span class="nx">cout</span> <span class="o">&lt;&lt;</span> <span class="s2">&quot;Hello World&quot;</span><span class="p">;</span> <span class="c1">// 输出 Hello World</span>
+<span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>C++ 语言定义了一些头文件，这些头文件包含了程序中必需的或有用的信息。上面这段程序中，包含了头文件 <iostream>。<br />
+下一行 using namespace std; 告诉编译器使用 std 命名空间。<strong>命名空间是 C++ 中一个相对新的概念。</strong><br />
+下一行 // main() 是程序开始执行的地方 是一个单行注释。单行注释以 // 开头，在行末结束。<br />
+下一行 int main() 是主函数，程序从这里开始执行。<br />
+下一行 cout &lt;&lt; "Hello World"; 会在屏幕上显示消息 "Hello World"。<br />
+下一行 return 0; 终止 main( )函数，并向调用进程返回值 0。</p>
+<p>argc: argument count<br />
+argv: argument vector </p>
+<p>块{<br />
+}</p>
+<h2 id="3_3">3. 指针问题</h2>
+<p>指针--&gt;在内存中的地址<br />
+指针变量--&gt;保存某一变量/函数/类 在内存中的地址的变量</p>
+<h3 id="_2">变量指针</h3>
+<h3 id="_3">函数指针</h3>
+<p>函数也占用内存空间啊 <br />
+函数内存空间的起始位置指向称为 函数指针<br />
+定义：</p>
+<div class="hlcode"><pre>    <span class="err">函数返回值的类型（指针）（函数变量</span><span class="mi">1</span><span class="err">类型，函数变量</span><span class="mi">2</span><span class="err">类型，···）</span>
+</pre></div>
+
+
+<p>其中指针为 * 函数名</p>
+<div class="hlcode"><pre>    <span class="kt">int</span> <span class="nf">hello_one</span><span class="p">(</span><span class="kt">int</span> <span class="n">b</span><span class="p">)</span> 
+    <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">a</span><span class="p">;</span>
+        <span class="n">a</span><span class="o">=</span><span class="mi">10</span><span class="p">;</span>
+        <span class="k">return</span> <span class="n">a</span><span class="o">+</span><span class="n">b</span><span class="p">;</span>
+
+    <span class="p">}</span>
+
+    <span class="kt">int</span><span class="p">(</span><span class="o">*</span><span class="n">hello_one</span><span class="p">)(</span><span class="kt">int</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="_4">类指针</h3>
+<p>定义类指针基本格式是：Student <em>b = new Student()；在定义</em>b的时候并没有分配内存，只有执行new后才会分配内存，且为内存堆。</p>
+<h2 id="oop">面向对象编程 OOP</h2>
+<p>在 C++ 里，不用 new 创建的对象会保存在栈里，使用 new 创建时则会在堆里。它们必须分别使用析构函数或者delete操作才能被删除。</p>
+<div class="hlcode"><pre>    <span class="n">Student</span> <span class="n">a</span><span class="p">;</span> 
+    <span class="n">s</span><span class="p">.</span><span class="n">setName</span><span class="p">(</span><span class="s">&quot;A&quot;</span><span class="p">);</span>
+
+    <span class="c1">//Studeng *b = new Student();</span>
+    <span class="n">Student</span> <span class="o">*</span><span class="n">b</span><span class="p">;</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">new</span> <span class="n">Student</span><span class="p">();</span>
+    <span class="n">b</span><span class="o">-&gt;</span><span class="n">setName</span><span class="p">(</span><span class="s">&quot;B&quot;</span><span class="p">);</span>
+</pre></div>
+
+
+<p>访问对象实例</p>
+<p>对象实例的内存空间大小，对象实例所有变量的大小之和<br />
+每个对象都有自己独立的存储空间</p>
+<ol>
+<li>ClassA.parameter1</li>
+<li>*Pointer_of_ClassA-&gt;parameter1</li>
+</ol>
+<p>类 添加函数/参数</p>
+<p>函数返回值类型 类:: 函数名{</p>
+<p>}</p>
+<p>其实就是  使用  类:: 函数名 代替原来的  函数名</p>
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2019 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+    
+</body>
+
+</html>

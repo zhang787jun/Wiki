@@ -1,0 +1,123 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>代码质量及工程化 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
+    </script>
+
+
+
+</head>
+
+<body>
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Basic_CS">Basic_CS</a>&nbsp;»&nbsp;代码质量及工程化</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">代码质量及工程化</div>
+  <div id="content">
+  <h1 id="hello-algorithm">Hello algorithm</h1>
+<div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#hello-algorithm">Hello algorithm</a><ul>
+<li><a href="#_1">说明</a></li>
+<li><a href="#_2">杂谈</a><ul>
+<li><a href="#_3">高质量的代码</a><ul>
+<li><a href="#1">1. 代码规范性</a><ul>
+<li><a href="#11">1.1 变量/函数命名格式规范</a></li>
+<li><a href="#12">1.2 变量/函数命名语义明确</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 代码完整性</a><ul>
+<li><a href="#21">2.1 核心功能完整</a></li>
+<li><a href="#22">2.2 边界测试通过</a></li>
+<li><a href="#23">2.3 负面测试</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 代码鲁棒性</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="_1">说明</h2>
+<p>文仓库代码由python/C++ 混合完成<br />
+| 文件名      | 描述         |<br />
+| :---------- | :----------- |<br />
+| basic.md    | 基础算法思想 |<br />
+| leetcode.md | Leecode 刷题 |</p>
+<h2 id="_2">杂谈</h2>
+<h3 id="_3">高质量的代码</h3>
+<h4 id="1">1. 代码规范性</h4>
+<h5 id="11">1.1 变量/函数命名格式规范</h5>
+<blockquote>
+<p>Java<br />
+· 驼峰命名：多个单词组成一个名称时，第一个单词全部小写，后面单词首字母大写；如：</p>
+</blockquote>
+<div class="hlcode"><pre><span class="n">public</span> <span class="kt">void</span> <span class="n">setUserName</span><span class="p">(</span><span class="n">String</span> <span class="n">userName</span><span class="p">)</span>
+</pre></div>
+
+
+<blockquote>
+<p>C/C++/C#<br />
+• 帕斯卡命名：多个单词组成一个名称时，每个单词的首字母大写；</p>
+</blockquote>
+<div class="hlcode"><pre><span class="k">public</span> <span class="kt">void</span> <span class="n">SetUserName</span><span class="p">(</span><span class="n">String</span> <span class="n">userName</span><span class="p">)</span>
+</pre></div>
+
+
+<blockquote>
+<p>python<br />
+` 类 首字符大写其他全部小写</p>
+</blockquote>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Car</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> 
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</pre></div>
+
+
+<h5 id="12">1.2 变量/函数命名语义明确</h5>
+<p>名词合理、动词到位</p>
+<h4 id="2">2. 代码完整性</h4>
+<h5 id="21">2.1 核心功能完整</h5>
+<h5 id="22">2.2 边界测试通过</h5>
+<ol>
+<li>考虑边界问题</li>
+<li>循环、递归边界</li>
+<li>输入输出边界</li>
+</ol>
+<h5 id="23">2.3 负面测试</h5>
+<ol>
+<li>可能的错误输入</li>
+</ol>
+<h4 id="3">3. 代码鲁棒性</h4>
+<p>考虑负面输入</p>
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2019 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+    
+</body>
+
+</html>

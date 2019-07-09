@@ -1,0 +1,141 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Linux - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
+    </script>
+
+
+
+</head>
+
+<body>
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Basic_CS">Basic_CS</a>&nbsp;»&nbsp;Linux</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Linux</div>
+  <div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#linux">Linux 技能</a><ul>
+<li><a href="#ubuntu">Ubuntu</a><ul>
+<li><a href="#_1">安装</a></li>
+<li><a href="#root">root用户管理</a></li>
+<li><a href="#_2">镜像加速</a></li>
+<li><a href="#_3">网络</a></li>
+</ul>
+</li>
+<li><a href="#centos">CentOS</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="linux">Linux 技能</h1>
+<p>Linux工具快速教程<br />
+https://linuxtools-rst.readthedocs.io/zh_CN/latest/index.html</p>
+<table>
+<thead>
+<tr>
+<th align="right">命令</th>
+<th align="right">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">grep</td>
+<td align="right">用于查找文件里符合条件的字符串</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ubuntu">Ubuntu</h2>
+<h3 id="_1">安装</h3>
+<p>从科大镜像http://mirrors.ustc.edu.cn/ 下载 Ubuntu-16.04-x64</p>
+<h3 id="root">root用户管理</h3>
+<p>ubuntu系统 禁用了root用户，在安装过程中新建的用户并没有全部权限</p>
+<div class="hlcode"><pre><span class="cp">#1.3.1 开启root账户 并以root账户登入</span>
+<span class="n">sudo</span> <span class="n">passwd</span> <span class="n">root</span> 
+<span class="cp">#输入root账户密码</span>
+<span class="cp">#再次输入root账户密码确认</span>
+
+<span class="cp">#添加运行以图形界面登入命令</span>
+<span class="n">sudo</span> <span class="n">vim</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">lightdm</span><span class="o">/</span><span class="n">lightdm</span><span class="p">.</span><span class="n">conf</span><span class="p">.</span><span class="n">d</span><span class="o">/</span><span class="mi">50</span><span class="o">-</span><span class="n">ubuntu</span><span class="p">.</span><span class="n">conf</span>
+<span class="o">&gt;</span>
+<span class="n">greeter</span><span class="o">-</span><span class="n">show</span><span class="o">-</span><span class="n">manual</span><span class="o">-</span><span class="n">login</span><span class="o">=</span><span class="nb">true</span>
+</pre></div>
+
+
+<h3 id="_2">镜像加速</h3>
+<div class="hlcode"><pre><span class="n">echo</span> <span class="s">&quot;# 默认注释了源码镜像以提高 yes|apt update 速度，如有需要可自行取消注释</span>
+<span class="n">deb</span> <span class="n">https</span><span class="o">:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic main restricted universe multiverse</span>
+<span class="cp"># deb-src https:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic main restricted universe multiverse</span>
+<span class="n">deb</span> <span class="n">https</span><span class="o">:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-updates main restricted universe multiverse</span>
+<span class="cp"># deb-src https:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-updates main restricted universe multiverse</span>
+<span class="n">deb</span> <span class="n">https</span><span class="o">:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-backports main restricted universe multiverse</span>
+<span class="cp"># deb-src https:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-backports main restricted universe multiverse</span>
+<span class="n">deb</span> <span class="n">https</span><span class="o">:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-security main restricted universe multiverse</span>
+<span class="cp"># deb-src https:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-security main restricted universe multiverse</span>
+<span class="cp"># 预发布软件源，不建议启用</span>
+<span class="cp"># deb https:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse</span>
+<span class="cp"># deb-src https:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse&quot;&gt; /etc/apt/sources.list</span>
+
+<span class="n">yes</span><span class="o">|</span> <span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+</pre></div>
+
+
+<h3 id="_3">网络</h3>
+<div class="hlcode"><pre><span class="cp"># 1. 配置静态ip：</span>
+<span class="n">sudo</span> <span class="n">vi</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">network</span><span class="o">/</span><span class="n">interfaces</span> 
+<span class="o">&gt;</span>
+<span class="k">auto</span> <span class="n">eth0</span>                  <span class="err">#设置自动启动</span><span class="n">eth0</span><span class="err">接口</span>
+<span class="n">iface</span> <span class="n">eth0</span> <span class="n">inet</span> <span class="k">static</span>     <span class="err">#配置静态</span><span class="n">IP</span>
+<span class="n">address</span> <span class="mf">172.28.44.120</span>      <span class="err">#</span><span class="n">IP</span><span class="err">地址</span>
+<span class="n">netmask</span> <span class="mf">255.255.255.0</span><span class="err">：</span>      <span class="err">#子网掩码</span>
+<span class="n">gateway</span> <span class="mf">172.28.44.254</span>        <span class="err">#默认网关</span>
+<span class="cp">#2 修改DNS 配置nameserver</span>
+<span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">resolvconf</span><span class="o">/</span><span class="n">resolv</span><span class="p">.</span><span class="n">conf</span><span class="p">.</span><span class="n">d</span><span class="o">/</span><span class="n">base</span> 
+<span class="o">&gt;</span>
+<span class="n">nameserver</span> <span class="mf">172.25.9.10</span>
+<span class="n">nameserver</span> <span class="mf">172.26.9.10</span>
+<span class="cp"># 3 重启网络，使配置生效</span>
+<span class="n">sudo</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">init</span><span class="p">.</span><span class="n">d</span><span class="o">/</span><span class="n">networking</span> <span class="n">restart</span>
+
+<span class="n">dns</span><span class="o">-</span><span class="n">nameserver</span> <span class="mf">114.114.114.114</span> <span class="mf">8.8.8.8</span> <span class="mf">192.168.0.1</span> <span class="err">#定义</span><span class="n">DNS</span><span class="err">服务器的</span><span class="n">IP</span><span class="err">地址</span>
+<span class="n">dns</span><span class="o">-</span><span class="n">search</span> <span class="n">www</span><span class="p">.</span><span class="n">ringkee</span><span class="p">.</span><span class="n">com</span> <span class="n">ringkee</span><span class="p">.</span><span class="n">com</span> <span class="err">#定义域名的搜索列表</span>
+
+<span class="cp"># 1.2 修改host文件 </span>
+<span class="n">sudo</span> <span class="n">vim</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">hosts</span>
+<span class="o">&gt;</span> 
+<span class="cp">#写入主机名称与ip 之间的关系</span>
+<span class="mf">192.168.0.102</span>  <span class="n">master</span>
+<span class="mf">192.168.0.179</span>  <span class="n">slaver_1</span>
+<span class="mf">192.168.0.141</span>  <span class="n">slaver_2</span>
+</pre></div>
+
+
+<h2 id="centos">CentOS</h2>
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2019 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+    
+</body>
+
+</html>

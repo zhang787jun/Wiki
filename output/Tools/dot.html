@@ -1,0 +1,242 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Dot 画图 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
+    </script>
+
+
+
+</head>
+
+<body>
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Tools">Tools</a>&nbsp;»&nbsp;Dot 画图</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Dot 画图</div>
+  <div id="content">
+  <p>参考https://www.ibm.com/developerworks/cn/aix/library/au-aix-graphviz/index.html</p>
+<p>示例：</p>
+<div class="hlcode"><pre><span class="n">digraph</span> <span class="n">a</span><span class="p">{</span>
+    <span class="n">size</span><span class="o">=</span><span class="s">&quot;41,42&quot;</span><span class="p">;</span>
+    <span class="n">edge</span> <span class="p">[</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;black&quot;</span><span class="p">]</span>
+    <span class="n">center</span><span class="o">=</span><span class="nb">true</span>
+
+    <span class="n">rankdir</span> <span class="o">=</span> <span class="n">TB</span><span class="p">;</span>
+    <span class="n">size</span><span class="o">=</span><span class="s">&quot;50,20&quot;</span>
+    <span class="n">ratio</span><span class="o">=</span><span class="mf">1.8</span>
+
+    <span class="n">User</span><span class="o">-&gt;</span><span class="n">Team_chat_session</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;Jions&quot;</span><span class="p">]</span>
+    <span class="n">User</span><span class="o">-&gt;</span><span class="n">Team_chat_session</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;Leaves&quot;</span><span class="p">]</span>
+    <span class="n">User</span><span class="o">-&gt;</span><span class="n">Team_chat_session</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;Create</span><span class="se">\n</span><span class="s"> session&quot;</span><span class="p">]</span>
+
+    <span class="n">User</span><span class="o">-&gt;</span><span class="n">Team</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;Be_a_member_of&quot;</span><span class="p">]</span>
+    <span class="n">User</span><span class="o">-&gt;</span><span class="n">ChatItems</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;CreateChat&quot;</span><span class="p">]</span>
+
+
+    <span class="n">Team_chat_session</span><span class="o">-&gt;</span><span class="n">Team</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;OwnedBy&quot;</span><span class="p">]</span> 
+    <span class="n">ChatItems</span><span class="o">-&gt;</span><span class="n">Team_chat_session</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;PartOf&quot;</span><span class="p">]</span>
+    <span class="n">ChatItems</span> <span class="o">-&gt;</span><span class="n">User</span><span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;Mentioned&quot;</span><span class="p">]</span>
+
+
+
+    <span class="n">ChatItems</span> <span class="o">-&gt;</span><span class="n">ChatItems</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;ResponseTo&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">digraph</span> <span class="n">a</span><span class="p">{</span>
+    <span class="n">size</span><span class="o">=</span><span class="s">&quot;41,42&quot;</span><span class="p">;</span>
+    <span class="n">edge</span> <span class="p">[</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;black&quot;</span><span class="p">]</span>
+    <span class="n">center</span><span class="o">=</span><span class="nb">true</span>
+
+    <span class="n">rankdir</span> <span class="o">=</span> <span class="n">TB</span><span class="p">;</span>
+    <span class="n">size</span><span class="o">=</span><span class="s">&quot;50,20&quot;</span>
+    <span class="n">ratio</span><span class="o">=</span><span class="mf">1.8</span>
+
+    <span class="n">User</span><span class="o">-&gt;</span><span class="n">Team_chat_session</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;Jions&quot;</span><span class="p">]</span>
+    <span class="n">User</span><span class="o">-&gt;</span><span class="n">Team_chat_session</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;Leaves&quot;</span><span class="p">]</span>
+    <span class="n">User</span><span class="o">-&gt;</span><span class="n">Team_chat_session</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;Create</span><span class="se">\n</span><span class="s"> session&quot;</span><span class="p">]</span>
+
+    <span class="n">User</span><span class="o">-&gt;</span><span class="n">Team</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;Be_a_member_of&quot;</span><span class="p">]</span>
+    <span class="n">User</span><span class="o">-&gt;</span><span class="n">ChatItems</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;CreateChat&quot;</span><span class="p">]</span>
+
+
+    <span class="n">Team_chat_session</span><span class="o">-&gt;</span><span class="n">Team</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;OwnedBy&quot;</span><span class="p">]</span> 
+    <span class="n">ChatItems</span><span class="o">-&gt;</span><span class="n">Team_chat_session</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;PartOf&quot;</span><span class="p">]</span>
+    <span class="n">ChatItems</span> <span class="o">-&gt;</span><span class="n">User</span><span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;Mentioned&quot;</span><span class="p">]</span>
+
+
+
+    <span class="n">ChatItems</span> <span class="o">-&gt;</span><span class="n">ChatItems</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;ResponseTo&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">digraph</span> <span class="n">g</span><span class="p">{</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;Bussiness chian&quot;</span><span class="p">;</span>
+    <span class="n">labelloc</span> <span class="o">=</span> <span class="s">&quot;t&quot;</span><span class="p">;</span>
+
+<span class="n">subgraph</span> <span class="n">cluster_2</span><span class="p">{</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;label&quot;</span><span class="p">;</span>
+    <span class="n">labelloc</span> <span class="o">=</span> <span class="s">&quot;t&quot;</span><span class="p">;</span>
+    <span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">;</span>
+    <span class="n">color</span><span class="o">=</span><span class="n">gray80</span>
+    <span class="p">{</span>
+    <span class="n">Company</span><span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">lightblue</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+    <span class="n">Product</span> <span class="p">[</span><span class="n">color</span><span class="o">=</span><span class="n">pink</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+    <span class="n">User</span><span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">lightyellow</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+    <span class="n">City</span> <span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">triangle</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">red</span><span class="p">]</span>
+    <span class="n">Company</span> <span class="o">-&gt;</span><span class="n">Product</span><span class="o">-&gt;</span><span class="n">User</span><span class="o">-&gt;</span><span class="n">City</span>
+    <span class="p">};</span>
+
+
+<span class="p">}</span>
+
+<span class="n">subgraph</span> <span class="n">cluster_3</span><span class="p">{</span>
+    <span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">;</span>
+    <span class="n">color</span><span class="o">=</span><span class="n">white</span><span class="p">;</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;process &quot;</span><span class="p">;</span>
+    <span class="n">Company_1</span> <span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">lightblue</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+    <span class="n">Company_2</span> <span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">lightblue</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+    <span class="n">Company_3</span> <span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">lightblue</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+
+    <span class="n">Product_1</span> <span class="p">[</span><span class="n">color</span><span class="o">=</span><span class="n">pink</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+    <span class="n">Product_2</span> <span class="p">[</span><span class="n">color</span><span class="o">=</span><span class="n">pink</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+    <span class="n">Product_3</span> <span class="p">[</span><span class="n">color</span><span class="o">=</span><span class="n">pink</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+
+    <span class="n">User_1</span> <span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">lightyellow</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+    <span class="n">User_2</span> <span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">lightyellow</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+    <span class="n">User_3</span> <span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">lightyellow</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+
+    <span class="n">City_1</span> <span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">triangle</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">red</span><span class="p">]</span>
+    <span class="n">City_2</span> <span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">triangle</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">red</span><span class="p">]</span>
+
+    <span class="n">Company_1</span><span class="o">-&gt;</span><span class="n">Product_1</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;produce&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">]</span>
+    <span class="n">Company_2</span><span class="o">-&gt;</span><span class="n">Product_1</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;produce&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">]</span>
+    <span class="n">Company_3</span><span class="o">-&gt;</span><span class="n">Product_1</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;produce&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">]</span>
+    <span class="n">Company_2</span><span class="o">-&gt;</span><span class="n">Product_2</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;produce&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">]</span>
+    <span class="n">Company_3</span><span class="o">-&gt;</span><span class="n">Product_3</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;produce&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">]</span>
+    <span class="n">Company_3</span><span class="o">-&gt;</span><span class="n">Product_2</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;produce&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">]</span>
+
+
+    <span class="n">Company_1</span><span class="o">-&gt;</span><span class="n">City_1</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;located in&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;blue&quot;</span><span class="p">]</span>
+    <span class="n">Company_2</span><span class="o">-&gt;</span><span class="n">City_1</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;located in&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;blue&quot;</span><span class="p">]</span>
+    <span class="n">Company_3</span><span class="o">-&gt;</span><span class="n">City_2</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;located in&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;blue&quot;</span><span class="p">]</span>
+    <span class="n">User_2</span><span class="o">-&gt;</span><span class="n">City_2</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;located in&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;blue&quot;</span><span class="p">]</span>
+    <span class="n">User_3</span><span class="o">-&gt;</span><span class="n">City_2</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;located in&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;blue&quot;</span><span class="p">]</span>
+    <span class="n">User_1</span><span class="o">-&gt;</span><span class="n">City_1</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;located in&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;blue&quot;</span><span class="p">]</span>
+
+    <span class="n">Product_1</span><span class="o">-&gt;</span><span class="n">User_1</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;support&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;green&quot;</span><span class="p">]</span>
+    <span class="n">Product_1</span><span class="o">-&gt;</span><span class="n">User_2</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;support&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;green&quot;</span><span class="p">]</span>
+    <span class="n">Product_1</span><span class="o">-&gt;</span><span class="n">User_3</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;support&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;green&quot;</span><span class="p">]</span>
+    <span class="nl">Product_3:</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">Company_2</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;support&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;green&quot;</span><span class="p">]</span>
+    <span class="n">Product_3</span><span class="o">-&gt;</span><span class="n">User_3</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;support&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;green&quot;</span><span class="p">]</span>
+    <span class="n">Product_1</span><span class="o">-&gt;</span><span class="n">User_3</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;support&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;green&quot;</span><span class="p">]</span>
+    <span class="n">Product_2</span><span class="o">-&gt;</span><span class="n">User_2</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;support&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;green&quot;</span><span class="p">]</span>
+
+
+    <span class="p">{</span><span class="n">rank</span><span class="o">=</span><span class="n">same</span><span class="p">;</span><span class="n">Company</span><span class="p">;</span><span class="n">Company_1</span><span class="p">,</span><span class="n">Company_2</span><span class="p">,</span><span class="n">Company_3</span><span class="p">}</span>
+
+<span class="p">}</span>
+
+<span class="p">}</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">digraph</span> <span class="n">g</span><span class="p">{</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;Bussiness chian&quot;</span><span class="p">;</span>
+    <span class="n">labelloc</span> <span class="o">=</span> <span class="s">&quot;t&quot;</span><span class="p">;</span>
+
+<span class="n">subgraph</span> <span class="n">cluster_2</span><span class="p">{</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;label&quot;</span><span class="p">;</span>
+    <span class="n">labelloc</span> <span class="o">=</span> <span class="s">&quot;t&quot;</span><span class="p">;</span>
+    <span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">;</span>
+    <span class="n">color</span><span class="o">=</span><span class="n">gray80</span>
+    <span class="p">{</span>
+    <span class="n">Company</span><span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">lightblue</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+    <span class="n">Product</span> <span class="p">[</span><span class="n">color</span><span class="o">=</span><span class="n">pink</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+    <span class="n">User</span><span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">lightyellow</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+    <span class="n">City</span> <span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">triangle</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">red</span><span class="p">]</span>
+    <span class="n">Company</span> <span class="o">-&gt;</span><span class="n">Product</span><span class="o">-&gt;</span><span class="n">User</span><span class="o">-&gt;</span><span class="n">City</span>
+    <span class="p">};</span>
+
+
+<span class="p">}</span>
+
+<span class="n">subgraph</span> <span class="n">cluster_3</span><span class="p">{</span>
+    <span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">;</span>
+    <span class="n">color</span><span class="o">=</span><span class="n">white</span><span class="p">;</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="s">&quot;process &quot;</span><span class="p">;</span>
+    <span class="n">Company_1</span> <span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">lightblue</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+    <span class="n">Company_2</span> <span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">lightblue</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+    <span class="n">Company_3</span> <span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">lightblue</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+
+    <span class="n">Product_1</span> <span class="p">[</span><span class="n">color</span><span class="o">=</span><span class="n">pink</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+    <span class="n">Product_2</span> <span class="p">[</span><span class="n">color</span><span class="o">=</span><span class="n">pink</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+    <span class="n">Product_3</span> <span class="p">[</span><span class="n">color</span><span class="o">=</span><span class="n">pink</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+
+    <span class="n">User_1</span> <span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">lightyellow</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+    <span class="n">User_2</span> <span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">lightyellow</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+    <span class="n">User_3</span> <span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">lightyellow</span><span class="p">,</span><span class="n">style</span><span class="o">=</span><span class="n">filled</span><span class="p">]</span>
+
+    <span class="n">City_1</span> <span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">triangle</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">red</span><span class="p">]</span>
+    <span class="n">City_2</span> <span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">triangle</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">red</span><span class="p">]</span>
+
+    <span class="n">Company_1</span><span class="o">-&gt;</span><span class="n">Product_1</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;produce&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">]</span>
+    <span class="n">Company_2</span><span class="o">-&gt;</span><span class="n">Product_1</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;produce&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">]</span>
+    <span class="n">Company_3</span><span class="o">-&gt;</span><span class="n">Product_1</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;produce&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">]</span>
+    <span class="n">Company_2</span><span class="o">-&gt;</span><span class="n">Product_2</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;produce&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">]</span>
+    <span class="n">Company_3</span><span class="o">-&gt;</span><span class="n">Product_3</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;produce&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">]</span>
+    <span class="n">Company_3</span><span class="o">-&gt;</span><span class="n">Product_2</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;produce&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;red&quot;</span><span class="p">]</span>
+
+
+    <span class="n">Company_1</span><span class="o">-&gt;</span><span class="n">City_1</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;located in&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;blue&quot;</span><span class="p">]</span>
+    <span class="n">Company_2</span><span class="o">-&gt;</span><span class="n">City_1</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;located in&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;blue&quot;</span><span class="p">]</span>
+    <span class="n">Company_3</span><span class="o">-&gt;</span><span class="n">City_2</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;located in&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;blue&quot;</span><span class="p">]</span>
+    <span class="n">User_2</span><span class="o">-&gt;</span><span class="n">City_2</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;located in&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;blue&quot;</span><span class="p">]</span>
+    <span class="n">User_3</span><span class="o">-&gt;</span><span class="n">City_2</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;located in&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;blue&quot;</span><span class="p">]</span>
+    <span class="n">User_1</span><span class="o">-&gt;</span><span class="n">City_1</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;located in&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;blue&quot;</span><span class="p">]</span>
+
+    <span class="n">Product_1</span><span class="o">-&gt;</span><span class="n">User_1</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;support&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;green&quot;</span><span class="p">]</span>
+    <span class="n">Product_1</span><span class="o">-&gt;</span><span class="n">User_2</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;support&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;green&quot;</span><span class="p">]</span>
+    <span class="n">Product_1</span><span class="o">-&gt;</span><span class="n">User_3</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;support&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;green&quot;</span><span class="p">]</span>
+    <span class="nl">Product_3:</span><span class="n">s</span><span class="o">-&gt;</span><span class="n">Company_2</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;support&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;green&quot;</span><span class="p">]</span>
+    <span class="n">Product_3</span><span class="o">-&gt;</span><span class="n">User_3</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;support&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;green&quot;</span><span class="p">]</span>
+    <span class="n">Product_1</span><span class="o">-&gt;</span><span class="n">User_3</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;support&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;green&quot;</span><span class="p">]</span>
+    <span class="n">Product_2</span><span class="o">-&gt;</span><span class="n">User_2</span> <span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;support&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="s">&quot;green&quot;</span><span class="p">]</span>
+
+
+    <span class="p">{</span><span class="n">rank</span><span class="o">=</span><span class="n">same</span><span class="p">;</span><span class="n">Company</span><span class="p">;</span><span class="n">Company_1</span><span class="p">,</span><span class="n">Company_2</span><span class="p">,</span><span class="n">Company_3</span><span class="p">}</span>
+
+<span class="p">}</span>
+
+<span class="p">}</span>
+</pre></div>
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2019 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+    
+</body>
+
+</html>
