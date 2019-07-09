@@ -1290,12 +1290,12 @@ TensorFlow 并不知道那个node 需要本整合
                 tf.get_variable("b", [1])        # Error
 
 
-## 9. 损失函数 tf.losses
+## 9. 函数 tf.losses
 
 
-**损失函数**是衡量由特征值x经过模型f得到的预测值y_=f(x)与真实值y的差距，是衡量预测错误程度的指标
+**函数**是衡量由特征值x经过模型f得到的预测值y_=f(x)与真实值y的差距，是衡量预测错误程度的指标
 
-损失函数的问题最终还是要归结于 任务类型，是处理 predict_label 和 real_label 的问题
+函数的问题最终还是要归结于 任务类型，是处理 predict_label 和 real_label 的问题
 
 单个样本：成本函数（Loss Function）
 多个样本：成本函数（Cost Function）
@@ -1311,7 +1311,7 @@ TensorFlow 并不知道那个node 需要本整合
 
 
 
-### 9.1.  0-1损失函数
+### 9.1.  0-1函数
 $$
 Loss(y\_ ,y)=\begin{cases}
 1   (y\_!=y)\\
@@ -1330,7 +1330,7 @@ cost = tf.reduce_mean(loss)
 ```
 **封装：**
 ```python
-# 注意正确率的定义中 相等以及不等 相反,损失函数为不正确率 
+# 注意正确率的定义中 相等以及不等 相反,函数为不正确率 
 accuracy,update_op=tf.metrics.accuracy(
     labels,
     predictions,
@@ -1356,7 +1356,7 @@ $$Loss(y\_ ,y)=\begin{cases}
 $$
 
 
-### 9.2  绝对值损失
+### 9.2  绝对值
 
 $$Loss(y\_ ,y)=|y\_ -y|$$
 
@@ -1392,16 +1392,17 @@ loss=tf.metrics.mean_absolute_error(
 )
 ```
 
-### 9.3 log对数损失函数
+### 9.3 log对数函数
 
 
-**log对数损失函数**，又称为 **对数似然损失函数** ，表示为
+**log对数函数**，又称为 **对数似然函数** ，是对**单个样本**的描述，表示为
 $$Loss(y,P(y|x))$$
 
-
-是关于实际值y，与 特征值x下的后验概率P(y|x) 的损失函数。这个函数的值通过下面的公式计算 
+是关于**实际值y**，与 特征值x下的**后验概率P(y|x)** 的函数，**log对数**等于**后验概率**的对数。这个函数的值通过下面的**log函数的标准形式**计算：
 
 $$Loss(y,P(y|x))=-\log{P(y|x)}$$
+
+$$Coss(y,P(y|x))=-\frac{1}{N} \sum{log{P(y|x)}}$$
 
 “似然性”与“或然性”或“概率”意思相近，都是指某种事件发生的可能性，但是在统计学中，“似然性”和“或然性”或“概率”又有明确的区分。
 
@@ -1414,25 +1415,20 @@ $$Loss(y,P(y|x))=-\log{P(y|x)}$$
 $$ L(x|y) = P(y|x)$$
 
 
+**关于后验概率P(y|x)**
 
-对数机率函数(Sigmoid 函数)形式如下：
+在神经网络模型中，通常将经过激活函数的(0,1)范围的输出层值作为作为**后验概率P(y|x)**
 
-$$y=f(z)=\frac{1}{1+e^{-z}}=\frac{e^z}{1+e^{z}}$$
+$$P(y|x)=sigmod(Wx+b)$$
 
-可以推出：
-$$ln\frac{y}{1-y}=z$$
 
-如果针对二分类问题，将y视为正样本的概率，则1-y为负样本的可能性，形如下面的则称为 事件为正样本的**几率**：
-$$\frac{y}{1-y}$$
-形如下面的则称为正样本的**对数机率**
-$$ln\frac{y}{1-y}$$
+#### 对于二分类问题
 
-cross entropy
 
 二分类问题的后验概率P(label=0|x)（当输入为x时，label=0的概率）,可知
 
 $$P(label=0|x)=1-P(label=1|x)$$
-若令$y=P(label=0|x)$,则 正样本（label=0）的**对数机率** 
+若令$y=P(label=0|x)$,则 正样本（label=0）的**对数机率** z
 $$ln\frac{y}{1-y}=ln\frac{P(label=0|x)}{P(label=1|x)}=z$$
 
 依据输入特征x，确定该特征对应的label=0的概率为$P(label=0|x)$
@@ -1442,36 +1438,47 @@ $$P(label=0|x)=\frac{1}{1+e^{-z}}=\frac{e^z}{1+e^{z}}$$
 依据输入特征x，确定该特征对应的label=1的概率为$P(label=1|x)$，
 $$P(label=1|x)=1-P(label=0|x)=\frac{1}{1+e^{z}}$$
 
-后验概率P 一定意义上也是样本x和目标值0的接近程度。
+即 
+$$P(label∣x)=\begin{cases}
+\frac{e^z}{1+e^{z}}=\frac{e^{wx+b}}{1+e^{wx+b}}, label=0\\
+\frac{1}{1+e^{z}}=\frac{1}{1+e^{wx+b}}, label=1\\
+\end{cases}
+$$
 
-在信息论中，基于相同事件测度的两个概率分布 p(x)和 q(x)的**交叉熵**是指，
-$$H(P,q)=-\sum{p(x) \log{q(x)} }$$
-交叉熵是用来描述p分布和q分布的距离，神经网络训练的目的就是使 g(x) 逼近 p(x)，他们之江距离越小，损失函数越小。
+$$Loss(y,P(y|x))=-\log {P(y|x)}=\begin{cases}
+-\log{\frac{e^z}{1+e^{z}}}, y=0\\
+-\log{\frac{1}{1+e^{z}}}, y=1\\
+\end{cases}
+$$
 
-log对数损失函数为
-$$Loss(real\_labe,P(real\_labe|x))=-\sum{real\_label*logP(label=real\_label|x)}=-\sum{logP(label=1|x)}$$
 
 **手动：**
 ```python
 import numpy as np
 
-def logloss(y_true, y_pred, eps=1e-15):
+# y_true ==labels
+# y_pred ==predictions
+
+def logcoss(y_true, y_pred, eps=1e-15):
     # Prepare numpy array data
     y_true = np.array(y_true)
-    y_pred = np.array(y_pred)
+    y_pred = np.array(y_pred) 
     assert (len(y_true) and len(y_true) == len(y_pred))
     # Clip y_pred between eps and 1-eps
     p = np.clip(y_pred, eps, 1-eps)
     loss = np.sum(- y_true * np.log(p) - (1 - y_true) * np.log(1-p))
-    return loss / len(y_true)
+    cost=loss / len(y_true)
+    return cost
 
 ```
 **封装：**
 
+$$logloss=weights*(labels* \log{(predictions+epsilon)} + (1-labels)* \log{(1-predictions+epsilon)})$$
+
 ```python
 log_loss=tf.losses.log_loss(
     labels,
-    predictions,
+    predictions, 
     weights=1.0,
     epsilon=1e-07, 
     scope=None,
@@ -1479,11 +1486,12 @@ log_loss=tf.losses.log_loss(
     reduction=Reduction.SUM_BY_NONZERO_WEIGHTS
 )
 
+log_cost=tf.reduce_mean(log_loss)
 ```
 **应用**
 Logistic回归
 
-### 9.4 平方损失函数:
+### 9.4 平方函数:
 
 $$loss(y\_,y)=\sum{(y\_-y)^2}$$
 
@@ -1509,7 +1517,7 @@ mean_squared_error=tf.losses.mean_squared_error(
 )
 # mean_squared_error shape =() is a value
 
-# 平方损失函数实际为 均方差（MSE）
+# 平方函数实际为 均方差（MSE）
 mean_squared_error,update_op=tf.metrics.root_mean_squared_error(
     labels,
     predictions, #　predictions　为predict＿label
@@ -1521,9 +1529,9 @@ mean_squared_error,update_op=tf.metrics.root_mean_squared_error(
 # mean_squared_error shape =() is a value
 ```
 **应用：**
-最小二乘法通常用欧式距离进行距离的度量,使用平方损失函数
+最小二乘法通常用欧式距离进行距离的度量,使用平方函数
 
-### 9.5 指数损失函数
+### 9.5 指数函数
 
 $$loss(y\_,y)=e^{-y\_·y}=\frac{e^y} {e^{y\_}}$$
 
@@ -1538,11 +1546,11 @@ cost = tf.reduce_mean(loss,axis=None,keep_dims=False,name=None,reduction_indices
 ```
 
 **应用**
-AdaBoost使用指数损失函数。
+AdaBoost使用指数函数。
 
 
 
-### 9.6 Hinge损失函数
+### 9.6 Hinge函数
 
 $$loss(y\_,y)=max(0,1-y\_·y)$$
 
@@ -1575,6 +1583,62 @@ Hinge loss用于最大间隔（maximum-margin）分类，其中最有代表性�
 
 ### 9.7. 神经网络里面的loss （tf.nn.loss）
 参考：https://www.tensorflow.org/api_docs/python/tf/losses
+
+
+
+>关于**概率的讨论**
+如果针对二分类问题，将P视为正样本的概率，则1-P为负样本的可能性，形如下面的则称为 事件为正样本的**几率**：
+$$\frac{P}{1-P}$$
+形如下面的则称为正样本的**对数机率** z
+$$z=ln\frac{P}{1-P}$$
+
+>数学上
+$$ln\frac{p}{1-p}=z$$
+可以推出，**对数机率函数** （Sigmoid 函数） 形式如下：
+$$p=f(z)=\frac{1}{1+e^{-z}}=\frac{e^z}{1+e^{z}} $$
+
+
+
+
+#### 熵
+
+**熵--当只有一个变量分布**
+
+
+从相对熵和交叉熵的定义来看，将交叉熵作为函数较为可行 
+下面举个例子来说明计算各个指标
+序号	事件	模型预测概率	真实标记	信息量
+A	电脑正常开机	0.7	1	-log(p(A))=0.36
+B	电脑无法开机	0.3	0	-log(p(B))=1.2
+因此，可计算熵如下 
+H(Q)H(p,q)=E(I(X))=0.36∗0.7+1.2∗0.3=0.612=−p(A)log(q(A))−p(B)log(q(B))=−1∗log(0.7)−0∗log(0.3)=0.357
+H(Q)=E(I(X))=0.36∗0.7+1.2∗0.3=0.612H(p,q)=−p(A)log(q(A))−p(B)log(q(B))=−1∗log(0.7)−0∗log(0.3)=0.357
+
+
+
+熵是对于给定分布 $q(x)$ 的不确定性的度量， 当取自有限的样本时，熵的公式可以表示为。
+
+$$H(q(x))=-\sum{q(x) \log{q(x)} }$$
+
+如果我们已知 所有的点都是绿色的，单一的？ 那个分布的不确定性是0，熵为0。
+如果我们已知，数据点服从q（x） 分布，我们可以依据上式计算该分布的熵
+
+
+**交叉熵--当有2个变量分布**
+
+在信息论中，基于相同事件测度的两个概率分布 P(x)和 q(x)的**交叉熵**是指，
+$$H(P(x),q(x))=-\sum{P(x) \log{q(x)} }$$
+
+交叉熵是用来描述p分布和q分布的距离
+
+现实情况中，多数情况式我们不知道数据的的真实分布。假设，数据真实分布为q(y)，我们推测其分为P（y_）。如果我们像这样计算熵，我们实际上是在计算两个分布之间的交叉熵：
+
+$$H(q(y),P(y\_))=-\sum{q(y) * \log{ P(y\_ ) } }$$
+
+
+模型训练的目的就是使 预测分布P(x) 逼近 q(x)，他们之间距离越小，函数越小。
+
+
 #### 9.7.1  tf.nn.sigmoid_cross_entropy_with_logits
 
 `predict_label=sigmoid(logits)`
@@ -1724,7 +1788,7 @@ tf.Graph
 基本步骤：
 1. Get input, output , saver and graph"""#从导入图中获取需要的东西（）
 2. 构造新的variables用于后面的finetuning
-3. 构造损失
+3. 构造
 4. 构造 op
 5. 开始新的训练
 

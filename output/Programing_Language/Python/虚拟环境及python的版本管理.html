@@ -29,9 +29,21 @@
 <div class="clearfix"></div>
 <div id="title">虚拟环境及python的版本管理</div>
   <div id="content">
-  <h1 id="python">虚拟环境及python的版本管理</h1>
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#python">虚拟环境及python的版本管理</a></li>
+</ul>
+</div>
+<h1 id="python">虚拟环境及python的版本管理</h1>
 <p>virtualenv就是一个搭建虚拟化的python环境，便于不同的项目在同一台机器上开发运行。</p>
 <p>virtualenv更多的还是适用于本地开发不同的项目，但是在生产环境中还是使用docker给不同的项目创建不同的容器，各自分开运行为好，不宜放在一个单独的物理机中运行。</p>
+<div class="hlcode"><pre><span class="n">pip3</span> <span class="n">install</span> <span class="n">virtualenv</span>
+<span class="err">````</span>
+
+<span class="cp">## 第三方包 加速 </span>
+
+<span class="err">```</span><span class="n">shell</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">i</span> <span class="n">https</span><span class="o">:</span><span class="c1">//pypi.doubanio.com/simple/ --trusted-host pypi.doubanio.com django</span>
+</pre></div>
 </div>
 
     </div>

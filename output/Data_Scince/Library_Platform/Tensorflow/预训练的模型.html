@@ -41,7 +41,12 @@ ResNet：https://github.com/ry/tensorflow-resnet</p>
 <h2 id="torch">Torch</h2>
 <p>LoadCaie：https://github.com/szagoruyko/loadcaffe</p>
 <h2 id="caffe">Caffe</h2>
-<p>Model Zoo：https://github.com/BVLC/caffe/wiki/Model-Zoo<br />
+<p>Model Zoo：https://github.com/BVLC/caffe/wiki/Model-Zoo</p>
+<p>6.6  TensorFlow Model Zoo <br />
+TensorFlow 的模型都位于 https://github.com/tensorflow/models。正如 5.2 节中介绍的，这个 目录中有很多图像和语音处理的模型，可以直接拿来用。这些模型的检查点文件（参参 4.8.1 节 ckpt 模型文件的保存）有的被打成压缩包，可以直接下载，当作预训练模型使用，如表 6-1 所示。<br />
+表 6-1 <br />
+模型 检查点 Inception V1 inception_v1_2016_08_28.tar.gz Inception V2 inception_v2_2016_08_28.tar.gz Inception V3 inception_v3_2016_08_28.tar.gz Inception V4 inception_v4_2016_09_09.tar.gz Inception-ResNet-v2 inception_resnet_v2.tar.gz ResNet 50 resnet_v1_50.tar.gz ResNet 101 resnet_v1_101.tar.gz ResNet 152 resnet_v1_152.tar.gz VGG16 vgg_16.tar.gz VGG19 vgg_19.tar.gz<br />
+此外，我们知道，Caffe 因为开源时间比较久，有很多训练好的模型，读者可以利用它作为 自己训练项目的预训练模型，大大地减少训练时间和迭代次数。Caffe 的模型位于 Caffe Model Zoo 中，我们可以用工具①将 Caffe 的模型转换为 TensorFlow 的模型<br />
 </p>
 </div>
 
