@@ -217,6 +217,10 @@ H_all, h_t, c_t  =sess.run(a,feed_dict={x:x_instance})
 H_all 是 $np.array(h^{\langle t \rangle},h^{\langle t-1 \rangle},h^{\langle t-2 \rangle},...,h^{\langle 1 \rangle})$
 
 
+经过初步调查，常用的LSTM层有Keras.layers.LSTM 和 Tensorflow.contrib.nn.LSTMCell 及 Tensorflow.nn.rnn_cell.LSTMCell ，其中后面两个的实现逻辑是一样的。
+
+
+
 ```python
 tf.keras.layers.RNN(
     cell,

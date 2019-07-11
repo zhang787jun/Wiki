@@ -1585,36 +1585,42 @@ Hinge loss用于最大间隔（maximum-margin）分类，其中最有代表性�
 参考：https://www.tensorflow.org/api_docs/python/tf/losses
 
 
-
 >关于**概率的讨论**
-如果针对二分类问题，将P视为正样本的概率，则1-P为负样本的可能性，形如下面的则称为 事件为正样本的**几率**：
-$$\frac{P}{1-P}$$
-形如下面的则称为正样本的**对数机率** z
-$$z=ln\frac{P}{1-P}$$
+
+**概率（Probability） P** 描述的是某事件A出现的次数与所有事件出现的次数之比:
+
+$$P(A)=\frac{发生事件A的次数}{发送所有事件的次数}$$
+
+$$P(A) \subset[0,1]$$
+
+如果针对二分类问题，将P视为正样本的概率，则1-P为负样本的可能性，形如下面的则称为 事件为正样本的**几率 （Odds）**：
+$$Odds(A)=\frac{P(A)}{1-P(A)}=\frac{事件A发生的概率}{事件A不发生的概率}$$
+$$Odds(A) \subset[0,+\infty)$$
+
+**Logit变换** 是指log it(它)，Logit Odds 就是对Odds 进行log(Odds)计算
+
+对上式进行**Logit变换**,形如下面的则称为正样本的**对数机率** z
+$$z=ln(Odds(A))=ln\frac{P(A)}{1-P(A)}$$
+$$z \subset(-\infty,+\infty)$$
+
+
+![](/attach/images/2019-07-10-16-24-57.png)
+
+
 
 >数学上
-$$ln\frac{p}{1-p}=z$$
-可以推出，**对数机率函数** （Sigmoid 函数） 形式如下：
-$$p=f(z)=\frac{1}{1+e^{-z}}=\frac{e^z}{1+e^{z}} $$
+$$ln\frac{P(A)}{1-P(A)}=z$$
+可以推出，概率P(A) 形式如下：
+$$P(A)=f(z)=\frac{1}{1+e^{-z}}=\frac{e^z}{1+e^{z}} $$
 
+
+$f(z)=\frac{1}{1+e^{-z}}$称为**对数机率函数** ，其数形式与Sigmoid 函数相同
 
 
 
 #### 熵
 
 **熵--当只有一个变量分布**
-
-
-从相对熵和交叉熵的定义来看，将交叉熵作为函数较为可行 
-下面举个例子来说明计算各个指标
-序号	事件	模型预测概率	真实标记	信息量
-A	电脑正常开机	0.7	1	-log(p(A))=0.36
-B	电脑无法开机	0.3	0	-log(p(B))=1.2
-因此，可计算熵如下 
-H(Q)H(p,q)=E(I(X))=0.36∗0.7+1.2∗0.3=0.612=−p(A)log(q(A))−p(B)log(q(B))=−1∗log(0.7)−0∗log(0.3)=0.357
-H(Q)=E(I(X))=0.36∗0.7+1.2∗0.3=0.612H(p,q)=−p(A)log(q(A))−p(B)log(q(B))=−1∗log(0.7)−0∗log(0.3)=0.357
-
-
 
 熵是对于给定分布 $q(x)$ 的不确定性的度量， 当取自有限的样本时，熵的公式可以表示为。
 
@@ -1630,6 +1636,8 @@ $$H(q(x))=-\sum{q(x) \log{q(x)} }$$
 $$H(P(x),q(x))=-\sum{P(x) \log{q(x)} }$$
 
 交叉熵是用来描述p分布和q分布的距离
+
+>**现实情况中**
 
 现实情况中，多数情况式我们不知道数据的的真实分布。假设，数据真实分布为q(y)，我们推测其分为P（y_）。如果我们像这样计算熵，我们实际上是在计算两个分布之间的交叉熵：
 
@@ -1652,7 +1660,7 @@ cross_entropy=tf.nn.sigmoid_cross_entropy_with_logits(
 )
 # labels
 # predict_label=sigmoid(logits)
-# cross_entropy.shape=predict_label.shape=labels.shape
+# cross_entropy的shape ：cross_entropy.shape=predict_label.shape=labels.shape
 ```
 
 
@@ -1662,7 +1670,7 @@ cross_entropy=tf.nn.sigmoid_cross_entropy_with_logits(
 
 `predict_label=softmax(logits)`
 ```python
-tf.nn.softmax_cross_entropy_with_logits(
+cross_entropy=tf.nn.softmax_cross_entropy_with_logits(
     _sentinel=None,
     labels=None,
     logits=None,
@@ -2730,6 +2738,37 @@ profiler.advise(opts)
 不要每次　sess.run 里面都加入 runmetadata 对象，这样会使得整个模型每次都去收集时间耗费及内存占用数据，只需要隔N次收集一次就行了；
 
 ## 17.命令行传递参数(tf.app)
+
+
+除了bool类，我们还可以定义其他的类型数据，如：
+
+tf.app.flags.DEFINE_integer
+tf.app.flags.DEFINE_float
+tf.app.flags.DEFINE_string
+
+```python
+import tensorflow as tf
+ 
+#第一个是参数名称，第二个参数是默认值，第三个是参数描述
+tf.app.flags.DEFINE_string('str_name', 'default_value',"description1")
+tf.app.flags.DEFINE_integer('int_name', 10,"description2")
+tf.app.flags.DEFINE_boolean('bool_name', False, "description3")
+ 
+FLAGS = tf.app.flags.FLAGS
+ 
+#必须带参数，否则：'TypeError: main() takes no arguments (1 given)';   main的参数名随意定义，无要求
+def main(_):  
+    print(FLAGS.str_name)
+    print(FLAGS.int_name)
+    print(FLAGS.bool_name)
+if __name__ == '__main__':
+    tf.app.run()  #执行main函数
+
+```
+
+```shell
+python "xxx.py" --str_name hahaha
+```
 
 
 ## X1. 基于Tensorflow 的模型训练 基本步骤
