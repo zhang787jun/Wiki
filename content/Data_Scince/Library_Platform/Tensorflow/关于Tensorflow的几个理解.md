@@ -2308,6 +2308,7 @@ profiler = tf.profiler.Profiler(graph=sess.graph,op_log=None)
 # profiler 实例
 # op_log: optional. tensorflow::tfprof::OpLogProto proto. Used to define extra op types.
 ```
+初始化 profiler评估器实例需要确定DAG图，可选项为 op_log
 
 2. 创建protobuf格式的数据结构对象
 
@@ -2321,7 +2322,9 @@ type(run_metadata)
 run_options = tf.RunOptions(trace_level = tf.RunOptions.FULL_TRACE)
 type(run_options)
 >>>tensorflow.core.protobuf.config_pb2.RunOptions
+
 ```
+RunOptions 设置评估器的运行参数选项，包括:全记录，记录硬件信息，记录软件信息，不记录。
 
 ```python
 tf.RunOptions 类
@@ -2342,7 +2345,6 @@ for step in range (total_steps):
 profiler.profile_graph(options=profile_graph_opts_builder.build()) #@3
 
 ```
-
 profiler 分为数据搜集和数据显示两个主要步骤。
 
 graph node的每一次执行，记录单步统计数据，主要是执行时间和占用内存，格式参见step_stats.proto，作为原始的最小粒度统计数据源；
@@ -2461,7 +2463,8 @@ Selectively counting statistics based on node types ，比如这里设定展示�
 同时选项字典可以通过tf.profile.ProfileOptionBuilder构建字典 
 
 ```python
-class ProfileOptionBuilder：用于Profiling API的Option Builder。
+class ProfileOptionBuilder：
+#用于Profiling API的Option Builder。
 ```
 评估器选项构建器 ProfileOptionBuilder
 1. 记录内容选项
@@ -2487,7 +2490,9 @@ ProfileOptionBuilder.time_and_memory(
 # 视图输出方式：
 ```
 ##### 2. 记录浮点运算情况
+```python
 ProfileOptionBuilder.float_operation()
+```
 
 
 #### 16.4.2 输出选项

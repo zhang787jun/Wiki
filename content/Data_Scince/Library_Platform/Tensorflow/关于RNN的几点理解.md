@@ -10,20 +10,40 @@ date: 2019-06-17 00:00
 
 ## 0. LSTM
 
-LSTM cell 的输入
-1. $C_{i-1}$   $i-1$ cell 的statue 状态
-2. $H_{i-1}$   $i-1$ cell 的statue 状态
+
+LSTM cell 单元 的输入
+
+$X=\{x_1,x_2,...x_n\}$,  X.shape=(counts,n,...)
+
+| 编号 | 符号      | 描述                                            | shape                      | tf/keras |
+| ---- | --------- | ----------------------------------------------- | -------------------------- | -------- |
+| 1.   | $C_{i-1}$ | $i-1$ cell 的单元状态，记忆细胞 （Memory Cell） |                            | 初始化， |
+| 2.   | $H_{i-1}$ | $i-1$ cell 的输出值，输出隐含层（Hidden Layer） | shape=(counts,1,units)     |          |
+| 3.   | $x_{i}$   | $i$ cell 的输入量                               | $x_i$.shape=(counts,1,...) | 数据输入 |
+
+
+LSTM cell 单元 的输出
+| 编号 | 符号    | 描述                                          | shape                  | tf/keras |
+| ---- | ------- | --------------------------------------------- | ---------------------- | -------- |
+| 1.   | $C_{i}$ | $i$ cell 的单元状态，记忆细胞 （Memory Cell） |                        | 初始化， |
+| 2.   | $H_{i}$ | $i$ cell 的输出值，输出隐含层（Hidden Layer） | shape=(counts,1,units) |          |
 
 ### 关于门
 
 **遗忘门**的功能是决定应丢弃或保留哪些信息
-**输入门（更新门**用于更新细胞状态。
-**输出门**用来确定下一个隐藏状态的值
+**输入门(更新门)** 用于更新细胞状态。
+**输出门** 用来确定下一个隐藏状态的值
+
+| gate 门                        | 范围  |
+| ------------------------------ | ----- |
+| $\Gamma_f^{\langle t \rangle}$ | (0,1) |
+| $\Gamma_i^{\langle t \rangle}$ | (0,1) |
+| $\Gamma_o^{\langle t \rangle}$ | (0,1) |
+
 
 
 #### - 遗忘门 Forget gate
 
-In an LSTM, the forget gate lets us do this: 
 
 $$\Gamma_f^{\langle t \rangle} = \sigma(W_f[h^{\langle t-1 \rangle}, x^{\langle t \rangle}] + b_f)\tag{1} $$
 
