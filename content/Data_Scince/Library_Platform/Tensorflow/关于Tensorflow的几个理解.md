@@ -1282,18 +1282,19 @@ TensorFlow 并不知道那个node 需要本整合
 
         with tf.name_scope("a"):
                 a = tf.Variable([1])
-                print a.name     # 输出 a/Variable: 0
-
-        　　    a = tf.Variable("b", [1]):
+                print a.name     # 输出 a/Va        　　    a = tf.Variable("b", [1]):
         　　    print a.name　# 输出 b: 0
 
         with tf.name_scope("b"):
                 tf.get_variable("b", [1])        # Error
 
 
-## 9. 损失函数 tf.losses
+## 9. 函数 tf.losses
 
-损失函数的问题最终还是要归结于 任务类型，是处理 predict_label 和 real_label 的问题
+
+**函数**是衡量由特征值x经过模型f得到的预测值y_=f(x)与真实值y的差距，是衡量预测错误程度的指标
+
+函数的问题最终还是要归结于 任务类型，是处理 predict_label 和 real_label 的问题
 
 单个样本：成本函数（Loss Function）
 多个样本：成本函数（Cost Function）
@@ -1309,8 +1310,9 @@ TensorFlow 并不知道那个node 需要本整合
 
 
 
-### 9.1.  0-1损失函数
-$$Loss(y\_ ,y)=\begin{cases}
+### 9.1.  0-1函数
+$$
+Loss(y\_ ,y)=\begin{cases}
 1   (y\_!=y)\\
 0   (y\_==y)\\
 \end{cases}
@@ -1327,7 +1329,7 @@ cost = tf.reduce_mean(loss)
 ```
 **封装：**
 ```python
-# 注意正确率的定义中 相等以及不等 相反,损失函数为不正确率 
+# 注意正确率的定义中 相等以及不等 相反,函数为不正确率 
 accuracy,update_op=tf.metrics.accuracy(
     labels,
     predictions,
@@ -1370,7 +1372,7 @@ cost = tf.reduce_mean(loss,axis=None,keep_dims=False,name=None,reduction_indices
 **封装：**
 ```python
 
-tf.losses.absolute_difference(
+loss=tf.losses.absolute_difference(
     labels,
     predictions,
     weights=1.0,
@@ -1379,7 +1381,7 @@ tf.losses.absolute_difference(
     reduction=Reduction.SUM_BY_NONZERO_WEIGHTS
 )
 
-tf.metrics.mean_absolute_error(
+loss=tf.metrics.mean_absolute_error(
     labels,
     predictions,
     weights=None,
@@ -1389,61 +1391,106 @@ tf.metrics.mean_absolute_error(
 )
 ```
 
-### 9.3 log对数损失函数
+### 9.3 log对数函数
 
 
-对数机率函数(Sigmoid 函数):
-$$y=f(z)=\frac{1}{1+e^{-z}}=\frac{e^z}{1+e^{z}}$$
+**log对数函数**，又称为 **对数似然函数** ，是对**单个样本**的描述，表示为
+$$Loss(y,P(y|x))$$
 
-可以推出：
-$$ln\frac{y}{1-y}=z$$
+是关于**实际值y**，与 特征值x下的**后验概率P(y|x)** 的函数，**log对数**等于**后验概率**的对数。这个函数的值通过下面的**log函数的标准形式**计算：
 
-如果针对二分类问题，将y视为 正样本的概率，则1-y为负样本的可能性。则$\frac{y}{1-y}$称为几率，$ln\frac{y}{1-y}$ 称为对数机率
+$$Loss(y,P(y|x))=-\log{P(y|x)}$$
 
-二分类问题的后验概率（当输入为x时，label=0的概率）$P(label=0|x)=1-P(y=1|x)$，若令$y=P(label=0|x)$,则
-$$ln\frac{y}{1-y}=ln\frac{P(label=0|x)}{P(label=1|x)}=z=Wx+b$$
-所以,针对输入特征x，到label=0的概率$P(label=0|x)$，一定意义上也是样本x和目标值0的接近程度：
+$$Coss(y,P(y|x))=-\frac{1}{N} \sum{log{P(y|x)}}$$
+
+“似然性”与“或然性”或“概率”意思相近，都是指某种事件发生的可能性，但是在统计学中，“似然性”和“或然性”或“概率”又有明确的区分。
+
+**概率**用于在已知一些参数$x$的情况下，预测接下来的观测所得到的结果y;  $P(y|x)$
+
+**似然性**则是用于在已知某些观测所得到的结果y时，对有关事物的性质的参数x进行估计。$L(x|y)$
+
+
+给定输出y时，关于参数的x似然函数$L(x|y)$（在数值上）等于给定参数x后变量y的概率$P(y|x)$：
+$$ L(x|y) = P(y|x)$$
+
+
+**关于后验概率P(y|x)**
+
+在神经网络模型中，通常将经过激活函数的(0,1)范围的输出层值作为作为**后验概率P(y|x)**
+
+$$P(y|x)=sigmod(Wx+b)$$
+
+
+#### 对于二分类问题
+
+
+二分类问题的后验概率P(label=0|x)（当输入为x时，label=0的概率）,可知
+
+$$P(label=0|x)=1-P(label=1|x)$$
+若令$y=P(label=0|x)$,则 正样本（label=0）的**对数机率** z
+$$ln\frac{y}{1-y}=ln\frac{P(label=0|x)}{P(label=1|x)}=z$$
+
+依据输入特征x，确定该特征对应的label=0的概率为$P(label=0|x)$
+
 $$P(label=0|x)=\frac{1}{1+e^{-z}}=\frac{e^z}{1+e^{z}}$$
 
+依据输入特征x，确定该特征对应的label=1的概率为$P(label=1|x)$，
 $$P(label=1|x)=1-P(label=0|x)=\frac{1}{1+e^{z}}$$
 
-log对数损失函数为
-$$Loss(real\_labe,P(real\_labe|x))=-logP(real\_labe|x)$$
+即 
+$$P(label∣x)=\begin{cases}
+\frac{e^z}{1+e^{z}}=\frac{e^{wx+b}}{1+e^{wx+b}}, label=0\\
+\frac{1}{1+e^{z}}=\frac{1}{1+e^{wx+b}}, label=1\\
+\end{cases}
+$$
+
+$$Loss(y,P(y|x))=-\log {P(y|x)}=\begin{cases}
+-\log{\frac{e^z}{1+e^{z}}}, y=0\\
+-\log{\frac{1}{1+e^{z}}}, y=1\\
+\end{cases}
+$$
 
 
 **手动：**
 ```python
 import numpy as np
-def logloss(y_true, y_pred, eps=1e-15):
+
+# y_true ==labels
+# y_pred ==predictions
+
+def logcoss(y_true, y_pred, eps=1e-15):
     # Prepare numpy array data
     y_true = np.array(y_true)
-    y_pred = np.array(y_pred)
+    y_pred = np.array(y_pred) 
     assert (len(y_true) and len(y_true) == len(y_pred))
     # Clip y_pred between eps and 1-eps
     p = np.clip(y_pred, eps, 1-eps)
     loss = np.sum(- y_true * np.log(p) - (1 - y_true) * np.log(1-p))
-    return loss / len(y_true)
+    cost=loss / len(y_true)
+    return cost
 
 ```
 **封装：**
 
+$$logloss=weights*(labels* \log{(predictions+epsilon)} + (1-labels)* \log{(1-predictions+epsilon)})$$
+
 ```python
 log_loss=tf.losses.log_loss(
     labels,
-    predictions,
+    predictions, 
     weights=1.0,
     epsilon=1e-07, 
     scope=None,
     loss_collection=tf.GraphKeys.LOSSES,
     reduction=Reduction.SUM_BY_NONZERO_WEIGHTS
 )
-#
-#
+
+log_cost=tf.reduce_mean(log_loss)
 ```
 **应用**
 Logistic回归
 
-### 9.4 平方损失函数:
+### 9.4 平方函数:
 
 $$loss(y\_,y)=\sum{(y\_-y)^2}$$
 
@@ -1469,7 +1516,7 @@ mean_squared_error=tf.losses.mean_squared_error(
 )
 # mean_squared_error shape =() is a value
 
-# 平方损失函数实际为 均方差（MSE）
+# 平方函数实际为 均方差（MSE）
 mean_squared_error,update_op=tf.metrics.root_mean_squared_error(
     labels,
     predictions, #　predictions　为predict＿label
@@ -2301,14 +2348,13 @@ tf.tables_initializer
 
 
 ### 16.1 程序性能评估的过程
-分为3步：
+分为4步：
 1. 创建评估器 tf.profiler.Profiler 实例 
 ```python
 profiler = tf.profiler.Profiler(graph=sess.graph,op_log=None)
 # profiler 实例
 # op_log: optional. tensorflow::tfprof::OpLogProto proto. Used to define extra op types.
 ```
-初始化 profiler评估器实例需要确定DAG图，可选项为 op_log
 
 2. 创建protobuf格式的数据结构对象
 
@@ -2391,7 +2437,6 @@ MultiGraphNodeProto=Profiler.Profiler.profile_python(options={})  #描述Python�
 
 type(options)
 >>>dict 
-
 ```
 ```python
 # ----------profile
@@ -2464,7 +2509,8 @@ Selectively counting statistics based on node types ，比如这里设定展示�
 
 ```python
 class ProfileOptionBuilder：
-#用于Profiling API的Option Builder。
+# 用于Profiling API的Option Builder。
+# 返回字典
 ```
 评估器选项构建器 ProfileOptionBuilder
 1. 记录内容选项
@@ -2486,14 +2532,12 @@ ProfileOptionBuilder.time_and_memory(
     min_residual_bytes=0,
     min_output_bytes=0
 )
-# 输出 模式
-# 视图输出方式：
+
 ```
 ##### 2. 记录浮点运算情况
 ```python
 ProfileOptionBuilder.float_operation()
 ```
-
 
 #### 16.4.2 输出选项
 输出文件格式
@@ -2515,19 +2559,22 @@ ProfileOptionBuilder.with_step(70)
 
 #### 16.4.3 限定选项
 ##### 1. 选择制定profiler节点
+```python
 attributes=[]
 ProfileOptionBuilder.select(attributes)
+```
 
 ##### 2. 选择消耗时间大于阈值的profiler节点
-
+```python
 ProfileOptionBuilder.with_min_execution_time(
     min_micros=0,
     min_accelerator_micros=0,
     min_cpu_micros=0
 )
+```
 只显示消耗不少于“min_micros”的profiler节点。
 ##### 3. 选择消耗空间大于阈值的profiler节点
-
+```python
 ProfileOptionBuilder.with_min_memory(
     min_bytes=0,
     min_peak_bytes=0,
@@ -2535,15 +2582,18 @@ ProfileOptionBuilder.with_min_memory(
     min_output_bytes=0
 )
 
-##### 4. 选择运算大于阈值的profiler节点
+```
 
+##### 4. 选择运算大于阈值的profiler节点
+```python
 ProfileOptionBuilder.with_min_float_operations(min_float_ops)
+```
 
 ##### 5. 选择参数数量大于阈值的profiler节点
-
+```python
 ProfileOptionBuilder.with_min_parameters(min_params)
+```
 仅显示不超过'min_params'参数的profiler节点。
-##### 6. 选择参数数量大于阈值的profiler节点
 
 #### 16.4.4 评估器选项构建器-构建
 ```python
@@ -2552,16 +2602,25 @@ profile_opt_dict=ProfileOptionBuilder.build()
 type(profile_opt_dict)
 >>>dict 
 ```
+#### 16.4.4 输出视图
+
+例子1：grpah view显示每个graph node运行时间，并输出到timeline
+
+例子2：scope view显示模型中的参数数量分布 
+例子4： code view – 显示python代码的执行资源消耗 
+
+
+
 ###  16.4 常用实例
 #### 1. 浮点运算次数 flop
 ```python
-    def get_flops(model):
+def get_flops(model):
         run_meta = tf.RunMetadata()
         opts = tf.profiler.ProfileOptionBuilder.float_operation()
 
         # We use the Keras session graph in the call to the profiler.
         flop = tf.profiler.profile(graph=K.get_session().graph,
-                                    run_meta=run_meta, cmd='op', options=opts)
+                                        run_meta=run_meta, cmd='op', options=opts)
 
         return flop.total_float_ops  # Prints the "flop" of the model.
 ```
@@ -2636,3 +2695,6 @@ profiler.advise(opts)
 5. 图二次分裂：worker根据当前可用硬件资源，如CPU GPU，将Graph Partition按照op算子设备约束规范（例如tf.device(’/cpu:0’)，二次分裂到不同设备上。每个计算设备对应一个Graph Partition。
 
 6. 图运行：对于每一个计算设备，worker依照op在kernel中的实现，完成op的运算。设备间数据通信可以使用send/recv节点，而worker间通信，则使用GRPC或RDMA协议。
+
+## 参考文献
+[^1]fff

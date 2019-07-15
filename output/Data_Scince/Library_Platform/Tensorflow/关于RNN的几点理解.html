@@ -43,6 +43,11 @@
 </ul>
 </li>
 <li><a href="#1-lstmcell">1. LSTMCell 实例</a></li>
+<<<<<<< HEAD
+=======
+<li><a href="#2-bbtp">2. 时间 BBTP 反向传播</a></li>
+<li><a href="#3">3. 梯度消逝与爆炸</a></li>
+>>>>>>> temp
 </ul>
 </li>
 </ul>
@@ -62,6 +67,7 @@
 $h^{\langle t-1 \rangle}$: 上一个cell 的 hidden state<br />
 $W_f$: 权重 recurrent_initializer对应的权重<br />
 $x^{\langle t \rangle}$: 当下输入 </p>
+<<<<<<< HEAD
 <p>参数 num_units=128 的话，对于公式 (1) <br />
 |                                               参数 | 维度                         |<br />
 | -------------------------------------------------: | :--------------------------- |<br />
@@ -70,11 +76,47 @@ $x^{\langle t \rangle}$: 当下输入 </p>
 | $[h^{\langle t-1 \rangle}, x^{\langle t \rangle}]$ | shape=(28,1)+(128,1)=(156,1) |<br />
 |                                              $W_f$ | shape=(128,156)              |<br />
 |                                              $b_f$ | shape=(128,1)                |</p>
+=======
+<p>参数 num_units=128 的话，对于公式 (1) </p>
+<table>
+<thead>
+<tr>
+<th align="right">参数</th>
+<th align="left">维度</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td _langle="\langle" _rangle="\rangle" align="right" t-1="t-1">$h^</td>
+<td align="left">shape=(128,1)</td>
+</tr>
+<tr>
+<td _langle="\langle" _rangle="\rangle" align="right" t="t">$x^</td>
+<td align="left">shape=(28,1)</td>
+</tr>
+<tr>
+<td _langle="\langle" _rangle="\rangle" align="right" t-1="t-1">$[h^</td>
+<td align="left">shape=(28,1)+(128,1)=(156,1)</td>
+</tr>
+<tr>
+<td align="right">$W_f$</td>
+<td align="left">shape=(128,156)</td>
+</tr>
+<tr>
+<td align="right">$b_f$</td>
+<td align="left">shape=(128,1)</td>
+</tr>
+</tbody>
+</table>
+>>>>>>> temp
 <p>由于激活函数的存在 $0&lt;=\Gamma_f^{\langle t \rangle}&lt;=1$<br />
 如果 $\Gamma_f^{\langle t \rangle}==0$ 意味着 当前 LSTM cell 将忽略 上一个cell 传来的 $h^{\langle t-1 \rangle}$</p>
 <p>如果 $\Gamma_f^{\langle t \rangle}==1$ 意味着 当前 LSTM cell 将保存 上一个cell 传来的 $h^{\langle t-1 \rangle}$</p>
 <h4 id="-update-gateinuput-gat">- 更新门/输入门 Update gate/Inuput gat</h4>
+<<<<<<< HEAD
 <p>Here is the formulat for the update gate: </p>
+=======
+>>>>>>> temp
 <p>$$\Gamma_u^{\langle t \rangle} = \sigma(W_u[h^{\langle t-1 \rangle}, x^{{t}}] + b_u)\tag{2} $$ </p>
 <p>Similar to the forget gate, here $\Gamma_u^{\langle t \rangle}$ is again a vector of values between 0 and 1. This will be multiplied element-wise with $\tilde{c}^{\langle t \rangle}$, in order to compute $c^{\langle t \rangle}$.</p>
 <h4 id="-updating-the-cell">- 更新细胞 Updating the cell （基于 更新门和遗忘门）</h4>
@@ -206,10 +248,14 @@ $$ h^{\langle t \rangle} = \Gamma_o^{\langle t \rangle}* \tanh(c^{\langle t \ran
 
 
 <p>H_all 是 $np.array(h^{\langle t \rangle},h^{\langle t-1 \rangle},h^{\langle t-2 \rangle},...,h^{\langle 1 \rangle})$</p>
+<<<<<<< HEAD
 <div class="hlcode"><pre><span class="n">LSTMCell</span> <span class="o">=</span>
 <span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">rnn</span><span class="o">.</span><span class="n">BasicLSTMCell</span><span class="p">(</span><span class="n">num_units</span><span class="p">)</span>
 <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">rnn_cell</span><span class="o">.</span><span class="n">BasicLSTMCell</span><span class="p">(</span><span class="n">num_units</span><span class="p">)</span>
 <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">RNN</span><span class="p">(</span>
+=======
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">RNN</span><span class="p">(</span>
+>>>>>>> temp
     <span class="n">cell</span><span class="p">,</span>
     <span class="n">return_sequences</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
     <span class="n">return_state</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
@@ -219,6 +265,13 @@ $$ h^{\langle t \rangle} = \Gamma_o^{\langle t \rangle}* \tanh(c^{\langle t \ran
     <span class="o">**</span><span class="n">kwargs</span>
 <span class="p">)</span> <span class="c"># 推荐</span>
 </pre></div>
+<<<<<<< HEAD
+=======
+
+
+<h2 id="2-bbtp">2. 时间 BBTP 反向传播</h2>
+<h2 id="3">3. 梯度消逝与爆炸</h2>
+>>>>>>> temp
 </div>
 
     </div>

@@ -11,5 +11,6 @@ theme: simple
 debug: True
 destination: output
 source: content
+attach: attach
 
 # theme add MathJax.js

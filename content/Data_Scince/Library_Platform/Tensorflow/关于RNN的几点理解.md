@@ -73,7 +73,8 @@ $x^{\langle t \rangle}$: 当下输入
 
 #### - 更新门/输入门 Update gate/Inuput gat
 
-Here is the formulat for the update gate: 
+
+
 
 $$\Gamma_u^{\langle t \rangle} = \sigma(W_u[h^{\langle t-1 \rangle}, x^{\{t\}}] + b_u)\tag{2} $$ 
 
@@ -254,3 +255,9 @@ tf.keras.layers.RNN(
     **kwargs
 ) # 推荐
 ```
+
+## 2. 时间 BBTP 反向传播
+
+## 3. 梯度消逝与爆炸
+
+

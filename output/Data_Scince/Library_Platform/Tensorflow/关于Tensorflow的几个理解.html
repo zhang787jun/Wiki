@@ -140,6 +140,7 @@
 </ul>
 </li>
 <li><a href="#8-scope-tfname_scopetfvariable_scope">8. 代码的可读性--作用域(scope)-(tf.name_scope/tf.variable_scope)</a></li>
+<<<<<<< HEAD
 <li><a href="#9-tflosses">9. 损失函数 tf.losses</a><ul>
 <li><a href="#91-0-1">9.1.  0-1损失函数</a></li>
 <li><a href="#92">9.2  绝对值损失</a></li>
@@ -148,6 +149,20 @@
 <li><a href="#95">9.5 指数损失函数</a></li>
 <li><a href="#96-hinge">9.6 Hinge损失函数</a></li>
 <li><a href="#97-loss-tfnnloss">9.7. 神经网络里面的loss （tf.nn.loss）</a><ul>
+=======
+<li><a href="#9-tflosses">9. 函数 tf.losses</a><ul>
+<li><a href="#91-0-1">9.1.  0-1函数</a></li>
+<li><a href="#92">9.2  绝对值</a></li>
+<li><a href="#93-log">9.3 log对数函数</a><ul>
+<li><a href="#_1">对于二分类问题</a></li>
+</ul>
+</li>
+<li><a href="#94">9.4 平方函数:</a></li>
+<li><a href="#95">9.5 指数函数</a></li>
+<li><a href="#96-hinge">9.6 Hinge函数</a></li>
+<li><a href="#97-loss-tfnnloss">9.7. 神经网络里面的loss （tf.nn.loss）</a><ul>
+<li><a href="#_2">熵</a></li>
+>>>>>>> temp
 <li><a href="#971-tfnnsigmoid_cross_entropy_with_logits">9.7.1  tf.nn.sigmoid_cross_entropy_with_logits</a></li>
 <li><a href="#972-tfnnsoftmax_cross_entropy_with_logits">9.7.2 tf.nn.softmax_cross_entropy_with_logits</a></li>
 <li><a href="#973-tfnnsparse_softmax_cross_entropy_with_logits">9.7.3 tf.nn.sparse_softmax_cross_entropy_with_logits</a></li>
@@ -240,10 +255,17 @@
 <li><a href="#3-profiler">3. 选择消耗空间大于阈值的profiler节点</a></li>
 <li><a href="#4-profiler">4. 选择运算大于阈值的profiler节点</a></li>
 <li><a href="#5-profiler">5. 选择参数数量大于阈值的profiler节点</a></li>
+<<<<<<< HEAD
 <li><a href="#6-profiler">6. 选择参数数量大于阈值的profiler节点</a></li>
 </ul>
 </li>
 <li><a href="#1644-">16.4.4 评估器选项构建器-构建</a></li>
+=======
+</ul>
+</li>
+<li><a href="#1644-">16.4.4 评估器选项构建器-构建</a></li>
+<li><a href="#1644">16.4.4 输出视图</a></li>
+>>>>>>> temp
 </ul>
 </li>
 <li><a href="#164_1">16.4 常用实例</a><ul>
@@ -259,10 +281,18 @@
 <li><a href="#17tfapp">17.命令行传递参数(tf.app)</a></li>
 <li><a href="#x1-tensorflow">X1. 基于Tensorflow 的模型训练 基本步骤</a></li>
 <li><a href="#x2-tensorflow">X2. Tensorflow 的运行过程</a></li>
+<<<<<<< HEAD
+=======
+<li><a href="#_3">参考文献</a></li>
+>>>>>>> temp
 </ul>
 </li>
 </ul>
 </div>
+<<<<<<< HEAD
+=======
+<p><a href="https://github.com/tankywoo/simiki/blob/master/LICENSE"><img alt="The MIT License" src="http://img.shields.io/badge/license-MIT-yellow.svg" /></a></p>
+>>>>>>> temp
 <h1 id="tensorflow">Tensorflow 的几个模块理解</h1>
 <h2 id="1tftrain">1.训练的管理（tf.train）</h2>
 <p>tensorflow 主要有2种方式进行训练监督<br />
@@ -1688,9 +1718,13 @@ TensorFlow 并不知道那个node 需要本整合<br />
 
     <span class="n">with</span> <span class="n">tf</span><span class="p">.</span><span class="n">name_scope</span><span class="p">(</span><span class="s">&quot;a&quot;</span><span class="p">)</span><span class="o">:</span>
             <span class="n">a</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">Variable</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span>
+<<<<<<< HEAD
             <span class="n">print</span> <span class="n">a</span><span class="p">.</span><span class="n">name</span>     <span class="err">#</span> <span class="err">输出</span> <span class="n">a</span><span class="o">/</span><span class="n">Variable</span><span class="o">:</span> <span class="mi">0</span>
 
     　　    <span class="n">a</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">Variable</span><span class="p">(</span><span class="s">&quot;b&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">:</span>
+=======
+            <span class="n">print</span> <span class="n">a</span><span class="p">.</span><span class="n">name</span>     <span class="err">#</span> <span class="err">输出</span> <span class="n">a</span><span class="o">/</span><span class="n">Va</span>        　　    <span class="n">a</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">Variable</span><span class="p">(</span><span class="s">&quot;b&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">:</span>
+>>>>>>> temp
     　　    <span class="n">print</span> <span class="n">a</span><span class="p">.</span><span class="n">name</span>　<span class="err">#</span> <span class="err">输出</span> <span class="n">b</span><span class="o">:</span> <span class="mi">0</span>
 
     <span class="n">with</span> <span class="n">tf</span><span class="p">.</span><span class="n">name_scope</span><span class="p">(</span><span class="s">&quot;b&quot;</span><span class="p">)</span><span class="o">:</span>
@@ -1698,8 +1732,14 @@ TensorFlow 并不知道那个node 需要本整合<br />
 </pre></div>
 
 
+<<<<<<< HEAD
 <h2 id="9-tflosses">9. 损失函数 tf.losses</h2>
 <p>损失函数的问题最终还是要归结于 任务类型，是处理 predict_label 和 real_label 的问题</p>
+=======
+<h2 id="9-tflosses">9. 函数 tf.losses</h2>
+<p><strong>函数</strong>是衡量由特征值x经过模型f得到的预测值y_=f(x)与真实值y的差距，是衡量预测错误程度的指标</p>
+<p>函数的问题最终还是要归结于 任务类型，是处理 predict_label 和 real_label 的问题</p>
+>>>>>>> temp
 <p>单个样本：成本函数（Loss Function）<br />
 多个样本：成本函数（Cost Function）</p>
 <p>目标：在有约束条件下的最小化成本函数（Cost Function）</p>
@@ -1713,8 +1753,14 @@ TensorFlow 并不知道那个node 需要本整合<br />
 <li>连续数据</li>
 <li>回归</li>
 </ol>
+<<<<<<< HEAD
 <h3 id="91-0-1">9.1.  0-1损失函数</h3>
 <p>$$Loss(y_ ,y)=\begin{cases}<br />
+=======
+<h3 id="91-0-1">9.1.  0-1函数</h3>
+<p>$$<br />
+Loss(y_ ,y)=\begin{cases}<br />
+>>>>>>> temp
 1   (y_!=y)\<br />
 0   (y_==y)\<br />
 \end{cases}<br />
@@ -1731,7 +1777,11 @@ $$<br />
 
 
 <p><strong>封装：</strong></p>
+<<<<<<< HEAD
 <div class="hlcode"><pre><span class="c"># 注意正确率的定义中 相等以及不等 相反,损失函数为不正确率 </span>
+=======
+<div class="hlcode"><pre><span class="c"># 注意正确率的定义中 相等以及不等 相反,函数为不正确率 </span>
+>>>>>>> temp
 <span class="n">accuracy</span><span class="p">,</span><span class="n">update_op</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">accuracy</span><span class="p">(</span>
     <span class="n">labels</span><span class="p">,</span>
     <span class="n">predictions</span><span class="p">,</span>
@@ -1754,7 +1804,11 @@ $$<br />
 0 (|y_ -y|&lt;error)\<br />
 \end{cases}<br />
 $$</p>
+<<<<<<< HEAD
 <h3 id="92">9.2  绝对值损失</h3>
+=======
+<h3 id="92">9.2  绝对值</h3>
+>>>>>>> temp
 <p>$$Loss(y_ ,y)=|y_ -y|$$</p>
 <p><strong>手动：</strong></p>
 <div class="hlcode"><pre><span class="c"># real_label shape =(N,···)</span>
@@ -1768,7 +1822,11 @@ $$</p>
 
 
 <p><strong>封装：</strong></p>
+<<<<<<< HEAD
 <div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">absolute_difference</span><span class="p">(</span>
+=======
+<div class="hlcode"><pre><span class="n">loss</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">absolute_difference</span><span class="p">(</span>
+>>>>>>> temp
     <span class="n">labels</span><span class="p">,</span>
     <span class="n">predictions</span><span class="p">,</span>
     <span class="n">weights</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
@@ -1777,7 +1835,11 @@ $$</p>
     <span class="n">reduction</span><span class="o">=</span><span class="n">Reduction</span><span class="o">.</span><span class="n">SUM_BY_NONZERO_WEIGHTS</span>
 <span class="p">)</span>
 
+<<<<<<< HEAD
 <span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">mean_absolute_error</span><span class="p">(</span>
+=======
+<span class="n">loss</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">mean_absolute_error</span><span class="p">(</span>
+>>>>>>> temp
     <span class="n">labels</span><span class="p">,</span>
     <span class="n">predictions</span><span class="p">,</span>
     <span class="n">weights</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
@@ -1788,6 +1850,7 @@ $$</p>
 </pre></div>
 
 
+<<<<<<< HEAD
 <h3 id="93-log">9.3 log对数损失函数</h3>
 <p>对数机率函数(Sigmoid 函数):<br />
 $$y=f(z)=\frac{1}{1+e^{-z}}=\frac{e^z}{1+e^{z}}$$</p>
@@ -1807,32 +1870,99 @@ $$Loss(real_labe,P(real_labe|x))=-logP(real_labe|x)$$</p>
     <span class="c"># Prepare numpy array data</span>
     <span class="n">y_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
     <span class="n">y_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
+=======
+<h3 id="93-log">9.3 log对数函数</h3>
+<p><strong>log对数函数</strong>，又称为 <strong>对数似然函数</strong> ，是对<strong>单个样本</strong>的描述，表示为<br />
+$$Loss(y,P(y|x))$$</p>
+<p>是关于<strong>实际值y</strong>，与 特征值x下的<strong>后验概率P(y|x)</strong> 的函数，<strong>log对数</strong>等于<strong>后验概率</strong>的对数。这个函数的值通过下面的<strong>log函数的标准形式</strong>计算：</p>
+<p>$$Loss(y,P(y|x))=-\log{P(y|x)}$$</p>
+<p>$$Coss(y,P(y|x))=-\frac{1}{N} \sum{log{P(y|x)}}$$</p>
+<p>“似然性”与“或然性”或“概率”意思相近，都是指某种事件发生的可能性，但是在统计学中，“似然性”和“或然性”或“概率”又有明确的区分。</p>
+<p><strong>概率</strong>用于在已知一些参数$x$的情况下，预测接下来的观测所得到的结果y;  $P(y|x)$</p>
+<p><strong>似然性</strong>则是用于在已知某些观测所得到的结果y时，对有关事物的性质的参数x进行估计。$L(x|y)$</p>
+<p>给定输出y时，关于参数的x似然函数$L(x|y)$（在数值上）等于给定参数x后变量y的概率$P(y|x)$：<br />
+$$ L(x|y) = P(y|x)$$</p>
+<p><strong>关于后验概率P(y|x)</strong></p>
+<p>在神经网络模型中，通常将经过激活函数的(0,1)范围的输出层值作为作为<strong>后验概率P(y|x)</strong></p>
+<p>$$P(y|x)=sigmod(Wx+b)$$</p>
+<h4 id="_1">对于二分类问题</h4>
+<p>二分类问题的后验概率P(label=0|x)（当输入为x时，label=0的概率）,可知</p>
+<p>$$P(label=0|x)=1-P(label=1|x)$$<br />
+若令$y=P(label=0|x)$,则 正样本（label=0）的<strong>对数机率</strong> z<br />
+$$ln\frac{y}{1-y}=ln\frac{P(label=0|x)}{P(label=1|x)}=z$$</p>
+<p>依据输入特征x，确定该特征对应的label=0的概率为$P(label=0|x)$</p>
+<p>$$P(label=0|x)=\frac{1}{1+e^{-z}}=\frac{e^z}{1+e^{z}}$$</p>
+<p>依据输入特征x，确定该特征对应的label=1的概率为$P(label=1|x)$，<br />
+$$P(label=1|x)=1-P(label=0|x)=\frac{1}{1+e^{z}}$$</p>
+<p>即 <br />
+$$P(label∣x)=\begin{cases}<br />
+\frac{e^z}{1+e^{z}}=\frac{e^{wx+b}}{1+e^{wx+b}}, label=0\<br />
+\frac{1}{1+e^{z}}=\frac{1}{1+e^{wx+b}}, label=1\<br />
+\end{cases}<br />
+$$</p>
+<p>$$Loss(y,P(y|x))=-\log {P(y|x)}=\begin{cases}<br />
+-\log{\frac{e^z}{1+e^{z}}}, y=0\<br />
+-\log{\frac{1}{1+e^{z}}}, y=1\<br />
+\end{cases}<br />
+$$</p>
+<p><strong>手动：</strong></p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="c"># y_true ==labels</span>
+<span class="c"># y_pred ==predictions</span>
+
+<span class="k">def</span> <span class="nf">logcoss</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">eps</span><span class="o">=</span><span class="mf">1e-15</span><span class="p">):</span>
+    <span class="c"># Prepare numpy array data</span>
+    <span class="n">y_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span> 
+>>>>>>> temp
     <span class="k">assert</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_pred</span><span class="p">))</span>
     <span class="c"># Clip y_pred between eps and 1-eps</span>
     <span class="n">p</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="n">eps</span><span class="p">,</span> <span class="mi">1</span><span class="o">-</span><span class="n">eps</span><span class="p">)</span>
     <span class="n">loss</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="o">-</span> <span class="n">y_true</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">y_true</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">p</span><span class="p">))</span>
+<<<<<<< HEAD
     <span class="k">return</span> <span class="n">loss</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+=======
+    <span class="n">cost</span><span class="o">=</span><span class="n">loss</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cost</span>
+>>>>>>> temp
 </pre></div>
 
 
 <p><strong>封装：</strong></p>
+<<<<<<< HEAD
 <div class="hlcode"><pre><span class="n">log_loss</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">log_loss</span><span class="p">(</span>
     <span class="n">labels</span><span class="p">,</span>
     <span class="n">predictions</span><span class="p">,</span>
+=======
+<p>$$logloss=weights<em>(labels</em> \log{(predictions+epsilon)} + (1-labels)* \log{(1-predictions+epsilon)})$$</p>
+<div class="hlcode"><pre><span class="n">log_loss</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">log_loss</span><span class="p">(</span>
+    <span class="n">labels</span><span class="p">,</span>
+    <span class="n">predictions</span><span class="p">,</span> 
+>>>>>>> temp
     <span class="n">weights</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
     <span class="n">epsilon</span><span class="o">=</span><span class="mf">1e-07</span><span class="p">,</span> 
     <span class="n">scope</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
     <span class="n">loss_collection</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">GraphKeys</span><span class="o">.</span><span class="n">LOSSES</span><span class="p">,</span>
     <span class="n">reduction</span><span class="o">=</span><span class="n">Reduction</span><span class="o">.</span><span class="n">SUM_BY_NONZERO_WEIGHTS</span>
 <span class="p">)</span>
+<<<<<<< HEAD
 <span class="c">#</span>
 <span class="c">#</span>
+=======
+
+<span class="n">log_cost</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">reduce_mean</span><span class="p">(</span><span class="n">log_loss</span><span class="p">)</span>
+>>>>>>> temp
 </pre></div>
 
 
 <p><strong>应用</strong><br />
 Logistic回归</p>
+<<<<<<< HEAD
 <h3 id="94">9.4 平方损失函数:</h3>
+=======
+<h3 id="94">9.4 平方函数:</h3>
+>>>>>>> temp
 <p>$$loss(y_,y)=\sum{(y_-y)^2}$$</p>
 <p><strong>手动：</strong></p>
 <div class="hlcode"><pre><span class="c"># real_label shape =(N,···)</span>
@@ -1856,7 +1986,11 @@ Logistic回归</p>
 <span class="p">)</span>
 <span class="c"># mean_squared_error shape =() is a value</span>
 
+<<<<<<< HEAD
 <span class="c"># 平方损失函数实际为 均方差（MSE）</span>
+=======
+<span class="c"># 平方函数实际为 均方差（MSE）</span>
+>>>>>>> temp
 <span class="n">mean_squared_error</span><span class="p">,</span><span class="n">update_op</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">root_mean_squared_error</span><span class="p">(</span>
     <span class="n">labels</span><span class="p">,</span>
     <span class="n">predictions</span><span class="p">,</span> <span class="c">#　predictions　为predict＿label</span>
@@ -1870,8 +2004,13 @@ Logistic回归</p>
 
 
 <p><strong>应用：</strong><br />
+<<<<<<< HEAD
 最小二乘法通常用欧式距离进行距离的度量,使用平方损失函数</p>
 <h3 id="95">9.5 指数损失函数</h3>
+=======
+最小二乘法通常用欧式距离进行距离的度量,使用平方函数</p>
+<h3 id="95">9.5 指数函数</h3>
+>>>>>>> temp
 <p>$$loss(y_,y)=e^{-y_·y}=\frac{e^y} {e^{y_}}$$</p>
 <p>$$coss(y_,y)=\frac{1}{n}\sum{e^{-y_·y}}$$</p>
 <div class="hlcode"><pre><span class="c"># real_label.shape ==predict_label.shape==(counts,····)</span>
@@ -1883,8 +2022,13 @@ Logistic回归</p>
 
 
 <p><strong>应用</strong><br />
+<<<<<<< HEAD
 AdaBoost使用指数损失函数。</p>
 <h3 id="96-hinge">9.6 Hinge损失函数</h3>
+=======
+AdaBoost使用指数函数。</p>
+<h3 id="96-hinge">9.6 Hinge函数</h3>
+>>>>>>> temp
 <p>$$loss(y_,y)=max(0,1-y_·y)$$</p>
 <p><strong>手动：</strong></p>
 <div class="hlcode"><pre><span class="n">loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">-</span><span class="n">tf</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">real_label</span><span class="p">,</span> <span class="n">predict_label</span><span class="p">))</span>
@@ -1910,6 +2054,41 @@ AdaBoost使用指数损失函数。</p>
 Hinge loss用于最大间隔（maximum-margin）分类，其中最有代表性的就是支持向量机SVM。</p>
 <h3 id="97-loss-tfnnloss">9.7. 神经网络里面的loss （tf.nn.loss）</h3>
 <p>参考：https://www.tensorflow.org/api_docs/python/tf/losses</p>
+<<<<<<< HEAD
+=======
+<blockquote>
+<p>关于<strong>概率的讨论</strong><br />
+如果针对二分类问题，将P视为正样本的概率，则1-P为负样本的可能性，形如下面的则称为 事件为正样本的<strong>几率</strong>：<br />
+$$\frac{P}{1-P}$$<br />
+形如下面的则称为正样本的<strong>对数机率</strong> z<br />
+$$z=ln\frac{P}{1-P}$$</p>
+<p>数学上<br />
+$$ln\frac{p}{1-p}=z$$<br />
+可以推出，<strong>对数机率函数</strong> （Sigmoid 函数） 形式如下：<br />
+$$p=f(z)=\frac{1}{1+e^{-z}}=\frac{e^z}{1+e^{z}} $$</p>
+</blockquote>
+<h4 id="_2">熵</h4>
+<p><strong>熵--当只有一个变量分布</strong></p>
+<p>从相对熵和交叉熵的定义来看，将交叉熵作为函数较为可行 <br />
+下面举个例子来说明计算各个指标<br />
+序号  事件  模型预测概率  真实标记    信息量<br />
+A   电脑正常开机  0.7 1   -log(p(A))=0.36<br />
+B   电脑无法开机  0.3 0   -log(p(B))=1.2<br />
+因此，可计算熵如下 <br />
+H(Q)H(p,q)=E(I(X))=0.36∗0.7+1.2∗0.3=0.612=−p(A)log(q(A))−p(B)log(q(B))=−1∗log(0.7)−0∗log(0.3)=0.357<br />
+H(Q)=E(I(X))=0.36∗0.7+1.2∗0.3=0.612H(p,q)=−p(A)log(q(A))−p(B)log(q(B))=−1∗log(0.7)−0∗log(0.3)=0.357</p>
+<p>熵是对于给定分布 $q(x)$ 的不确定性的度量， 当取自有限的样本时，熵的公式可以表示为。</p>
+<p>$$H(q(x))=-\sum{q(x) \log{q(x)} }$$</p>
+<p>如果我们已知 所有的点都是绿色的，单一的？ 那个分布的不确定性是0，熵为0。<br />
+如果我们已知，数据点服从q（x） 分布，我们可以依据上式计算该分布的熵</p>
+<p><strong>交叉熵--当有2个变量分布</strong></p>
+<p>在信息论中，基于相同事件测度的两个概率分布 P(x)和 q(x)的<strong>交叉熵</strong>是指，<br />
+$$H(P(x),q(x))=-\sum{P(x) \log{q(x)} }$$</p>
+<p>交叉熵是用来描述p分布和q分布的距离</p>
+<p>现实情况中，多数情况式我们不知道数据的的真实分布。假设，数据真实分布为q(y)，我们推测其分为P（y_）。如果我们像这样计算熵，我们实际上是在计算两个分布之间的交叉熵：</p>
+<p>$$H(q(y),P(y_))=-\sum{q(y) * \log{ P(y_ ) } }$$</p>
+<p>模型训练的目的就是使 预测分布P(x) 逼近 q(x)，他们之间距离越小，函数越小。</p>
+>>>>>>> temp
 <h4 id="971-tfnnsigmoid_cross_entropy_with_logits">9.7.1  tf.nn.sigmoid_cross_entropy_with_logits</h4>
 <p><code>predict_label=sigmoid(logits)</code></p>
 <div class="hlcode"><pre><span class="n">cross_entropy</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">sigmoid_cross_entropy_with_logits</span><span class="p">(</span>
@@ -2093,7 +2272,11 @@ real_label=tf.one_hot(label)</p>
 <p>基本步骤：<br />
 1. Get input, output , saver and graph"""#从导入图中获取需要的东西（）<br />
 2. 构造新的variables用于后面的finetuning<br />
+<<<<<<< HEAD
 3. 构造损失<br />
+=======
+3. 构造<br />
+>>>>>>> temp
 4. 构造 op<br />
 5. 开始新的训练</p>
 <p>https://blog.csdn.net/ying86615791/article/details/76215363</p>
@@ -2111,7 +2294,11 @@ real_label=tf.one_hot(label)</p>
 <p>包含了 CPU 和 GPU 运算的图像可微重采样（differentiable resampling）</p>
 <h2 id="14-session">14. Session 会话</h2>
 <p>Session 分为tf.Session()，with tf.Session() as sess:和tf.InteractivateSession()：</p>
+<<<<<<< HEAD
 <p>1.tf.Session()和with tf.Session() as sess:区别：</p>
+=======
+<p>1.tf.Session()和with tf.Session() as sess:区���：</p>
+>>>>>>> temp
 <p>如果用tf.Session()，使用完毕需要关闭会话如： </p>
 <div class="hlcode"><pre><span class="n">sess</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
 <span class="c">### 任务完成, 关闭会话.</span>
@@ -2659,7 +2846,11 @@ tf.tables_initializer</p>
 1. TensorFlow Profiler and Advisor： https://github.com/tensorflow/tensorflow/tree/r1.3/tensorflow/core/profiler<br />
 2. TensorFlow Profiler UI：https://github.com/tensorflow/profiler-ui</p>
 <h3 id="161">16.1 程序性能评估的过程</h3>
+<<<<<<< HEAD
 <p>分为3步：<br />
+=======
+<p>分为4步：<br />
+>>>>>>> temp
 1. 创建评估器 tf.profiler.Profiler 实例 </p>
 <div class="hlcode"><pre><span class="n">profiler</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">Profiler</span><span class="p">(</span><span class="n">graph</span><span class="o">=</span><span class="n">sess</span><span class="o">.</span><span class="n">graph</span><span class="p">,</span><span class="n">op_log</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
 <span class="c"># profiler 实例</span>
@@ -2704,16 +2895,37 @@ tf.tables_initializer</p>
 
 
 <p>profiler 分为数据搜集和数据显示两个主要步骤。</p>
+<<<<<<< HEAD
 <p>graph node的每一次执行，记录单步统计数据，主要是执行时间和占用内存，格式参见step_stats.proto，作为原始的最小粒度统计数据源；<br />
 @1 每一次session.Run()，所有执行到的graph node的统计数据，都集中汇总保存到 RunMetadata 数据结构中;<br />
 @2 用户程序把每一次搜集到的 RunMetadata 添加到profiler实例，做数据累计和加工处理。<br />
 @3 将profiler以某一视图按某一设定输出</p>
+=======
+<p>graph node的每一次执行，记录单步统计数据，主要是执行时间和占用内存，格式参step_stats.proto，作为原始的最小粒度统计数据源；<br />
+@1 每一次session.Run()，所有执行到的graph node的统计数据，都集中汇总保存到 RunMetadata 数据结构中;<br />
+@2 用户程序把每一次搜集到的 RunMetadata 添加到profiler实例，做数据累计和加工处理。<br />
+@3 将profiler以某一视图按某一设定输出</p>
+<ol>
+<li>profiler 持久后保存/可视化</li>
+</ol>
+<div class="hlcode"><pre> <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">current_dir_path</span><span class="o">+</span><span class="s">&#39;/profile&#39;</span><span class="p">,</span> <span class="s">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">profiler</span><span class="o">.</span><span class="n">serialize_to_string</span><span class="p">())</span>
+</pre></div>
+
+
+<p>例子4： code view – 显示python代码的执行资源消耗 <br />
+按照python代码的方式来显示统计数据，也就是统计每一行python代码产生的node的执行性能</p>
+>>>>>>> temp
 <h3 id="162">16.2 评估器实例</h3>
 <h4 id="1621">16.2.1 实例的建立</h4>
 <div class="hlcode"><pre><span class="n">Profiler</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">Profiler</span><span class="p">(</span><span class="n">graph</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">op_log</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
 
 <span class="c">#graph：tf.Graph。如果为“None”或者未启用“eager执行”，请使用默认图形。</span>
+<<<<<<< HEAD
 <span class="c">#op_log：可选的。tensorflow :: tfprof :: OpLogProto proto。用于定义额外的op类型。</span>
+=======
+<span class="c">#lop_log：可选的。tensorflow :: tfprof :: OpLogProto proto。用于定义额外的op类型。</span>
+>>>>>>> temp
 </pre></div>
 
 
@@ -2818,7 +3030,13 @@ tf.tables_initializer</p>
 
 <p>参考：https://github.com/tensorflow/tensorflow/blob/master/tensorflow/core/profiler/g3doc/options.md</p>
 <p>同时选项字典可以通过tf.profile.ProfileOptionBuilder构建字典 </p>
+<<<<<<< HEAD
 <div class="hlcode"><pre><span class="k">class</span> <span class="nc">ProfileOptionBuilder</span><span class="err">：用于</span><span class="n">Profiling</span> <span class="n">API</span><span class="err">的</span><span class="n">Option</span> <span class="n">Builder</span><span class="err">。</span>
+=======
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">ProfileOptionBuilder</span><span class="err">：</span>
+<span class="c"># 用于Profiling API的Option Builder。</span>
+<span class="c"># 返回字典</span>
+>>>>>>> temp
 </pre></div>
 
 
@@ -2840,13 +3058,25 @@ tf.tables_initializer</p>
     <span class="n">min_residual_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">min_output_bytes</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">)</span>
+<<<<<<< HEAD
 <span class="c"># 输出 模式</span>
 <span class="c"># 视图输出方式：</span>
+=======
+<span class="nb">type</span><span class="p">(</span><span class="n">ProfileOptionBuilder</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">dict</span> 
+>>>>>>> temp
 </pre></div>
 
 
 <h5 id="2_11">2. 记录浮点运算情况</h5>
+<<<<<<< HEAD
 <p>ProfileOptionBuilder.float_operation()</p>
+=======
+<div class="hlcode"><pre><span class="n">ProfileOptionBuilder</span><span class="o">.</span><span class="n">float_operation</span><span class="p">()</span>
+</pre></div>
+
+
+>>>>>>> temp
 <h4 id="1642">16.4.2 输出选项</h4>
 <p>输出文件格式<br />
 1. time line : 输出JSON events file, 再用chrome浏览器tracing功能进行查看，可视性很棒。<br />
@@ -2866,6 +3096,7 @@ tf.tables_initializer</p>
 
 <h4 id="1643">16.4.3 限定选项</h4>
 <h5 id="1-profiler">1. 选择制定profiler节点</h5>
+<<<<<<< HEAD
 <p>attributes=[]<br />
 ProfileOptionBuilder.select(attributes)</p>
 <h5 id="2-profiler">2. 选择消耗时间大于阈值的profiler节点</h5>
@@ -2888,6 +3119,44 @@ ProfileOptionBuilder.select(attributes)</p>
 <p>ProfileOptionBuilder.with_min_parameters(min_params)<br />
 仅显示不超过'min_params'参数的profiler节点。</p>
 <h5 id="6-profiler">6. 选择参数数量大于阈值的profiler节点</h5>
+=======
+<div class="hlcode"><pre><span class="n">attributes</span><span class="o">=</span><span class="p">[]</span>
+<span class="n">ProfileOptionBuilder</span><span class="o">.</span><span class="n">select</span><span class="p">(</span><span class="n">attributes</span><span class="p">)</span>
+</pre></div>
+
+
+<h5 id="2-profiler">2. 选择消耗时间大于阈值的profiler节点</h5>
+<div class="hlcode"><pre><span class="n">ProfileOptionBuilder</span><span class="o">.</span><span class="n">with_min_execution_time</span><span class="p">(</span>
+    <span class="n">min_micros</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">min_accelerator_micros</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">min_cpu_micros</span><span class="o">=</span><span class="mi">0</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<p>只显示消耗不少于“min_micros”的profiler节点。</p>
+<h5 id="3-profiler">3. 选择消耗空间大于阈值的profiler节点</h5>
+<div class="hlcode"><pre><span class="n">ProfileOptionBuilder</span><span class="o">.</span><span class="n">with_min_memory</span><span class="p">(</span>
+    <span class="n">min_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">min_peak_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">min_residual_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">min_output_bytes</span><span class="o">=</span><span class="mi">0</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<h5 id="4-profiler">4. 选择运算大于阈值的profiler节点</h5>
+<div class="hlcode"><pre><span class="n">ProfileOptionBuilder</span><span class="o">.</span><span class="n">with_min_float_operations</span><span class="p">(</span><span class="n">min_float_ops</span><span class="p">)</span>
+</pre></div>
+
+
+<h5 id="5-profiler">5. 选择参数数量大于阈值的profiler节点</h5>
+<div class="hlcode"><pre><span class="n">ProfileOptionBuilder</span><span class="o">.</span><span class="n">with_min_parameters</span><span class="p">(</span><span class="n">min_params</span><span class="p">)</span>
+</pre></div>
+
+
+<p>仅显示不超过'min_params'参数的profiler节点。</p>
+>>>>>>> temp
 <h4 id="1644-">16.4.4 评估器选项构建器-构建</h4>
 <div class="hlcode"><pre><span class="c">#构建profiling选项</span>
 <span class="n">profile_opt_dict</span><span class="o">=</span><span class="n">ProfileOptionBuilder</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
@@ -2896,15 +3165,29 @@ ProfileOptionBuilder.select(attributes)</p>
 </pre></div>
 
 
+<<<<<<< HEAD
 <h3 id="164_1">16.4 常用实例</h3>
 <h4 id="1-flop">1. 浮点运算次数 flop</h4>
 <div class="hlcode"><pre>    <span class="k">def</span> <span class="nf">get_flops</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+=======
+<h4 id="1644">16.4.4 输出视图</h4>
+<p>例子1：grpah view显示每个graph node运行时间，并输出到timeline</p>
+<p>例子2：scope view显示模型中的参数数量分布 <br />
+例子4： code view – 显示python代码的执行资源消耗 </p>
+<h3 id="164_1">16.4 常用实例</h3>
+<h4 id="1-flop">1. 浮点运算次数 flop</h4>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">get_flops</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+>>>>>>> temp
         <span class="n">run_meta</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">RunMetadata</span><span class="p">()</span>
         <span class="n">opts</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">ProfileOptionBuilder</span><span class="o">.</span><span class="n">float_operation</span><span class="p">()</span>
 
         <span class="c"># We use the Keras session graph in the call to the profiler.</span>
         <span class="n">flop</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">profile</span><span class="p">(</span><span class="n">graph</span><span class="o">=</span><span class="n">K</span><span class="o">.</span><span class="n">get_session</span><span class="p">()</span><span class="o">.</span><span class="n">graph</span><span class="p">,</span>
+<<<<<<< HEAD
                                     <span class="n">run_meta</span><span class="o">=</span><span class="n">run_meta</span><span class="p">,</span> <span class="n">cmd</span><span class="o">=</span><span class="s">&#39;op&#39;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">opts</span><span class="p">)</span>
+=======
+                                        <span class="n">run_meta</span><span class="o">=</span><span class="n">run_meta</span><span class="p">,</span> <span class="n">cmd</span><span class="o">=</span><span class="s">&#39;op&#39;</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="n">opts</span><span class="p">)</span>
+>>>>>>> temp
 
         <span class="k">return</span> <span class="n">flop</span><span class="o">.</span><span class="n">total_float_ops</span>  <span class="c"># Prints the &quot;flop&quot; of the model.</span>
 </pre></div>
@@ -2989,6 +3272,11 @@ ProfileOptionBuilder.select(attributes)</p>
 <p>图运行：对于每一个计算设备，worker依照op在kernel中的实现，完成op的运算。设备间数据通信可以使用send/recv节点，而worker间通信，则使用GRPC或RDMA协议。</p>
 </li>
 </ol>
+<<<<<<< HEAD
+=======
+<h2 id="_3">参考文献</h2>
+<p>[^1]fff</p>
+>>>>>>> temp
 </div>
 
     </div>
