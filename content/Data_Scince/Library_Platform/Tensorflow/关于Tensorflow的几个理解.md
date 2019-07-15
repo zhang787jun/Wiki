@@ -1579,8 +1579,6 @@ Hinge loss用于最大间隔（maximum-margin）分类，其中最有代表性�
 
 
 
-
-
 ### 9.7. 神经网络里面的loss （tf.nn.loss）
 参考：https://www.tensorflow.org/api_docs/python/tf/losses
 
@@ -2212,6 +2210,9 @@ Initializer_instance=tf.initializers.variance_scaling(
 ###### 3.1 Xavier initialization/ Glorot initialization
 
 Xavier Glorot 在《Understanding the difficulty of training deep feedforward neural network》 http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf 提出的针对神经网络权重参数初始化方法。
+
+适合**Sigmoid或者Tanh作为激活函数**
+
 ```python
 Initializer_instance=tf.initializers.glorot_normal(seed=None)
 Initializer_instance=tf.initializers.glorot_uniform(seed=None)
@@ -2231,11 +2232,12 @@ $$|W_i-mean|<2* stddev$$
 
 $$n=\frac{W_i.shape[0]+W_{i-1}.shape[0]}{2} ,scale=1.0$$
 
+
 $$W \sim U(-\sqrt{\frac{3*scale}{n}},\sqrt{\frac{3*scale}{n}})= U(-\sqrt{\frac{6}{W_i.shape[0]+W_{i-1}.shape[0]}},\sqrt{\frac{6}{W_i.shape[0]+W_{i-1}.shape[0]}})$$
 
 
 ###### 3.2 He initialization
-He initialization的思想是：在ReLU网络中，假定每一层有一半的神经元被激活，另一半为0，所以，要保持variance不变，只需要在Xavier的基础上再除以2：
+He initialization的思想是：**在ReLU网络中**，假定每一层有一半的神经元被激活，另一半为0，所以，要保持variance不变，只需要在Xavier的基础上再除以2：
 1. 正态分布
 
 $$n=W_i.shape[0] ,scale=2.0$$
@@ -2285,6 +2287,8 @@ $$W \sim U(-\sqrt{\frac{3*scale}{n}},\sqrt{\frac{3*scale}{n}})= U(-\sqrt{\frac{3
 tf.keras.initializers.lecun_uniform(seed=None)
 ```
 ###### 3.3 orthogonal initialization(正交初始化)-基于正态分布
+
+适合RNN
 基于正态分布
 ```python
 
@@ -2336,8 +2340,6 @@ fc = tf.contrib.layers.batch_norm(fc, center=True, scale=True,
                                   is_training=True)
 fc = tf.nn.relu(fc)
 ```
-
-··
 
 
 
@@ -2770,7 +2772,27 @@ if __name__ == '__main__':
 python "xxx.py" --str_name hahaha
 ```
 
+## 18.归一化  tf.nn.batch_normalization
 
+
+Aliases:
+tf.compat.v1.nn.batch_normalization
+tf.compat.v2.nn.batch_normalization
+tf.nn.batch_normalization
+```python
+tf.nn.batch_normalization(
+    x,
+    mean,
+    variance,
+    offset,
+    scale,
+    variance_epsilon,
+    name=None
+)
+```
+Normalizes a tensor by mean and variance, and applies (optionally) a scale  to it,as well as an offset :
+
+mean, variance, offset and scale are all expected to be of one of two shapes
 ## X1. 基于Tensorflow 的模型训练 基本步骤
 
 1. 数据输入 （ETL）
