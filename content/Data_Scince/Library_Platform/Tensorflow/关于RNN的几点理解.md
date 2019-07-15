@@ -85,6 +85,8 @@ $$ h^{\langle t \rangle} = \Gamma_o^{\langle t \rangle}* \tanh(c^{\langle t \ran
 
 
 
+## LSTM 变体 
+
 
 
 
@@ -234,6 +236,9 @@ tf.keras.layers.RNN(
 ```
 
 ## 2. 时间 BBTP 反向传播
+
+对于记忆细胞 M
+
 
 ## 3. 梯度消逝与爆炸
 
