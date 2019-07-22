@@ -1639,7 +1639,6 @@ Hinge loss用于最大间隔（maximum-margin）分类，其中最有代表性�
 
 ### 9.7. 神经网络里面的loss （tf.nn.loss）
 参考：https://www.tensorflow.org/api_docs/python/tf/losses
-<<<<<<< HEAD
 
 
 >关于**概率的讨论**
@@ -1704,8 +1703,6 @@ $$H(q(y),P(y\_))=-\sum{q(y) * \log{ P(y\_ ) } }$$
 模型训练的目的就是使 预测分布P(x) 逼近 q(x)，他们之间距离越小，函数越小。
 
 
-=======
->>>>>>> tep
 #### 9.7.1  tf.nn.sigmoid_cross_entropy_with_logits
 
 `predict_label=sigmoid(logits)`
@@ -2525,7 +2522,6 @@ graph node的每一次执行，记录单步统计数据，主要是执行时间�
 @2 用户程序把每一次搜集到的 RunMetadata 添加到profiler实例，做数据累计和加工处理。
 @3 将profiler以某一视图按某一设定输出
 
-<<<<<<< HEAD
 4. profiler 持久后保存/可视化
 
 ```python
@@ -2535,8 +2531,6 @@ graph node的每一次执行，记录单步统计数据，主要是执行时间�
 例子4： code view – 显示python代码的执行资源消耗 
 按照python代码的方式来显示统计数据，也就是统计每一行python代码产生的node的执行性能
 
-=======
->>>>>>> tep
 ### 16.2 评估器实例
 
 #### 16.2.1 实例的建立
