@@ -13,8 +13,10 @@ date: 2099-06-02 00:00f
 ## 1. Docker 准备
 Docker CE 镜像源站
 使用官方安装脚本自动安装 （仅适用于公网环境）
+### For Linux
+```shell 
 curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
-
+```
 ### For windows 
 1. 安装／升级Docker客户端
 对于Windows 10以下的用户，推荐使用Docker Toolbox
@@ -61,15 +63,11 @@ Dockerfile 镜像构建参考文档
 
 来自 <https://cr.console.aliyun.com/cn-hongkong/instances/mirrors> 
 
-###  For Ubuntu
-1. 安装／升级Docker客户端
-推荐安装1.10.0以上版本的Docker客户端，参考文档 docker-ce
-2. 配置镜像加速器
-针对Docker客户端版本大于 1.10.0 的用户
-您可以通过修改daemon配置文件/etc/docker/daemon.json来使用加速器
-sudo mkdir -p /etc/docker
 
 
 ## 2. Docker 概念
 
 **Boot2Docker** 是一个专为Docker而设计的轻量级Linux发型包，解决Windows或者OS X用户不能安装Docker的问题。 Boot2Docker完全运行于内存中，24M大小，启动仅5-6秒。
+
+
+## x. Windwos 下 Docker 的文件挂载

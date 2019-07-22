@@ -798,6 +798,7 @@ ProtoBuf 实际上支持两种不同的文件保存格式。
 
 
 ### 2. 需要保存什么
+
 主要是：
 #### 1. 图信息
 
@@ -822,14 +823,8 @@ Tensor中主要包含两类信息：
 1. 是Graph结构信息，如边的源节点和目标节点(有向图)。
 2. 它所保存的数据信息，例如数据类型，shape等（tensor.shape/tensor.dytpe）。
 
-#### 2. 参数信息
 
-其他：
-
-#### 3. 其他信息
-
-1. 服务器信息
-2. 集群信息
+MetaGraph 是一种数据流图，并包含相关变量、资源和签名。MetaGraphDef 是 MetaGraph 的协议缓冲区表示法。签名是一组与图有关的输入和输出。
 
 MetaGraphDef：
 
@@ -842,18 +837,39 @@ MetaGraphDef：
 
 
 
+
+#### 2. 参数信息
+
+
+#### 3. 其他信息
+
+1. 服务器信息
+2. 集群信息
+
+
+
+
+
+TensorFlow的模型格式有很多种，针对不同场景可以使用不同的格式，只要符合规范的模型都可以轻易部署到在线服务或移动设备上，这里简单列举一下。
+
+Checkpoint： 用于保存模型的权重，主要用于模型训练过程中参数的备份和模型训练热启动。
+GraphDef：用于保存模型的Graph，不包含模型权重，加上checkpoint后就有模型上线的全部信息。
+ExportModel：使用exportor接口导出的模型文件，包含模型Graph和权重可直接用于上线，但官方已经标记为deprecated推荐使用SavedModel。
+SavedModel：使用saved_model接口导出的模型文件，包含模型Graph和权限可直接用于上线，TensorFlow和Keras模型推荐使用这种模型格式。
+FrozenGraph：使用freeze_graph.py对checkpoint和GraphDef进行整合和优化，可以直接部署到Android、iOS等移动设备上。
+TFLite：基于flatbuf对模型进行优化，可以直接部署到Android、iOS等移动设备上，使用接口和FrozenGraph有些差异
+
 保存文件如下表所示：
 ### 1.ckpt类型（checkpoint）
 
-.ckpt格式文件只能在tensorflow 框架下使用
-其主要操作为saver
+.ckpt格式文件只能在tensorflow 框架下使用,其主要操作为`saver`,只保存变量，不保存DAG图信息
 
 Only save variables, not graph
 Checkpoints map variable names to tensors
 
-
-        saver = tf.train.Saver()
-
+```python
+saver = tf.train.Saver()
+``` 
 saver是一个tensorflow.python.training.saver.Saver 类 
 
 saver的建立主要通过 tf.train 子类建立，有以下方式:
@@ -926,19 +942,23 @@ mode：可变的文件名
 ckpt：文件格式
 -20： 代表 global_step =20 
 saver.save(sess, 'my-model', global_step=0) ==> filename: 'my-model-0'
+saver.save(sess, 'my-model.ckpt', global_step=0) ==> filename: 'my-model.ckpt-0'
 ...
 saver.save(sess, 'my-model', global_step=1000) ==> filename: 'my-model-1000'
 
-#### 1.保存
-1. 创建saver
-   
-        saver=tf.train.Saver()
-2. 保存参数变量
-```python
-        saver_path = saver.save(sess, save_path ,global_step=100)
+同时保存 `xxx.meta`, `xxx.index`,`xxx.data-yyy-of-ttt`
 
-        #1 sess 必须提前加载，同时参数没有初始化
-        #2 save_path :str 
+#### 1.保存
+```python
+#1. 创建saver
+
+saver=tf.train.Saver()
+
+# 2. 保存参数变量
+saver_path = saver.save(sess, save_path="./path/model.ckpt" ,global_step=100)
+
+#1 sess 必须提前加载，同时参数没有初始化
+#2 save_path : 返回 str 
 
 ```
 
@@ -1087,6 +1107,44 @@ graph_def
         print(sess.run(c))
 
 
+### 3. SavedModel 格式
+
+![](/attach/images/2019-07-15-17-16-14.png)
+
+例如，图显示了一个包含三个 MetaGraphDef 的 SavedModel，它们三个都共享同一组检查点和资源：
+
+SavedModel 是一种独立于语言且可恢复的神秘序列化格式，使较高级别的系统和工具可以创建、使用和转换 TensorFlow 模型。
+
+### 4. pd 格式/ckpt格式文件互换 
+```python
+
+def freeze_graph(input_checkpoint,output_graph):
+    '''
+    :param input_checkpoint:
+    :param output_graph: PB模型保存路径
+    :return:
+    '''
+    # checkpoint = tf.train.get_checkpoint_state(model_folder) #检查目录下ckpt文件状态是否可用
+    # input_checkpoint = checkpoint.model_checkpoint_path #得ckpt文件路径
+ 
+    # 指定输出的节点名称,该节点名称必须是原模型中存在的节点
+    output_node_names = "InceptionV3/Logits/SpatialSqueeze"
+    saver = tf.train.import_meta_graph(input_checkpoint + '.meta', clear_devices=True)
+ 
+    with tf.Session() as sess:
+        saver.restore(sess, input_checkpoint) #恢复图并得到数据
+        output_graph_def = graph_util.convert_variables_to_constants(  # 模型持久化，将变量值固定
+            sess=sess,
+            input_graph_def=sess.graph_def,# 等于:sess.graph_def
+            output_node_names=output_node_names.split(","))# 如果有多个输出节点，以逗号隔开
+ 
+        with tf.gfile.GFile(output_graph, "wb") as f: #保存模型
+            f.write(output_graph_def.SerializeToString()) #序列化输出
+        print("%d ops in the final graph." % len(output_graph_def.node)) #得到
+
+
+
+```
 
 ## 6. 可视化（tf.summary）
 
@@ -1176,18 +1234,17 @@ tf.metrics 类都是返回两个tensor
 
 tf.metrics.accuracy()
 ```python
+real_label=tf.constant([[1],[1],[1]]) # [1] [1] [1]
+predict_label=tf.constant([1,1,1]) # [1] [1] [1]
 
-        real_label=tf.constant([[1],[1],[1]]) # [1] [1] [1]
-        predict_label=tf.constant([1,1,1]) # [1] [1] [1]
-
-        accuracy_op = tf.metrics.accuracy(labels=real_label, predictions=predict_label, name="accuracy_op")
-        ini_op=[tf.global_variables_initializer(),tf.local_variables_initializer()]
-        sess=tf.Session()
-        sess.run(ini_op)
-        accuracy,update_op=sess.run(accuracy_op)
-        # (1.0, 1.0)
-        # accuracy：A Tensor，表示准确性，值total除以count。
-        # update_op ：适当增加total和count变量并且使其值匹配accuracy的操作。
+accuracy_op = tf.metrics.accuracy(labels=real_label, predictions=predict_label, name="accuracy_op")
+ini_op=[tf.global_variables_initializer(),tf.local_variables_initializer()]
+sess=tf.Session()
+sess.run(ini_op)
+accuracy,update_op=sess.run(accuracy_op)
+# (1.0, 1.0)
+# accuracy：A Tensor，表示准确性，值total除以count。
+# update_op ：适当增加total和count变量并且使其值匹配accuracy的操作。
 
 ``` 
 tf.metrics.precision()
@@ -1218,7 +1275,7 @@ mean_cosine_distance(...): Computes the cosine distance between the labels and p
 ![avatar](https://upload-images.jianshu.io/upload_images/7252179-dbad746fab87dc42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/646/format/webp)
 
 1. 准确率 (accuracy)
-   $$ accuracy =\frac{正确预测的数量}/{样本总数} $$
+   $$ accuracy =\frac{正确预测的数量}{样本总数} $$
    
 2. 精确率 (precision)
    模型正确预测正类别的频率
@@ -1260,35 +1317,37 @@ mean(...): Computes the (weighted) mean of the given values.
 percentage_below(...): Computes the percentage of values less than the given threshold.
 
 
-## 8. 代码的可读性--作用域(scope)-(tf.name_scope/tf.variable_scope)
+## 8. 代码的可读性--作用域(scope)
+
+-(tf.name_scope/tf.variable_scope)
 
 TensorFlow doesn’t know what nodes should be grouped together, unless you tell it to
 TensorFlow 并不知道那个node 需要本整合
-为了解决这个问题，我们引入了 name_scope 和 variable_scope， 二者又分别承担着不同的责任：
+为了解决这个问题，我们引入了 `name_scope` 和 `variable_scope，` 二者又分别承担着不同的责任：
 
 * name_scope: * 为了更好地管理变量的命名空间而提出的。比如在 tensorboard 中，因为引入了 name_scope， 我们的 Graph 看起来才井然有序,name_scope主要是给variable_name加前缀，也可以给op_name 加前缀；。
 * variable_scope: * 大大大部分情况下，跟 tf.get_variable() 配合使用，实现变量共享的功能,，name_scope 是给 op_name 加前缀。
 
 这两个函数在大部分情况下是等价的, 唯一的区别是在使用tf.get_variable函数时. 
+```python
+import tensorflow as tf
 
-        import tensorflow as tf
+with tf.variable_scope("foo"):
+        a = tf.get_variable("bar", [1])
+        print a.name    # 输出 foo/bar: 0
 
-        with tf.variable_scope("foo"):
-                a = tf.get_variable("bar", [1])
-                print a.name    # 输出 foo/bar: 0
+with tf.variable_scope("bar"):
+        b = tf.get_variable("bar", [1])
+        print b.name     # 输出 bar/bar: 0
 
-        with tf.variable_scope("bar"):
-                b = tf.get_variable("bar", [1])
-                print b.name     # 输出 bar/bar: 0
+with tf.name_scope("a"):
+        a = tf.Variable([1])
+        print a.name     # 输出 a/Va        　　    a = tf.Variable("b", [1]):
+　　    print a.name　# 输出 b: 0
 
-        with tf.name_scope("a"):
-                a = tf.Variable([1])
-                print a.name     # 输出 a/Va        　　    a = tf.Variable("b", [1]):
-        　　    print a.name　# 输出 b: 0
-
-        with tf.name_scope("b"):
-                tf.get_variable("b", [1])        # Error
-
+with tf.name_scope("b"):
+        tf.get_variable("b", [1])        # Error
+```
 
 ## 9. 函数 tf.losses
 
@@ -1767,7 +1826,6 @@ tf.Graph.gradient_override_map(op_type_map)                             | 用于
 ```python
 op_list=tf.Graph.get_operations()  
 #返回图中的操作节点列表
-
 ```
 
 tf.Graph
@@ -2467,7 +2525,7 @@ graph node的每一次执行，记录单步统计数据，主要是执行时间�
 4. profiler 持久后保存/可视化
 
 ```python
- with open(current_dir_path+'/profile', 'wb') as f:
+ with open(current_dir_path+'/profile.pd', 'wb') as f:
         f.write(profiler.serialize_to_string())
 ```
 例子4： code view – 显示python代码的执行资源消耗 
@@ -2749,6 +2807,7 @@ tf.app.flags.DEFINE_float
 tf.app.flags.DEFINE_string
 
 ```python
+# /bin/bash/python
 import tensorflow as tf
  
 #第一个是参数名称，第二个参数是默认值，第三个是参数描述
@@ -2769,6 +2828,7 @@ if __name__ == '__main__':
 ```
 
 ```shell
+# shell 
 python "xxx.py" --str_name hahaha
 ```
 
@@ -2780,7 +2840,7 @@ tf.compat.v1.nn.batch_normalization
 tf.compat.v2.nn.batch_normalization
 tf.nn.batch_normalization
 ```python
-tf.nn.batch_normalization(
+y=tf.nn.batch_normalization(
     x,
     mean,
     variance,
@@ -2791,8 +2851,78 @@ tf.nn.batch_normalization(
 )
 ```
 Normalizes a tensor by mean and variance, and applies (optionally) a scale  to it,as well as an offset :
-
+$$y=scale*\frac{x-mean}{variance}+offset$$
 mean, variance, offset and scale are all expected to be of one of two shapes
+
+## 19. tf.gfile文件操作模块
+
+在文档中，该模块有两个类，FastGFile和GFile，但是查看源码可发现，二者其实是一样的。
+###  复制
+```python
+tf.gfile.Copy(oldpath, newpath, overwrite=False)
+```
+将文件从oldpath拷贝到newpath，path是要包含文件名的。如果overwrite为False，当newpath已存在时会产生错误：AlreadyExistsError: file already exists。
+###  删除
+```python
+tf.gfile.DeleteRecursively(dirname)
+#删除dirname目录下的所有内容。
+
+```
+### 判断路径filename是否存在
+```python
+tf.gfile.Exists(filename)
+#判断路径filename是否存在，filename可以是文件路径也可以是文件夹路径。
+```
+
+### 判断路径dirname是否为一目录
+tf.gfile.IsDirectory(dirname)
+
+tf.gfile.ListDirectory函数
+tf.gfile.ListDirectory(dirname)
+
+返回目录dirname下的所有内容，包含子目录，但不包含‘.’和‘..’。返回形式为：
+[filename1, filename2, ... filenameN]
+
+tf.gfile.MkDir
+tf.gfile.MkDir(dirname)
+
+创建目录dirname。注意上层目录必须存在，如：
+tf.gfile.MkDir('./a/b/c')
+
+则./a/b必须存在。
+tf.gfile.MakeDirs函数
+tf.gfile.MakeDirs(dirname)
+
+创建目录dirname。与MkDir不同，上层目录可以不存在。
+tf.gfile.Remove函数
+tf.gfile.Remove(filename)
+
+删除文件filename。
+tf.gfile.Rename函数
+tf.gfile.Rename(oldname, newname, overwrite=False)
+
+重命名/移动文件/目录。
+tf.gfile.Walk函数
+tf.gfile.Walk( top, in_order=True)
+
+返回一生成器，可用于递归目录树，top为顶层目录。若in_order为True，则按顺序递归。使用方式：
+for i in tf.gfile.Walk('./datasets/'):
+    print(i)
+
+输出格式为(the pathname of a directory, followed by lists of all its subdirectories and leaf files)：
+(dirname, [subdirname, subdirname, ...], [filename, filename, ...]) 
+
+也可以使用next()函数来迭代。
+tf.gfile.FastGFile类
+提供了文件的读写操作。注意对于非UTF-8的文件，例化对象时，使用'rb'模式。
+
+## 20. 计算梯度
+
+
+```python
+d=tf.gradients(y_, weight1)
+```
+
 ## X1. 基于Tensorflow 的模型训练 基本步骤
 
 1. 数据输入 （ETL）

@@ -5,7 +5,6 @@ date: 2099-06-02 00:00
 ---
 [TOC]
 #　深度学习库一览 
-
-<img src="/attach/images/ai/ML_lib_timeline.png">
+![](/attach/images/ai/ML_lib_timeline.png)
 
 
