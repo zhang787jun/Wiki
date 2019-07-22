@@ -42,6 +42,7 @@
 </li>
 </ul>
 </li>
+<li><a href="#lstm">LSTM 变体</a></li>
 <li><a href="#1-lstmcell">1. LSTMCell 实例</a></li>
 <li><a href="#2-bbtp">2. 时间 BBTP 反向传播</a></li>
 <li><a href="#3">3. 梯度消逝与爆炸</a></li>
@@ -147,6 +148,7 @@ $x^{\langle t \rangle}$: 当下输入 </p>
 <p>To decide which outputs we will use, we will use the following two formulas: </p>
 <p>$$ \Gamma_o^{\langle t \rangle}=  \sigma(W_o[h^{\langle t-1 \rangle}, x^{\langle t \rangle}] + b_o)\tag{5}$$ <br />
 $$ h^{\langle t \rangle} = \Gamma_o^{\langle t \rangle}* \tanh(c^{\langle t \rangle})\tag{6} $$</p>
+<h2 id="lstm">LSTM 变体</h2>
 <h2 id="1-lstmcell">1. LSTMCell 实例</h2>
 <p>Keras LSTM 参数解析 </p>
 <div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">layers</span><span class="o">.</span><span class="n">LSTM</span>
@@ -266,6 +268,7 @@ $$ h^{\langle t \rangle} = \Gamma_o^{\langle t \rangle}* \tanh(c^{\langle t \ran
 
 
 <p>H_all 是 $np.array(h^{\langle t \rangle},h^{\langle t-1 \rangle},h^{\langle t-2 \rangle},...,h^{\langle 1 \rangle})$</p>
+<p>经过初步调查，常用的LSTM层有Keras.layers.LSTM 和 Tensorflow.contrib.nn.LSTMCell 及 Tensorflow.nn.rnn_cell.LSTMCell ，其中后面两个的实现逻辑是一样的。</p>
 <div class="hlcode"><pre><span class="n">LSTMCell</span> <span class="o">=</span>
 <span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">rnn</span><span class="o">.</span><span class="n">BasicLSTMCell</span><span class="p">(</span><span class="n">num_units</span><span class="p">)</span>
 <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">rnn_cell</span><span class="o">.</span><span class="n">BasicLSTMCell</span><span class="p">(</span><span class="n">num_units</span><span class="p">)</span>
@@ -282,6 +285,7 @@ $$ h^{\langle t \rangle} = \Gamma_o^{\langle t \rangle}* \tanh(c^{\langle t \ran
 
 
 <h2 id="2-bbtp">2. 时间 BBTP 反向传播</h2>
+<p>对于记忆细胞 M</p>
 <h2 id="3">3. 梯度消逝与爆炸</h2>
 </div>
 
