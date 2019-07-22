@@ -6,7 +6,6 @@ tag: Tensorflow,框架,AI,
 ---
 
 [TOC]
-
 [![The MIT License](http://img.shields.io/badge/license-MIT-yellow.svg)](https://github.com/tankywoo/simiki/blob/master/LICENSE)
 # Tensorflow 的几个模块理解
 ## 1.训练的管理（tf.train）
@@ -1415,7 +1414,7 @@ $$Loss(y\_ ,y)=\begin{cases}
 $$
 
 
-### 9.2  绝对值
+### 9.2  绝对值损失
 
 $$Loss(y\_ ,y)=|y\_ -y|$$
 
@@ -1588,9 +1587,9 @@ mean_squared_error,update_op=tf.metrics.root_mean_squared_error(
 # mean_squared_error shape =() is a value
 ```
 **应用：**
-最小二乘法通常用欧式距离进行距离的度量,使用平方函数
+最小二乘法通常用欧式距离进行距离的度量,使用平方损失函数
 
-### 9.5 指数函数
+### 9.5 指数损失函数
 
 $$loss(y\_,y)=e^{-y\_·y}=\frac{e^y} {e^{y\_}}$$
 
@@ -1605,11 +1604,11 @@ cost = tf.reduce_mean(loss,axis=None,keep_dims=False,name=None,reduction_indices
 ```
 
 **应用**
-AdaBoost使用指数函数。
+AdaBoost使用指数损失函数。
 
 
 
-### 9.6 Hinge函数
+### 9.6 Hinge损失函数
 
 $$loss(y\_,y)=max(0,1-y\_·y)$$
 
@@ -1640,6 +1639,7 @@ Hinge loss用于最大间隔（maximum-margin）分类，其中最有代表性�
 
 ### 9.7. 神经网络里面的loss （tf.nn.loss）
 参考：https://www.tensorflow.org/api_docs/python/tf/losses
+<<<<<<< HEAD
 
 
 >关于**概率的讨论**
@@ -1704,6 +1704,8 @@ $$H(q(y),P(y\_))=-\sum{q(y) * \log{ P(y\_ ) } }$$
 模型训练的目的就是使 预测分布P(x) 逼近 q(x)，他们之间距离越小，函数越小。
 
 
+=======
+>>>>>>> tep
 #### 9.7.1  tf.nn.sigmoid_cross_entropy_with_logits
 
 `predict_label=sigmoid(logits)`
@@ -1852,7 +1854,7 @@ tf.Graph
 基本步骤：
 1. Get input, output , saver and graph"""#从导入图中获取需要的东西（）
 2. 构造新的variables用于后面的finetuning
-3. 构造
+3. 构造损失
 4. 构造 op
 5. 开始新的训练
 
@@ -1877,7 +1879,7 @@ loss += l2_loss
 
 Session 分为tf.Session()，with tf.Session() as sess:和tf.InteractivateSession()：
 
-1.tf.Session()和with tf.Session() as sess:区���：
+1.tf.Session()和with tf.Session() as sess:区别：
 
 如果用tf.Session()，使用完毕需要关闭会话如： 
 ```python
@@ -2493,7 +2495,9 @@ type(run_metadata)
 run_options = tf.RunOptions(trace_level = tf.RunOptions.FULL_TRACE)
 type(run_options)
 >>>tensorflow.core.protobuf.config_pb2.RunOptions
+
 ```
+RunOptions 设置评估器的运行参数选项，包括:全记录，记录硬件信息，记录软件信息，不记录。
 
 ```python
 tf.RunOptions 类
@@ -2514,14 +2518,14 @@ for step in range (total_steps):
 profiler.profile_graph(options=profile_graph_opts_builder.build()) #@3
 
 ```
-
 profiler 分为数据搜集和数据显示两个主要步骤。
 
-graph node的每一次执行，记录单步统计数据，主要是执行时间和占用内存，格式参step_stats.proto，作为原始的最小粒度统计数据源；
+graph node的每一次执行，记录单步统计数据，主要是执行时间和占用内存，格式参见step_stats.proto，作为原始的最小粒度统计数据源；
 @1 每一次session.Run()，所有执行到的graph node的统计数据，都集中汇总保存到 RunMetadata 数据结构中;
 @2 用户程序把每一次搜集到的 RunMetadata 添加到profiler实例，做数据累计和加工处理。
 @3 将profiler以某一视图按某一设定输出
 
+<<<<<<< HEAD
 4. profiler 持久后保存/可视化
 
 ```python
@@ -2531,6 +2535,8 @@ graph node的每一次执行，记录单步统计数据，主要是执行时间�
 例子4： code view – 显示python代码的执行资源消耗 
 按照python代码的方式来显示统计数据，也就是统计每一行python代码产生的node的执行性能
 
+=======
+>>>>>>> tep
 ### 16.2 评估器实例
 
 #### 16.2.1 实例的建立
@@ -2538,7 +2544,7 @@ graph node的每一次执行，记录单步统计数据，主要是执行时间�
 Profiler=tf.profiler.Profiler(graph=None,op_log=None)
 
 #graph：tf.Graph。如果为“None”或者未启用“eager执行”，请使用默认图形。
-#lop_log：可选的。tensorflow :: tfprof :: OpLogProto proto。用于定义额外的op类型。
+#op_log：可选的。tensorflow :: tfprof :: OpLogProto proto。用于定义额外的op类型。
 ```
 #### 16.2.2 实例操作
 ```python
@@ -2665,8 +2671,6 @@ ProfileOptionBuilder.time_and_memory(
     min_residual_bytes=0,
     min_output_bytes=0
 )
-type(ProfileOptionBuilder)
->>> dict 
 
 ```
 ##### 2. 记录浮点运算情况

@@ -142,16 +142,15 @@
 <li><a href="#8-scope-tfname_scopetfvariable_scope">8. 代码的可读性--作用域(scope)-(tf.name_scope/tf.variable_scope)</a></li>
 <li><a href="#9-tflosses">9. 函数 tf.losses</a><ul>
 <li><a href="#91-0-1">9.1.  0-1函数</a></li>
-<li><a href="#92">9.2  绝对值</a></li>
+<li><a href="#92">9.2  绝对值损失</a></li>
 <li><a href="#93-log">9.3 log对数函数</a><ul>
 <li><a href="#_1">对于二分类问题</a></li>
 </ul>
 </li>
 <li><a href="#94">9.4 平方函数:</a></li>
-<li><a href="#95">9.5 指数函数</a></li>
-<li><a href="#96-hinge">9.6 Hinge函数</a></li>
+<li><a href="#95">9.5 指数损失函数</a></li>
+<li><a href="#96-hinge">9.6 Hinge损失函数</a></li>
 <li><a href="#97-loss-tfnnloss">9.7. 神经网络里面的loss （tf.nn.loss）</a><ul>
-<li><a href="#_2">熵</a></li>
 <li><a href="#971-tfnnsigmoid_cross_entropy_with_logits">9.7.1  tf.nn.sigmoid_cross_entropy_with_logits</a></li>
 <li><a href="#972-tfnnsoftmax_cross_entropy_with_logits">9.7.2 tf.nn.softmax_cross_entropy_with_logits</a></li>
 <li><a href="#973-tfnnsparse_softmax_cross_entropy_with_logits">9.7.3 tf.nn.sparse_softmax_cross_entropy_with_logits</a></li>
@@ -263,12 +262,11 @@
 <li><a href="#17tfapp">17.命令行传递参数(tf.app)</a></li>
 <li><a href="#x1-tensorflow">X1. 基于Tensorflow 的模型训练 基本步骤</a></li>
 <li><a href="#x2-tensorflow">X2. Tensorflow 的运行过程</a></li>
-<li><a href="#_3">参考文献</a></li>
+<li><a href="#_2">参考文献</a></li>
 </ul>
 </li>
 </ul>
 </div>
-<p><a href="https://github.com/tankywoo/simiki/blob/master/LICENSE"><img alt="The MIT License" src="http://img.shields.io/badge/license-MIT-yellow.svg" /></a></p>
 <h1 id="tensorflow">Tensorflow 的几个模块理解</h1>
 <h2 id="1tftrain">1.训练的管理（tf.train）</h2>
 <p>tensorflow 主要有2种方式进行训练监督<br />
@@ -1760,7 +1758,7 @@ $$<br />
 0 (|y_ -y|&lt;error)\<br />
 \end{cases}<br />
 $$</p>
-<h3 id="92">9.2  绝对值</h3>
+<h3 id="92">9.2  绝对值损失</h3>
 <p>$$Loss(y_ ,y)=|y_ -y|$$</p>
 <p><strong>手动：</strong></p>
 <div class="hlcode"><pre><span class="c"># real_label shape =(N,···)</span>
@@ -1903,8 +1901,8 @@ Logistic回归</p>
 
 
 <p><strong>应用：</strong><br />
-最小二乘法通常用欧式距离进行距离的度量,使用平方函数</p>
-<h3 id="95">9.5 指数函数</h3>
+最小二乘法通常用欧式距离进行距离的度量,使用平方损失函数</p>
+<h3 id="95">9.5 指数损失函数</h3>
 <p>$$loss(y_,y)=e^{-y_·y}=\frac{e^y} {e^{y_}}$$</p>
 <p>$$coss(y_,y)=\frac{1}{n}\sum{e^{-y_·y}}$$</p>
 <div class="hlcode"><pre><span class="c"># real_label.shape ==predict_label.shape==(counts,····)</span>
@@ -1916,8 +1914,8 @@ Logistic回归</p>
 
 
 <p><strong>应用</strong><br />
-AdaBoost使用指数函数。</p>
-<h3 id="96-hinge">9.6 Hinge函数</h3>
+AdaBoost使用指数损失函数。</p>
+<h3 id="96-hinge">9.6 Hinge损失函数</h3>
 <p>$$loss(y_,y)=max(0,1-y_·y)$$</p>
 <p><strong>手动：</strong></p>
 <div class="hlcode"><pre><span class="n">loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">-</span><span class="n">tf</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">real_label</span><span class="p">,</span> <span class="n">predict_label</span><span class="p">))</span>
@@ -1943,38 +1941,6 @@ AdaBoost使用指数函数。</p>
 Hinge loss用于最大间隔（maximum-margin）分类，其中最有代表性的就是支持向量机SVM。</p>
 <h3 id="97-loss-tfnnloss">9.7. 神经网络里面的loss （tf.nn.loss）</h3>
 <p>参考：https://www.tensorflow.org/api_docs/python/tf/losses</p>
-<blockquote>
-<p>关于<strong>概率的讨论</strong><br />
-如果针对二分类问题，将P视为正样本的概率，则1-P为负样本的可能性，形如下面的则称为 事件为正样本的<strong>几率</strong>：<br />
-$$\frac{P}{1-P}$$<br />
-形如下面的则称为正样本的<strong>对数机率</strong> z<br />
-$$z=ln\frac{P}{1-P}$$</p>
-<p>数学上<br />
-$$ln\frac{p}{1-p}=z$$<br />
-可以推出，<strong>对数机率函数</strong> （Sigmoid 函数） 形式如下：<br />
-$$p=f(z)=\frac{1}{1+e^{-z}}=\frac{e^z}{1+e^{z}} $$</p>
-</blockquote>
-<h4 id="_2">熵</h4>
-<p><strong>熵--当只有一个变量分布</strong></p>
-<p>从相对熵和交叉熵的定义来看，将交叉熵作为函数较为可行 <br />
-下面举个例子来说明计算各个指标<br />
-序号  事件  模型预测概率  真实标记    信息量<br />
-A   电脑正常开机  0.7 1   -log(p(A))=0.36<br />
-B   电脑无法开机  0.3 0   -log(p(B))=1.2<br />
-因此，可计算熵如下 <br />
-H(Q)H(p,q)=E(I(X))=0.36∗0.7+1.2∗0.3=0.612=−p(A)log(q(A))−p(B)log(q(B))=−1∗log(0.7)−0∗log(0.3)=0.357<br />
-H(Q)=E(I(X))=0.36∗0.7+1.2∗0.3=0.612H(p,q)=−p(A)log(q(A))−p(B)log(q(B))=−1∗log(0.7)−0∗log(0.3)=0.357</p>
-<p>熵是对于给定分布 $q(x)$ 的不确定性的度量， 当取自有限的样本时，熵的公式可以表示为。</p>
-<p>$$H(q(x))=-\sum{q(x) \log{q(x)} }$$</p>
-<p>如果我们已知 所有的点都是绿色的，单一的？ 那个分布的不确定性是0，熵为0。<br />
-如果我们已知，数据点服从q（x） 分布，我们可以依据上式计算该分布的熵</p>
-<p><strong>交叉熵--当有2个变量分布</strong></p>
-<p>在信息论中，基于相同事件测度的两个概率分布 P(x)和 q(x)的<strong>交叉熵</strong>是指，<br />
-$$H(P(x),q(x))=-\sum{P(x) \log{q(x)} }$$</p>
-<p>交叉熵是用来描述p分布和q分布的距离</p>
-<p>现实情况中，多数情况式我们不知道数据的的真实分布。假设，数据真实分布为q(y)，我们推测其分为P（y_）。如果我们像这样计算熵，我们实际上是在计算两个分布之间的交叉熵：</p>
-<p>$$H(q(y),P(y_))=-\sum{q(y) * \log{ P(y_ ) } }$$</p>
-<p>模型训练的目的就是使 预测分布P(x) 逼近 q(x)，他们之间距离越小，函数越小。</p>
 <h4 id="971-tfnnsigmoid_cross_entropy_with_logits">9.7.1  tf.nn.sigmoid_cross_entropy_with_logits</h4>
 <p><code>predict_label=sigmoid(logits)</code></p>
 <div class="hlcode"><pre><span class="n">cross_entropy</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">sigmoid_cross_entropy_with_logits</span><span class="p">(</span>
@@ -2158,7 +2124,7 @@ real_label=tf.one_hot(label)</p>
 <p>基本步骤：<br />
 1. Get input, output , saver and graph"""#从导入图中获取需要的东西（）<br />
 2. 构造新的variables用于后面的finetuning<br />
-3. 构造<br />
+3. 构造损失<br />
 4. 构造 op<br />
 5. 开始新的训练</p>
 <p>https://blog.csdn.net/ying86615791/article/details/76215363</p>
@@ -2176,7 +2142,7 @@ real_label=tf.one_hot(label)</p>
 <p>包含了 CPU 和 GPU 运算的图像可微重采样（differentiable resampling）</p>
 <h2 id="14-session">14. Session 会话</h2>
 <p>Session 分为tf.Session()，with tf.Session() as sess:和tf.InteractivateSession()：</p>
-<p>1.tf.Session()和with tf.Session() as sess:区���：</p>
+<p>1.tf.Session()和with tf.Session() as sess:区别：</p>
 <p>如果用tf.Session()，使用完毕需要关闭会话如： </p>
 <div class="hlcode"><pre><span class="n">sess</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span>
 <span class="c">### 任务完成, 关闭会话.</span>
@@ -2747,6 +2713,7 @@ tf.tables_initializer</p>
 </pre></div>
 
 
+<p>RunOptions 设置评估器的运行参数选项，包括:全记录，记录硬件信息，记录软件信息，不记录。</p>
 <div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">RunOptions</span> <span class="err">类</span>
 <span class="err">类成员</span>
 <span class="n">tf</span><span class="o">.</span><span class="n">RunOptions</span><span class="o">.</span><span class="n">FULL_TRACE</span>
@@ -2769,26 +2736,16 @@ tf.tables_initializer</p>
 
 
 <p>profiler 分为数据搜集和数据显示两个主要步骤。</p>
-<p>graph node的每一次执行，记录单步统计数据，主要是执行时间和占用内存，格式参step_stats.proto，作为原始的最小粒度统计数据源；<br />
+<p>graph node的每一次执行，记录单步统计数据，主要是执行时间和占用内存，格式参见step_stats.proto，作为原始的最小粒度统计数据源；<br />
 @1 每一次session.Run()，所有执行到的graph node的统计数据，都集中汇总保存到 RunMetadata 数据结构中;<br />
 @2 用户程序把每一次搜集到的 RunMetadata 添加到profiler实例，做数据累计和加工处理。<br />
 @3 将profiler以某一视图按某一设定输出</p>
-<ol>
-<li>profiler 持久后保存/可视化</li>
-</ol>
-<div class="hlcode"><pre> <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">current_dir_path</span><span class="o">+</span><span class="s">&#39;/profile&#39;</span><span class="p">,</span> <span class="s">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">profiler</span><span class="o">.</span><span class="n">serialize_to_string</span><span class="p">())</span>
-</pre></div>
-
-
-<p>例子4： code view – 显示python代码的执行资源消耗 <br />
-按照python代码的方式来显示统计数据，也就是统计每一行python代码产生的node的执行性能</p>
 <h3 id="162">16.2 评估器实例</h3>
 <h4 id="1621">16.2.1 实例的建立</h4>
 <div class="hlcode"><pre><span class="n">Profiler</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">Profiler</span><span class="p">(</span><span class="n">graph</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">op_log</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
 
 <span class="c">#graph：tf.Graph。如果为“None”或者未启用“eager执行”，请使用默认图形。</span>
-<span class="c">#lop_log：可选的。tensorflow :: tfprof :: OpLogProto proto。用于定义额外的op类型。</span>
+<span class="c">#op_log：可选的。tensorflow :: tfprof :: OpLogProto proto。用于定义额外的op类型。</span>
 </pre></div>
 
 
@@ -2917,8 +2874,6 @@ tf.tables_initializer</p>
     <span class="n">min_residual_bytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="n">min_output_bytes</span><span class="o">=</span><span class="mi">0</span>
 <span class="p">)</span>
-<span class="nb">type</span><span class="p">(</span><span class="n">ProfileOptionBuilder</span><span class="p">)</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="nb">dict</span> 
 </pre></div>
 
 
@@ -3087,7 +3042,7 @@ tf.tables_initializer</p>
 <p>图运行：对于每一个计算设备，worker依照op在kernel中的实现，完成op的运算。设备间数据通信可以使用send/recv节点，而worker间通信，则使用GRPC或RDMA协议。</p>
 </li>
 </ol>
-<h2 id="_3">参考文献</h2>
+<h2 id="_2">参考文献</h2>
 <p>[^1]fff</p>
 </div>
 
