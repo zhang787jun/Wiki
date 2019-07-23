@@ -1,0 +1,53 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Tensorflow异常集锦 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
+    </script>
+
+
+
+</head>
+
+<body>
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Scince\Library_Platform\Tensorflow">Data_Scince\Library_Platform\Tensorflow</a>&nbsp;»&nbsp;Tensorflow异常集锦</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Tensorflow异常集锦</div>
+  <div id="content">
+  <h1 id="tensorflow">Tensorflow异常集锦</h1>
+<p>一、tensorflow checkpoint报错<br />
+在调用tf.train.Saver#save时，如果使用的路径是绝对路径，那么保存的checkpoint里面用的就是绝对路径；如果使用的是相对路径，那么保存的checkpoint里面用的就是相对路径。正确的方法应该是使用相对路径进行保存，这样才能保证较好的可移植性。<br />
+如果使用相对路径，复制到本地之后，会报找不到文件的错误。<br />
+tensorflow.python.framework.errors_impl.NotFoundError: FindFirstFile failed for: <br />
+一个绝对路径...... : ϵͳ\udcd5Ҳ\udcbb\udcb5\udcbdָ\udcb6\udca8\udcb5\udcc4·\udcbe\udcb6\udca1\udca3<br />
+; No such process<br />
+解决方法：手动修改checkpoint文件，checkpoint文件是一个文本文件。<br />
+以上结论可以通过以下代码进行验证。</p>
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2019 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+    
+</body>
+
+</html>

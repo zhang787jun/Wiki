@@ -799,34 +799,40 @@ ProtoBuf 实际上支持两种不同的文件保存格式。
 ### 2. 需要保存什么
 
 主要是：
-#### 1. 图信息
+| 编号 | 项目                   |
+| ---- | ---------------------- |
+| 1    | Graph/MetaGraph信息    |
+| 2    | 变量信息               |
+| 3    | 其他信息（服务器信息） |
 
-|     名称 |                                                      解释 |                                                                 组成 |
-| -------: | --------------------------------------------------------: | -------------------------------------------------------------------: |
-|    Graph | 被定义为“一些 Operation（节点） 和 Tensor（边缘） 的集合” |                                            Node(op+placeholder)+Edge |
-| GraphDef |                                             序列化的Graph | NodeDef 的 Protocol Buffer，NodeDef对应 op的Node 和placeholder的node |
 
-##### 1.1 节点--op
 
+#### 1. Graph/MetaGraph信息
+##### 1.1 Graph 信息
+图被定义为 “一些 Operation（节点） 和 Tensor（边缘） 的集合”。
+GraphDef 是图Graph信息的序列化文件，用于保存模型的Graph，不包含模型权重。
+
+**图信息的主要内容包括：**
+
+1. Node节点 op
 Operation包含OpDef和NodeDef两个主要成员变量。
 1. OpDef描述了op的静态属性信息，例如op入参列表，出参列表等。
-2. NodeDef则描述op的动态属性信息，例如op运行的设备信息，用户给op设置的name等。
+2. NodeDef则描述op的动态属性信息，例如op运行的设备信息，用户给op设置的name等。包括placeholder
 
 ```python
 [op.values() for op in tf.get_default_graph().get_operations()]
 ```
-##### 1.2 边--Tensor
+2 边--Tensor
 边用来表示计算的数据，它经过上游节点计算后得到，然后传递给下游节点进行运算。
 
 Tensor中主要包含两类信息：
 1. 是Graph结构信息，如边的源节点和目标节点(有向图)。
-2. 它所保存的数据信息，例如数据类型，shape等（tensor.shape/tensor.dytpe）。
+2. 它所保存的数据信息 ，例如数据类型，shape等（tensor.shape/tensor.dytpe）。
+##### 1.2 MetaGraph 信息
 
 
-MetaGraph 是一种数据流图，并包含相关变量、资源和签名。MetaGraphDef 是 MetaGraph 的协议缓冲区表示法。签名是一组与图有关的输入和输出。
-
-MetaGraphDef：
-
+MetaGraphDef 是 MetaGraph信息的序列化文件，同样是由 Protocol Buffer来定义的一个包含**更多图信息**的序列化文件。其中包括：
+   
 |          组成 |                                                                           内容 |                                                                              例如 |
 | ------------: | -----------------------------------------------------------------------------: | --------------------------------------------------------------------------------: |
 |   MetaInfoDef |                                                                   存一些元信息 |                                                                版本和其他用户信息 |
@@ -834,37 +840,59 @@ MetaGraphDef：
 |      SaverDef |                                                                  图的Saver信息 | 最多同时保存的check-point数量；需保存的Tensor名字等，但并不保存Tensor中的实际内容 |
 | CollectionDef | 任何需要特殊注意的 Python 对象，需要特殊的标注以方便import_meta_graph 后取回。 |                                                       “train_op”,"prediction"等等 |
 
+##### 1.3 Graph/MetaGraph信息 的保存格式
+在实际操作中，很少保存Graph信息，一般都是直接保存MetaGraph信息 ，保存MetaGraph信息的文件格式主要有
+
+1. pd 格式
+形如`xxx_name.pd`
 
 
+2. meta 格式
+形如`xxx_name.meta`
 
 #### 2. 参数信息
 
+主要为tf.Variables类的节点信息，持久化时保存为(1)索引和(2)数据 两部分。
+其中索引命名为 xxx_name.index
+数据命名为：xxx_name.data
+
+model.ckpt-20.index	二进制文件	数据 index	
+model.ckpt-20.data-00000-of-00002	二进制文件	数据
 
 #### 3. 其他信息
 
 1. 服务器信息
 2. 集群信息
+3. Checkpoint： 用于保存模型的权重，主要用于模型训练过程中参数的备份和模型训练热启动。model_checkpoint_path
+
+
+### 3. 怎么保存
+
+
+保存的文件包括如下
+|                            文件名 |   文件类型 |                             描述 |                                            包含 |
+| --------------------------------: | ---------: | -------------------------------: | ----------------------------------------------: |
+|                        checkpoint |   文本文件 | 可直接记事本打开，记录检查点信息 | model_checkpoint_path;all_model_checkpoint_path |
+|                 model.ckpt-0.meta | 二进制文件 |                           图结构 |
+|               model.ckpt-20.index | 二进制文件 |                       数据 index |
+| model.ckpt-20.data-00000-of-00002 | 二进制文件 |                             数据 |
+
+
+> **文件的命名** 
+**model.ckpt-20**
+mode：可变的文件名
+ckpt：文件格式
+-20： 代表 global_step =20 
+saver.save(sess, 'my-model', global_step=0) ==> filename: 'my-model-0'
+saver.save(sess, 'my-model.ckpt', global_step=0) ==> filename: 'my-model.ckpt-0'
+...
+saver.save(sess, 'my-model', global_step=1000) ==> filename: 'my-model-1000'
+
+同时保存 `xxx.meta`, `xxx.index`,`xxx.data-yyy-of-ttt`
 
 
 
-
-
-TensorFlow的模型格式有很多种，针对不同场景可以使用不同的格式，只要符合规范的模型都可以轻易部署到在线服务或移动设备上，这里简单列举一下。
-
-Checkpoint： 用于保存模型的权重，主要用于模型训练过程中参数的备份和模型训练热启动。
-GraphDef：用于保存模型的Graph，不包含模型权重，加上checkpoint后就有模型上线的全部信息。
-ExportModel：使用exportor接口导出的模型文件，包含模型Graph和权重可直接用于上线，但官方已经标记为deprecated推荐使用SavedModel。
-SavedModel：使用saved_model接口导出的模型文件，包含模型Graph和权限可直接用于上线，TensorFlow和Keras模型推荐使用这种模型格式。
-FrozenGraph：使用freeze_graph.py对checkpoint和GraphDef进行整合和优化，可以直接部署到Android、iOS等移动设备上。
-TFLite：基于flatbuf对模型进行优化，可以直接部署到Android、iOS等移动设备上，使用接口和FrozenGraph有些差异
-
-保存文件如下表所示：
-### 1.ckpt类型（checkpoint）
-
-.ckpt格式文件只能在tensorflow 框架下使用,其主要操作为`saver`,只保存变量，不保存DAG图信息
-
-Only save variables, not graph
-Checkpoints map variable names to tensors
+其主要操作为`tf.saver`
 
 ```python
 saver = tf.train.Saver()
@@ -926,69 +954,18 @@ save(
 ```
 
 
-|                            文件名 |   文件类型 |                             描述 |                                            包含 |
-| --------------------------------: | ---------: | -------------------------------: | ----------------------------------------------: |
-|                        checkpoint |   文本文件 | 可直接记事本打开，记录检查点信息 | model_checkpoint_path;all_model_checkpoint_path |
-|                 model.ckpt-0.meta | 二进制文件 |                           图结构 |
-|               model.ckpt-20.index | 二进制文件 |                       数据 index |
-| model.ckpt-20.data-00000-of-00002 | 二进制文件 |                             数据 |
+TensorFlow的模型格式有很多种，针对不同场景可以使用不同的格式，只要符合规范的模型都可以轻易部署到在线服务或移动设备上，这里简单列举一下。
+
+Checkpoint： 用于保存模型的权重，主要用于模型训练过程中参数的备份和模型训练热启动。
+GraphDef：用于保存模型的Graph，不包含模型权重，加上checkpoint后就有模型上线的全部信息。
+ExportModel：使用exportor接口导出的模型文件，包含模型Graph和权重可直接用于上线，但官方已经标记为deprecated推荐使用SavedModel。
+SavedModel：使用saved_model接口导出的模型文件，包含模型Graph和权限可直接用于上线，TensorFlow和Keras模型推荐使用这种模型格式。
+FrozenGraph：使用freeze_graph.py对checkpoint和GraphDef进行整合和优化，可以直接部署到Android、iOS等移动设备上。
+TFLite：基于flatbuf对模型进行优化，可以直接部署到Android、iOS等移动设备上，使用接口和FrozenGraph有些差异
 
 
 
-> **文件的命名** 
-**model.ckpt-20**
-mode：可变的文件名
-ckpt：文件格式
--20： 代表 global_step =20 
-saver.save(sess, 'my-model', global_step=0) ==> filename: 'my-model-0'
-saver.save(sess, 'my-model.ckpt', global_step=0) ==> filename: 'my-model.ckpt-0'
-...
-saver.save(sess, 'my-model', global_step=1000) ==> filename: 'my-model-1000'
-
-同时保存 `xxx.meta`, `xxx.index`,`xxx.data-yyy-of-ttt`
-
-#### 1.保存
-```python
-#1. 创建saver
-
-saver=tf.train.Saver()
-
-# 2. 保存参数变量
-saver_path = saver.save(sess, save_path="./path/model.ckpt" ,global_step=100)
-
-#1 sess 必须提前加载，同时参数没有初始化
-#2 save_path : 返回 str 
-
-```
-
-#### 2.加载
-1. 加载持久化图
-   
-        saver=tf.train.import_meta_graph(“save/model.ckpt.meta”)
-        
-注意：
-如果图中使用了来自 tf.contrib.的operation 需要在加载图前 使用 tf.contrib.resampler
-
-        import tensorflow as tf
-        tf.contrib.resampler
-        saver=tf.train.import_meta_graph(“save/model.ckpt.meta”)
-
-
-
-
-2. 加载保存的参数
-```python
-dir_path="./model" # 文件夹地址
-model_file=tf.train.latest_checkpoint(dir_path)
-saver.restore(sess,model_file)
-
-# sess 必须提前加载，同时参数没有初始化，因为restore 方法本身就是一个初始化的过
-```
-
-
-
-### 2. pd 格式
-PB 文件是表示 MetaGraph 的 protocol buffer格式的文件
+PB 文件是表示 protocol buffer格式的文件,形如`xxx_name.pd`，二进制文件
 
 #### 1.保存
 
@@ -1069,14 +1046,15 @@ graph_def
 ```
 
 2. 通过 graph_util.convert_variables_to_constants 将相关节点的values固定值
-   
-        var_list = tf.trainable_variables()
-        constant_graph = tf.graph_util.convert_variables_to_constants(sess, sess.graph_def, [var_list[i].name[:-2] for i in range(len(var_list))])
+```python
+var_list = tf.trainable_variables()
+constant_graph = tf.graph_util.convert_variables_to_constants(sess, sess.graph_def, [var_list[i].name[:-2] for i in range(len(var_list))])
+```
 3. 通过 tf.gfile.GFile 进行模型持久化.保存trainable variables到.pb文件：
-
+```python
         with tf.gfile.FastGFile(pb_path, mode='wb') as f:
                 f.write(constant_graph.SerializeToString())
-
+```
 #### 2 pd 文件加载
 
 1. tf.io.gfile.GFile 打开pb文件
@@ -1104,6 +1082,46 @@ graph_def
 4. 获得op/tensor ，可以运行
    
         print(sess.run(c))
+
+#### 1.保存
+```python
+#1. 创建saver
+
+saver=tf.train.Saver()
+
+# 2. 保存参数变量
+saver_path = saver.save(sess, save_path="./path/model.ckpt" ,global_step=100)
+
+#1 sess 必须提前加载，同时参数没有初始化
+#2 save_path : 返回 str 
+
+```
+
+#### 2.加载
+1. 加载持久化图
+   
+        saver=tf.train.import_meta_graph(“save/model.ckpt.meta”)
+        
+注意：
+如果图中使用了来自 tf.contrib.的operation 需要在加载图前 使用 tf.contrib.resampler
+
+        import tensorflow as tf
+        tf.contrib.resampler
+        saver=tf.train.import_meta_graph(“save/model.ckpt.meta”)
+
+
+
+
+2. 加载保存的参数
+```python
+dir_path="./model" # 文件夹地址
+model_file=tf.train.latest_checkpoint(dir_path)
+saver.restore(sess,model_file)
+
+# sess 必须提前加载，同时参数没有初始化，因为restore 方法本身就是一个初始化的过
+```
+
+
 
 
 ### 3. SavedModel 格式
