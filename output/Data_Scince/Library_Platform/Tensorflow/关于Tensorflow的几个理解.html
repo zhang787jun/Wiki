@@ -95,23 +95,21 @@
 <li><a href="#5">5.持久化（保存和恢复）</a><ul>
 <li><a href="#1-protobuf">1. 几个概念（序列化/protobuf）</a></li>
 <li><a href="#2_4">2. 需要保存什么</a><ul>
-<li><a href="#1_3">1. 图信息</a><ul>
-<li><a href="#11-op">1.1 节点--op</a></li>
-<li><a href="#12-tensor">1.2 边--Tensor</a></li>
+<li><a href="#1-graphmetagraph">1. Graph/MetaGraph信息</a><ul>
+<li><a href="#11-graph">1.1 Graph 信息</a></li>
+<li><a href="#12-metagraph">1.2 MetaGraph 信息</a></li>
+<li><a href="#13-graphmetagraph">1.3 Graph/MetaGraph信息 的保存格式</a></li>
 </ul>
 </li>
 <li><a href="#2_5">2. 参数信息</a></li>
 <li><a href="#3_2">3. 其他信息</a></li>
 </ul>
 </li>
-<li><a href="#1ckptcheckpoint">1.ckpt类型（checkpoint）</a><ul>
+<li><a href="#3_3">3. 怎么保存</a><ul>
+<li><a href="#1_3">1.保存</a></li>
+<li><a href="#2-pd">2 pd 文件加载</a></li>
 <li><a href="#1_4">1.保存</a></li>
 <li><a href="#2_6">2.加载</a></li>
-</ul>
-</li>
-<li><a href="#2-pd">2. pd 格式</a><ul>
-<li><a href="#1_5">1.保存</a></li>
-<li><a href="#2-pd_1">2 pd 文件加载</a></li>
 </ul>
 </li>
 <li><a href="#3-savedmodel">3. SavedModel 格式</a></li>
@@ -119,7 +117,7 @@
 </ul>
 </li>
 <li><a href="#6-tfsummary">6. 可视化（tf.summary）</a><ul>
-<li><a href="#1_6">1. 得到需要可视化的数据</a><ul>
+<li><a href="#1_5">1. 得到需要可视化的数据</a><ul>
 <li><a href="#11">1.1 标量</a></li>
 <li><a href="#12">1.2 图片</a></li>
 <li><a href="#13">1.3 音频</a></li>
@@ -133,10 +131,10 @@
 </ul>
 </li>
 <li><a href="#7-tfmetrics">7. 评价模型的优劣（tf.metrics）</a><ul>
-<li><a href="#1_7">1. 如何评价一个模型</a><ul>
+<li><a href="#1_6">1. 如何评价一个模型</a><ul>
 <li><a href="#1-error">1 误差 error</a></li>
 <li><a href="#2_8">2 混合矩阵</a></li>
-<li><a href="#3_3">3 基本统计量</a></li>
+<li><a href="#3_4">3 基本统计量</a></li>
 </ul>
 </li>
 </ul>
@@ -166,8 +164,8 @@
 <li><a href="#101">10.1 图的管理</a><ul>
 <li><a href="#1011">10.1.1 图的建立/加载</a></li>
 <li><a href="#1012">10.1.2 图的管理操作</a><ul>
+<li><a href="#1_7">1. 设置为默认图</a></li>
 <li><a href="#1_8">1. 设置为默认图</a></li>
-<li><a href="#1_9">1. 设置为默认图</a></li>
 </ul>
 </li>
 </ul>
@@ -192,13 +190,13 @@
 </li>
 <li><a href="#152">15.2 变量的操作</a><ul>
 <li><a href="#1521">15.2.1 变量初始化</a><ul>
-<li><a href="#1_10">1. 确定值初始化</a></li>
+<li><a href="#1_9">1. 确定值初始化</a></li>
 <li><a href="#2_9">2. 随机初始化</a><ul>
 <li><a href="#21">2.1 正态分布</a></li>
 <li><a href="#22_1">2.2 均匀分布</a></li>
 </ul>
 </li>
-<li><a href="#3_4">3. 特殊函数初始化</a><ul>
+<li><a href="#3_5">3. 特殊函数初始化</a><ul>
 <li><a href="#31-xavier-initialization-glorot-initialization">3.1 Xavier initialization/ Glorot initialization</a></li>
 <li><a href="#32-he-initialization">3.2 He initialization</a></li>
 <li><a href="#33-lecun-initialization">3.3 Lecun initialization</a></li>
@@ -215,7 +213,7 @@
 </li>
 <li><a href="#1522">15.2.2 变量赋值</a></li>
 <li><a href="#1523">15.2.3 变量恢复与保存</a><ul>
-<li><a href="#1_11">1. 变量保存</a></li>
+<li><a href="#1_10">1. 变量保存</a></li>
 <li><a href="#2_10">2. 变量加载回复</a></li>
 </ul>
 </li>
@@ -235,7 +233,7 @@
 <li><a href="#163-protobuf">16.3 protobuf格式的数据结构对象</a></li>
 <li><a href="#164">16.4 评估器的选项设置</a><ul>
 <li><a href="#1641">16.4.1 记录内容选项</a><ul>
-<li><a href="#1_12">1. 记录时间和内存消耗</a></li>
+<li><a href="#1_11">1. 记录时间和内存消耗</a></li>
 <li><a href="#2_11">2. 记录浮点运算情况</a></li>
 </ul>
 </li>
@@ -255,7 +253,7 @@
 <li><a href="#164_1">16.4 常用实例</a><ul>
 <li><a href="#1-flop">1. 浮点运算次数 flop</a></li>
 <li><a href="#2_12">2. 总参数量</a></li>
-<li><a href="#3_5">3. 统计模型内存和耗时情况</a></li>
+<li><a href="#3_6">3. 统计模型内存和耗时情况</a></li>
 <li><a href="#4-profile">4. 给出使用profile工具给出建议</a></li>
 </ul>
 </li>
@@ -1147,44 +1145,34 @@ ProtoBuf 实际上支持两种不同的文件保存格式。<br />
 </blockquote>
 </blockquote>
 <h3 id="2_4">2. 需要保存什么</h3>
-<p>主要是：</p>
-<h4 id="1_3">1. 图信息</h4>
-<table>
-<thead>
-<tr>
-<th align="right">名称</th>
-<th align="right">解释</th>
-<th align="right">组成</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="right">Graph</td>
-<td align="right">被定义为“一些 Operation（节点） 和 Tensor（边缘） 的集合”</td>
-<td align="right">Node(op+placeholder)+Edge</td>
-</tr>
-<tr>
-<td align="right">GraphDef</td>
-<td align="right">序列化的Graph</td>
-<td align="right">NodeDef 的 Protocol Buffer，NodeDef对应 op的Node 和placeholder的node</td>
-</tr>
-</tbody>
-</table>
-<h5 id="11-op">1.1 节点--op</h5>
-<p>Operation包含OpDef和NodeDef两个主要成员变量。<br />
-1. OpDef描述了op的静态属性信息，例如op入参列表，出参列表等。<br />
-2. NodeDef则描述op的动态属性信息，例如op运行的设备信息，用户给op设置的name等。</p>
+<p>主要是：<br />
+| 编号 | 项目                   |<br />
+| ---- | ---------------------- |<br />
+| 1    | Graph/MetaGraph信息    |<br />
+| 2    | 变量信息               |<br />
+| 3    | 其他信息（服务器信息） |</p>
+<h4 id="1-graphmetagraph">1. Graph/MetaGraph信息</h4>
+<h5 id="11-graph">1.1 Graph 信息</h5>
+<p>图被定义为 “一些 Operation（节点） 和 Tensor（边缘） 的集合”。<br />
+GraphDef 是图Graph信息的序列化文件，用于保存模型的Graph，不包含模型权重。</p>
+<p><strong>图信息的主要内容包括：</strong></p>
+<ol>
+<li>Node节点 op<br />
+Operation包含OpDef和NodeDef两个主要成员变量。</li>
+<li>OpDef描述了op的静态属性信息，例如op入参列表，出参列表等。</li>
+<li>NodeDef则描述op的动态属性信息，例如op运行的设备信息，用户给op设置的name等。包括placeholder</li>
+</ol>
 <div class="hlcode"><pre><span class="p">[</span><span class="n">op</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_default_graph</span><span class="p">()</span><span class="o">.</span><span class="n">get_operations</span><span class="p">()]</span>
 </pre></div>
 
 
-<h5 id="12-tensor">1.2 边--Tensor</h5>
-<p>边用来表示计算的数据，它经过上游节点计算后得到，然后传递给下游节点进行运算。</p>
+<p>2 边--Tensor<br />
+边用来表示计算的数据，它经过上游节点计算后得到，然后传递给下游节点进行运算。</p>
 <p>Tensor中主要包含两类信息：<br />
 1. 是Graph结构信息，如边的源节点和目标节点(有向图)。<br />
-2. 它所保存的数据信息，例如数据类型，shape等（tensor.shape/tensor.dytpe）。</p>
-<p>MetaGraph 是一种数据流图，并包含相关变量、资源和签名。MetaGraphDef 是 MetaGraph 的协议缓冲区表示法。签名是一组与图有关的输入和输出。</p>
-<p>MetaGraphDef：</p>
+2. 它所保存的数据信息 ，例如数据类型，shape等（tensor.shape/tensor.dytpe）。</p>
+<h5 id="12-metagraph">1.2 MetaGraph 信息</h5>
+<p>MetaGraphDef 是 MetaGraph信息的序列化文件，同样是由 Protocol Buffer来定义的一个包含<strong>更多图信息</strong>的序列化文件。其中包括：</p>
 <table>
 <thead>
 <tr>
@@ -1216,24 +1204,51 @@ ProtoBuf 实际上支持两种不同的文件保存格式。<br />
 </tr>
 </tbody>
 </table>
+<h5 id="13-graphmetagraph">1.3 Graph/MetaGraph信息 的保存格式</h5>
+<p>在实际操作中，很少保存Graph信息，一般都是直接保存MetaGraph信息 ，保存MetaGraph信息的文件格式主要有</p>
+<ol>
+<li>
+<p>pd 格式<br />
+形如<code>xxx_name.pd</code></p>
+</li>
+<li>
+<p>meta 格式<br />
+形如<code>xxx_name.meta</code></p>
+</li>
+</ol>
 <h4 id="2_5">2. 参数信息</h4>
+<p>主要为tf.Variables类的节点信息，持久化时保存为(1)索引和(2)数据 两部分。<br />
+其中索引命名为 xxx_name.index<br />
+数据命名为：xxx_name.data</p>
+<p>model.ckpt-20.index 二进制文件   数据 index  <br />
+model.ckpt-20.data-00000-of-00002   二进制文件   数据</p>
 <h4 id="3_2">3. 其他信息</h4>
 <ol>
 <li>服务器信息</li>
 <li>集群信息</li>
+<li>Checkpoint： 用于保存模型的权重，主要用于模型训练过程中参数的备份和模型训练热启动。model_checkpoint_path</li>
 </ol>
-<p>TensorFlow的模型格式有很多种，针对不同场景可以使用不同的格式，只要符合规范的模型都可以轻易部署到在线服务或移动设备上，这里简单列举一下。</p>
-<p>Checkpoint： 用于保存模型的权重，主要用于模型训练过程中参数的备份和模型训练热启动。<br />
-GraphDef：用于保存模型的Graph，不包含模型权重，加上checkpoint后就有模型上线的全部信息。<br />
-ExportModel：使用exportor接口导出的模型文件，包含模型Graph和权重可直接用于上线，但官方已经标记为deprecated推荐使用SavedModel。<br />
-SavedModel：使用saved_model接口导出的模型文件，包含模型Graph和权限可直接用于上线，TensorFlow和Keras模型推荐使用这种模型格式。<br />
-FrozenGraph：使用freeze_graph.py对checkpoint和GraphDef进行整合和优化，可以直接部署到Android、iOS等移动设备上。<br />
-TFLite：基于flatbuf对模型进行优化，可以直接部署到Android、iOS等移动设备上，使用接口和FrozenGraph有些差异</p>
-<p>保存文件如下表所示：</p>
-<h3 id="1ckptcheckpoint">1.ckpt类型（checkpoint）</h3>
-<p>.ckpt格式文件只能在tensorflow 框架下使用,其主要操作为<code>saver</code>,只保存变量，不保存DAG图信息</p>
-<p>Only save variables, not graph<br />
-Checkpoints map variable names to tensors</p>
+<h3 id="3_3">3. 怎么保存</h3>
+<p>保存的文件包括如下<br />
+|                            文件名 |   文件类型 |                             描述 |                                            包含 |<br />
+| --------------------------------: | ---------: | -------------------------------: | ----------------------------------------------: |<br />
+|                        checkpoint |   文本文件 | 可直接记事本打开，记录检查点信息 | model_checkpoint_path;all_model_checkpoint_path |<br />
+|                 model.ckpt-0.meta | 二进制文件 |                           图结构 |<br />
+|               model.ckpt-20.index | 二进制文件 |                       数据 index |<br />
+| model.ckpt-20.data-00000-of-00002 | 二进制文件 |                             数据 |</p>
+<blockquote>
+<p><strong>文件的命名</strong> <br />
+<strong>model.ckpt-20</strong><br />
+mode：可变的文件名<br />
+ckpt：文件格式<br />
+-20： 代表 global_step =20 <br />
+saver.save(sess, 'my-model', global_step=0) ==&gt; filename: 'my-model-0'<br />
+saver.save(sess, 'my-model.ckpt', global_step=0) ==&gt; filename: 'my-model.ckpt-0'<br />
+...<br />
+saver.save(sess, 'my-model', global_step=1000) ==&gt; filename: 'my-model-1000'</p>
+</blockquote>
+<p>同时保存 <code>xxx.meta</code>, <code>xxx.index</code>,<code>xxx.data-yyy-of-ttt</code></p>
+<p>其主要操作为<code>tf.saver</code></p>
 <div class="hlcode"><pre><span class="n">saver</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Saver</span><span class="p">()</span>
 </pre></div>
 
@@ -1296,97 +1311,15 @@ Checkpoints map variable names to tensors</p>
 </pre></div>
 
 
-<table>
-<thead>
-<tr>
-<th align="right">文件名</th>
-<th align="right">文件类型</th>
-<th align="right">描述</th>
-<th align="right">包含</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td align="right">checkpoint</td>
-<td align="right">文本文件</td>
-<td align="right">可直接记事本打开，记录检查点信息</td>
-<td align="right">model_checkpoint_path;all_model_checkpoint_path</td>
-</tr>
-<tr>
-<td align="right">model.ckpt-0.meta</td>
-<td align="right">二进制文件</td>
-<td align="right">图结构</td>
-<td align="right"></td>
-</tr>
-<tr>
-<td align="right">model.ckpt-20.index</td>
-<td align="right">二进制文件</td>
-<td align="right">数据 index</td>
-<td align="right"></td>
-</tr>
-<tr>
-<td align="right">model.ckpt-20.data-00000-of-00002</td>
-<td align="right">二进制文件</td>
-<td align="right">数据</td>
-<td align="right"></td>
-</tr>
-</tbody>
-</table>
-<blockquote>
-<p><strong>文件的命名</strong> <br />
-<strong>model.ckpt-20</strong><br />
-mode：可变的文件名<br />
-ckpt：文件格式<br />
--20： 代表 global_step =20 <br />
-saver.save(sess, 'my-model', global_step=0) ==&gt; filename: 'my-model-0'<br />
-saver.save(sess, 'my-model.ckpt', global_step=0) ==&gt; filename: 'my-model.ckpt-0'<br />
-...<br />
-saver.save(sess, 'my-model', global_step=1000) ==&gt; filename: 'my-model-1000'</p>
-</blockquote>
-<p>同时保存 <code>xxx.meta</code>, <code>xxx.index</code>,<code>xxx.data-yyy-of-ttt</code></p>
-<h4 id="1_4">1.保存</h4>
-<div class="hlcode"><pre><span class="c">#1. 创建saver</span>
-
-<span class="n">saver</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Saver</span><span class="p">()</span>
-
-<span class="c"># 2. 保存参数变量</span>
-<span class="n">saver_path</span> <span class="o">=</span> <span class="n">saver</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span> <span class="n">save_path</span><span class="o">=</span><span class="s">&quot;./path/model.ckpt&quot;</span> <span class="p">,</span><span class="n">global_step</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
-
-<span class="c">#1 sess 必须提前加载，同时参数没有初始化</span>
-<span class="c">#2 save_path : 返回 str </span>
-</pre></div>
-
-
-<h4 id="2_6">2.加载</h4>
-<ol>
-<li>加载持久化图<div class="hlcode"><pre><span class="n">saver</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">train</span><span class="p">.</span><span class="n">import_meta_graph</span><span class="p">(</span><span class="err">“</span><span class="n">save</span><span class="o">/</span><span class="n">model</span><span class="p">.</span><span class="n">ckpt</span><span class="p">.</span><span class="n">meta</span><span class="err">”</span><span class="p">)</span>
-</pre></div>
-
-
-</li>
-</ol>
-<p>注意：<br />
-如果图中使用了来自 tf.contrib.的operation 需要在加载图前 使用 tf.contrib.resampler</p>
-<div class="hlcode"><pre>    <span class="n">import</span> <span class="n">tensorflow</span> <span class="n">as</span> <span class="n">tf</span>
-    <span class="n">tf</span><span class="p">.</span><span class="n">contrib</span><span class="p">.</span><span class="n">resampler</span>
-    <span class="n">saver</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">train</span><span class="p">.</span><span class="n">import_meta_graph</span><span class="p">(</span><span class="err">“</span><span class="n">save</span><span class="o">/</span><span class="n">model</span><span class="p">.</span><span class="n">ckpt</span><span class="p">.</span><span class="n">meta</span><span class="err">”</span><span class="p">)</span>
-</pre></div>
-
-
-<ol>
-<li>加载保存的参数</li>
-</ol>
-<div class="hlcode"><pre><span class="n">dir_path</span><span class="o">=</span><span class="s">&quot;./model&quot;</span> <span class="c"># 文件夹地址</span>
-<span class="n">model_file</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">latest_checkpoint</span><span class="p">(</span><span class="n">dir_path</span><span class="p">)</span>
-<span class="n">saver</span><span class="o">.</span><span class="n">restore</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span><span class="n">model_file</span><span class="p">)</span>
-
-<span class="c"># sess 必须提前加载，同时参数没有初始化，因为restore 方法本身就是一个初始化的过</span>
-</pre></div>
-
-
-<h3 id="2-pd">2. pd 格式</h3>
-<p>PB 文件是表示 MetaGraph 的 protocol buffer格式的文件</p>
-<h4 id="1_5">1.保存</h4>
+<p>TensorFlow的模型格式有很多种，针对不同场景可以使用不同的格式，只要符合规范的模型都可以轻易部署到在线服务或移动设备上，这里简单列举一下。</p>
+<p>Checkpoint： 用于保存模型的权重，主要用于模型训练过程中参数的备份和模型训练热启动。<br />
+GraphDef：用于保存模型的Graph，不包含模型权重，加上checkpoint后就有模型上线的全部信息。<br />
+ExportModel：使用exportor接口导出的模型文件，包含模型Graph和权重可直接用于上线，但官方已经标记为deprecated推荐使用SavedModel。<br />
+SavedModel：使用saved_model接口导出的模型文件，包含模型Graph和权限可直接用于上线，TensorFlow和Keras模型推荐使用这种模型格式。<br />
+FrozenGraph：使用freeze_graph.py对checkpoint和GraphDef进行整合和优化，可以直接部署到Android、iOS等移动设备上。<br />
+TFLite：基于flatbuf对模型进行优化，可以直接部署到Android、iOS等移动设备上，使用接口和FrozenGraph有些差异</p>
+<p>PB 文件是表示 protocol buffer格式的文件,形如<code>xxx_name.pd</code>，二进制文件</p>
+<h4 id="1_3">1.保存</h4>
 <ol>
 <li>通过 get_default_graph().as_graph_def() 得到当前图的计算节点（Node）信息</li>
 </ol>
@@ -1464,21 +1397,22 @@ saver.save(sess, 'my-model', global_step=1000) ==&gt; filename: 'my-model-1000'<
 
 
 <ol>
-<li>通过 graph_util.convert_variables_to_constants 将相关节点的values固定值<div class="hlcode"><pre><span class="s-Atom">var_list</span> <span class="o">=</span> <span class="s-Atom">tf</span><span class="p">.</span><span class="nf">trainable_variables</span><span class="p">()</span>
-<span class="s-Atom">constant_graph</span> <span class="o">=</span> <span class="s-Atom">tf</span><span class="p">.</span><span class="s-Atom">graph_util</span><span class="p">.</span><span class="nf">convert_variables_to_constants</span><span class="p">(</span><span class="s-Atom">sess</span><span class="p">,</span> <span class="s-Atom">sess</span><span class="p">.</span><span class="s-Atom">graph_def</span><span class="p">,</span> <span class="p">[</span><span class="s-Atom">var_list</span><span class="p">[</span><span class="s-Atom">i</span><span class="p">].</span><span class="s-Atom">name</span><span class="p">[:-</span><span class="m">2</span><span class="p">]</span> <span class="s-Atom">for</span> <span class="s-Atom">i</span> <span class="s-Atom">in</span> <span class="nf">range</span><span class="p">(</span><span class="nf">len</span><span class="p">(</span><span class="s-Atom">var_list</span><span class="p">))])</span>
+<li>通过 graph_util.convert_variables_to_constants 将相关节点的values固定值</li>
+</ol>
+<div class="hlcode"><pre><span class="n">var_list</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">trainable_variables</span><span class="p">()</span>
+<span class="n">constant_graph</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">graph_util</span><span class="o">.</span><span class="n">convert_variables_to_constants</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span> <span class="n">sess</span><span class="o">.</span><span class="n">graph_def</span><span class="p">,</span> <span class="p">[</span><span class="n">var_list</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">name</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">var_list</span><span class="p">))])</span>
 </pre></div>
 
 
 <ol>
-<li>
-<p>通过 tf.gfile.GFile 进行模型持久化.保存trainable variables到.pb文件：</p>
-<p>with tf.gfile.FastGFile(pb_path, mode='wb') as f:<br />
-        f.write(constant_graph.SerializeToString())</p>
-</li>
+<li>通过 tf.gfile.GFile 进行模型持久化.保存trainable variables到.pb文件：</li>
 </ol>
-</li>
-</ol>
-<h4 id="2-pd_1">2 pd 文件加载</h4>
+<div class="hlcode"><pre>        <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">gfile</span><span class="o">.</span><span class="n">FastGFile</span><span class="p">(</span><span class="n">pb_path</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">constant_graph</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">())</span>
+</pre></div>
+
+
+<h4 id="2-pd">2 pd 文件加载</h4>
 <ol>
 <li>
 <p>tf.io.gfile.GFile 打开pb文件</p>
@@ -1520,6 +1454,46 @@ saver.save(sess, 'my-model', global_step=1000) ==&gt; filename: 'my-model-1000'<
 
 </li>
 </ol>
+<h4 id="1_4">1.保存</h4>
+<div class="hlcode"><pre><span class="c">#1. 创建saver</span>
+
+<span class="n">saver</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Saver</span><span class="p">()</span>
+
+<span class="c"># 2. 保存参数变量</span>
+<span class="n">saver_path</span> <span class="o">=</span> <span class="n">saver</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span> <span class="n">save_path</span><span class="o">=</span><span class="s">&quot;./path/model.ckpt&quot;</span> <span class="p">,</span><span class="n">global_step</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="c">#1 sess 必须提前加载，同时参数没有初始化</span>
+<span class="c">#2 save_path : 返回 str </span>
+</pre></div>
+
+
+<h4 id="2_6">2.加载</h4>
+<ol>
+<li>加载持久化图<div class="hlcode"><pre><span class="n">saver</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">train</span><span class="p">.</span><span class="n">import_meta_graph</span><span class="p">(</span><span class="err">“</span><span class="n">save</span><span class="o">/</span><span class="n">model</span><span class="p">.</span><span class="n">ckpt</span><span class="p">.</span><span class="n">meta</span><span class="err">”</span><span class="p">)</span>
+</pre></div>
+
+
+</li>
+</ol>
+<p>注意：<br />
+如果图中使用了来自 tf.contrib.的operation 需要在加载图前 使用 tf.contrib.resampler</p>
+<div class="hlcode"><pre>    <span class="n">import</span> <span class="n">tensorflow</span> <span class="n">as</span> <span class="n">tf</span>
+    <span class="n">tf</span><span class="p">.</span><span class="n">contrib</span><span class="p">.</span><span class="n">resampler</span>
+    <span class="n">saver</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">train</span><span class="p">.</span><span class="n">import_meta_graph</span><span class="p">(</span><span class="err">“</span><span class="n">save</span><span class="o">/</span><span class="n">model</span><span class="p">.</span><span class="n">ckpt</span><span class="p">.</span><span class="n">meta</span><span class="err">”</span><span class="p">)</span>
+</pre></div>
+
+
+<ol>
+<li>加载保存的参数</li>
+</ol>
+<div class="hlcode"><pre><span class="n">dir_path</span><span class="o">=</span><span class="s">&quot;./model&quot;</span> <span class="c"># 文件夹地址</span>
+<span class="n">model_file</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">latest_checkpoint</span><span class="p">(</span><span class="n">dir_path</span><span class="p">)</span>
+<span class="n">saver</span><span class="o">.</span><span class="n">restore</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span><span class="n">model_file</span><span class="p">)</span>
+
+<span class="c"># sess 必须提前加载，同时参数没有初始化，因为restore 方法本身就是一个初始化的过</span>
+</pre></div>
+
+
 <h3 id="3-savedmodel">3. SavedModel 格式</h3>
 <p><img alt="" src="/attach/images/2019-07-15-17-16-14.png" /></p>
 <p>例如，图显示了一个包含三个 MetaGraphDef 的 SavedModel，它们三个都共享同一组检查点和资源：</p>
@@ -1553,7 +1527,7 @@ saver.save(sess, 'my-model', global_step=1000) ==&gt; filename: 'my-model-1000'<
 
 <h2 id="6-tfsummary">6. 可视化（tf.summary）</h2>
 <p>TensorBoard--tensorflow的可视化结构管理工具</p>
-<h3 id="1_6">1. 得到需要可视化的数据</h3>
+<h3 id="1_5">1. 得到需要可视化的数据</h3>
 <p>使用tf.summary类下的子类机以实现如下功能：<br />
 1. 将输入的Tensor信息 生成Tensor.proto格式的二进制文件<br />
 2. 返回dtype=tf.string,shape=() ,内容为Tensor.proto格式的二进制文件信息（Summary protobuf）的Tensor</p>
@@ -1641,7 +1615,7 @@ saver.save(sess, 'my-model', global_step=1000) ==&gt; filename: 'my-model-1000'<
 <p>tf.metrics.precision()<br />
 tf.metrics.recall()<br />
 tf.metrics.mean_iou()</p>
-<h3 id="1_7">1. 如何评价一个模型</h3>
+<h3 id="1_6">1. 如何评价一个模型</h3>
 <h4 id="1-error">1 误差 error</h4>
 <ol>
 <li>
@@ -1705,7 +1679,7 @@ true_negatives(...): Sum the weights of true_negatives.<br />
 true_positives(...): Sum the weights of true_positives.</p>
 </li>
 </ol>
-<h4 id="3_3">3 基本统计量</h4>
+<h4 id="3_4">3 基本统计量</h4>
 <p>mean_iou(...): Calculate per-step mean Intersection-Over-Union (mIOU).</p>
 <ol>
 <li>
@@ -2096,13 +2070,13 @@ real_label=tf.one_hot(label)</p>
 
 
 <h4 id="1012">10.1.2 图的管理操作</h4>
-<h5 id="1_8">1. 设置为默认图</h5>
+<h5 id="1_7">1. 设置为默认图</h5>
 <div class="hlcode"><pre><span class="n">graph</span><span class="o">.</span><span class="n">as_default</span><span class="p">()</span>
 <span class="n">graph</span><span class="o">.</span><span class="n">as_graph_def</span><span class="p">(</span><span class="n">from_version</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">add_shapes</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
 </pre></div>
 
 
-<h5 id="1_9">1. 设置为默认图</h5>
+<h5 id="1_8">1. 设置为默认图</h5>
 <p>tf中可以定义多个计算图，<strong>不同计算图上的张量和运算是相互独立的</strong>，不会共享。计算图可以用来隔离张量和计算，同时提供了管理张量和计算的机制。<strong>计算图可以通过Graph.device函数来指定运行计算的设备</strong>，为TensorFlow充分利用GPU/CPU提供了机制。</p>
 <ol>
 <li>使用 g = tf.Graph()函数创建新的计算图;</li>
@@ -2467,7 +2441,7 @@ Variable被收集在名为tf.GraphKeys.VARIABLES的colletion中</p>
 <p>tf.local_variables_initializer<br />
 tf.variables_initializer<br />
 例如：tf.global_variables_initializer() ,就是通过变量的赋值op assign 数值给所有global_variables变量</p>
-<h5 id="1_10">1. 确定值初始化</h5>
+<h5 id="1_9">1. 确定值初始化</h5>
 <ol>
 <li>常标量<br />
 $$W=1$$</li>
@@ -2612,7 +2586,7 @@ $$n=W_i.shape[0]  ,or, n=W_{i-1}.shape[0] $$</li>
 <p>如果mode='fan_in'，则n为输入权重的数量shape[0]<br />
 如果mode='fan_out'，则n为输出权重的数量shape[0]<br />
 如果mode='fan_avg'，则n为输入输出权重的数量的平均值 (W[i].shape[0]+W[i-1].shape[0])/2</p>
-<h5 id="3_4">3. 特殊函数初始化</h5>
+<h5 id="3_5">3. 特殊函数初始化</h5>
 <p>对于深度神经网络,一旦随机分布选择不当，就会导致网络优化陷入困境。</p>
 <h6 id="31-xavier-initialization-glorot-initialization">3.1 Xavier initialization/ Glorot initialization</h6>
 <p>Xavier Glorot 在《Understanding the difficulty of training deep feedforward neural network》 http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf 提出的针对神经网络权重参数初始化方法。</p>
@@ -2731,7 +2705,7 @@ tf.assign_add<br />
 tf.assign_sub</p>
 <h4 id="1523">15.2.3 变量恢复与保存</h4>
 <p>变量信息保存在图中，在持久后具体存在meta_graph里 </p>
-<h5 id="1_11">1. 变量保存</h5>
+<h5 id="1_10">1. 变量保存</h5>
 <div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">export_meta_graph</span><span class="p">(</span>
     <span class="n">filename</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
     <span class="n">meta_info_def</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
@@ -2956,7 +2930,7 @@ tf.tables_initializer</p>
 2. 输出内容格式选项<br />
 3. 限制节点选项</p>
 <h4 id="1641">16.4.1 记录内容选项</h4>
-<h5 id="1_12">1. 记录时间和内存消耗</h5>
+<h5 id="1_11">1. 记录时间和内存消耗</h5>
 <div class="hlcode"><pre><span class="n">ProfileOptionBuilder</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">ProfileOptionBuilder</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="p">{})</span>
 
 <span class="c"># 时间和内存消耗</span>
@@ -3070,7 +3044,7 @@ tf.tables_initializer</p>
 </pre></div>
 
 
-<h4 id="3_5">3. 统计模型内存和耗时情况</h4>
+<h4 id="3_6">3. 统计模型内存和耗时情况</h4>
 <div class="hlcode"><pre><span class="n">builder</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">ProfileOptionBuilder</span>
 <span class="n">opts</span> <span class="o">=</span> <span class="n">builder</span><span class="p">(</span><span class="n">builder</span><span class="o">.</span><span class="n">time_and_memory</span><span class="p">())</span>
 <span class="c">#opts.with_step(1)</span>
