@@ -80,13 +80,38 @@
 <h2 id="1">1. 任务在计算机上的完成（进程、线程）</h2>
 <p><strong>进程Process</strong> 是计算机中的程序关于某数据集合上的一次运行活动，是系统进行资源分配和调度的基本单位，是操作系统结构的基础。</p>
 <p><strong>线程thread</strong> 是操作系统能够进行运算调度的最小单位。它被包含在进程之中，是进程中的实际运作单位</p>
-<p>进程=[线程1+线程2+...+线程n]<br />
-|         项目 |             进程 |                                                                                                     线程 |<br />
-| -----------: | ---------------: | -------------------------------------------------------------------------------------------------------: |<br />
-|     地址空间 | 进程之间相互独立 |                                                                       同一进程下个线程共享，无法分配资源 |<br />
-|         通信 |    进程间通信IPC | 线程间可以直接读写进程数据段（如全局变量）来进行通信——需要进程同步和互斥手段的辅助，以保证数据的一致性。 |<br />
-|   调度和切换 |               慢 |                                                                                                       快 |<br />
-| 多线程系统中 |     是可执行实体 |                                                                                 线程不是一个可执行的实体 |</p>
+<p>进程=[线程1+线程2+...+线程n]</p>
+<table>
+<thead>
+<tr>
+<th align="right">项目</th>
+<th align="right">进程</th>
+<th align="right">线程</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">地址空间</td>
+<td align="right">进程之间相互独立</td>
+<td align="right">同一进程下个线程共享，无法分配资源</td>
+</tr>
+<tr>
+<td align="right">通信</td>
+<td align="right">进程间通信IPC</td>
+<td align="right">线程间可以直接读写进程数据段（如全局变量）来进行通信——需要进程同步和互斥手段的辅助，以保证数据的一致性。</td>
+</tr>
+<tr>
+<td align="right">调度和切换</td>
+<td align="right">慢</td>
+<td align="right">快</td>
+</tr>
+<tr>
+<td align="right">多线程系统中</td>
+<td align="right">是可执行实体</td>
+<td align="right">线程不是一个可执行的实体</td>
+</tr>
+</tbody>
+</table>
 <h3 id="11">1.1 进程</h3>
 <h4 id="111-multiprocessing">1.1.1 多进程(multiprocessing)</h4>
 <p>参考 https://www.liaoxuefeng.com/wiki/1016959663602400/1017628290184064</p>
@@ -140,37 +165,36 @@
 <p><strong>线程thread</strong> 是操作系统能够进行运算调度的最小单位。它被包含在进程之中，是进程中的实际运作单位</p>
 <h4 id="121-multi_thread">1.2.1 多线程（multi_Thread）</h4>
 <p>如果用多线程实现Master-Worker，主线程就是Master，其他线程就是Worker。</p>
-<div class="hlcode"><pre><span class="n">import</span> <span class="n">time</span><span class="p">,</span> <span class="n">threading</span>
+<div class="hlcode"><pre>    <span class="kn">import</span> <span class="nn">time</span><span class="o">,</span> <span class="nn">threading</span>
 
-<span class="cp"># 新线程执行的代码:</span>
+    <span class="c"># 新线程执行的代码:</span>
 
-<span class="n">def</span> <span class="n">loop</span><span class="p">()</span><span class="o">:</span>
-    <span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="kr">thread</span> <span class="o">%</span><span class="n">s</span> <span class="n">is</span> <span class="n">running</span><span class="p">...</span><span class="err">&#39;</span> <span class="o">%</span> <span class="n">threading</span><span class="p">.</span><span class="n">current_thread</span><span class="p">().</span><span class="n">name</span><span class="p">)</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">while</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="o">:</span>
-        <span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span>
-        <span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="kr">thread</span> <span class="o">%</span><span class="n">s</span> <span class="o">&gt;&gt;&gt;</span> <span class="o">%</span><span class="n">s</span><span class="err">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">threading</span><span class="p">.</span><span class="n">current_thread</span><span class="p">().</span><span class="n">name</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
-        <span class="n">time</span><span class="p">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="kr">thread</span> <span class="o">%</span><span class="n">s</span> <span class="n">ended</span><span class="p">.</span><span class="err">&#39;</span> <span class="o">%</span> <span class="n">threading</span><span class="p">.</span><span class="n">current_thread</span><span class="p">().</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">loop</span><span class="p">():</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;thread </span><span class="si">%s</span><span class="s"> is running...&#39;</span> <span class="o">%</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">n</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="n">n</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&#39;thread </span><span class="si">%s</span><span class="s"> &gt;&gt;&gt; </span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">n</span><span class="p">))</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;thread </span><span class="si">%s</span><span class="s"> ended.&#39;</span> <span class="o">%</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
-<span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="kr">thread</span> <span class="o">%</span><span class="n">s</span> <span class="n">is</span> <span class="n">running</span><span class="p">...</span><span class="err">&#39;</span> <span class="o">%</span> <span class="n">threading</span><span class="p">.</span><span class="n">current_thread</span><span class="p">().</span><span class="n">name</span><span class="p">)</span>
-<span class="n">t</span> <span class="o">=</span> <span class="n">threading</span><span class="p">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">loop</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="err">&#39;</span><span class="n">LoopThread</span><span class="err">&#39;</span><span class="p">)</span>
-<span class="n">t</span><span class="p">.</span><span class="n">start</span><span class="p">()</span>
-<span class="n">t</span><span class="p">.</span><span class="n">join</span><span class="p">()</span>
-<span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="kr">thread</span> <span class="o">%</span><span class="n">s</span> <span class="n">ended</span><span class="p">.</span><span class="err">&#39;</span> <span class="o">%</span> <span class="n">threading</span><span class="p">.</span><span class="n">current_thread</span><span class="p">().</span><span class="n">name</span><span class="p">)</span>
-</pre></div>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;thread </span><span class="si">%s</span><span class="s"> is running...&#39;</span> <span class="o">%</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">loop</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;LoopThread&#39;</span><span class="p">)</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="n">t</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;thread </span><span class="si">%s</span><span class="s"> ended.&#39;</span> <span class="o">%</span> <span class="n">threading</span><span class="o">.</span><span class="n">current_thread</span><span class="p">()</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 
+<span class="err">执行结果如下：</span>
 
-<p>执行结果如下：</p>
-<div class="hlcode"><pre><span class="kr">thread</span> <span class="n">MainThread</span> <span class="n">is</span> <span class="n">running</span><span class="p">...</span>
-<span class="kr">thread</span> <span class="n">LoopThread</span> <span class="n">is</span> <span class="n">running</span><span class="p">...</span>
-<span class="kr">thread</span> <span class="n">LoopThread</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">1</span>
-<span class="kr">thread</span> <span class="n">LoopThread</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">2</span>
-<span class="kr">thread</span> <span class="n">LoopThread</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">3</span>
-<span class="kr">thread</span> <span class="n">LoopThread</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">4</span>
-<span class="kr">thread</span> <span class="n">LoopThread</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">5</span>
-<span class="kr">thread</span> <span class="n">LoopThread</span> <span class="n">ended</span><span class="p">.</span>
-<span class="kr">thread</span> <span class="n">MainThread</span> <span class="n">ended</span><span class="p">.</span>
+    <span class="n">thread</span> <span class="n">MainThread</span> <span class="ow">is</span> <span class="n">running</span><span class="o">...</span>
+    <span class="n">thread</span> <span class="n">LoopThread</span> <span class="ow">is</span> <span class="n">running</span><span class="o">...</span>
+    <span class="n">thread</span> <span class="n">LoopThread</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">1</span>
+    <span class="n">thread</span> <span class="n">LoopThread</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">2</span>
+    <span class="n">thread</span> <span class="n">LoopThread</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">3</span>
+    <span class="n">thread</span> <span class="n">LoopThread</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">4</span>
+    <span class="n">thread</span> <span class="n">LoopThread</span> <span class="o">&gt;&gt;&gt;</span> <span class="mi">5</span>
+    <span class="n">thread</span> <span class="n">LoopThread</span> <span class="n">ended</span><span class="o">.</span>
+    <span class="n">thread</span> <span class="n">MainThread</span> <span class="n">ended</span><span class="o">.</span>
 </pre></div>
 
 

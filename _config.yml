@@ -6,7 +6,7 @@ title: Jun's personal knowledge wiki
 keywords: Technology, MachineLearning, DataMining, Wiki
 description: A wiki website 
 author: zhang787jun
-root: /Wiki
+root: /Wiki/
 theme: simple
 debug: True
 destination: output

@@ -234,15 +234,13 @@ __init__(
 
 ## 2. 设备的管理
 ### 2.1 tf.device
-        tf.device(device_name_or_function)
-
-
-
->device_name_or_function:
->>1. 设备名称字符串 
->> /job:<JOB_NAME>/task:<TASK_INDEX>/device:<DEVICE_TYPE>:<DEVICE_INDEX>
->>2. 返回设备字符串的函数
-
+```python
+tf.device(device_name_or_function)
+```
+device_name_or_function 可以是
+1. 设备名称字符串 
+ /job:<JOB_NAME>/task:<TASK_INDEX>/device:<DEVICE_TYPE>:<DEVICE_INDEX>
+2. 返回设备字符串的函数
 **其中：**
 
 + **<JOB_NAME>** 是一个字母数字字符串，并且不以数字开头。
@@ -252,7 +250,6 @@ __init__(
 +  **<JOB_NAME>** 的作业中的任务的索引。请参阅 tf.train.ClusterSpec 了解作业和任务的说明。
 + **<DEVICE_INDEX>** 是一个非负整数，表示设备索引，例如用于区分同一进程中使用的不同 GPU 设备。
 
->>2. 设备函数
 
 ### 2.2 当设备为分布式设备时候
 
@@ -260,11 +257,51 @@ __init__(
 tf.train.replica_device_setter(cluster=cluster)
 ```
 
-
 intra_op_parallelism_threads 控制运算符op内部的并行(一个op内部的多个并行)
 
 https://blog.csdn.net/rockingdingo/article/details/55652662
 ****
+
+
+### 2.3 产看可用设备 
+
+```python
+from tensorflow.python.client import device_lib
+
+print ("可用计算硬件情况：{}".format(device_lib.list_local_devices()))
+
+>>>可用计算硬件情况：[[name: "/device:CPU:0"
+device_type: "CPU"
+memory_limit: 268435456
+locality {
+}
+incarnation: 16732882166560050894
+, name: "/device:XLA_CPU:0"
+device_type: "XLA_CPU"
+memory_limit: 17179869184
+locality {
+}
+incarnation: 799772212799803613
+physical_device_desc: "device: XLA_CPU device"
+, name: "/device:XLA_GPU:0"
+device_type: "XLA_GPU"
+memory_limit: 17179869184
+locality {
+}
+incarnation: 2714282392667418740
+physical_device_desc: "device: XLA_GPU device"
+, name: "/device:GPU:0"
+device_type: "GPU"
+memory_limit: 14892338381
+locality {
+  bus_id: 1
+  links {
+  }
+}
+incarnation: 10914707427568231652
+physical_device_desc: "device: 0, name: Tesla T4, pci bus id: 0000:00:04.0, compute capability: 7.5"
+]]
+```
 
 ## 3. 数据的输入（tf.data）
 
@@ -465,6 +502,15 @@ next_element 就是一个tensor,与tf.placehold/tf.constant 一样
                 sess.run(validation_iterator.initializer)
                 for _ in range(50):
                         sess.run(next_element, feed_dict={handle: validation_handle})
+
+#
+tf.data.Iterator.from_string_handle(
+    string_handle,
+    output_types,
+    output_shapes=None,
+    output_classes=None
+)
+
 ```
 ### 3. 数据集的操作
 
@@ -508,15 +554,24 @@ Dataset=Dataset.batch(2) #[[1,2],[3,4],[5,6]]
 ...
 ```
 #### 3.3  shuffle
-```
+
+```python
 >>>Dataset #[1,2,3,4,5,6]
 Dataset=Dataset.shuffle(shuffle_size=10) #
 >>>iterator.get_next()
 [3]
 [6]
-
 ```
-#### 3.3 padded_batch
+
+**buffer_size 的理解**
+
+代表將被加入緩衝器的元素的**最大数量**。
+buffer_size 需要合理取值，然而不当的buffer size，会导致shuffle无意义。如buffer size=1
+
+![](../../../../attach/images/2019-07-25-10-26-19.png)
+
+
+#### 3.4 padded_batch
 Dataset.padded_batch()
 ```python
 
@@ -531,13 +586,16 @@ Dataset=Dataset.padded_batch(2) #[[1,2],[3,4],[5,6]]
 >>>iterator.get_next()
 [1,2]
 [3,4]
+
+
 ...
 ```
+#### 3.5 repeat
+
+#### 3.6 prefetch
 
 
-shuffle: 打亂，為一個size，每次取進此尺度的大小，再從其中取出
-batch: 批量，每次提取的樣本的數量
-repeat: 整個資料集要重覆提取幾次鎮
+
 
 
 ## 4. I/O 问题
@@ -815,6 +873,8 @@ GraphDef 是图Graph信息的序列化文件，用于保存模型的Graph，不�
 **图信息的主要内容包括：**
 
 1. Node节点 op
+   图中的节点又称为算子，它代表一个操作（operation，OP），一般用来表示施加的数学运 算，也可以表示数据输入（feed in）的起点以及输出（push out）的终点，或者是读取/写入持久 变量（persistent variable）的终点。表 
+
 Operation包含OpDef和NodeDef两个主要成员变量。
 1. OpDef描述了op的静态属性信息，例如op入参列表，出参列表等。
 2. NodeDef则描述op的动态属性信息，例如op运行的设备信息，用户给op设置的name等。包括placeholder
@@ -841,32 +901,36 @@ MetaGraphDef 是 MetaGraph信息的序列化文件，同样是由 Protocol Buffe
 | CollectionDef | 任何需要特殊注意的 Python 对象，需要特殊的标注以方便import_meta_graph 后取回。 |                                                       “train_op”,"prediction"等等 |
 
 ##### 1.3 Graph/MetaGraph信息 的保存格式
+
+
 在实际操作中，很少保存Graph信息，一般都是直接保存MetaGraph信息 ，保存MetaGraph信息的文件格式主要有
 
 1. pd 格式
 形如`xxx_name.pd`
-
 
 2. meta 格式
 形如`xxx_name.meta`
 
 #### 2. 参数信息
 
-主要为tf.Variables类的节点信息，持久化时保存为(1)索引和(2)数据 两部分。
-其中索引命名为 xxx_name.index
-数据命名为：xxx_name.data
+主要为tf.Variables类的节点信息，持久化时保存为(1)索引和(2)数据 两部分。其中：
+1. 索引命名为 xxx_name.index
+2. 数据命名为：xxx_name.data
 
-model.ckpt-20.index	二进制文件	数据 index	
-model.ckpt-20.data-00000-of-00002	二进制文件	数据
+| filename                          | 类型       | 内容       |
+| --------------------------------- | ---------- | ---------- |
+| model.ckpt-20.index               | 二进制文件 | 数据 index |
+| model.ckpt-20.data-00000-of-00002 | 二进制文件 | 数据       |
 
 #### 3. 其他信息
 
 1. 服务器信息
 2. 集群信息
-3. Checkpoint： 用于保存模型的权重，主要用于模型训练过程中参数的备份和模型训练热启动。model_checkpoint_path
+3. Checkpoint： 用于保存模型的权重，主要用于模型训练过程中参数的备份和模型训练热启动。model_checkpoint_path;all_model_checkpoint_path
 
 
 ### 3. 怎么保存
+
 
 
 保存的文件包括如下
@@ -953,7 +1017,6 @@ save(
 10. to_proto。将  Saver 转化成 a SaverDef protocol buffer.
 ```
 
-
 TensorFlow的模型格式有很多种，针对不同场景可以使用不同的格式，只要符合规范的模型都可以轻易部署到在线服务或移动设备上，这里简单列举一下。
 
 Checkpoint： 用于保存模型的权重，主要用于模型训练过程中参数的备份和模型训练热启动。
@@ -965,7 +1028,7 @@ TFLite：基于flatbuf对模型进行优化，可以直接部署到Android、iOS
 
 
 
-PB 文件是表示 protocol buffer格式的文件,形如`xxx_name.pd`，二进制文件
+
 
 #### 1.保存
 

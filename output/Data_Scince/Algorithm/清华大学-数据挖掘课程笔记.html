@@ -6,7 +6,7 @@
     <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
     <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
-    <title>数据挖掘课程笔记 - Jun's personal knowledge wiki</title>
+    <title>[课程]--数据挖掘课程笔记 - Jun's personal knowledge wiki</title>
     <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
     <meta name="description" content="A wiki website" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -24,10 +24,10 @@
     <div id="container">
         
 <div id="header">
-  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Scince\Algorithm">Data_Scince\Algorithm</a>&nbsp;»&nbsp;数据挖掘课程笔记</div>
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Scince\Algorithm">Data_Scince\Algorithm</a>&nbsp;»&nbsp;[课程]--数据挖掘课程笔记</div>
 </div>
 <div class="clearfix"></div>
-<div id="title">数据挖掘课程笔记</div>
+<div id="title">[课程]--数据挖掘课程笔记</div>
   <div id="content">
   <h1 id="-">清华大学-数据挖掘课程笔记</h1>
 <div class="toc"><span class="toctitle">Table of Contents</span><ul>
@@ -767,13 +767,38 @@ ignore?<br />
 <h4 id="221">2.2.1 异常值检验的目的</h4>
 <p>找出数据集中和大多数数据不同的数据</p>
 <h4 id="222">2.2.2 异常值检验的主要方法</h4>
-<p>异常值检验主要方法有3种：<br />
-|              类型 |                                                                                         详解 |                                                       示例 |<br />
-| ----------------: | -------------------------------------------------------------------------------------------: | ---------------------------------------------------------: |<br />
-|  基于统计学的方法 | 这种方法一般会构建一个概率分布模型，并计算对象符合该模型的概率，把具有低概率的对象视为异常点 |                               特征工程中的RobustScaler方法 |<br />
-|      基于聚类方法 |                                                                     基于数据特征的分布来做的 |                          BIRCH聚类算法原理、DBSCAN密度聚类 |<br />
-| novelty detection |                     当训练数据中没有离群点，我们的目标是用训练好的模型去检测另外新发现的样本 |                                                OneClassSVM |<br />
-| outlier detection |       当训练数据中包含离群点，模型训练时要匹配训练数据的中心样本，忽视训练样本中的其它异常点 | Isolation Forest(低维度)、Local Outlier Factor（中高纬度） |</p>
+<p>异常值检验主要方法有3种：</p>
+<table>
+<thead>
+<tr>
+<th align="right">类型</th>
+<th align="right">详解</th>
+<th align="right">示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">基于统计学的方法</td>
+<td align="right">这种方法一般会构建一个概率分布模型，并计算对象符合该模型的概率，把具有低概率的对象视为异常点</td>
+<td align="right">特征工程中的RobustScaler方法</td>
+</tr>
+<tr>
+<td align="right">基于聚类方法</td>
+<td align="right">基于数据特征的分布来做的</td>
+<td align="right">BIRCH聚类算法原理、DBSCAN密度聚类</td>
+</tr>
+<tr>
+<td align="right">novelty detection</td>
+<td align="right">当训练数据中没有离群点，我们的目标是用训练好的模型去检测另外新发现的样本</td>
+<td align="right">OneClassSVM</td>
+</tr>
+<tr>
+<td align="right">outlier detection</td>
+<td align="right">当训练数据中包含离群点，模型训练时要匹配训练数据的中心样本，忽视训练样本中的其它异常点</td>
+<td align="right">Isolation Forest(低维度)、Local Outlier Factor（中高纬度）</td>
+</tr>
+</tbody>
+</table>
 <h5 id="1-robustscaler">1. RobustScaler</h5>
 <p>https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.robust_scale.html</p>
 <p>对数据集进行升序排列，取数据集中间 quantile_range 范围的数据</p>

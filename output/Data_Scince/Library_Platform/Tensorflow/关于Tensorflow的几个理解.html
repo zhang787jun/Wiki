@@ -48,6 +48,7 @@
 <li><a href="#2">2. 设备的管理</a><ul>
 <li><a href="#21-tfdevice">2.1 tf.device</a></li>
 <li><a href="#22">2.2 当设备为分布式设备时候</a></li>
+<li><a href="#23">2.3 产看可用设备</a></li>
 </ul>
 </li>
 <li><a href="#3-tfdata">3. 数据的输入（tf.data）</a><ul>
@@ -63,7 +64,9 @@
 <li><a href="#31-map">3.1  map</a></li>
 <li><a href="#32-batch">3.2  batch</a></li>
 <li><a href="#33-shuffle">3.3  shuffle</a></li>
-<li><a href="#33-padded_batch">3.3 padded_batch</a></li>
+<li><a href="#34-padded_batch">3.4 padded_batch</a></li>
+<li><a href="#35-repeat">3.5 repeat</a></li>
+<li><a href="#36-prefetch">3.6 prefetch</a></li>
 </ul>
 </li>
 </ul>
@@ -509,21 +512,15 @@ sess.run(Scaffold.init_op) 初始化模型<blockquote>
 
 <h2 id="2">2. 设备的管理</h2>
 <h3 id="21-tfdevice">2.1 tf.device</h3>
-<div class="hlcode"><pre>    <span class="nx">tf</span><span class="p">.</span><span class="nx">device</span><span class="p">(</span><span class="nx">device_name_or_function</span><span class="p">)</span>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="n">device_name_or_function</span><span class="p">)</span>
 </pre></div>
 
 
-<blockquote>
-<p>device_name_or_function:</p>
-<blockquote>
-<ol>
-<li>设备名称字符串 <br />
-/job:<JOB_NAME>/task:<TASK_INDEX>/device:<DEVICE_TYPE>:<DEVICE_INDEX></li>
-<li>返回设备字符串的函数</li>
-</ol>
-</blockquote>
-</blockquote>
-<p><strong>其中：</strong></p>
+<p>device_name_or_function 可以是<br />
+1. 设备名称字符串 <br />
+ /job:<JOB_NAME>/task:<TASK_INDEX>/device:<DEVICE_TYPE>:<DEVICE_INDEX><br />
+2. 返回设备字符串的函数<br />
+<strong>其中：</strong></p>
 <ul>
 <li><strong><JOB_NAME></strong> 是一个字母数字字符串，并且不以数字开头。</li>
 <li>
@@ -535,13 +532,6 @@ sess.run(Scaffold.init_op) 初始化模型<blockquote>
 <li><strong><JOB_NAME></strong> 的作业中的任务的索引。请参阅 tf.train.ClusterSpec 了解作业和任务的说明。</li>
 <li><strong><DEVICE_INDEX></strong> 是一个非负整数，表示设备索引，例如用于区分同一进程中使用的不同 GPU 设备。</li>
 </ul>
-<blockquote>
-<blockquote>
-<ol>
-<li>设备函数</li>
-</ol>
-</blockquote>
-</blockquote>
 <h3 id="22">2.2 当设备为分布式设备时候</h3>
 <div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">replica_device_setter</span><span class="p">(</span><span class="n">cluster</span><span class="o">=</span><span class="n">cluster</span><span class="p">)</span>
 </pre></div>
@@ -550,6 +540,45 @@ sess.run(Scaffold.init_op) 初始化模型<blockquote>
 <p>intra_op_parallelism_threads 控制运算符op内部的并行(一个op内部的多个并行)</p>
 <p>https://blog.csdn.net/rockingdingo/article/details/55652662</p>
 <hr />
+<h3 id="23">2.3 产看可用设备</h3>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">tensorflow.python.client</span> <span class="kn">import</span> <span class="n">device_lib</span>
+
+<span class="k">print</span> <span class="p">(</span><span class="s">&quot;可用计算硬件情况：{}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">device_lib</span><span class="o">.</span><span class="n">list_local_devices</span><span class="p">()))</span>
+
+<span class="o">&gt;&gt;&gt;</span><span class="err">可用计算硬件情况：</span><span class="p">[[</span><span class="n">name</span><span class="p">:</span> <span class="s">&quot;/device:CPU:0&quot;</span>
+<span class="n">device_type</span><span class="p">:</span> <span class="s">&quot;CPU&quot;</span>
+<span class="n">memory_limit</span><span class="p">:</span> <span class="mi">268435456</span>
+<span class="n">locality</span> <span class="p">{</span>
+<span class="p">}</span>
+<span class="n">incarnation</span><span class="p">:</span> <span class="mi">16732882166560050894</span>
+<span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s">&quot;/device:XLA_CPU:0&quot;</span>
+<span class="n">device_type</span><span class="p">:</span> <span class="s">&quot;XLA_CPU&quot;</span>
+<span class="n">memory_limit</span><span class="p">:</span> <span class="mi">17179869184</span>
+<span class="n">locality</span> <span class="p">{</span>
+<span class="p">}</span>
+<span class="n">incarnation</span><span class="p">:</span> <span class="mi">799772212799803613</span>
+<span class="n">physical_device_desc</span><span class="p">:</span> <span class="s">&quot;device: XLA_CPU device&quot;</span>
+<span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s">&quot;/device:XLA_GPU:0&quot;</span>
+<span class="n">device_type</span><span class="p">:</span> <span class="s">&quot;XLA_GPU&quot;</span>
+<span class="n">memory_limit</span><span class="p">:</span> <span class="mi">17179869184</span>
+<span class="n">locality</span> <span class="p">{</span>
+<span class="p">}</span>
+<span class="n">incarnation</span><span class="p">:</span> <span class="mi">2714282392667418740</span>
+<span class="n">physical_device_desc</span><span class="p">:</span> <span class="s">&quot;device: XLA_GPU device&quot;</span>
+<span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="s">&quot;/device:GPU:0&quot;</span>
+<span class="n">device_type</span><span class="p">:</span> <span class="s">&quot;GPU&quot;</span>
+<span class="n">memory_limit</span><span class="p">:</span> <span class="mi">14892338381</span>
+<span class="n">locality</span> <span class="p">{</span>
+  <span class="n">bus_id</span><span class="p">:</span> <span class="mi">1</span>
+  <span class="n">links</span> <span class="p">{</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+<span class="n">incarnation</span><span class="p">:</span> <span class="mi">10914707427568231652</span>
+<span class="n">physical_device_desc</span><span class="p">:</span> <span class="s">&quot;device: 0, name: Tesla T4, pci bus id: 0000:00:04.0, compute capability: 7.5&quot;</span>
+<span class="p">]]</span>
+</pre></div>
+
+
 <h2 id="3-tfdata">3. 数据的输入（tf.data）</h2>
 <p>https://cs230-stanford.github.io/tensorflow-input-data.html</p>
 <blockquote>
@@ -787,6 +816,14 @@ A:当我们想要创建一个动态的dataset的时候</p>
                 <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">validation_iterator</span><span class="o">.</span><span class="n">initializer</span><span class="p">)</span>
                 <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
                         <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">next_element</span><span class="p">,</span> <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">handle</span><span class="p">:</span> <span class="n">validation_handle</span><span class="p">})</span>
+
+<span class="c">#</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Iterator</span><span class="o">.</span><span class="n">from_string_handle</span><span class="p">(</span>
+    <span class="n">string_handle</span><span class="p">,</span>
+    <span class="n">output_types</span><span class="p">,</span>
+    <span class="n">output_shapes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+    <span class="n">output_classes</span><span class="o">=</span><span class="bp">None</span>
+<span class="p">)</span>
 </pre></div>
 
 
@@ -832,15 +869,19 @@ A:当我们想要创建一个动态的dataset的时候</p>
 
 
 <h4 id="33-shuffle">3.3  shuffle</h4>
-<div class="hlcode"><pre><span class="o">&gt;&gt;&gt;</span><span class="n">Dataset</span> <span class="err">#</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">]</span>
-<span class="n">Dataset</span><span class="o">=</span><span class="n">Dataset</span><span class="p">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">shuffle_size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="err">#</span>
-<span class="o">&gt;&gt;&gt;</span><span class="n">iterator</span><span class="p">.</span><span class="n">get_next</span><span class="p">()</span>
+<div class="hlcode"><pre><span class="o">&gt;&gt;&gt;</span><span class="n">Dataset</span> <span class="c">#[1,2,3,4,5,6]</span>
+<span class="n">Dataset</span><span class="o">=</span><span class="n">Dataset</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">shuffle_size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="c">#</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">iterator</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
 <span class="p">[</span><span class="mi">3</span><span class="p">]</span>
 <span class="p">[</span><span class="mi">6</span><span class="p">]</span>
 </pre></div>
 
 
-<h4 id="33-padded_batch">3.3 padded_batch</h4>
+<p><strong>buffer_size 的理解</strong></p>
+<p>代表將被加入緩衝器的元素的<strong>最大数量</strong>。<br />
+buffer_size 需要合理取值，然而不当的buffer size，会导致shuffle无意义。如buffer size=1</p>
+<p><img alt="" src="../../../../attach/images/2019-07-25-10-26-19.png" /></p>
+<h4 id="34-padded_batch">3.4 padded_batch</h4>
 <p>Dataset.padded_batch()</p>
 <div class="hlcode"><pre><span class="o">&gt;&gt;&gt;</span><span class="n">Dataset</span> <span class="c">#[1,2,3,4,5,6]</span>
 <span class="o">&gt;&gt;&gt;</span><span class="n">iterator</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
@@ -853,13 +894,14 @@ A:当我们想要创建一个动态的dataset的时候</p>
 <span class="o">&gt;&gt;&gt;</span><span class="n">iterator</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
 <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
 <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span>
+
+
 <span class="o">...</span>
 </pre></div>
 
 
-<p>shuffle: 打亂，為一個size，每次取進此尺度的大小，再從其中取出<br />
-batch: 批量，每次提取的樣本的數量<br />
-repeat: 整個資料集要重覆提取幾次鎮</p>
+<h4 id="35-repeat">3.5 repeat</h4>
+<h4 id="36-prefetch">3.6 prefetch</h4>
 <h2 id="4-io">4. I/O 问题</h2>
 <p>Tensorflow把数据输送到计算图的方式主要有三种：</p>
 <table>
@@ -1158,10 +1200,11 @@ GraphDef 是图Graph信息的序列化文件，用于保存模型的Graph，不�
 <p><strong>图信息的主要内容包括：</strong></p>
 <ol>
 <li>Node节点 op<br />
-Operation包含OpDef和NodeDef两个主要成员变量。</li>
-<li>OpDef描述了op的静态属性信息，例如op入参列表，出参列表等。</li>
-<li>NodeDef则描述op的动态属性信息，例如op运行的设备信息，用户给op设置的name等。包括placeholder</li>
+   图中的节点又称为算子，它代表一个操作（operation，OP），一般用来表示施加的数学运 算，也可以表示数据输入（feed in）的起点以及输出（push out）的终点，或者是读取/写入持久 变量（persistent variable）的终点。表 </li>
 </ol>
+<p>Operation包含OpDef和NodeDef两个主要成员变量。<br />
+1. OpDef描述了op的静态属性信息，例如op入参列表，出参列表等。<br />
+2. NodeDef则描述op的动态属性信息，例如op运行的设备信息，用户给op设置的name等。包括placeholder</p>
 <div class="hlcode"><pre><span class="p">[</span><span class="n">op</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_default_graph</span><span class="p">()</span><span class="o">.</span><span class="n">get_operations</span><span class="p">()]</span>
 </pre></div>
 
@@ -1217,16 +1260,35 @@ Operation包含OpDef和NodeDef两个主要成员变量。</li>
 </li>
 </ol>
 <h4 id="2_5">2. 参数信息</h4>
-<p>主要为tf.Variables类的节点信息，持久化时保存为(1)索引和(2)数据 两部分。<br />
-其中索引命名为 xxx_name.index<br />
-数据命名为：xxx_name.data</p>
-<p>model.ckpt-20.index 二进制文件   数据 index  <br />
-model.ckpt-20.data-00000-of-00002   二进制文件   数据</p>
+<p>主要为tf.Variables类的节点信息，持久化时保存为(1)索引和(2)数据 两部分。其中：<br />
+1. 索引命名为 xxx_name.index<br />
+2. 数据命名为：xxx_name.data</p>
+<table>
+<thead>
+<tr>
+<th>filename</th>
+<th>类型</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>model.ckpt-20.index</td>
+<td>二进制文件</td>
+<td>数据 index</td>
+</tr>
+<tr>
+<td>model.ckpt-20.data-00000-of-00002</td>
+<td>二进制文件</td>
+<td>数据</td>
+</tr>
+</tbody>
+</table>
 <h4 id="3_2">3. 其他信息</h4>
 <ol>
 <li>服务器信息</li>
 <li>集群信息</li>
-<li>Checkpoint： 用于保存模型的权重，主要用于模型训练过程中参数的备份和模型训练热启动。model_checkpoint_path</li>
+<li>Checkpoint： 用于保存模型的权重，主要用于模型训练过程中参数的备份和模型训练热启动。model_checkpoint_path;all_model_checkpoint_path</li>
 </ol>
 <h3 id="3_3">3. 怎么保存</h3>
 <p>保存的文件包括如下<br />
@@ -1318,7 +1380,6 @@ ExportModel：使用exportor接口导出的模型文件，包含模型Graph和�
 SavedModel：使用saved_model接口导出的模型文件，包含模型Graph和权限可直接用于上线，TensorFlow和Keras模型推荐使用这种模型格式。<br />
 FrozenGraph：使用freeze_graph.py对checkpoint和GraphDef进行整合和优化，可以直接部署到Android、iOS等移动设备上。<br />
 TFLite：基于flatbuf对模型进行优化，可以直接部署到Android、iOS等移动设备上，使用接口和FrozenGraph有些差异</p>
-<p>PB 文件是表示 protocol buffer格式的文件,形如<code>xxx_name.pd</code>，二进制文件</p>
 <h4 id="1_3">1.保存</h4>
 <ol>
 <li>通过 get_default_graph().as_graph_def() 得到当前图的计算节点（Node）信息</li>
