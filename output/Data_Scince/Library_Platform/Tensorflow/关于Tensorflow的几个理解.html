@@ -1204,7 +1204,7 @@ GraphDef 是图Graph信息的序列化文件，用于保存模型的Graph，不�
 </ol>
 <p>Operation包含OpDef和NodeDef两个主要成员变量。<br />
 1. OpDef描述了op的静态属性信息，例如op入参列表，出参列表等。<br />
-2. NodeDef则描述op的动态属性信息，例如op运行的设备信息，用户给op设置的name等。包括placeholder</p>
+2. NodeDef则描述op的动态属性信息，例如op运行的设备信息，用户给op设置的name等。包括placeholder,placeholder 是tensor </p>
 <div class="hlcode"><pre><span class="p">[</span><span class="n">op</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">tf</span><span class="o">.</span><span class="n">get_default_graph</span><span class="p">()</span><span class="o">.</span><span class="n">get_operations</span><span class="p">()]</span>
 </pre></div>
 

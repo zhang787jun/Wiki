@@ -877,7 +877,7 @@ GraphDef 是图Graph信息的序列化文件，用于保存模型的Graph，不�
 
 Operation包含OpDef和NodeDef两个主要成员变量。
 1. OpDef描述了op的静态属性信息，例如op入参列表，出参列表等。
-2. NodeDef则描述op的动态属性信息，例如op运行的设备信息，用户给op设置的name等。包括placeholder
+2. NodeDef则描述op的动态属性信息，例如op运行的设备信息，用户给op设置的name等。包括placeholder,placeholder 是tensor 
 
 ```python
 [op.values() for op in tf.get_default_graph().get_operations()]
