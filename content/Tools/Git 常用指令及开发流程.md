@@ -367,6 +367,14 @@ git remote show [remote shortname]
 
 # 增加一个新的远程仓库，并命名
 git remote add [remote shortname] [url]
+
+# [url] 格式
+# https://github.com/[user_name]/[Project_name].git
+```
+
+### 删除
+```shell
+git remote rm [remote shortname]
 ```
 ### 同步
 

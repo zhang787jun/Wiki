@@ -1,7 +1,7 @@
 ---
 title: "Dot 画图"
 layout: page
-date: 2099-06-02 00:00f
+date: 2099-06-02 00:00
 ---
 
 参考https://www.ibm.com/developerworks/cn/aix/library/au-aix-graphviz/index.html
