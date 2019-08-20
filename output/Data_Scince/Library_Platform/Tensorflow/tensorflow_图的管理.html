@@ -1,0 +1,153 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Tensorflow 图的管理 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
+    </script>
+
+
+
+</head>
+
+<body>
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Scince\Library_Platform\Tensorflow">Data_Scince\Library_Platform\Tensorflow</a>&nbsp;»&nbsp;Tensorflow 图的管理</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Tensorflow 图的管理</div>
+  <div id="content">
+  <p>tf.add_to_collection("training_collection",loss)</p>
+<p>tf.add_to_collection("training_collection",train_op)</p>
+<h2 id="_1">图的管理</h2>
+<p>图=edge(边缘)+node(节点)</p>
+<h3 id="101">10.1 图的管理</h3>
+<h4 id="1011">10.1.1 图的建立/加载</h4>
+<div class="hlcode"><pre><span class="n">graph</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+<span class="n">graph</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">get_default_graph</span><span class="p">()</span> 
+</pre></div>
+
+
+<h4 id="1012">10.1.2 图的管理操作</h4>
+<h5 id="1">1. 设置为默认图</h5>
+<div class="hlcode"><pre><span class="n">graph</span><span class="o">.</span><span class="n">as_default</span><span class="p">()</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">as_graph_def</span><span class="p">(</span><span class="n">from_version</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">add_shapes</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+
+
+<h5 id="1_1">1. 设置为默认图</h5>
+<p>tf中可以定义多个计算图，<strong>不同计算图上的张量和运算是相互独立的</strong>，不会共享。计算图可以用来隔离张量和计算，同时提供了管理张量和计算的机制。<strong>计算图可以通过Graph.device函数来指定运行计算的设备</strong>，为TensorFlow充分利用GPU/CPU提供了机制。</p>
+<ol>
+<li>使用 g = tf.Graph()函数创建新的计算图;</li>
+<li><strong>在with g.as_default()语句下</strong>定义属于计算图g的张量和操作</li>
+<li>
+<p><strong>在with tf.Session()中</strong>通过参数 graph = xxx指定当前会话所运行的计算图;</p>
+</li>
+<li>
+<p>如果没有显式指定张量和操作所属的计算图，则这些张量和操作属于默认计算图;</p>
+</li>
+<li>一个图可以在多个sess中运行，一个sess也能运行多个图</li>
+</ol>
+<h3 id="102-edge">10.2 edge(边缘)操作</h3>
+<div class="hlcode"><pre><span class="c">#根据名称返回操作节点 </span>
+<span class="n">op</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">Graph</span><span class="o">.</span><span class="n">get_operation_by_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<span class="c">#根据名称返回tensor数据     </span>
+<span class="n">tensor</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">Graph</span><span class="o">.</span><span class="n">get_tensor_by_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>       
+
+<span class="c">#返回一个图中与obj相关联的对象，为一个操作节点或者tensor数据</span>
+ <span class="n">tf</span><span class="o">.</span><span class="n">Graph</span><span class="o">.</span><span class="n">as_graph_element</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">allow_tensor</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">allow_operation</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> 
+<span class="c">#用于覆盖梯度函数的上下文管理器</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">Graph</span><span class="o">.</span><span class="n">gradient_override_map</span><span class="p">(</span><span class="n">op_type_map</span><span class="p">)</span> 
+</pre></div>
+
+
+<h3 id="103-node">10.3 node(节点)操作</h3>
+<div class="hlcode"><pre><span class="n">op_list</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">Graph</span><span class="o">.</span><span class="n">get_operations</span><span class="p">()</span>  
+<span class="c">#返回图中的操作节点列表</span>
+</pre></div>
+
+
+<p>tf.Graph</p>
+<table>
+<thead>
+<tr>
+<th align="left">操作</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">class tf.Graph</td>
+<td align="left">tensorflow中的计算以图数据流的方式表示,一个图包含一系列表示计算单元的操作对象以及在图中流动的数据单元以tensor对象表现</td>
+</tr>
+<tr>
+<td align="left"><code>tf.Graph.__init__()</code></td>
+<td align="left">建立一个空图</td>
+</tr>
+<tr>
+<td align="left">tf.Graph.as_default()</td>
+<td align="left">一个将某图设置为默认图，并返回一个上下文管理器，如果不显式添加一个默认图，系统会自动设置一个全局的默认图。所设置的默认图，在模块范围内所定义的节点都将默认加入默认图中</td>
+</tr>
+<tr>
+<td align="left">tf.Graph.as_graph_def(from_version=None, add_shapes=False)</td>
+<td align="left">返回一个图的序列化的GraphDef表示，序列化的GraphDef可以导入至另一个图中(使用 import_graph_def())或者使用C++ Session API</td>
+</tr>
+<tr>
+<td align="left">tf.Graph.finalize()</td>
+<td align="left">完成图的构建，即将其设置为只读模式</td>
+</tr>
+<tr>
+<td align="left">tf.Graph.finalized</td>
+<td align="left">返回True，如果图被完成</td>
+</tr>
+<tr>
+<td align="left">tf.Graph.control_dependencies(control_inputs)</td>
+<td align="left">定义一个控制依赖，并返回一个上下文管理器</td>
+</tr>
+<tr>
+<td align="left">with g.control_dependencies([a, b, c])</td>
+<td align="left"># <code>d</code> 和 <code>e</code> 将在 <code>a</code>, <code>b</code>, 和<code>c</code>执行完之后运行.d = …e = …</td>
+</tr>
+<tr>
+<td align="left">tf.Graph.device(device_name_or_function)</td>
+<td align="left">定义运行图所使用的设备，并返回一个上下文管理器，with g.device('/gpu:0'): 、...with g.device('/cpu:0'): ...</td>
+</tr>
+<tr>
+<td align="left">tf.Graph.name_scope(name)</td>
+<td align="left">为节点创建层次化的名称，并返回一个上下文管理器</td>
+</tr>
+<tr>
+<td align="left">tf.Graph.add_to_collection(name, value)</td>
+<td align="left">将value以name的名称存储在收集器(collection)中</td>
+</tr>
+<tr>
+<td align="left">tf.Graph.get_collection(name, scope=None)</td>
+<td align="left">根据name返回一个收集器中所收集的值的列表</td>
+</tr>
+</tbody>
+</table>
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2019 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+    
+</body>
+
+</html>

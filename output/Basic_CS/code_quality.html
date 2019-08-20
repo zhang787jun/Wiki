@@ -1,0 +1,211 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>代码质量及工程化 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
+    </script>
+
+
+
+</head>
+
+<body>
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Basic_CS">Basic_CS</a>&nbsp;»&nbsp;代码质量及工程化</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">代码质量及工程化</div>
+  <div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#_1">高质量的代码</a><ul>
+<li><a href="#1">1. 代码规范性</a><ul>
+<li><a href="#11">1.1 变量/函数命名格式规范</a></li>
+<li><a href="#12">1.2 变量/函数命名语义明确</a><ul>
+<li><a href="#1_1">1. 动词到位</a></li>
+<li><a href="#2">2. 名词合理</a></li>
+<li><a href="#3">3. 标记准确</a></li>
+</ul>
+</li>
+<li><a href="#13">1.3 良好的可读性</a><ul>
+<li><a href="#131">1.3.1 注释</a></li>
+<li><a href="#2_1">2.一次只做一件事</a></li>
+<li><a href="#3_1">3. 用自然语言表述代码</a></li>
+<li><a href="#4">4. 减少代码量</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#2_2">2. 代码完整性</a><ul>
+<li><a href="#21">2.1 核心功能完整</a></li>
+<li><a href="#22">2.2 边界测试通过</a></li>
+<li><a href="#23">2.3 负面测试</a></li>
+</ul>
+</li>
+<li><a href="#3_2">3. 代码鲁棒性</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="_1">高质量的代码</h1>
+<h2 id="1">1. 代码规范性</h2>
+<h3 id="11">1.1 变量/函数命名格式规范</h3>
+<ul>
+<li>Java<br />
+驼峰命名：多个单词组成一个名称时，第一个单词全部小写，后面单词首字母大写；如：</li>
+</ul>
+<div class="hlcode"><pre><span class="n">public</span> <span class="kt">void</span> <span class="n">setUserName</span><span class="p">(</span><span class="n">String</span> <span class="n">userName</span><span class="p">)</span>
+</pre></div>
+
+
+<ul>
+<li>C/C++/C#<br />
+帕斯卡命名：多个单词组成一个名称时，每个单词的首字母大写；</li>
+</ul>
+<div class="hlcode"><pre><span class="k">public</span> <span class="kt">void</span> <span class="n">SetUserName</span><span class="p">(</span><span class="n">String</span> <span class="n">userName</span><span class="p">)</span>
+</pre></div>
+
+
+<ul>
+<li>python<br />
+类 首字符大写其他全部小写</li>
+</ul>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Car</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> 
+    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="12">1.2 变量/函数命名语义明确</h3>
+<p>名词合理、动词到位</p>
+<h4 id="1_1">1. 动词到位</h4>
+<p>一些比较有表达力的单词：</p>
+<table>
+<thead>
+<tr>
+<th align="center">单词</th>
+<th>可替代单词</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="center">send</td>
+<td>deliver、dispatch、announce、distribute、route</td>
+</tr>
+<tr>
+<td align="center">find</td>
+<td>search、extract、locate、recover</td>
+</tr>
+<tr>
+<td align="center">start</td>
+<td>launch、create、begin、open</td>
+</tr>
+<tr>
+<td align="center">make</td>
+<td>create、set up、build、generate、compose、add、new</td>
+</tr>
+</tbody>
+</table>
+<p>布尔相关的命名加上 is、can、should、has 等前缀。</p>
+<h4 id="2">2. 名词合理</h4>
+<p>使用 i、j、k 作为循环迭代器的名字过于简单，user_i、member_i 这种名字会更有表达力。因为循环层次越多，代码越难理解，有表达力的迭代器名字可读性会更高。</p>
+<p>为名字添加形容词等信息能让名字更具有表达力，但是名字也会变长。名字长短的准则是：作用域越大，名字越长。因此只有在短作用域才能使用一些简单名字。</p>
+<p>起完名字要思考一下别人会对这个名字有何解读，会不会误解了原本想表达的含义。</p>
+<h4 id="3">3. 标记准确</h4>
+<ul>
+<li>用 min、max 表示数量范围；</li>
+<li>用 first、last 表示访问空间的包含范围；</li>
+</ul>
+<div class="hlcode"><pre><span class="n">a</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+<span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c"># first =0</span>
+<span class="n">a</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="c"># last =4</span>
+</pre></div>
+
+
+<ul>
+<li>begin、end 表示访问空间的排除范围，即 end 不包含尾部。begin==first,end=last+1</li>
+</ul>
+<div class="hlcode"><pre><span class="n">a</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">]</span>
+<span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="c"># begin =0</span>
+<span class="n">a</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span> <span class="c"># end =5  </span>
+</pre></div>
+
+
+<h3 id="13">1.3 良好的可读性</h3>
+<h4 id="131">1.3.1 注释</h4>
+<p>尽量简洁明了：</p>
+<p>用 TODO 等做标记：</p>
+<table>
+<thead>
+<tr>
+<th>标记</th>
+<th>用法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TODO</td>
+<td>待做</td>
+</tr>
+<tr>
+<td>FIXME</td>
+<td>待修复</td>
+</tr>
+<tr>
+<td>HACK</td>
+<td>粗糙的解决方案</td>
+</tr>
+<tr>
+<td>XXX</td>
+<td>危险！这里有重要的问题</td>
+</tr>
+</tbody>
+</table>
+<h4 id="2_1">2.一次只做一件事</h4>
+<p>只做一件事的代码很容易让人知道其要做的事；</p>
+<p>基本流程：列出代码所做的所有任务；把每个任务拆分到不同的函数，或者不同的段落。</p>
+<h4 id="3_1">3. 用自然语言表述代码</h4>
+<p>先用自然语言书写代码逻辑，也就是伪代码，然后再写代码，这样代码逻辑会更清晰。</p>
+<h4 id="4">4. 减少代码量</h4>
+<p>不要过度设计，编码过程会有很多变化，过度设计的内容到最后往往是无用的。</p>
+<p>多用标准库实现。</p>
+<h2 id="2_2">2. 代码完整性</h2>
+<h3 id="21">2.1 核心功能完整</h3>
+<h3 id="22">2.2 边界测试通过</h3>
+<ol>
+<li>考虑边界问题</li>
+<li>循环、递归边界</li>
+<li>输入输出边界</li>
+</ol>
+<h3 id="23">2.3 负面测试</h3>
+<ol>
+<li>可能的错误输入</li>
+</ol>
+<h2 id="3_2">3. 代码鲁棒性</h2>
+<p>考虑负面输入</p>
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2019 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+    
+</body>
+
+</html>

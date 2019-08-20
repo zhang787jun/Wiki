@@ -1,3 +1,10 @@
+---
+title: "Tensorflow 图的管理"
+date: 2019-06-12 00:00
+render: True 
+tag: Tensorflow,框架,AI,
+---
+
 tf.add_to_collection("training_collection",loss)
 
 tf.add_to_collection("training_collection",train_op)
