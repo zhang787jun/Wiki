@@ -1,51 +1,46 @@
 ---
-title: "Markdown"
+title: "使用Markdown"
 layout: page
 date: 2099-06-02 00:00
 ---
 
+[TOC]
+# 使用Markdown
 
-Markdown数学符号&公式
-| 符号    | 代码   | 描述     |
-| ------- | ------ | -------- |
-| ∑ \sum∑ | $\sum$ | 求和公式 |
-∑ni=0 \sum_{i=0}^n∑ 
-i=0
-n
-​|
- |$\sum_{i=0}^n$|求和上下标
-× \times×|$\times$|乘号
-± \pm±|$\pm$|正负号
-÷ \div÷|$\div$|除号
-∣ \mid∣|$\mid$|竖线
-⋅ \cdot⋅|$\cdot$|点
-∘ \circ∘|$\circ$|圈
-$\ast|$|$\ast|$|星号
-⨂ \bigotimes⨂|$\bigotimes$|克罗内克积
-⨁ \bigoplus⨁|$\bigoplus$|异或
-≤ \leq≤|$\leq$|小于等于
-≥ \geq≥|$\geq$|大于等于
-≠ \neq 
-̸
-​|
- =|$\neq$|不等于
-≈ \approx≈|$\approx$|约等于
-∏ \prod∏|$\prod$|N元乘积
-∐ \coprod∐|$\coprod$|N元余积
-⋯ \cdots⋯|$\cdots$|省略号
-∫ \int∫|$\int$|积分
-∬ \iint∬|$\iint$|双重积分
-∮ \oint∮|$\oint$|曲线积分
-∞ \infty∞|$\infty$|无穷
-∇ \nabla∇|$\nabla$|梯度
-∵ \because∵|$\because$|因为
-∴ \therefore∴|$\therefore$|所以
-∀ \forall∀|$\forall$|任意
-∃ \exists∃|$\exists$|存在
-̸ = \not= 
-̸
-​|
- =|$\not=$|不等于
+## 1. Markdown数学符号&公式
+
+
+| 符号                    | 代码           | 描述       |
+| ----------------------- | -------------- | ---------- |
+| ∑ \sum∑                 | $\sum$         | 求和公式   |
+| ∑ni=0 \sum_{i=0}^n∑i=0n | $\sum_{i=0}^n$ | 求和上下标 |
+| × \times×               | $\times$       | 乘号       |
+| ± \pm±                  | $\pm$          | 正负号     |
+| ÷ \div÷                 | $\div$         | 除号       |
+| ∣ \mid∣                 | $\mid$         | 竖线       |
+| ⋅ \cdot⋅                | $\cdot$        | 点         |
+| ∘ \circ∘                | $\circ$        | 圈         |
+| $\ast                   | $              | $\ast      | $      | 星号 |
+| ⨂ \bigotimes⨂           | $\bigotimes$   | 克罗内克积 |
+| ⨁ \bigoplus⨁            | $\bigoplus$    | 异或       |
+| ≤ \leq≤                 | $\leq$         | 小于等于   |
+| ≥ \geq≥                 | $\geq$         | 大于等于   |
+| ≠ \neq̸                 |
+| =                       | $\neq$         | 不等于     |
+| ≈ \approx≈              | $\approx$      | 约等于     |
+| ∏ \prod∏                | $\prod$        | N元乘积    |
+| ∐ \coprod∐              | $\coprod$      | N元余积    |
+| ⋯ \cdots⋯               | $\cdots$       | 省略号     |
+| ∫ \int∫                 | $\int$         | 积分       |
+| ∬ \iint∬                | $\iint$        | 双重积分   |
+| ∮ \oint∮                | $\oint$        | 曲线积分   |
+| ∞ \infty∞               | $\infty$       | 无穷       |
+| ∇ \nabla∇               | $\nabla$       | 梯度       |
+| ∵ \because∵             | $\because$     | 因为       |
+| ∴ \therefore∴           | $\therefore$   | 所以       |
+| ∀ \forall∀              | $\forall$      | 任意       |
+| ∃ \exists∃              | $\exists$      | 存在       |
+| ̸ = \not= ≠            | =              | $\not=$    | 不等于 |
 ̸ > \not&gt; 
 ̸
 ​|
@@ -154,3 +149,11 @@ b+c
 a¯ \overline{a} 
 a
  |$\overline{a}$|
+
+
+## 参考文献的方法
+
+```Markdown
+引文的插入格式[^StackOverflow_2007_web]
+[^StackOverflow_2007_web]:XXXX 
+```
