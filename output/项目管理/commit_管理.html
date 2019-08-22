@@ -29,7 +29,410 @@
 <div class="clearfix"></div>
 <div id="title">commit_管理 管理</div>
   <div id="content">
-  
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#commit">commit 提交指南</a><ul>
+<li><a href="#commit_1">什么是 “commit”？</a></li>
+<li><a href="#commit_2">为什么 commit 信息很重要？</a></li>
+<li><a href="#_1">好的实践</a><ul>
+<li><a href="#_2">使用祈使形式</a></li>
+<li><a href="#_3">首字母大写</a></li>
+<li><a href="#_4">尝试在不必查看源代码的情况下沟通变化内容</a></li>
+<li><a href="#_5">使用消息体来解释『为什么』、『是什么』、『怎么做』以及附加细节信息</a></li>
+<li><a href="#_6">避免通用消息或者没有任何上下文的消息</a></li>
+<li><a href="#_7">限制字符数量</a></li>
+<li><a href="#_8">保持语言的一致性</a></li>
+<li><a href="#_9">模板</a></li>
+</ul>
+</li>
+<li><a href="#rebase-merge">Rebase 与 Merge</a><ul>
+<li><a href="#rebase">Rebase</a></li>
+<li><a href="#merge">Merge</a></li>
+<li><a href="#merge-rebase">为什么有些人更倾向于 merge 而不是 rebase？</a></li>
+<li><a href="#squash">何时做 squash？</a></li>
+<li><a href="#rebase-squash">何时避免 rebase 和 squash？</a></li>
+</ul>
+</li>
+<li><a href="#git">有用的 git 命令</a><ul>
+<li><a href="#rebase-i">rebase -i</a><ul>
+<li><a href="#fixup">fixup</a></li>
+</ul>
+</li>
+<li><a href="#cherry-pick">cherry-pick</a></li>
+<li><a href="#addcheckoutreset-patch-p">add/checkout/reset [--patch | -p]</a><ul>
+<li><a href="#1">区块 1</a></li>
+<li><a href="#2">区块 2</a></li>
+<li><a href="#3">区块 3</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_10">灵感、来源和进一步阅读材料</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<blockquote>
+<ul>
+<li>原文地址：<a href="https://github.com/RomuloOliveira/commit-messages-guide/blob/master/README.md">Commit messages guide</a></li>
+<li>原文作者：<a href="https://github.com/RomuloOliveira">RomuloOliveira</a></li>
+</ul>
+</blockquote>
+<h1 id="commit">commit 提交指南</h1>
+<p>一份理解 commit 信息重要性以及如何写好它们的指导手册。</p>
+<p>它可以帮你了解什么是 commit，为什么填写好的信息说明比较重要，以及提供最佳实践、计划和（重新）书写良好的 commit 历史的一些建议。</p>
+<h2 id="commit_1">什么是 “commit”？</h2>
+<p>简而言之，commit 就是你本地仓库中文件的一个快照。<br />
+和一些人的想法相反，<a href="https://git-scm.com/book/eo/v1/Ekkomenci-Git-Basics#Snapshots,-Not-Differences">git 不仅存储文件之间的差异，还存储所有文件的完整版本</a>。<br />
+对于从一次提交到另一次提交之间未发生改变的文件，git 仅存储之前已存的同一份文件的链接。</p>
+<p>下面的图片显示了 git 随着时间变化如何存储数据，其中每个『版本』都是一个 commit：</p>
+<p><img alt="" src="https://i.stack.imgur.com/AQ5TG.png" /></p>
+<h2 id="commit_2">为什么 commit 信息很重要？</h2>
+<ul>
+<li>加快和简化代码审查</li>
+<li>帮助理解代码变更</li>
+<li>协助解释仅靠代码无法完全描述的『为什么』</li>
+<li>帮助未来的维护者明白变更的原因以及如何变更，使故障排查和调试更容易</li>
+</ul>
+<p>为了最大化这些好处，我们可以使用下一节描述的一些好的实践和标准。</p>
+<h2 id="_1">好的实践</h2>
+<p>这些是从我的经验、网络文章和其他指南中收集的一些实践案例。如果您有其他实践(或有不同意见)，请尽管随时打开 Pull Request 并贡献您的意见。</p>
+<h3 id="_2">使用祈使形式</h3>
+<div class="hlcode"><pre><span class="cp"># 好示例</span>
+<span class="n">Use</span> <span class="n">InventoryBackendPool</span> <span class="n">to</span> <span class="n">retrieve</span> <span class="n">inventory</span> <span class="n">backend</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cp"># 坏示例</span>
+<span class="n">Used</span> <span class="n">InventoryBackendPool</span> <span class="n">to</span> <span class="n">retrieve</span> <span class="n">inventory</span> <span class="n">backend</span>
+</pre></div>
+
+
+<p><strong>但为什么要使用祈使形式？</strong></p>
+<p>一个 Commit 信息描述了提到的变化实际<strong>做了</strong>什么，它的影响，而非做的内容。</p>
+<p><a href="https://chris.beams.io/posts/git-commit/">这篇来自 Chris Beams 的优秀文章</a> 给我们一个简单的句子，可以帮助我们以祈使形式来书写更好的 commit 信息：</p>
+<div class="hlcode"><pre><span class="n">If</span> <span class="n">applied</span><span class="p">,</span> <span class="n">this</span> <span class="n">commit</span> <span class="n">will</span> <span class="o">&lt;</span><span class="n">commit</span> <span class="n">message</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<p>示例：</p>
+<div class="hlcode"><pre><span class="cp"># 好示例</span>
+<span class="n">If</span> <span class="n">applied</span><span class="p">,</span> <span class="n">this</span> <span class="n">commit</span> <span class="n">will</span> <span class="n">use</span> <span class="n">InventoryBackendPool</span> <span class="n">to</span> <span class="n">retrieve</span> <span class="n">inventory</span> <span class="n">backend</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cp"># 坏示例</span>
+<span class="n">If</span> <span class="n">applied</span><span class="p">,</span> <span class="n">this</span> <span class="n">commit</span> <span class="n">will</span> <span class="n">used</span> <span class="n">InventoryBackendPool</span> <span class="n">to</span> <span class="n">retrieve</span> <span class="n">inventory</span> <span class="n">backend</span>
+</pre></div>
+
+
+<h3 id="_3">首字母大写</h3>
+<div class="hlcode"><pre><span class="cp"># 好示例</span>
+<span class="n">Add</span> <span class="err">`</span><span class="n">use</span><span class="err">`</span> <span class="n">method</span> <span class="n">to</span> <span class="n">Credit</span> <span class="n">model</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cp"># 坏示例</span>
+<span class="n">add</span> <span class="err">`</span><span class="n">use</span><span class="err">`</span> <span class="n">method</span> <span class="n">to</span> <span class="n">Credit</span> <span class="n">model</span>
+</pre></div>
+
+
+<p>首字母需要大写的原因是遵守句子开头使用大写字母的语法规则。</p>
+<p>这个实践的使用可能因人而异，团队间亦可能不同，甚至不同语言的人群间也会不同。<br />
+大写与否，一个重要的点是要保持标准一致并且遵守它。</p>
+<h3 id="_4">尝试在不必查看源代码的情况下沟通变化内容</h3>
+<div class="hlcode"><pre><span class="cp"># 好示例</span>
+<span class="n">Add</span> <span class="err">`</span><span class="n">use</span><span class="err">`</span> <span class="n">method</span> <span class="n">to</span> <span class="n">Credit</span> <span class="n">model</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cp"># 坏示例</span>
+<span class="n">Add</span> <span class="err">`</span><span class="n">use</span><span class="err">`</span> <span class="n">method</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cp"># 好示例</span>
+<span class="n">Increase</span> <span class="n">left</span> <span class="n">padding</span> <span class="n">between</span> <span class="n">textbox</span> <span class="n">and</span> <span class="n">layout</span> <span class="n">frame</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cp"># 坏示例</span>
+<span class="n">Adjust</span> <span class="n">css</span>
+</pre></div>
+
+
+<p>很多场景中(例子：多次提交、多次变更和重构)这都有助于帮助代码审查者理解代码提交者当时的想法。</p>
+<h3 id="_5">使用消息体来解释『为什么』、『是什么』、『怎么做』以及附加细节信息</h3>
+<div class="hlcode"><pre><span class="cp"># 好示例</span>
+<span class="err">修复了</span> <span class="n">InventoryBackend</span> <span class="err">子类的方法名</span>
+
+<span class="n">InventoryBackend</span> <span class="err">派生出的类没有</span>
+<span class="err">遵循基类接口</span>
+
+<span class="err">它之所以运行，是因为</span> <span class="n">cart</span> <span class="err">以错误的方式</span>
+<span class="err">调用了后端实现。</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cp"># 好示例</span>
+<span class="n">Cart</span> <span class="err">中对</span> <span class="n">credit</span> <span class="err">与</span> <span class="n">json</span> <span class="err">对象间做序列化和反序列化</span>
+
+<span class="err">基于两个主要原因将</span> <span class="n">Credit</span> <span class="err">实例转化成</span> <span class="n">dict</span><span class="err">：</span>
+
+  <span class="o">-</span> <span class="n">Pickle</span> <span class="err">依赖于类的文件路径</span>
+  <span class="err">如果需要重构的话我们不想破坏任何东西</span>
+  <span class="o">-</span> <span class="n">Dict</span> <span class="err">和内建类型在默认情况下是可以通过</span> <span class="n">pickle</span> <span class="err">来序列化的</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cp"># 好示例</span>
+<span class="n">Add</span> <span class="err">`</span><span class="n">use</span><span class="err">`</span> <span class="n">method</span> <span class="n">to</span> <span class="n">Credit</span>
+
+<span class="err">从</span> <span class="n">namedtuple</span> <span class="err">变成</span> <span class="n">class</span>
+<span class="err">是因为我们需要使用新的值来设置属性（</span><span class="n">in_use_amount</span><span class="err">）</span>
+</pre></div>
+
+
+<p>提交信息的主题和正文被一个空白行分割<br />
+附加的空白行被认为是提交信息正文的一部分。</p>
+<p>类似 <code>-</code>，<code>*</code> 和 <code>\</code> 的字符是用来提高可读性的元素。</p>
+<h3 id="_6">避免通用消息或者没有任何上下文的消息</h3>
+<div class="hlcode"><pre><span class="cp"># 坏示例</span>
+<span class="n">Fix</span> <span class="n">this</span>
+
+<span class="n">Fix</span> <span class="n">stuff</span>
+
+<span class="n">It</span> <span class="n">should</span> <span class="n">work</span> <span class="n">now</span>
+
+<span class="n">Change</span> <span class="n">stuff</span>
+
+<span class="n">Adjust</span> <span class="n">css</span>
+</pre></div>
+
+
+<h3 id="_7">限制字符数量</h3>
+<p><a href="https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project#_commit_guidelines">推荐</a>主题最多使用 50 个字符，消息体最多使用 72 个字符。</p>
+<h3 id="_8">保持语言的一致性</h3>
+<p>对于项目所有者：选择一个语言并使用该语言书写所有的 commit 信息。理想情况下，它应该匹配代码注释、默认翻译区域（对于做了本地化的应用）等等。</p>
+<p>对于项目贡献者：基于已有 commit 历史书写同样语言的 commit 信息。</p>
+<div class="hlcode"><pre><span class="cp"># 好示例</span>
+<span class="n">ababab</span> <span class="n">Add</span> <span class="err">`</span><span class="n">use</span><span class="err">`</span> <span class="n">method</span> <span class="n">to</span> <span class="n">Credit</span> <span class="n">model</span>
+<span class="n">efefef</span> <span class="n">Use</span> <span class="n">InventoryBackendPool</span> <span class="n">to</span> <span class="n">retrieve</span> <span class="n">inventory</span> <span class="n">backend</span>
+<span class="n">bebebe</span> <span class="n">Fix</span> <span class="n">method</span> <span class="n">name</span> <span class="n">of</span> <span class="n">InventoryBackend</span> <span class="n">child</span> <span class="n">classes</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cp"># 好示例（葡萄牙语示例）</span>
+<span class="n">ababab</span> <span class="n">Adiciona</span> <span class="n">o</span> <span class="n">m</span><span class="err">é</span><span class="n">todo</span> <span class="err">`</span><span class="n">use</span><span class="err">`</span> <span class="n">ao</span> <span class="n">model</span> <span class="n">Credit</span>
+<span class="n">efefef</span> <span class="n">Usa</span> <span class="n">o</span> <span class="n">InventoryBackendPool</span> <span class="n">para</span> <span class="n">recuperar</span> <span class="n">o</span> <span class="n">backend</span> <span class="n">de</span> <span class="n">estoque</span>
+<span class="n">bebebe</span> <span class="n">Corrige</span> <span class="n">nome</span> <span class="n">de</span> <span class="n">m</span><span class="err">é</span><span class="n">todo</span> <span class="n">na</span> <span class="n">classe</span> <span class="n">InventoryBackend</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cp"># 坏示例（混合了英语和葡萄牙语）</span>
+<span class="n">ababab</span> <span class="n">Usa</span> <span class="n">o</span> <span class="n">InventoryBackendPool</span> <span class="n">para</span> <span class="n">recuperar</span> <span class="n">o</span> <span class="n">backend</span> <span class="n">de</span> <span class="n">estoque</span>
+<span class="n">efefef</span> <span class="n">Add</span> <span class="err">`</span><span class="n">use</span><span class="err">`</span> <span class="n">method</span> <span class="n">to</span> <span class="n">Credit</span> <span class="n">model</span>
+<span class="n">cdcdcd</span> <span class="n">Agora</span> <span class="n">vai</span>
+</pre></div>
+
+
+<h3 id="_9">模板</h3>
+<p>这是一个样板，<a href="http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html">由 Tim Pope 编写</a>，出现在文章<a href="https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project"><strong>高级 Git 手册</strong></a>。</p>
+<div class="hlcode"><pre><span class="err">简化变更内容到</span> <span class="mi">50</span> <span class="err">字符左右或者更少</span>
+
+<span class="err">如有必要，可提供更详细的说明文字。</span>
+<span class="err">将它包装成大约</span> <span class="mi">72</span> <span class="err">个字符左右。</span>
+<span class="err">在某些情况下，第一行被视为</span> <span class="n">commit</span> <span class="err">的信息主题，余下文字被认为信息正文。</span>
+<span class="err">将摘要和正文分离开的空白行很有必要（除非你忽略了整个正文）；</span>
+<span class="err">不同的工具像</span> <span class="err">`</span><span class="n">log</span><span class="err">`、`</span><span class="n">shortlog</span><span class="err">`、`</span><span class="n">rebase</span><span class="err">`，</span>
+<span class="err">可能会变得混乱，如果你同时运行两个。</span>
+
+<span class="err">解释本次</span> <span class="n">commit</span> <span class="err">正在解决的问题。</span>
+<span class="err">专注于此次变更的原因，而非如何变更（代码会解释这点）。</span>
+<span class="err">此次变更是否有副作用或其他隐性后果？</span>
+<span class="err">这里就是解释它们的地方。</span>
+
+<span class="err">空白行之后有更进一步的段落。</span>
+
+ <span class="o">-</span> <span class="err">也可以用要点符号。</span>
+
+ <span class="o">-</span> <span class="err">通常使用连字符或者星号作为要点符号，</span>
+ <span class="err">前面有一个空格，中间有空白行，</span>
+ <span class="err">但是约定惯例各不相同。</span>
+
+<span class="err">如果你使用问题跟踪，在底部放置它们的引用，</span>
+<span class="err">像下面这样：</span>
+
+<span class="nl">Resolves:</span> <span class="err">#</span><span class="mi">123</span>
+<span class="n">See</span> <span class="n">also</span><span class="o">:</span> <span class="err">#</span><span class="mi">456</span><span class="p">,</span> <span class="err">#</span><span class="mi">789</span>
+</pre></div>
+
+
+<h2 id="rebase-merge">Rebase 与 Merge</h2>
+<p>这节是 Atlassian 优秀教程中的一个 <strong>TL;DR</strong>，<a href="https://www.atlassian.com/git/tutorials/merging-vs-rebasing">“Merge 与 Rebase”</a>。</p>
+<p><img alt="" src="https://wac-cdn.atlassian.com/dam/jcr:01b0b04e-64f3-4659-af21-c4d86bc7cb0b/01.svg?cdnVersion=hq" /></p>
+<h3 id="rebase">Rebase</h3>
+<p><strong>TL;DR:</strong> 把你的分支中的 commit 一个接一个地应用到 base 分支，生成一个新树。</p>
+<p><img alt="" src="https://wac-cdn.atlassian.com/dam/jcr:5b153a22-38be-40d0-aec8-5f2fffc771e5/03.svg?cdnVersion=hq" /></p>
+<h3 id="merge">Merge</h3>
+<p><strong>TL;DR:</strong> 使用两个分支间的差异，创建新的 commit，称作（适当地）<strong>merge 提交</strong>。</p>
+<p><img alt="" src="https://wac-cdn.atlassian.com/dam/jcr:e229fef6-2c2f-4a4f-b270-e1e1baa94055/02.svg?cdnVersion=hq" /></p>
+<h3 id="merge-rebase">为什么有些人更倾向于 merge 而不是 rebase？</h3>
+<p>我尤其更倾向于 rebase 而不是 merge，理由包含：</p>
+<ul>
+<li>它生成了一个『整洁的』提交历史，没有不必要的 merge commit。</li>
+<li><strong>所见即所得</strong>，举例，在一次代码审查中，所有的变更来自对应某种特殊化的标注的 commit，避免了来隐藏在 merge commit 中的变更。</li>
+<li>更多的 merge 被提交者解决，并且每个 merge 变化对应着具备合适信息的 commit。<ul>
+<li>对 merge 类 commit 做挖掘和审核并不常见，因此避免这类操作可以确保所有的变更都归属于某个 commit。</li>
+</ul>
+</li>
+</ul>
+<h3 id="squash">何时做 squash？</h3>
+<p>“Squashing” 是处理一系列 commit 并将它们压缩为一个 commit 的过程。</p>
+<p>它在多种情况下都有用，例子：</p>
+<ul>
+<li>减少包含少量或者没有上下文的 commit（错误修正、格式化、遗忘的内容）</li>
+<li>将某些合并应用时更合理的独立变更结合起来</li>
+<li>重写<strong>正在进行中</strong>这类 commit</li>
+</ul>
+<h3 id="rebase-squash">何时避免 rebase 和 squash？</h3>
+<p>避免在多人协作的公共 commit 或者共享分支中执行 rebase 和 squash。<br />
+rebase、squash 重写历史记录、覆盖已有 commit，在共享分支的 commit 中执行以上操作（例子，推送到远程仓库的 commit 或者来自其他分支的 commit）可能造成混淆，并且由于分歧的树干和冲突大家可能会丢失他们的变更（本地和远程的）。</p>
+<h2 id="git">有用的 git 命令</h2>
+<h3 id="rebase-i">rebase -i</h3>
+<p>使用它来压制 commit，编辑信息，重写/删除/重新排序 commit，等等。</p>
+<div class="hlcode"><pre><span class="n">pick</span> <span class="mo">002</span><span class="n">a7cc</span> <span class="n">Improve</span> <span class="n">description</span> <span class="n">and</span> <span class="n">update</span> <span class="n">document</span> <span class="n">title</span>
+<span class="n">pick</span> <span class="mf">897f</span><span class="mi">66</span><span class="n">d</span> <span class="n">Add</span> <span class="n">contributing</span> <span class="n">section</span>
+<span class="n">pick</span> <span class="n">e9549cf</span> <span class="n">Add</span> <span class="n">a</span> <span class="n">section</span> <span class="n">of</span> <span class="n">Available</span> <span class="n">languages</span>
+<span class="n">pick</span> <span class="n">ec003aa</span> <span class="n">Add</span> <span class="s">&quot;What is a commit&quot;</span> <span class="n">section</span><span class="s">&quot;</span>
+<span class="n">pick</span> <span class="n">bbe5361</span> <span class="n">Add</span> <span class="n">source</span> <span class="n">referencing</span> <span class="n">as</span> <span class="n">a</span> <span class="n">point</span> <span class="n">of</span> <span class="n">help</span> <span class="n">wanted</span>
+<span class="n">pick</span> <span class="n">b71115e</span> <span class="n">Add</span> <span class="n">a</span> <span class="n">section</span> <span class="n">explaining</span> <span class="n">the</span> <span class="n">importance</span> <span class="n">of</span> <span class="n">commit</span> <span class="n">messages</span>
+<span class="n">pick</span> <span class="mi">669</span><span class="n">bf2b</span> <span class="n">Add</span> <span class="s">&quot;Good practices&quot;</span> <span class="n">section</span>
+<span class="n">pick</span> <span class="n">d8340d7</span> <span class="n">Add</span> <span class="n">capitalization</span> <span class="n">of</span> <span class="n">first</span> <span class="n">letter</span> <span class="n">practice</span>
+<span class="n">pick</span> <span class="mf">925f</span><span class="mi">42</span><span class="n">b</span> <span class="n">Add</span> <span class="n">a</span> <span class="n">practice</span> <span class="n">to</span> <span class="n">encourage</span> <span class="n">good</span> <span class="n">descriptions</span>
+<span class="n">pick</span> <span class="n">be05171</span> <span class="n">Add</span> <span class="n">a</span> <span class="n">section</span> <span class="n">showing</span> <span class="n">good</span> <span class="n">uses</span> <span class="n">of</span> <span class="n">message</span> <span class="n">body</span>
+<span class="n">pick</span> <span class="n">d115bb8</span> <span class="n">Add</span> <span class="n">generic</span> <span class="n">messages</span> <span class="n">and</span> <span class="n">column</span> <span class="n">limit</span> <span class="n">sections</span>
+<span class="n">pick</span> <span class="mi">1693840</span> <span class="n">Add</span> <span class="n">a</span> <span class="n">section</span> <span class="n">about</span> <span class="n">language</span> <span class="n">consistency</span>
+<span class="n">pick</span> <span class="mi">80</span><span class="n">c5f47</span> <span class="n">Add</span> <span class="n">commit</span> <span class="n">message</span> <span class="n">template</span>
+<span class="n">pick</span> <span class="mi">8827962</span> <span class="n">Fix</span> <span class="n">triple</span> <span class="s">&quot;m&quot;</span> <span class="n">typo</span>
+<span class="n">pick</span> <span class="mi">9</span><span class="n">b81c72</span> <span class="n">Add</span> <span class="s">&quot;Rebase vs Merge&quot;</span> <span class="n">section</span>
+
+<span class="cp"># Rebase 9e6dc75..9b81c72 onto 9e6dc75 (15 commands)</span>
+<span class="cp">#</span>
+<span class="cp"># Commands:</span>
+<span class="cp"># p, pick = use commit</span>
+<span class="cp"># r, reword = use commit, but edit the commit message</span>
+<span class="cp"># e, edit = use commit, but stop for amending</span>
+<span class="cp"># s, squash = use commit, but meld into the previous commit</span>
+<span class="cp"># f, fixup = like &quot;squash&quot;, but discard this commit&#39;s log message</span>
+<span class="cp"># x, exec = run command (the rest of the line) using shell</span>
+<span class="cp"># d, drop = remove commit</span>
+<span class="cp">#</span>
+<span class="cp"># These lines can be re-ordered; they are executed from top to bottom.</span>
+<span class="cp">#</span>
+<span class="cp"># If you remove a line here THAT COMMIT WILL BE LOST.</span>
+<span class="cp">#</span>
+<span class="cp"># However, if you remove everything, the rebase will be aborted.</span>
+<span class="cp">#</span>
+<span class="cp"># Note that empty commits are commented out</span>
+</pre></div>
+
+
+<h4 id="fixup">fixup</h4>
+<p>使用它轻松地清理 commit 并且无须一个更复杂的 rebase 操作。<br />
+<a href="http://fle.github.io/git-tip-keep-your-branch-clean-with-fixup-and-autosquash.html">这篇文章</a>提供了如何以及何时这么做的很好的示例。</p>
+<h3 id="cherry-pick">cherry-pick</h3>
+<p>它非常适用于在发布到错误分支上的 commit，无须再次编码。</p>
+<p>示例：</p>
+<div class="hlcode"><pre><span class="err">$</span> <span class="n">git</span> <span class="n">cherry</span><span class="o">-</span><span class="n">pick</span> <span class="mi">790</span><span class="n">ab21</span>
+<span class="p">[</span><span class="n">master</span> <span class="mi">094</span><span class="n">d820</span><span class="p">]</span> <span class="n">Fix</span> <span class="n">English</span> <span class="n">grammar</span> <span class="n">in</span> <span class="n">Contributing</span>
+ <span class="nl">Date:</span> <span class="n">Sun</span> <span class="n">Feb</span> <span class="mi">25</span> <span class="mi">23</span><span class="o">:</span><span class="mi">14</span><span class="o">:</span><span class="mi">23</span> <span class="mi">2018</span> <span class="o">-</span><span class="mo">0300</span>
+ <span class="mi">1</span> <span class="n">file</span> <span class="n">changed</span><span class="p">,</span> <span class="mi">1</span> <span class="n">insertion</span><span class="p">(</span><span class="o">+</span><span class="p">),</span> <span class="mi">1</span> <span class="n">deletion</span><span class="p">(</span><span class="o">-</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="addcheckoutreset-patch-p">add/checkout/reset [--patch | -p]</h3>
+<p>假设我们有以下差异：</p>
+<div class="hlcode"><pre><span class="gh">diff --git a/README.md b/README.md</span>
+<span class="gh">index 7b45277..6b1993c 100644</span>
+<span class="gd">--- a/README.md</span>
+<span class="gi">+++ b/README.md</span>
+<span class="gu">@@ -186,10 +186,13 @@ bebebe Corrige nome de método na classe InventoryBackend</span>
+ ``
+ # 坏示例（混合英语和葡萄牙语）
+ ababab Usa o InventoryBackendPool para recuperar o backend de estoque
+<span class="gd">-efefef Add `use` method to Credit model</span>
+ cdcdcd Agora vai
+ ``
+
+<span class="gi">+### 样板</span>
+<span class="gi">+</span>
+<span class="gi">+这是一个样板，[由 Tim Pope 编写](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)，出现在文章 [**高级 Git 手册**](https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project)。</span>
+<span class="gi">+</span>
+ ## 贡献
+
+ 感谢任何形式的帮助，可以帮到我的主题示例：
+<span class="gu">@@ -202,3 +205,4 @@ 感谢任何形式的帮助，可以帮到我的主题示例：</span>
+
+ - [如何书写 Git 的 Commit 信息](https://chris.beams.io/posts/git-commit/)
+ - [高级 Git 手册 —— Commit 指导](https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project#_commit_guidelines)
+<span class="gi">+- [A Note About Git Commit Messages](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)</span>
+</pre></div>
+
+
+<p>我们可以使用 <code>git add -p</code> 来只添加我们需要的补丁，无须修改已经编写的代码。<br />
+将较大的变更拆分成小的 commit 或者重置/检出特殊的变更。</p>
+<div class="hlcode"><pre><span class="err">暂存这个区块</span> <span class="p">[</span><span class="n">y</span><span class="p">,</span><span class="n">n</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">a</span><span class="p">,</span><span class="n">d</span><span class="p">,</span><span class="o">/</span><span class="p">,</span><span class="n">j</span><span class="p">,</span><span class="n">J</span><span class="p">,</span><span class="n">g</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">e</span><span class="p">,</span><span class="o">?</span><span class="p">]</span><span class="o">?</span> <span class="n">s</span>
+<span class="err">拆分成</span> <span class="mi">2</span> <span class="err">个区块</span>
+</pre></div>
+
+
+<h4 id="1">区块 1</h4>
+<div class="hlcode"><pre><span class="gu">@@ -186,7 +186,6 @@</span>
+ ``
+ # 坏示例 (mixes English and Portuguese)
+ ababab Usa o InventoryBackendPool para recuperar o backend de estoque
+<span class="gd">-efefef Add `use` method to Credit model</span>
+ cdcdcd Agora vai
+ ``
+
+暂存这个区块 [y,n,q,a,d,/,j,J,g,e,?]？
+</pre></div>
+
+
+<h4 id="2">区块 2</h4>
+<div class="hlcode"><pre><span class="gu">@@ -190,6 +189,10 @@</span>
+ ``
+ cdcdcd Agora vai
+ ``
+
+<span class="gi">+### 样板</span>
+<span class="gi">+</span>
+<span class="gi">+这是一个样板，[由 Tim Pope 编写](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)，出现在文章 [**高级 Git 手册**](https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project)。</span>
+<span class="gi">+</span>
+ ## 贡献
+
+感谢任何形式的帮助，可以帮到我的主题示例：
+暂存这个区块 [y,n,q,a,d,/,K,j,J,g,e,?]？
+</pre></div>
+
+
+<h4 id="3">区块 3</h4>
+<div class="hlcode"><pre><span class="gu">@@ -202,3 +205,4 @@ 感谢任何形式的帮助，可以帮到我的主题示例：</span>
+
+ - [如何书写 Git 的 Commit 信息](https://chris.beams.io/posts/git-commit/)
+ - [高级 Git 手册 —— Commit 指导](https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project#_commit_guidelines)
+<span class="gi">+- [关于 Git 的 Commit 信息的注意事项](https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)</span>
+</pre></div>
+
+
+<h2 id="_10">灵感、来源和进一步阅读材料</h2>
+<ul>
+<li><a href="https://chris.beams.io/posts/git-commit/">如何书写 Git 的 Commit 信息</a></li>
+<li><a href="https://git-scm.com/book/en/v2/Distributed-Git-Contributing-to-a-Project#_commit_guidelines">高级 Git 手册 —— Commit 指导</a></li>
+<li><a href="https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html">关于 Git 的 Commit 信息的注意事项</a></li>
+<li><a href="https://www.atlassian.com/git/tutorials/merging-vs-rebasing">Merge 与 Rebase</a></li>
+<li><a href="https://git-scm.com/book/en/v2/Git-Tools-Rewriting-History">高级 Git 手册 —— 重写历史</a></li>
+</ul>
 </div>
 
     </div>

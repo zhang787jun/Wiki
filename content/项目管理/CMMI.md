@@ -1,11 +1,10 @@
 ---
-title: "CMMI 软件能力成熟度集成模型"
+title: "CMMI软件能力成熟度集成模型"
 layout: page
 date: 2099-06-02 00:00
 ---
+
 [TOC]
-
-
 
 # 1. CMMI简史
 
@@ -132,8 +131,3 @@ date: 2099-06-02 00:00
 工程类：REQM，RD，TS，PI，VER，VAL
 
 支持类：MA，CM，PPQA，DAR，CAR
-
-作者：紫霞的小葡萄
-链接：https://www.jianshu.com/p/7fa60c24dcf8
-来源：简书
-简书著作权归作者所有，任何形式的转载都请联系作者获得授权并注明出处。
