@@ -131,3 +131,6 @@ date: 2099-06-02 00:00
 工程类：REQM，RD，TS，PI，VER，VAL
 
 支持类：MA，CM，PPQA，DAR，CAR
+## 参考 资料 
+
+https://wiki.mbalib.com/wiki/CMM
