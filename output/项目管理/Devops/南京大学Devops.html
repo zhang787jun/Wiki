@@ -33,9 +33,9 @@
 <li><a href="#devops">DevOps导论</a><ul>
 <li><a href="#devops_1">第一讲： DevOps 概述</a><ul>
 <li><a href="#1devops">1.DevOps 是什么？</a></li>
-<li><a href="#devops_2">DevOps 关键</a><ul>
-<li><a href="#1">1、人员</a></li>
-<li><a href="#2">2、流程</a><ul>
+<li><a href="#2-devops">2. DevOps 关键</a><ul>
+<li><a href="#1">1. 人员</a></li>
+<li><a href="#2">2. 流程</a><ul>
 <li><a href="#_1">规划和跟踪</a></li>
 <li><a href="#_2">开发</a></li>
 <li><a href="#_3">生成和测试</a></li>
@@ -43,10 +43,10 @@
 <li><a href="#_5">监视和运营</a></li>
 </ul>
 </li>
-<li><a href="#3">3、技术</a></li>
+<li><a href="#3">3.技术</a></li>
 </ul>
 </li>
-<li><a href="#devops_3">DevOps 的承诺</a></li>
+<li><a href="#devops_2">DevOps 的承诺</a></li>
 </ul>
 </li>
 <li><a href="#psp">第二讲： PSP专题</a></li>
@@ -72,23 +72,41 @@
 </li>
 </ul>
 </li>
-<li><a href="#devops_4">第七讲： DevOps工具链</a><ul>
+<li><a href="#devops_3">第七讲： DevOps工具链</a><ul>
 <li><a href="#1_1">1. 编码</a><ul>
 <li><a href="#_11">代码开发和审阅</a></li>
-<li><a href="#_12">版本控制工具、代码合并工具</a></li>
+<li><a href="#_12">版本控制工具、代码合并工具</a><ul>
+<li><a href="#git">Git</a></li>
 </ul>
 </li>
-<li><a href="#2_1">2.构建：</a></li>
+</ul>
+</li>
+<li><a href="#2_1">2.构建：</a><ul>
+<li><a href="#jenkins">Jenkins</a></li>
+<li><a href="#maven">Maven</a></li>
+</ul>
+</li>
 <li><a href="#3_1">3.测试：</a></li>
+<li><a href="#3_2">3.发布：</a><ul>
+<li><a href="#_13">发布管理</a><ul>
+<li><a href="#docker">Docker</a></li>
 </ul>
 </li>
-<li><a href="#_13">发布：</a><ul>
-<li><a href="#_14">发布管理</a></li>
 </ul>
 </li>
-<li><a href="#_15">配置：</a></li>
-<li><a href="#_16">监视：</a></li>
-<li><a href="#_17">参考资料</a></li>
+<li><a href="#4">4.配置：</a><ul>
+<li><a href="#puppet">Puppet</a></li>
+</ul>
+</li>
+<li><a href="#5">5.监视：</a><ul>
+<li><a href="#nagios">Nagios</a></li>
+<li><a href="#zabbix">Zabbix</a></li>
+<li><a href="#elk">ELK</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_14">参考资料</a></li>
 </ul>
 </li>
 </ul>
@@ -100,14 +118,14 @@
 <p><strong>DevOps是一种方法论，是一系列可以帮助开发者和运维人员在实现各自目标（Goal）的前提下，向自己的客户或用户交付最大化价值及最高质量成果的基本原则和实践。</strong><br />
 DevOps所关注的不是工具本身，也不是对chef或Docker的掌握程度。</p>
 <p>开发者和运维人员之间最大的问题在于：虽然都是企业中大型IT部门不可或缺的，但他们有着截然不同的<strong>目的（Objective）</strong>。</p>
-<h3 id="devops_2">DevOps 关键</h3>
-<h4 id="1">1、人员</h4>
+<h3 id="2-devops">2. DevOps 关键</h3>
+<h4 id="1">1. 人员</h4>
 <p>实施 DevOps 时，开发团队、IT运营团队、质量工程团队和安全团队密切合作，打破以往孤立的做法。<br />
 各专业团队之间的协调和协作得到改善，缩短了将更改提交到系统与将更改投入到生产之间的时间。</p>
 <p><img alt="" src="/attach/images/2019-08-23-11-37-43.png" /></p>
 <p><img alt="" src="../../../attach/images/2019-08-23-18-26-35.png" /></p>
 <p>另一个有趣的变化是团队的座位，功能团队有了特有的办公区域，这里大家可以随意坐，但是这个区域内所有工作相关的对话都要是和每个人相关的。在这里还可以开会，以及长期的谈话和电话。这是开放计划和办公室的完美结合。</p>
-<h4 id="2">2、流程</h4>
+<h4 id="2">2. 流程</h4>
 <h5 id="_1">规划和跟踪</h5>
 <p>使用做法和进程（如看板DashBoard和敏捷）来识别和跟踪工作。直观地跟踪工作时，利益干系人可清楚地了解开发团队的能力，并更好地规划任务并设置优先级，避免发生紧急情况。</p>
 <h5 id="_2">开发</h5>
@@ -119,9 +137,9 @@ DevOps所关注的不是工具本身，也不是对chef或Docker的掌握程度�
 <p>通过持续部署，可自动执行从代码提交到生产的全过程。自动部署代码时，客户准备就绪后便可使用新功能。</p>
 <h5 id="_5">监视和运营</h5>
 <p>投入生产后，监视提供有关应用性能和使用模式的信息。通过获取团队可快速处理的丰富的即时诊断数据，实现高可用性。缓解用户问题并收集数据，为未来开发的业务决策提供信息。借助使用“基础结构即代码”和“策略即代码”的自动化符合性策略，确保部署到生产的应用使用符合安全最佳做法的所需状态配置。</p>
-<h4 id="3">3、技术</h4>
+<h4 id="3">3.技术</h4>
 <p>开发通过工具驱动所有流程运转向前走</p>
-<h3 id="devops_3">DevOps 的承诺</h3>
+<h3 id="devops_2">DevOps 的承诺</h3>
 <p>DevOps 自动执行并加速软件交付。它使流程和产品更可靠。实施 DevOps 技术和做法时，可通过创新产品或增强现有产品，更快地为客户提供价值。</p>
 <h2 id="psp">第二讲： PSP专题</h2>
 <p>介绍一种个体的软件开发过程（Personal Software Process，PSP）<sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup></p>
@@ -131,6 +149,14 @@ DevOps所关注的不是工具本身，也不是对chef或Docker的掌握程度�
 <p>开发-&gt;版本控制-&gt;代码检查-&gt;构建-&gt;自动化测试-&gt;打包</p>
 <h3 id="_8">持续部署</h3>
 <p>打包-&gt;远程仓库发布-&gt;SIT部署</p>
+<ol>
+<li>持续交付<br />
+    3.1 从实践中学习<br />
+    3.2 自动化<br />
+    3.3 更频繁的部署<br />
+    3.4 持续交付的前提需求<br />
+    3.5 零停机部署</li>
+</ol>
 <h2 id="_9">第四讲： 软件架构演化</h2>
 <p>介绍微服务架构演化的历史和动机</p>
 <p>SOA （面向服务的架构） 编辑<br />
@@ -168,7 +194,7 @@ C.检查：根据方针、目标、计划和服务需求，对服务管理体实
 A-处置：采取措施，以持续改进服务管理体系和服务的绩效。</p>
 <p><img alt="" src="../../../attach/images/2019-08-23-14-09-59.png" /></p>
 <h4 id="4itss">4.ITSS</h4>
-<h2 id="devops_4">第七讲： DevOps工具链</h2>
+<h2 id="devops_3">第七讲： DevOps工具链</h2>
 <p>DevOps实际是一种文化上的变迁，代表了开发、运维、测试等环节之间的协作，因此DevOps工具是非常多种多样的，甚至可以由多种工具组成一个完整的DevOps工具链。此类工具可以应用于一种或多种类别，并可体现出软件开发和交付过程的不同阶段：</p>
 <p>编码：代码开发和审阅，版本控制工具、代码合并工具<br />
 构建：持续集成工具、构建状态统计工具<br />
@@ -202,6 +228,13 @@ A-处置：采取措施，以持续改进服务管理体系和服务的绩效。
 </tr>
 </tbody>
 </table>
+<h5 id="git">Git</h5>
+<ul>
+<li><a href="http://www.bootcss.com/p/git-guide/">Git Guide</a></li>
+<li><a href="https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000/">Git教程</a></li>
+<li><a href="https://progit.bootcss.com/">Pro Git</a></li>
+<li><a href="https://github.com/pcottle/learnGitBranching">Git Branch Learning</a></li>
+</ul>
 <h3 id="2_1">2.构建：</h3>
 <p>持续集成工具、构建状态统计工具<br />
  Ant, Maven, Grunt, Gradle, Make, MSBuild, Cmake</p>
@@ -229,7 +262,16 @@ A-处置：采取措施，以持续改进服务管理体系和服务的绩效。
 </table>
 <p>Ant, Maven, Grunt, Gradle, Make, MSBuild, Cmake</p>
 <p>Jenkins, TeamCity, Visual Studio, CodeShip, Bamboo</p>
-<p>Jenkins（）</p>
+<h4 id="jenkins">Jenkins</h4>
+<ul>
+<li><a href="https://www.w3cschool.cn/jenkins/">Jenkins官方文档</a></li>
+<li><a href="https://www.yiibai.com/jenkins/">Jenkins教程</a></li>
+</ul>
+<h4 id="maven">Maven</h4>
+<ul>
+<li><a href="https://book.huihoo.com/maven-the-definitive-guide/index.html">Maven权威指南</a></li>
+<li><a href="https://book.douban.com/subject/5345682/">Maven实战</a></li>
+</ul>
 <h3 id="3_1">3.测试：</h3>
 <p>软件开发中的完成测试环境所包括的环节包括：UT、IT、ST、UAT <br />
 UT = Unit Test 单元测试 <br />
@@ -240,15 +282,23 @@ UAT = User Acceptance Test 用户接受测试(俗称:验收测试)</p>
 <p>通过测试和结果确定绩效的工具</p>
 <p>Selenium, Cucumber, Jasmine, Jmeter, Junit<br />
 打包：成品仓库、应用程序部署前暂存</p>
-<h2 id="_13">发布：</h2>
+<h3 id="3_2">3.发布：</h3>
 <p>变更管理、发布审批、发布自动化<br />
  CodeDeploy, Otto, SmartFrog, RapidDeploy</p>
-<h3 id="_14">发布管理</h3>
+<h4 id="_13">发布管理</h4>
 <p>Docker, Nomad</p>
-<h2 id="_15">配置：</h2>
+<h5 id="docker">Docker</h5>
+<ul>
+<li><a href="https://github.com/gooree/awesome-devops/blob/master/docker/docker%E5%91%BD%E4%BB%A4.md">Docker命令</a></li>
+<li><a href="https://github.com/gooree/awesome-devops/blob/master/docker/dockfile%E8%AF%AD%E6%B3%95.md">Dockfile语法</a></li>
+<li><a href="https://github.com/gooree/awesome-devops/blob/master/docker/%E5%B8%B8%E7%94%A8%E5%AE%B9%E5%99%A8.md">常用Docker容器</a></li>
+<li><a href="https://github.com/gooree/awesome-devops/blob/master/docker/docker%E7%AE%A1%E7%90%86.md">Docker容器管理</a></li>
+</ul>
+<h3 id="4">4.配置：</h3>
+<h4 id="puppet">Puppet</h4>
 <p>Puppet（基础架构构建）<br />
 基础架构配置和部署，基础架构即代码工具</p>
-<h2 id="_16">监视：</h2>
+<h3 id="5">5.监视：</h3>
 <p>应用程序性能监视、最终用户体验</p>
 <table>
 <thead>
@@ -262,8 +312,17 @@ UAT = User Acceptance Test 用户接受测试(俗称:验收测试)</p>
 <td>Nagios</td>
 <td>监控系统、网络和基础架构</td>
 </tr>
+<tr>
+<td>Zabbix</td>
+<td>一个基于WEB界面的提供分布式系统监视以及网络监视功能的企业级的开源解决方案</td>
+</tr>
+<tr>
+<td>ELK</td>
+<td>集中式日志系统 ELK</td>
+</tr>
 </tbody>
 </table>
+<h4 id="nagios">Nagios</h4>
 <p>Nagios用于监控系统、网络和基础架构，提供监控功能的同时还能发出警报，当监控的系统出现异常情况，Nagios可以迅速发出警报，帮助运维团队发现问题。Nagios安装在Linux平台，可以实现以下功能：<br />
 1.网络服务（SMTP、POP3、HTTP、PING等）<br />
 2.主机的资源（进程负载、硬盘使用情况等）<br />
@@ -271,6 +330,17 @@ UAT = User Acceptance Test 用户接受测试(俗称:验收测试)</p>
 4.使用父节点的方式侦测网络中的子节点是否连接正常<br />
 5.当节点或服务出现异常，生成通知（邮件、报告或客户定义的方式）功能<br />
 6.自动的日志记录</p>
+<p>基础设施监控是一个有众多解决方案的领域，从Zabbix到Nagios到各种其他开源工具。尽管目前市场上有很多新的工具，Nagios是一个完善的监控解决方案，由于大量的贡献者社区为其创建插件，它非常高效。Nagios有能力在不同的可视化报告和展示中提供结果。</p>
+<h4 id="zabbix">Zabbix</h4>
+<ul>
+<li><a href="https://www.linuxidc.com/Linux/2017-05/143776.htm">Zabbix快速入门到精通</a></li>
+</ul>
+<h4 id="elk">ELK</h4>
+<ul>
+<li><a href="https://legacy.gitbook.com/book/dnnis/forklogstash/details">The Logstash Book</a></li>
+<li><a href="https://github.com/logstash/logstash-logback-encoder/blob/master/README.md">logstash-logback-encoder</a></li>
+<li>[ELK Stack权威指南](https://book.douban.com/subject/26651203/</li>
+</ul>
 <p>Build:<br />
 Testing:    Selenium, Cucumber, Jasmine, Jmeter, Junit<br />
 CI: Jenkins, TeamCity, Visual Studio, CodeShip, Bamboo<br />
@@ -294,8 +364,6 @@ Watir是一款Web应用程序跨平台开源测试工具。它是用于自动化
 Supergiant建立在Kubernetes之上，是一个用于容器管理的开源平台。它被用于Kubernetes在几分钟内部署在多个云上。SupergiantAPI用于简化生产部署。 借助Supergiant的打包算法，可以降低硬件成本，并且只需使用计算效率所需的硬件。</p>
 <p>Ansible</p>
 <p>Ansible自动执行与IT操作相关的各种常见任务，例如应用程序部署，配置管理和云配置。 它由Red Hat拥有。集成了许多其他著名的DevOps工具，包括Jenkins，JIRA，Git和其他许多工具。在GitHub上可以找到免费的开源版本。红帽提供三种付费版本 - 高级，标准和自助 - 价格根据所需的支持级别和生产节点数量而不同。</p>
-<p>Nagios<br />
-基础设施监控是一个有众多解决方案的领域，从Zabbix到Nagios到各种其他开源工具。尽管目前市场上有很多新的工具，Nagios是一个完善的监控解决方案，由于大量的贡献者社区为其创建插件，它非常高效。Nagios有能力在不同的可视化报告和展示中提供结果。</p>
 <p>SaltStack<br />
 SaltStack是Salt的付费企业版本。Salt是用于事件驱动编排，云控制，配置自动化和远程执行的高度灵活，功能强大且智能的开源软件。 它帮助DevOps公司编排有效的代码生产流程，并保持复杂的基础架构调整为最佳应用交付和业务服务。 Saltstack协调DevOps的价值链，帮助部署和配置动态应用程序。</p>
 <p>Chef<br />
@@ -310,9 +378,10 @@ Hudson是一个管理和监控持续测试和集成的工具。Hudson的关键�
 不管它在哪里运行，Puppet都承诺了一种标准的操作和交付软件的方式。Puppet可以自动部署，以提高可审核性、可靠性和敏捷性。Puppet的产品在完整的软件交付生命周期中提供持续的自动化和交付。最新版本的Puppet提供了节点管理器和Puppet应用程序，可帮助处理大量动态的可变的系统。</p>
 <p>结论</p>
 <p>DevOps的世界充满了独特而优秀的开源工具。与以前相比，上述流行的DevOps工具可以有效地弥合开发和生产环境之间的差距。企业可以选择适合业务需求的工具，并且可以立即看到业务运营中的差异。而且，这些不同的DevOps工具不仅可以单独运行，还可以很好地协同工作。</p>
-<p>原文链接：</p>
+<h2 id="_14">参考资料</h2>
+<p>[1]1、教材  荣国平、张贺、邵栋等  《DevOps：原理、方法与实践》，机械工业出版社，2017年第一版</p>
+<p>2、参考书  Gene Kim, Kevin Behr, George Spafford著，成小留译 《凤凰项目 ——一个IT运维的传奇故事》人民邮电出版社</p>
 <p>11 Popular Open Source DevOpsTools Worth Knowing</p>
-<h2 id="_17">参考资料</h2>
 <div class="footnote">
 <hr />
 <ol>
