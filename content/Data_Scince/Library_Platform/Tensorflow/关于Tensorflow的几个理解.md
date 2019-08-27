@@ -1309,8 +1309,52 @@ tensorflow.python.summary.writer.writer.FileWriter
 
 ## 7. 评价模型的优劣（tf.metrics）
 
+### 7.1 tf.metrics类的特点
+1. 会创建几个变量，变量会加入tf.GraphKeys.LOCAL_VARIABLES集合中所以需要初始化 LOCAL_VARIABLES
 
-tf.metrics 类都是返回两个tensor
+```python
+init_local_variables=tf.initialize_local_variables()
+sess.run (init_local_variables)
+```
+2. 返回两个tensorflow op
+```python
+# accuracy（相当于calculate_accuracy()）
+# update_op（相当于update_running_variables()）
+
+accuracy, update_op =tf.metrics.XXX
+```
+
+
+### 7.2 如何评价一个模型 
+
+#### 1 误差 error
+
+##### 1. 绝对误差
+mean_absolute_error(...): Computes the mean absolute error between the labels and predictions.
+
+##### 2. 相对误差
+mean_relative_error(...): Computes the mean relative error by normalizing with the given values.
+
+##### 3. 平方差（方差）--离散度
+mean_squared_error(...): Computes the mean squared error between the labels and predictions.
+
+4. 均方差(标准差)--离散度
+   root_mean_squared_error(...): Computes the root mean squared error between the labels and predictions.
+5. 余弦相似性
+mean_cosine_distance(...): Computes the cosine distance between the labels and predictions.
+
+
+
+
+
+
+#### 2 混合矩阵
+
+
+![avatar](https://upload-images.jianshu.io/upload_images/7252179-dbad746fab87dc42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/646/format/webp)
+
+##### 1. 准确率 (accuracy)
+   $$ accuracy =\frac{正确预测的数量}{样本总数} $$
 
 tf.metrics.accuracy()
 ```python
@@ -1327,52 +1371,35 @@ accuracy,update_op=sess.run(accuracy_op)
 # update_op ：适当增加total和count变量并且使其值匹配accuracy的操作。
 
 ``` 
-tf.metrics.precision()
-tf.metrics.recall()
-tf.metrics.mean_iou()
-###1. 如何评价一个模型 
-
-#### 1 误差 error
-
-1. 绝对误差
-mean_absolute_error(...): Computes the mean absolute error between the labels and predictions.
-
-2. 相对误差
-mean_relative_error(...): Computes the mean relative error by normalizing with the given values.
-
-3. 平方差（方差）--离散度
-mean_squared_error(...): Computes the mean squared error between the labels and predictions.
-
-4. 均方差(标准差)--离散度
-   root_mean_squared_error(...): Computes the root mean squared error between the labels and predictions.
-5. 余弦相似性
-mean_cosine_distance(...): Computes the cosine distance between the labels and predictions.
 
 
-#### 2 混合矩阵
-
-
-![avatar](https://upload-images.jianshu.io/upload_images/7252179-dbad746fab87dc42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/646/format/webp)
-
-1. 准确率 (accuracy)
-   $$ accuracy =\frac{正确预测的数量}{样本总数} $$
-   
-2. 精确率 (precision)
+##### 2. 精确率 (precision)
    模型正确预测正类别的频率
    >正类别：在二元分类中，两种可能的类别分别被标记为正类别和负类别。正类别结果是我们要测试的对象。例如，在医学检查中，正类别可以是“肿瘤”
 
-   $$precision=正例数/(正例数+假正例数)$$
+   $$precision=\frac{正例数}{(正例数+假正例数)}$$
+
+```python
+tf.metrics.precision()
+```
+
 
 3. 召回率 (recall)
    在所有可能的正类别标签中，模型正确地识别出了多少个？即
    $$recall=正例数/(正例数+假负例数)$$
+   ```python
+   tf.metrics.recall()
+
+   ```
 4. AUC：ROC 曲线下面积 (AUC, Area under the ROC Curve)
    >受试者工作特征曲线（receiver operating characteristic，简称 ROC 曲线）
 
 auc(...): Computes the approximate AUC via a Riemann sum.
 
 5. 敏感度(sensitivity)
-   
+
+
+tf.metrics.mean_iou()
 6. 特异度(specificity)
 sensitivity_at_specificity(...): Computes the specificity at a given sensitivity.
 

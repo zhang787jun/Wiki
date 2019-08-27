@@ -134,9 +134,19 @@
 </ul>
 </li>
 <li><a href="#7-tfmetrics">7. 评价模型的优劣（tf.metrics）</a><ul>
-<li><a href="#1_6">1. 如何评价一个模型</a><ul>
-<li><a href="#1-error">1 误差 error</a></li>
-<li><a href="#2_8">2 混合矩阵</a></li>
+<li><a href="#71-tfmetrics">7.1 tf.metrics类的特点</a></li>
+<li><a href="#72">7.2 如何评价一个模型</a><ul>
+<li><a href="#1-error">1 误差 error</a><ul>
+<li><a href="#1_6">1. 绝对误差</a></li>
+<li><a href="#2_8">2. 相对误差</a></li>
+<li><a href="#3-">3. 平方差（方差）--离散度</a></li>
+</ul>
+</li>
+<li><a href="#2_9">2 混合矩阵</a><ul>
+<li><a href="#1-accuracy">1. 准确率 (accuracy)</a></li>
+<li><a href="#2-precision">2. 精确率 (precision)</a></li>
+</ul>
+</li>
 <li><a href="#3_4">3 基本统计量</a></li>
 </ul>
 </li>
@@ -194,7 +204,7 @@
 <li><a href="#152">15.2 变量的操作</a><ul>
 <li><a href="#1521">15.2.1 变量初始化</a><ul>
 <li><a href="#1_9">1. 确定值初始化</a></li>
-<li><a href="#2_9">2. 随机初始化</a><ul>
+<li><a href="#2_10">2. 随机初始化</a><ul>
 <li><a href="#21">2.1 正态分布</a></li>
 <li><a href="#22_1">2.2 均匀分布</a></li>
 </ul>
@@ -217,7 +227,7 @@
 <li><a href="#1522">15.2.2 变量赋值</a></li>
 <li><a href="#1523">15.2.3 变量恢复与保存</a><ul>
 <li><a href="#1_10">1. 变量保存</a></li>
-<li><a href="#2_10">2. 变量加载回复</a></li>
+<li><a href="#2_11">2. 变量加载回复</a></li>
 </ul>
 </li>
 <li><a href="#1524">15.2.4 获得变量</a></li>
@@ -237,7 +247,7 @@
 <li><a href="#164">16.4 评估器的选项设置</a><ul>
 <li><a href="#1641">16.4.1 记录内容选项</a><ul>
 <li><a href="#1_11">1. 记录时间和内存消耗</a></li>
-<li><a href="#2_11">2. 记录浮点运算情况</a></li>
+<li><a href="#2_12">2. 记录浮点运算情况</a></li>
 </ul>
 </li>
 <li><a href="#1642">16.4.2 输出选项</a></li>
@@ -255,7 +265,7 @@
 </li>
 <li><a href="#164_1">16.4 常用实例</a><ul>
 <li><a href="#1-flop">1. 浮点运算次数 flop</a></li>
-<li><a href="#2_12">2. 总参数量</a></li>
+<li><a href="#2_13">2. 总参数量</a></li>
 <li><a href="#3_6">3. 统计模型内存和耗时情况</a></li>
 <li><a href="#4-profile">4. 给出使用profile工具给出建议</a></li>
 </ul>
@@ -1657,7 +1667,43 @@ TFLite：基于flatbuf对模型进行优化，可以直接部署到Android、iOS
 
 
 <h2 id="7-tfmetrics">7. 评价模型的优劣（tf.metrics）</h2>
-<p>tf.metrics 类都是返回两个tensor</p>
+<h3 id="71-tfmetrics">7.1 tf.metrics类的特点</h3>
+<ol>
+<li>会创建几个变量，变量会加入tf.GraphKeys.LOCAL_VARIABLES集合中所以需要初始化 LOCAL_VARIABLES</li>
+</ol>
+<div class="hlcode"><pre><span class="n">init_local_variables</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">initialize_local_variables</span><span class="p">()</span>
+<span class="n">sess</span><span class="o">.</span><span class="n">run</span> <span class="p">(</span><span class="n">init_local_variables</span><span class="p">)</span>
+</pre></div>
+
+
+<ol>
+<li>返回两个tensorflow op</li>
+</ol>
+<div class="hlcode"><pre><span class="c"># accuracy（相当于calculate_accuracy()）</span>
+<span class="c"># update_op（相当于update_running_variables()）</span>
+
+<span class="n">accuracy</span><span class="p">,</span> <span class="n">update_op</span> <span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">XXX</span>
+</pre></div>
+
+
+<h3 id="72">7.2 如何评价一个模型</h3>
+<h4 id="1-error">1 误差 error</h4>
+<h5 id="1_6">1. 绝对误差</h5>
+<p>mean_absolute_error(...): Computes the mean absolute error between the labels and predictions.</p>
+<h5 id="2_8">2. 相对误差</h5>
+<p>mean_relative_error(...): Computes the mean relative error by normalizing with the given values.</p>
+<h5 id="3-">3. 平方差（方差）--离散度</h5>
+<p>mean_squared_error(...): Computes the mean squared error between the labels and predictions.</p>
+<ol>
+<li>均方差(标准差)--离散度<br />
+   root_mean_squared_error(...): Computes the root mean squared error between the labels and predictions.</li>
+<li>余弦相似性<br />
+mean_cosine_distance(...): Computes the cosine distance between the labels and predictions.</li>
+</ol>
+<h4 id="2_9">2 混合矩阵</h4>
+<p><img alt="avatar" src="https://upload-images.jianshu.io/upload_images/7252179-dbad746fab87dc42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/646/format/webp" /></p>
+<h5 id="1-accuracy">1. 准确率 (accuracy)</h5>
+<p>$$ accuracy =\frac{正确预测的数量}{样本总数} $$</p>
 <p>tf.metrics.accuracy()</p>
 <div class="hlcode"><pre><span class="n">real_label</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">]])</span> <span class="c"># [1] [1] [1]</span>
 <span class="n">predict_label</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="c"># [1] [1] [1]</span>
@@ -1673,72 +1719,41 @@ TFLite：基于flatbuf对模型进行优化，可以直接部署到Android、iOS
 </pre></div>
 
 
-<p>tf.metrics.precision()<br />
-tf.metrics.recall()<br />
-tf.metrics.mean_iou()</p>
-<h3 id="1_6">1. 如何评价一个模型</h3>
-<h4 id="1-error">1 误差 error</h4>
-<ol>
-<li>
-<p>绝对误差<br />
-mean_absolute_error(...): Computes the mean absolute error between the labels and predictions.</p>
-</li>
-<li>
-<p>相对误差<br />
-mean_relative_error(...): Computes the mean relative error by normalizing with the given values.</p>
-</li>
-<li>
-<p>平方差（方差）--离散度<br />
-mean_squared_error(...): Computes the mean squared error between the labels and predictions.</p>
-</li>
-<li>
-<p>均方差(标准差)--离散度<br />
-   root_mean_squared_error(...): Computes the root mean squared error between the labels and predictions.</p>
-</li>
-<li>余弦相似性<br />
-mean_cosine_distance(...): Computes the cosine distance between the labels and predictions.</li>
-</ol>
-<h4 id="2_8">2 混合矩阵</h4>
-<p><img alt="avatar" src="https://upload-images.jianshu.io/upload_images/7252179-dbad746fab87dc42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/646/format/webp" /></p>
-<ol>
-<li>
-<p>准确率 (accuracy)<br />
-   $$ accuracy =\frac{正确预测的数量}{样本总数} $$</p>
-</li>
-<li>
-<p>精确率 (precision)<br />
-   模型正确预测正类别的频率</p>
+<h5 id="2-precision">2. 精确率 (precision)</h5>
+<p>模型正确预测正类别的频率</p>
 <blockquote>
 <p>正类别：在二元分类中，两种可能的类别分别被标记为正类别和负类别。正类别结果是我们要测试的对象。例如，在医学检查中，正类别可以是“肿瘤”</p>
 </blockquote>
-</li>
-</ol>
-<p>$$precision=正例数/(正例数+假正例数)$$</p>
+<p>$$precision=\frac{正例数}{(正例数+假正例数)}$$</p>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">precision</span><span class="p">()</span>
+</pre></div>
+
+
 <ol>
 <li>召回率 (recall)<br />
    在所有可能的正类别标签中，模型正确地识别出了多少个？即<br />
-   $$recall=正例数/(正例数+假负例数)$$</li>
-<li>AUC：ROC 曲线下面积 (AUC, Area under the ROC Curve)<blockquote>
+   $$recall=正例数/(正例数+假负例数)$$<br />
+   ```python<br />
+   tf.metrics.recall()</li>
+</ol>
+<p>```<br />
+4. AUC：ROC 曲线下面积 (AUC, Area under the ROC Curve)</p>
+<blockquote>
 <p>受试者工作特征曲线（receiver operating characteristic，简称 ROC 曲线）</p>
 </blockquote>
-</li>
-</ol>
 <p>auc(...): Computes the approximate AUC via a Riemann sum.</p>
 <ol>
-<li>
-<p>敏感度(sensitivity)</p>
-</li>
-<li>
-<p>特异度(specificity)<br />
+<li>敏感度(sensitivity)</li>
+</ol>
+<p>tf.metrics.mean_iou()<br />
+6. 特异度(specificity)<br />
 sensitivity_at_specificity(...): Computes the specificity at a given sensitivity.</p>
-</li>
-<li>
-<p>数量<br />
+<ol>
+<li>数量<br />
 false_negatives(...): Computes the total number of false negatives.<br />
 false_positives(...): Sum the weights of false positives.<br />
 true_negatives(...): Sum the weights of true_negatives.<br />
-true_positives(...): Sum the weights of true_positives.</p>
-</li>
+true_positives(...): Sum the weights of true_positives.</li>
 </ol>
 <h4 id="3_4">3 基本统计量</h4>
 <p>mean_iou(...): Calculate per-step mean Intersection-Over-Union (mIOU).</p>
@@ -2559,7 +2574,7 @@ $$</p>
 </pre></div>
 
 
-<h5 id="2_9">2. 随机初始化</h5>
+<h5 id="2_10">2. 随机初始化</h5>
 <h6 id="21">2.1 正态分布</h6>
 <ol>
 <li>标准正态分布</li>
@@ -2784,7 +2799,7 @@ tf.assign_sub</p>
 </pre></div>
 
 
-<h5 id="2_10">2. 变量加载回复</h5>
+<h5 id="2_11">2. 变量加载回复</h5>
 <div class="hlcode"><pre><span class="n">saver</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">import_meta_graph</span><span class="p">(</span><span class="err">“</span><span class="n">save</span><span class="o">/</span><span class="n">model</span><span class="o">.</span><span class="n">ckpt</span><span class="o">.</span><span class="n">meta</span><span class="err">”</span><span class="p">)</span>
 <span class="n">dir_path</span><span class="o">=</span><span class="s">&quot;./model&quot;</span> <span class="c"># 文件夹地址</span>
 <span class="n">model_file</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">latest_checkpoint</span><span class="p">(</span><span class="n">dir_path</span><span class="p">)</span>
@@ -3007,7 +3022,7 @@ tf.tables_initializer</p>
 </pre></div>
 
 
-<h5 id="2_11">2. 记录浮点运算情况</h5>
+<h5 id="2_12">2. 记录浮点运算情况</h5>
 <div class="hlcode"><pre><span class="n">ProfileOptionBuilder</span><span class="o">.</span><span class="n">float_operation</span><span class="p">()</span>
 </pre></div>
 
@@ -3093,7 +3108,7 @@ tf.tables_initializer</p>
 </pre></div>
 
 
-<h4 id="2_12">2. 总参数量</h4>
+<h4 id="2_13">2. 总参数量</h4>
 <div class="hlcode"><pre><span class="c">## 统计参数量</span>
 <span class="n">opts</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">ProfileOptionBuilder</span><span class="o">.</span><span class="n">trainable_variables_parameter</span><span class="p">()</span>
 <span class="n">param_stats</span> <span class="o">=</span> <span class="n">profiler</span><span class="o">.</span><span class="n">profile_name_scope</span><span class="p">(</span><span class="n">options</span><span class="o">=</span><span class="n">opts</span><span class="p">)</span>

@@ -52,17 +52,21 @@
 </ul>
 </li>
 <li><a href="#_5">进阶修饰器</a><ul>
-<li><a href="#1_2">1. 原函数有参数传入</a></li>
-<li><a href="#2_1">2. 传入形参的修饰器</a></li>
-<li><a href="#1_3">1.装饰器有参数传入</a></li>
+<li><a href="#1_2">1. 原函数有参数传入</a><ul>
+<li><a href="#_6">原函数有确定参数输入</a></li>
+<li><a href="#_7">原函数可变参数输入</a></li>
+<li><a href="#_8">原函数字典参数输入</a></li>
 </ul>
 </li>
-<li><a href="#_6">装饰器顺序</a></li>
-<li><a href="#3">3. 装饰器类</a></li>
+<li><a href="#2_1">2.装饰器有参数传入</a></li>
 </ul>
 </li>
-<li><a href="#_7">类</a></li>
-<li><a href="#_8">参考资料</a></li>
+<li><a href="#_9">装饰器顺序</a></li>
+<li><a href="#_10">装饰器类</a></li>
+</ul>
+</li>
+<li><a href="#_11">类</a></li>
+<li><a href="#_12">参考资料</a></li>
 </ul>
 </li>
 </ul>
@@ -91,16 +95,11 @@
 把函数名当做参数传给另外一个函数，在另外一个函数中通过参数调用执行</p>
 <div class="hlcode"><pre><span class="c">#!/usr/bin/python3</span>
 
-
 <span class="k">def</span> <span class="nf">func_x</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="mi">2</span>
 
-
-
 <span class="k">def</span> <span class="nf">func_y</span><span class="p">(</span><span class="n">y</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">y</span> <span class="o">*</span> <span class="mi">3</span>
-
-
 
 <span class="k">def</span> <span class="nf">func_z</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
     <span class="c"># 等价于 return func_x(5) + func_y(3)</span>
@@ -205,7 +204,6 @@
 
 <p>这显然不合逻辑。<strong>为了限制score的范围</strong>，可以通过一个set_score()方法来设置成绩，再通过一个get_score()来获取成绩，这样，在set_score()方法里，就可以检查参数：</p>
 <div class="hlcode"><pre><span class="n">class</span> <span class="n">Student</span><span class="p">(</span><span class="n">object</span><span class="p">)</span><span class="o">:</span>
-
     <span class="n">def</span> <span class="n">get_score</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="o">:</span>
          <span class="k">return</span> <span class="n">self</span><span class="p">.</span><span class="n">_score</span>
 
@@ -256,58 +254,58 @@
 <p>上面的birth是可读写属性，而age就是一个只读属性，因为age可以根据birth和当前时间计算出来</p>
 <h3 id="_5">进阶修饰器</h3>
 <h4 id="1_2">1. 原函数有参数传入</h4>
-<p>装饰器需要带参数就再封装一层 </p>
-<div class="hlcode"><pre><span class="c">#------[1] 明确参数输入</span>
-<span class="c"># 非语法糖</span>
-<span class="k">def</span> <span class="nf">orifunc</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-    <span class="n">rint</span><span class="p">(</span><span class="s">&quot;i am </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+<p>python 中函数的参数分为<br />
+1.必选参数<br />
+2.默认参数<br />
+3.可变参数 <em>args  仅仅在参数前面加了一个</em>号。<br />
+4.关键字参数 **kw</p>
+<h6 id="_6">原函数有确定参数输入</h6>
+<div class="hlcode"><pre><span class="c"># 非语法糖</span>
+<span class="k">def</span> <span class="nf">use_logging</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is running&quot;</span> <span class="o">%</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>   <span class="c"># 把 orifunc 当做参数传递进来时，执行func()就相当于执行 orifunc()</span>
+    <span class="k">return</span> <span class="n">wrapper</span>
 
-<span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+<span class="k">def</span> <span class="nf">orifunc</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;i am {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
+<span class="c"># 因为装饰器 use_logging(foo) 返回的时函数对象 wrapper，这条语句相当于  orifunc = wrapper</span>
+<span class="c"># orifunc()就相当于执行 wrapper()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">orifunc</span> <span class="o">=</span> <span class="n">use_logging</span><span class="p">(</span><span class="n">orifunc</span><span class="p">)</span> 
+<span class="o">&gt;&gt;&gt;</span> <span class="n">orifunc</span><span class="p">(</span><span class="s">&quot;me&quot;</span><span class="p">)</span>
+
+
+<span class="c"># 语法糖</span>
+<span class="k">def</span> <span class="nf">use_logging</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is running&quot;</span> <span class="o">%</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">wrapper</span>
 
-<span class="c"># 语法糖</span>
-<span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is running&quot;</span> <span class="o">%</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">wrapper</span>
-
-<span class="c">#------[2] 参数列表输入</span>
-
-<span class="nd">@wrapper</span>
+<span class="nd">@use_logging</span>
 <span class="k">def</span> <span class="nf">orifunc</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-    <span class="n">rint</span><span class="p">(</span><span class="s">&quot;i am </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;i am {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
 
-
-
-<span class="k">def</span> <span class="nf">nominally_decorator</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kw</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">core_decorator</span><span class="p">(</span><span class="n">orifunc</span><span class="p">):</span>
-        <span class="c"># do something here (register...)</span>
-        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">arguments</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="c"># do something before (preprocess)</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">orifunc</span><span class="p">()</span>
-            <span class="c"># do something after (postprocess)</span>
-            <span class="k">return</span> <span class="n">result</span>
-        <span class="k">return</span> <span class="n">wrapper</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">orifunc</span><span class="p">(</span><span class="s">&quot;me&quot;</span><span class="p">)</span>
 </pre></div>
 
 
-<h4 id="2_1">2. 传入形参的修饰器</h4>
-<div class="hlcode"><pre><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;i am </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
+<h6 id="_7">原函数可变参数输入</h6>
+<div class="hlcode"><pre><span class="c">#------[2] 参数列表输入</span>
 
-<span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is running&quot;</span> <span class="o">%</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">wrapper</span>
+
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;i am </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
 
 <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
         <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is running&quot;</span> <span class="o">%</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">wrapper</span>
+</pre></div>
 
-<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+
+<h6 id="_8">原函数字典参数输入</h6>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
     <span class="k">print</span><span class="p">(</span><span class="s">&quot;I am </span><span class="si">%s</span><span class="s">, age </span><span class="si">%s</span><span class="s">, height </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">age</span><span class="p">,</span> <span class="n">height</span><span class="p">))</span>
 
 <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -318,61 +316,73 @@
 </pre></div>
 
 
-<h4 id="1_3">1.装饰器有参数传入</h4>
-<p>有多种方式让装饰器接受可选参数。根据你是想使用位置参数、关键字参数还是两者皆是，需要使用稍微不同的模式。如下我将展示一种接受一个可选关键字参数的方式：</p>
-<p>1.定义三层闭包<br />
-2.最外层形参用来接收装饰器参数<br />
-3.第二层用来接受被修饰的装饰器函数<br />
-4.第三层用来被装饰函数的参数<br />
-5.其中在第二层对传入的装饰器参数进行重新定义</p>
-<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+<h4 id="2_1">2.装饰器有参数传入</h4>
+<p>有多种方式让装饰器接受可选参数。根据你是想使用位置参数、关键字参数还是两者皆是，需要使用稍微不同的模式。如下我将展示一种接受一个可选关键字参数的方式：<br />
+1.定义3层闭包<br />
+2.Layer 1 最外层形参用来接收装饰器参数<br />
+3.Layer 2 第二层用来接受被修饰的原函数<br />
+4.Layer 3 第三层用来传递原函数的参数</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">nominally_decorator</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kw</span><span class="p">):</span>       
+    <span class="c"># Layer 1  *args,**kw 为nominally_decorator的参数</span>
+    <span class="k">def</span> <span class="nf">core_decorator</span><span class="p">(</span><span class="n">orifunc</span><span class="p">):</span>           
+        <span class="c"># Layer 2 第二层用来接受被修饰的原函数</span>
+        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">arguments_for_orifunc</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs_for_orifunc</span><span class="p">):</span> 
+            <span class="c"># Layer 3 Layer 3 第三层用来传递原函数的参数</span>
 
-<span class="n">GLOBAL_NAME</span> <span class="o">=</span> <span class="s">&quot;Brian&quot;</span>
+            <span class="c"># do something before (preprocess)</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">orifunc</span><span class="p">(</span><span class="o">*</span><span class="n">arguments_for_orifunc</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs_for_orifunc</span><span class="p">)</span>
+            <span class="c"># do something after (postprocess)</span>
 
-<span class="k">def</span> <span class="nf">print_name</span><span class="p">(</span><span class="n">function</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">GLOBAL_NAME</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">actual_decorator</span><span class="p">(</span><span class="n">function</span><span class="p">):</span>
-        <span class="nd">@wraps</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
-        <span class="k">def</span> <span class="nf">returned_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="k">print</span> <span class="s">&quot;My name is &quot;</span> <span class="o">+</span> <span class="n">name</span>
-            <span class="k">return</span> <span class="n">function</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">returned_func</span>
-
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">function</span><span class="p">:</span>    <span class="c"># User passed in a name argument</span>
-        <span class="k">def</span> <span class="nf">waiting_for_func</span><span class="p">(</span><span class="n">function</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">actual_decorator</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">waiting_for_func</span>
-
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">actual_decorator</span><span class="p">(</span><span class="n">function</span><span class="p">)</span>
-
-<span class="nd">@print_name</span>
-<span class="k">def</span> <span class="nf">a_function</span><span class="p">():</span>
-    <span class="k">print</span> <span class="s">&quot;I like the name!&quot;</span>
-
-<span class="nd">@print_name</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;Matt&#39;</span><span class="p">)</span>
-<span class="k">def</span> <span class="nf">another_function</span><span class="p">():</span>
-    <span class="k">print</span> <span class="s">&quot;Hey, that&#39;s new!&quot;</span>
-
-<span class="n">a_function</span><span class="p">()</span>
-<span class="c"># &gt;&gt; My name is Brian</span>
-<span class="c"># &gt;&gt; I like that name!</span>
-
-<span class="n">another_function</span><span class="p">()</span>
-<span class="c"># &gt;&gt; My name is Matt</span>
-<span class="c"># &gt;&gt; Hey, that&#39;s new!</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">return</span> <span class="n">wrapper</span>
+    <span class="k">return</span> <span class="n">core_decorator</span>
 </pre></div>
 
 
-<h3 id="_6">装饰器顺序</h3>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">signature</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
+
+<span class="k">def</span> <span class="nf">typeassert</span><span class="p">(</span><span class="o">*</span><span class="n">ty_args</span><span class="p">,</span> <span class="o">**</span><span class="n">ty_kwargs</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">decorate</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+        <span class="c"># If in optimized mode, disable type checking 关闭类型检测模式</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">__debug__</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">func</span>
+        <span class="c"># 通过signature方法，获取函数形参：name, age, height</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="n">bound_types</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">bind_partial</span><span class="p">(</span><span class="o">*</span><span class="n">ty_args</span><span class="p">,</span> <span class="o">**</span><span class="n">ty_kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">arguments</span>
+
+        <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">bound_values</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="c"># Enforce type assertions across supplied arguments</span>
+            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">bound_values</span><span class="o">.</span><span class="n">arguments</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">bound_types</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">bound_types</span><span class="p">[</span><span class="n">name</span><span class="p">]):</span>
+                        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                            <span class="s">&#39;Argument {} must be {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">bound_types</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+                            <span class="p">)</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">wrapper</span>
+    <span class="k">return</span> <span class="n">decorate</span>
+</pre></div>
+
+
+<h3 id="_9">装饰器顺序</h3>
 <p>一个函数还可以同时定义多个装饰器，比如：</p>
-<p>@a<br />
-@b<br />
-@c<br />
-def f ():<br />
-    pass<br />
-它的执行顺序是从里到外，最先调用最里层的装饰器，最后调用最外层的装饰器，它等效于</p>
-<p>f = a(b(c(f)))</p>
-<h3 id="3">3. 装饰器类</h3>
+<div class="hlcode"><pre><span class="nd">@a</span>
+<span class="nd">@b</span>
+<span class="nd">@c</span>
+<span class="k">def</span> <span class="nf">f</span> <span class="p">():</span>
+    <span class="k">pass</span>
+</pre></div>
+
+
+<p>它的执行顺序是从里到外，最先调用最里层的装饰器，最后调用最外层的装饰器，它等效于</p>
+<div class="hlcode"><pre><span class="n">f</span> <span class="o">=</span> <span class="n">a</span><span class="p">(</span><span class="n">b</span><span class="p">(</span><span class="n">c</span><span class="p">(</span><span class="n">f</span><span class="p">)))</span>
+</pre></div>
+
+
+<h3 id="_10">装饰器类</h3>
 <p>仅装饰器可以装饰一个类，并且装饰器也可以是一个类！对于装饰器的唯一要求就是它的返回值必须可调用(callable)。这意味着装饰器必须实现 <strong>call</strong> 魔术方法，当你调用一个对象时，会隐式调用这个方法。函数当然是隐式设置这个方法的。我们重新将 identity_decorator 创建为一个类来看看它是如何工作的。</p>
 <div class="hlcode"><pre><span class="k">class</span> <span class="nc">IdentityDecorator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">):</span>
@@ -391,7 +401,7 @@ def f ():<br />
 </pre></div>
 
 
-<h2 id="_7">类</h2>
+<h2 id="_11">类</h2>
 <div class="hlcode"><pre><span class="n">obj</span> <span class="o">=</span> <span class="mi">12</span> 
 <span class="c"># obj can be an object from any class, even object.__new__(object)</span>
 
@@ -434,7 +444,7 @@ def f ():<br />
 </pre></div>
 
 
-<h2 id="_8">参考资料</h2>
+<h2 id="_12">参考资料</h2>
 <div class="footnote">
 <hr />
 <ol>

@@ -7,7 +7,7 @@ date: 2099-06-02 00:00
 
 # python中特有数据结构及特性
 
-##python 实现经典数据结构
+## python 实现经典数据结构
 参考：https://github.com/TheAlgorithms/Python/tree/master/data_structures
 
 
@@ -36,21 +36,14 @@ __exit__
 什么是**高阶函数**？（不是高级函数）
 把函数名当做参数传给另外一个函数，在另外一个函数中通过参数调用执行
 
-
-
 ```python 
 #!/usr/bin/python3
-
 
 def func_x(x):
     return x * 2
 
- 
-
 def func_y(y):
     return y * 3
-
- 
 
 def func_z(x, y):
     # 等价于 return func_x(5) + func_y(3)
@@ -179,7 +172,6 @@ s.score = 9999 # 成绩不能大于100 ，参数值不合理
 这显然不合逻辑。**为了限制score的范围**，可以通过一个set_score()方法来设置成绩，再通过一个get_score()来获取成绩，这样，在set_score()方法里，就可以检查参数：
 ```
 class Student(object):
-
     def get_score(self):
          return self._score
 
@@ -229,70 +221,62 @@ class Student(object):
 ```
 上面的birth是可读写属性，而age就是一个只读属性，因为age可以根据birth和当前时间计算出来
 
-
-
-
 ### 进阶修饰器 
-
-
 #### 1. 原函数有参数传入
+python 中函数的参数分为
+1.必选参数
+2.默认参数
+3.可变参数 *args  仅仅在参数前面加了一个*号。
+4.关键字参数 **kw
 
-装饰器需要带参数就再封装一层 
-
+###### 原函数有确定参数输入
 ```python
-#------[1] 明确参数输入
 # 非语法糖
-def orifunc(name):
-    rint("i am %s" % name)
+def use_logging(func):
+    def wrapper(name):
+        logging.warn("%s is running" % func.__name__)
+        return func(name)   # 把 orifunc 当做参数传递进来时，执行func()就相当于执行 orifunc()
+    return wrapper
 
-def wrapper(name):
+def orifunc(name):
+    print("i am {}".format(name))
+# 因为装饰器 use_logging(foo) 返回的时函数对象 wrapper，这条语句相当于  orifunc = wrapper
+# orifunc()就相当于执行 wrapper()
+>>> orifunc = use_logging(orifunc) 
+>>> orifunc("me")
+
+
+# 语法糖
+def use_logging(func):
+    def wrapper(name):
         logging.warn("%s is running" % func.__name__)
         return func(name)
     return wrapper
 
-# 语法糖
-def wrapper(*args):
-        logging.warn("%s is running" % func.__name__)
-        return func(*args)
-    return wrapper
+@use_logging
+def orifunc(name):
+    print("i am {}".format(name))
 
+>>> orifunc("me")
+```
+###### 原函数可变参数输入
+
+```python
 #------[2] 参数列表输入
 
-@wrapper
-def orifunc(name):
-    rint("i am %s" % name)
 
-
-
-def nominally_decorator(*args,**kw):
-    def core_decorator(orifunc):
-        # do something here (register...)
-        def wrapper(*arguments, **kwargs):
-            # do something before (preprocess)
-            result = orifunc()
-            # do something after (postprocess)
-            return result
-        return wrapper
-    
-```
-
-
-
-#### 2. 传入形参的修饰器 
-```python
 def foo(name):
     print("i am %s" % name)
 
-def wrapper(name):
-        logging.warn("%s is running" % func.__name__)
-        return func(name)
-    return wrapper
-
 def wrapper(*args):
         logging.warn("%s is running" % func.__name__)
         return func(*args)
     return wrapper
 
+```
+###### 原函数字典参数输入
+
+```python
 def foo(name, age=None, height=None):
     print("I am %s, age %s, height %s" % (name, age, height))
 
@@ -304,69 +288,77 @@ def wrapper(*args, **kwargs):
 
 ```
 
-####　1.装饰器有参数传入
+
+####　2.装饰器有参数传入
 有多种方式让装饰器接受可选参数。根据你是想使用位置参数、关键字参数还是两者皆是，需要使用稍微不同的模式。如下我将展示一种接受一个可选关键字参数的方式：
+1.定义3层闭包
+2.Layer 1 最外层形参用来接收装饰器参数
+3.Layer 2 第二层用来接受被修饰的原函数
+4.Layer 3 第三层用来传递原函数的参数
 
-
-1.定义三层闭包
-2.最外层形参用来接收装饰器参数
-3.第二层用来接受被修饰的装饰器函数
-4.第三层用来被装饰函数的参数
-5.其中在第二层对传入的装饰器参数进行重新定义
+```python
+def nominally_decorator(*args,**kw):       
+    # Layer 1  *args,**kw 为nominally_decorator的参数
+    def core_decorator(orifunc):           
+        # Layer 2 第二层用来接受被修饰的原函数
+        def wrapper(*arguments_for_orifunc, **kwargs_for_orifunc): 
+            # Layer 3 Layer 3 第三层用来传递原函数的参数
+            
+            # do something before (preprocess)
+            result = orifunc(*arguments_for_orifunc, **kwargs_for_orifunc)
+            # do something after (postprocess)
+            
+            return result
+        return wrapper
+    return core_decorator
+```
 
 
 ```python
+from inspect import signature
 from functools import wraps
 
-GLOBAL_NAME = "Brian"
+def typeassert(*ty_args, **ty_kwargs):
+    def decorate(func):
+        # If in optimized mode, disable type checking 关闭类型检测模式
+        if not __debug__:
+            return func
+        # 通过signature方法，获取函数形参：name, age, height
+        sig = signature(func)
+        bound_types = sig.bind_partial(*ty_args, **ty_kwargs).arguments
 
-def print_name(function=None, name=GLOBAL_NAME):
-    def actual_decorator(function):
-        @wraps(function)
-        def returned_func(*args, **kwargs):
-            print "My name is " + name
-            return function(*args, **kwargs)
-        return returned_func
-
-    if not function:    # User passed in a name argument
-        def waiting_for_func(function):
-            return actual_decorator(function)
-        return waiting_for_func
-
-    else:
-        return actual_decorator(function)
-
-@print_name
-def a_function():
-    print "I like the name!"
-
-@print_name(name='Matt')
-def another_function():
-    print "Hey, that's new!"
-
-a_function()
-# >> My name is Brian
-# >> I like that name!
-
-another_function()
-# >> My name is Matt
-# >> Hey, that's new!
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            bound_values = sig.bind(*args, **kwargs)
+            # Enforce type assertions across supplied arguments
+            for name, value in bound_values.arguments.items():
+                if name in bound_types:
+                    if not isinstance(value, bound_types[name]):
+                        raise TypeError(
+                            'Argument {} must be {}'.format(name, bound_types[name])
+                            )
+            return func(*args, **kwargs)
+        return wrapper
+    return decorate
 ```
+
 
 
 ### 装饰器顺序
 
 一个函数还可以同时定义多个装饰器，比如：
-
+```python
 @a
 @b
 @c
 def f ():
     pass
+```
 它的执行顺序是从里到外，最先调用最里层的装饰器，最后调用最外层的装饰器，它等效于
-
+```
 f = a(b(c(f)))
-###3. 装饰器类
+```
+### 装饰器类
 
 仅装饰器可以装饰一个类，并且装饰器也可以是一个类！对于装饰器的唯一要求就是它的返回值必须可调用(callable)。这意味着装饰器必须实现 __call__ 魔术方法，当你调用一个对象时，会隐式调用这个方法。函数当然是隐式设置这个方法的。我们重新将 identity_decorator 创建为一个类来看看它是如何工作的。
 ```python

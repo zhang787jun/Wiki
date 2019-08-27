@@ -89,8 +89,12 @@
 </ul>
 </li>
 <li><a href="#2">2. 数据预处理</a><ul>
-<li><a href="#21">2.1 数据清洗</a><ul>
-<li><a href="#211">2.1.1 缺失数据的处理:</a></li>
+<li><a href="#21">2.1 缺失数据的处理</a><ul>
+<li><a href="#1_1">1.忽略</a></li>
+<li><a href="#2_1">2. 人工填写缺失值</a></li>
+<li><a href="#3">3. 使用一个全部变量填充缺失值</a></li>
+<li><a href="#4">4. 使用属性的中心度量（如均值或中位数）填充</a></li>
+<li><a href="#5">5. 最可能的数据填充</a></li>
 </ul>
 </li>
 <li><a href="#22">2.2 异常值与重复数据检测</a><ul>
@@ -106,15 +110,26 @@
 </li>
 <li><a href="#23">2.3 类型转换与采样</a><ul>
 <li><a href="#231">2.3.1 类型转换</a><ul>
-<li><a href="#2311">2.3.1.1 标准化或规范化</a></li>
+<li><a href="#1_2">1. 连续型数据</a></li>
+<li><a href="#2_2">2. 离散数据</a></li>
+<li><a href="#3_1">3. 有序数据</a></li>
+<li><a href="#4_1">4.名词性质的数据</a></li>
+<li><a href="#5_1">5.字符串</a></li>
+<li><a href="#6">6.无序数据</a></li>
+</ul>
+</li>
+<li><a href="#232-feature-scaling">2.3.2 特征缩放 Feature scaling</a><ul>
+<li><a href="#1-normalization-rescaling-min-max-normalization">1.数据归一化 Normalization/重新缩放 Rescaling (min-max normalization)</a></li>
+<li><a href="#2-standardization">2.标准化 Standardization</a></li>
+<li><a href="#3mean-normalization">3.Mean normalization</a></li>
 </ul>
 </li>
 <li><a href="#232">2.3.2 采样</a><ul>
-<li><a href="#1_1">1. 欠采样</a><ul>
+<li><a href="#1_3">1. 欠采样</a><ul>
 <li><a href="#easyensemble">EasyEnsemble （周志华）</a></li>
 </ul>
 </li>
-<li><a href="#2_1">2. 过采样</a><ul>
+<li><a href="#2_3">2. 过采样</a><ul>
 <li><a href="#smote">SMOTE 算法</a></li>
 </ul>
 </li>
@@ -122,28 +137,30 @@
 </li>
 </ul>
 </li>
-<li><a href="#24">2.4 数据描述与可视化</a></li>
-<li><a href="#3-241">3 2.4.1 中心趋势</a></li>
-<li><a href="#25">2.5 特征选择</a></li>
-<li><a href="#26-pca">2.6 主成分分析(PCA)</a></li>
-<li><a href="#27">2.7 线性判别分析</a></li>
+<li><a href="#24">2.4 数据描述与可视化</a><ul>
+<li><a href="#241">2.4.1 中心趋势</a></li>
 </ul>
 </li>
-<li><a href="#3">3. 从贝叶斯到决策树</a><ul>
+<li><a href="#25">2.5 特征选择</a></li>
+<li><a href="#26-pca">2.6 主成分分析(PCA)</a></li>
+<li><a href="#27-lda">2.7 线性判别分析（LDA）</a></li>
+</ul>
+</li>
+<li><a href="#3_2">3. 从贝叶斯到决策树</a><ul>
 <li><a href="#31">3.1 贝叶斯奇幻之旅</a></li>
 <li><a href="#32">3.2 朴素是一种美德</a></li>
 <li><a href="#33">3.3 数据、规则与树</a></li>
 <li><a href="#34">3.4 植树造林学问大</a></li>
 </ul>
 </li>
-<li><a href="#4">4. 神经网络</a></li>
-<li><a href="#5">5. 支持向量机</a><ul>
+<li><a href="#4_2">4. 神经网络</a></li>
+<li><a href="#5_2">5. 支持向量机</a><ul>
 <li><a href="#51">5.1 最大间隔</a></li>
 <li><a href="#52-svm">5.2 线性SVM</a></li>
 <li><a href="#53-kernel-trick">5.3 Kernel Trick</a></li>
 </ul>
 </li>
-<li><a href="#6">6. 聚类分析:物以类聚</a><ul>
+<li><a href="#6_1">6. 聚类分析:物以类聚</a><ul>
 <li><a href="#61">6.1 无监督学习</a><ul>
 <li><a href="#611">6.1.1 无监督学习特点：</a></li>
 <li><a href="#612-cluster">6.1.2 无监督学习的 簇 cluster特点：</a></li>
@@ -261,12 +278,6 @@
 <li><a href="#108">10.8 相关学习资源</a></li>
 </ul>
 </li>
-<li><a href="#x1">X1.美丽数据说：阆苑仙葩，美玉无瑕</a><ul>
-<li><a href="#x11">X1.1 数据之美</a></li>
-<li><a href="#x12">X1.2 南国紫荆亦芬芳</a></li>
-<li><a href="#x13">X1.3 相关学习资料</a></li>
-</ul>
-</li>
 <li><a href="#11-1-">11. 其他1-懒惰学习</a><ul>
 <li><a href="#111-knn-k-">11.1 knn k-近邻分类</a></li>
 <li><a href="#112">11.2 朴树贝叶斯</a></li>
@@ -369,10 +380,10 @@
 <h3 id="14">1.4 知行合一</h3>
 <h3 id="15">1.5 从数据到知识</h3>
 <h5 id="15_1">1.5 模型 比较检验</h5>
-<p>2.4.1 假设检验<br />
-2.4.2 交叉验证t检验<br />
-2.4.3 McNemar检验<br />
-2.4.4 Friedman检验与Nemenyi后续检验</p>
+<p>1.4.1 假设检验<br />
+1.4.2 交叉验证t检验<br />
+1.4.3 McNemar检验<br />
+1.4.4 Friedman检验与Nemenyi后续检验</p>
 <h3 id="16">1.6 分类问题</h3>
 <h4 id="161">1.6.1 类型</h4>
 <h5 id="1611">1.6.1.1 二分类</h5>
@@ -546,7 +557,6 @@ val=[1,|2,|3,|4,|5]</p>
 </tbody>
 </table>
 <p>TPR其实就等于召回率。在绘制ROC曲线时，纵轴为TPR，横轴为FPR。首先按预测值对样本进行排序，然后按序逐个把样本预测为正例，并计算此时的TPR和FPR，然后在图上画出该点，并与前一个点连线。如下图：</p>
-<p><img alt="ROC curve" src="http://www.unc.edu/courses/2010fall/ecol/563/001/images/lectures/lecture22/fig4.png" /></p>
 <p>有两个值得注意的特例：</p>
 <ul>
 <li>
@@ -758,10 +768,15 @@ Philip S. Yu <br />
 Chih-Jen Lin<br />
 Qiang Yang</p>
 <h2 id="2">2. 数据预处理</h2>
-<h3 id="21">2.1 数据清洗</h3>
-<h4 id="211">2.1.1 缺失数据的处理:</h4>
-<p>自动填充/手动填充?<br />
-ignore?<br />
+<h3 id="21">2.1 缺失数据的处理</h3>
+<p>自动填充/手动填充?</p>
+<h5 id="1_1">1.忽略</h5>
+<h5 id="2_1">2. 人工填写缺失值</h5>
+<h5 id="3">3. 使用一个全部变量填充缺失值</h5>
+<p>填写 "Unknow"</p>
+<h5 id="4">4. 使用属性的中心度量（如均值或中位数）填充</h5>
+<h5 id="5">5. 最可能的数据填充</h5>
+<p>ignore?<br />
 <strong>More art than science</strong></p>
 <h3 id="22">2.2 异常值与重复数据检测</h3>
 <h4 id="221">2.2.1 异常值检验的目的</h4>
@@ -823,7 +838,7 @@ ignore?<br />
 <li>它具有线性时间复杂度</li>
 <li>快速分到了叶子节点的数据 判定为 异常值</li>
 </ul>
-<p>简介：<br />
+<p><strong>简介：</strong><br />
 孤立森林（Isolation Forest）是另外一种高效的异常检测算法，它和随机森林类似，但每次选择划分属性和划分点（值）时都是随机的，而不是根据信息增益或者基尼指数来选择。在建树过程中，如果一些样本很快就到达了叶子节点（即叶子到根的距离d很短），那么就被认为很有可能是异常点。因为那些路径d比较短的样本，都是因为距离主要的样本点分布中心比较远的。也就是说，可以通过计算样本在所有树中的平均路径长度来寻找异常点。</p>
 <p>示例：<br />
     sklearn.ensemble.IsolationForest(n_estimators=100, max_samples=’auto’, contamination=0.1, max_features=1.0, bootstrap=False, n_jobs=1, random_state=None, verbose=0)</p>
@@ -875,49 +890,72 @@ $$reach_dist_k(p,o)=max{k_distance(o),d(p,o)}$$</p>
 <p>$$LOF_{k}(p)=\frac{\sum_{o\in{N_k(p)}}\frac{lrd(o)}{lrd(p)}}{|N_{k}(p)|}=\frac{\sum_{o\in{N_{k}(p)}}lrd(o)}{|N_{k}(p)|}/lrd(p)$$</p>
 <p>根据局部异常因子的定义，如果数据点 p 的 LOF 得分在1附近，表明数据点p的局部密度跟它的邻居们差不多；如果数据点 p 的 LOF 得分小于1，表明数据点p处在一个相对密集的区域，不像是一个异常点；如果数据点 p 的 LOF 得分远大于1，表明数据点p跟其他点比较疏远，很有可能是一个异常点。下面这个图来自 Wikipedia 的 LOF 词条，展示了一个二维的例子。上面的数字标明了相应点的LOF得分，可以让人对LOF有一个直观的印象。</p>
 <p><strong>Local Outlier Factor主要参数和函数介绍</strong></p>
-<div class="hlcode"><pre><span class="n">sklearn</span><span class="p">.</span><span class="n">neighbors</span><span class="p">.</span><span class="n">LocalOutlierFactor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="err">’</span><span class="k">auto</span><span class="err">’</span><span class="p">,</span> <span class="n">leaf_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="err">’</span><span class="n">minkowski</span><span class="err">’</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">metric_params</span><span class="o">=</span><span class="n">None</span><span class="p">,</span> <span class="n">contamination</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<div class="hlcode"><pre><span class="n">sklearn</span><span class="o">.</span><span class="n">neighbors</span><span class="o">.</span><span class="n">LocalOutlierFactor</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="err">’</span><span class="n">auto</span><span class="err">’</span><span class="p">,</span> <span class="n">leaf_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="err">’</span><span class="n">minkowski</span><span class="err">’</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">metric_params</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">contamination</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 
 
-<p>1）主要参数<br />
-       n_neighbors : <br />
-                 设置k，default=20<br />
-       contamination : <br />
-                 设置样本中异常点的比例，default=0.1<br />
-2）主要属性：<br />
-       negative_outlier_factor_ : numpy array, shape (n_samples,)<br />
-                 和LOF相反的值，值越小，越有可能是异常点。（注：上面提到LOF的值越接近1，越可能是正常样本，LOF的值越大于1，则越可能是异常样本）。这里就正好反一下。<br />
-3）主要函数：<br />
-        fit_predict(X)<br />
-                  X : array-like, shape (n_samples, n_features</p>
+<p>1）主要参数</p>
+<ol>
+<li>n_neighbors : 设置k，default=20</li>
+<li>contamination :设置样本中异常点的比例，default=0.1</li>
+</ol>
+<p>2）主要属性：</p>
+<ol>
+<li>negative_outlier_factor_ : numpy array, shape (n_samples,)和LOF相反的值，值越小，越有可能是异常点。（注：上面提到LOF的值越接近1，越可能是正常样本，LOF的值越大于1，则越可能是异常样本）。这里就正好反一下。</li>
+</ol>
+<p>3）主要函数：<br />
+1. fit_predict(X)<br />
+ X : array-like, shape (n_samples, n_features)</p>
 <h3 id="23">2.3 类型转换与采样</h3>
 <h4 id="231">2.3.1 类型转换</h4>
-<p>连续型数据<br />
-1. 区间标度<br />
-Real values: Temperature, Height, Weight …<br />
-2. 比例标度<br />
-百分比</p>
-<p>离散数据<br />
-Integer values: Number of people …</p>
-<p>有序数据<br />
-Rankings: {Average, Good, Best}, {Low, Medium, High} …</p>
-<p>名词性质的数据<br />
-Symbols: {Teacher, Worker, Salesman}, {Red, Green, Blue} …</p>
-<p>字符串<br />
-Text: “Tsinghua University”,  “No. 123, Pingan Avenue” …</p>
-<p>无序数据：<br />
-ID：{1001,1002}</p>
-<p>上述类型的数据需要相应转换 </p>
-<h5 id="2311">2.3.1.1 标准化或规范化</h5>
+<p>通常的数据类型包括：</p>
+<h5 id="1_2">1. 连续型数据</h5>
+<ol>
+<li>区间标度<br />
+Real values: Temperature, Height, Weight …</li>
+<li>比例标度<br />
+百分比</li>
+</ol>
+<h5 id="2_2">2. 离散数据</h5>
+<p>Integer values: Number of people …</p>
+<h5 id="3_1">3. 有序数据</h5>
+<p>排名 Rankings: {Average, Good, Best}, {Low, Medium, High} …</p>
+<h5 id="4_1">4.名词性质的数据</h5>
+<p>标签 Symbols: {Teacher, Worker, Salesman}, {Red, Green, Blue} …</p>
+<h5 id="5_1">5.字符串</h5>
+<p>Text: “Tsinghua University”,  “No. 123, Pingan Avenue” …</p>
+<h5 id="6">6.无序数据</h5>
+<p>ID：{1001,1002}</p>
+<h4 id="232-feature-scaling">2.3.2 特征缩放 Feature scaling</h4>
+<h5 id="1-normalization-rescaling-min-max-normalization">1.数据归一化 Normalization/重新缩放 Rescaling (min-max normalization)</h5>
+<p>$$x^{new}=\frac{x-x_{min}}{x_{max}-x_{min}}$$</p>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">MinMaxScaler</span>
+<span class="c">#归一化</span>
+<span class="n">MinMaxScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+
+
+<h5 id="2-standardization">2.标准化 Standardization</h5>
+<p>做数据标准化(Standardization，又称Z-score normalization)，公式如下：<br />
+$$x^{new}=\frac{x-x_{mean}}{\sigma}$$</p>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="kn">import</span> <span class="n">StandardScaler</span>
+
+<span class="c">#标准化，返回值为标准化后的数据</span>
+<span class="n">StandardScaler</span><span class="p">()</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+</pre></div>
+
+
+<h5 id="3mean-normalization">3.Mean normalization</h5>
+<p>$$x^{new}=\frac{x-x_{mean}}{x_{max}-x_{min}}$$</p>
 <h4 id="232">2.3.2 采样</h4>
 <ul>
 <li>通过对数据集采样降低时间复杂度</li>
 <li>过采样/欠采样 解决数分布不均的问题class-imbalance</li>
 </ul>
-<h5 id="1_1">1. 欠采样</h5>
+<h5 id="1_3">1. 欠采样</h5>
 <h6 id="easyensemble">EasyEnsemble （周志华）</h6>
 <p>https://imbalanced-learn.org/en/stable/generated/imblearn.ensemble.EasyEnsemble.html</p>
-<h5 id="2_1">2. 过采样</h5>
+<h5 id="2_3">2. 过采样</h5>
 <h6 id="smote">SMOTE 算法</h6>
 <p>参考:https://arxiv.org/abs/1106.1813<br />
 https://www.jianshu.com/p/13fc0f7f5565</p>
@@ -948,7 +986,7 @@ https://www.jianshu.com/p/13fc0f7f5565</p>
 <li>Han等人Borderline-SMOTE: A New Over-Sampling Method in Imbalanced Data Sets Learning在SMOTE算法基础上进行了改进,提出了Borderhne.SMOTE算法,解决了生成样本重叠(Overlapping)的问题该算法在运行的过程中,查找一个适当的区域,该区域可以较好地反应数据集的性质,然后在该区域内进行插值,以使新增加的“人造”样本更有效。这个适当的区域一般由经验给定,因此算法在执行的过程中有一定的局限性。</li>
 </ol>
 <h3 id="24">2.4 数据描述与可视化</h3>
-<h3 id="3-241">3 2.4.1 中心趋势</h3>
+<h4 id="241">2.4.1 中心趋势</h4>
 <table>
 <thead>
 <tr>
@@ -1000,9 +1038,19 @@ https://www.jianshu.com/p/13fc0f7f5565</p>
 </tbody>
 </table>
 <h3 id="25">2.5 特征选择</h3>
+<p>当数据预处理完成后，我们需要选择有意义的特征输入机器学习的算法和模型进行训练。通常来说，从两个方面考虑来选择特征：</p>
+<p>特征是否发散：如果一个特征不发散，例如方差接近于0，也就是说样本在这个特征上基本上没有差异，这个特征对于样本的区分并没有什么用。<br />
+特征与目标的相关性：这点比较显见，与目标相关性高的特征，应当优选选择。除方差法外，本文介绍的其他方法均从相关性考虑。<br />
+　　根据特征选择的形式又可以将特征选择方法分为3种：</p>
+<ol>
+<li>Filter：过滤法，按照发散性或者相关性对各个特征进行评分，设定阈值或者待选择阈值的个数，选择特征。</li>
+<li>Wrapper：包装法，根据目标函数（通常是预测效果评分），每次选择若干特征，或者排除若干特征。</li>
+<li>Embedded：嵌入法，先使用某些机器学习的算法和模型进行训练，得到各个特征的权值系数，根据系数从大到小选择特征。类似于Filter方法，但是是通过训练来确定特征的优劣。<br />
+　　我们使用sklearn中的feature_selection库来进行特征选择。</li>
+</ol>
 <h3 id="26-pca">2.6 主成分分析(PCA)</h3>
-<h3 id="27">2.7 线性判别分析</h3>
-<h2 id="3">3. 从贝叶斯到决策树</h2>
+<h3 id="27-lda">2.7 线性判别分析（LDA）</h3>
+<h2 id="3_2">3. 从贝叶斯到决策树</h2>
 <p>后验概率朴素贝叶斯</p>
 <h3 id="31">3.1 贝叶斯奇幻之旅</h3>
 <h3 id="32">3.2 朴素是一种美德</h3>
@@ -1011,8 +1059,9 @@ https://www.jianshu.com/p/13fc0f7f5565</p>
 <p>决策-&gt;决策树</p>
 <p>为了要将表格转化为一棵树，决策树需要找出最佳节点和最佳的分枝方法，对分类树来说，衡量这个“最佳”的指标 叫做“不纯度”</p>
 <h3 id="34">3.4 植树造林学问大</h3>
-<h2 id="4">4. 神经网络</h2>
-<h2 id="5">5. 支持向量机</h2>
+<h2 id="4_2">4. 神经网络</h2>
+<p>略</p>
+<h2 id="5_2">5. 支持向量机</h2>
 <h3 id="51">5.1 最大间隔</h3>
 <ul>
 <li>支持向量</li>
@@ -1029,7 +1078,7 @@ https://www.jianshu.com/p/13fc0f7f5565</p>
 <li>Kernel Trick  解决<br />
 $$ K(xi,xj) = φ(xi)·φ(xj) $$</li>
 </ul>
-<h2 id="6">6. 聚类分析:物以类聚</h2>
+<h2 id="6_1">6. 聚类分析:物以类聚</h2>
 <p>聚类是机器学习中的“新算法”，一个重要的原因是聚类不存在客观标准，给定数据集总能从不同角度找到以往算法未能覆盖的某种标准。</p>
 <h3 id="61">6.1 无监督学习</h3>
 <h4 id="611">6.1.1 无监督学习特点：</h4>
@@ -1559,11 +1608,25 @@ DB-scan</p>
 </table>
 <h5 id="9211">9.2.1.1 基于 二叉分类树 的 提升树</h5>
 <h5 id="9212">9.2.1.2  基于 回归树 的 提升树</h5>
-<p>在构建回归树时，主要有两种不同的树：<br />
-|                  分类器 |                       描述 |<br />
-| ----------------------: | -------------------------: |<br />
-| 回归树(Regression Tree) |       其每个叶节点是单个值 |<br />
-|      模型树(Model Tree) | 其每个叶节点是一个线性方程 |</p>
+<p>在构建回归树时，主要有两种不同的树：</p>
+<table>
+<thead>
+<tr>
+<th align="right">分类器</th>
+<th align="right">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">回归树(Regression Tree)</td>
+<td align="right">其每个叶节点是单个值</td>
+</tr>
+<tr>
+<td align="right">模型树(Model Tree)</td>
+<td align="right">其每个叶节点是一个线性方程</td>
+</tr>
+</tbody>
+</table>
 <h6 id="92121-gradient-boosting-decision-treegbdt">9.2.1.2.1 梯度提升决策树（Gradient Boosting Decision Tree，GBDT）</h6>
 <p>注意：GDBT中所的DT(Decision Tree)树都是回归树而不是分类树,所以GDBT也叫MART(Multiple Additive Regression Tree)、GBRT(Gradient Boost Regression Tree)。下面主要叙述回归问题的提升树。</p>
 <p>GBDT的核心就在于，每一棵树学的是之前所有树结论和的残差，这个残差就是一个加预测值后能得真实值的累加量。比如A的真实年龄是18岁，但第一棵树的预测年龄是12岁，差了6岁，即残差为6岁。那么在第二棵树里我们把A的年龄设为6岁去学习，如果第二棵树真的能把A分到6岁的叶子节点，那累加两棵树的结论就是A的真实年龄；如果第二棵树的结论是5岁，则A仍然存在1岁的残差，第三棵树里A的年龄就变成1岁，继续学。这就是Gradient Boosting在GBDT中的意义</p>
@@ -1624,18 +1687,13 @@ Maclin, R.: Boosting classifiers regionally. AAAI, 700-705, 1998.</p>
 1. Portfolio Optimization<br />
 2. Travelling Salesman Problem<br />
 3. Knapsack Problem<br />
-4. Bin Packing Problem<br />
-5. </p>
+4. Bin Packing Problem</p>
 <h3 id="103">10.3 走向进化</h3>
 <h3 id="104">10.4 遗传算法初探</h3>
 <h3 id="105">10.5 遗传算法进阶</h3>
 <h3 id="106">10.6 遗传程序设计</h3>
 <h3 id="107">10.7 万物皆进化</h3>
 <h3 id="108">10.8 相关学习资源</h3>
-<h2 id="x1">X1.美丽数据说：阆苑仙葩，美玉无瑕</h2>
-<h3 id="x11">X1.1 数据之美</h3>
-<h3 id="x12">X1.2 南国紫荆亦芬芳</h3>
-<h3 id="x13">X1.3 相关学习资料</h3>
 <h2 id="11-1-">11. 其他1-懒惰学习</h2>
 <p>优点：<br />
 简单有效；对数据的分布没有要求；训练阶段很快。</p>
