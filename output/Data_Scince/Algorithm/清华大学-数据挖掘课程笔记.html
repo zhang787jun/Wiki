@@ -2,10 +2,10 @@
 <html>
 
 <head>
-    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
-    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
-    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="Stylesheet" type="text/css" href="./Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="./Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="./Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="./Wiki/favicon.ico" type="image/x-icon">
     <title>[课程]--数据挖掘课程笔记 - Jun's personal knowledge wiki</title>
     <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
     <meta name="description" content="A wiki website" />
@@ -24,7 +24,7 @@
     <div id="container">
         
 <div id="header">
-  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Scince\Algorithm">Data_Scince\Algorithm</a>&nbsp;»&nbsp;[课程]--数据挖掘课程笔记</div>
+  <div id="post-nav"><a href="./Wiki/">Home</a>&nbsp;»&nbsp;<a href="./Wiki/#Data_Scince\Algorithm">Data_Scince\Algorithm</a>&nbsp;»&nbsp;[课程]--数据挖掘课程笔记</div>
 </div>
 <div class="clearfix"></div>
 <div id="title">[课程]--数据挖掘课程笔记</div>
@@ -868,22 +868,22 @@ Qiang Yang</p>
 <p>算法简介：<br />
 https://blog.csdn.net/bbbeoy/article/details/80301211<br />
 了解了 LOF 的定义，整个算法也就显而易见了：<br />
-1. 对于每个数据点，计算它与其它所有点的距离，并按从近到远排序；<br />
+1. 对于每个数据点，计算它与其它所有点的<strong>距离</strong>，并按从近到远排序；<br />
 2. 对于每个数据点，找到它的 k-nearest-neighbor，计算 LOF 得分。</p>
 <ul>
 <li>
 <p>K-邻近距离（k-distance） <code>k-distance (o)</code><br />
-在距离数据点 o 最近的几个点中，第 k 个最近的点跟点 o 之间的距离称为点 p 的 K-邻近距离，记为 <code>k-distance (o)</code></p>
+在距离数据点 o 最近的几个点中，第 k 个最近的点跟点 O 之间的距离称为点 p 的 K-邻近距离，记为 <code>k-distance (o)</code></p>
 </li>
 <li>
 <p>可达距离（rechability distance） <code>reach_dist_k</code><br />
-可达距离的定义跟K-邻近距离是相关的，给定参数k时， 数据点 p 到 数据点 o 的可达距离 reach-dist（p, o）为数据点 o 的K-邻近距离 和 数据点p与点o之间的直接距离的最大值。<br />
-$$reach_dist_k(p,o)=max{k_distance(o),d(p,o)}$$</p>
+可达距离的定义跟K-邻近距离是相关的，给定参数k时， 数据点 p 到 数据点 o 的可达距离 reach-dist（p, o）为数据点 o 的K-邻近距离 和 数据点p与点o之间的直接距离的最大值。</p>
 </li>
-<li>
-<p>局部可达密度（local rechability density）：<br />
-数据点 p 的局部可达密度为它与邻近的数据点的平均可达距离的倒数，即：</p>
-</li>
+</ul>
+<p>$$reach_dist_k(p,o)=max{k_distance(o),d(p,o)}$$</p>
+<ul>
+<li>局部可达密度（local rechability density）：<br />
+数据点 p 的局部可达密度为它与邻近的数据点的平均可达距离的倒数，即：</li>
 </ul>
 <p>$$lrd_k(p)=\frac{1}{\frac{\sum_{o\in{N_{k}(p)}}reach_dist_k(p,o)}{|N_k(p)|}}$$</p>
 <p>局部异常因子（local outlier factor）：根据局部可达密度的定义，如果一个数据点跟其他点比较疏远的话，那么显然它的局部可达密度就小。但LOF算法衡量一个数据点的异常程度，并不是看它的绝对局部密度，而是看它跟周围邻近的数据点的相对密度。这样做的好处是可以允许数据分布不均匀、密度不同的情况。局部异常因子即是用局部相对密度来定义的。数据点 p 的局部相对密度（局部异常因子）为点p的邻居们的平均局部可达密度跟数据点p的局部可达密度的比值，即：</p>
@@ -916,6 +916,9 @@ Real values: Temperature, Height, Weight …</li>
 <li>比例标度<br />
 百分比</li>
 </ol>
+<p>处理方法：</p>
+<p>二值化与分段<br />
+sklearn.preprocessing.Binarizer 根据阈值将数据二值化（将特征值设置为0或1），用于处理连续型变量。大于阈值的值映射为1，而小于或等于阈 值的值映射为0。默认阈值为0时，特征中所有的正值都映射到1。二值化是对文本计数数据的常见操作，分析人员 可以决定仅考虑某种现象的存在与否。它还可以用作考虑布尔随机变量的估计器的预处理步骤（例如，使用贝叶斯 设置中的伯努利分布建模）。</p>
 <h5 id="2_2">2. 离散数据</h5>
 <p>Integer values: Number of people …</p>
 <h5 id="3_1">3. 有序数据</h5>
@@ -924,6 +927,9 @@ Real values: Temperature, Height, Weight …</li>
 <p>标签 Symbols: {Teacher, Worker, Salesman}, {Red, Green, Blue} …</p>
 <h5 id="5_1">5.字符串</h5>
 <p>Text: “Tsinghua University”,  “No. 123, Pingan Avenue” …</p>
+<p><strong>处理方法：</strong><br />
+one-hot <br />
+embedding</p>
 <h5 id="6">6.无序数据</h5>
 <p>ID：{1001,1002}</p>
 <h4 id="232-feature-scaling">2.3.2 特征缩放 Feature scaling</h4>
@@ -1008,7 +1014,7 @@ https://www.jianshu.com/p/13fc0f7f5565</p>
 <td align="right"></td>
 </tr>
 <tr>
-<td align="right">#### 2.4.2 中离散</td>
+<td align="right">#### 2.4.2 离散</td>
 <td align="right"></td>
 </tr>
 <tr>
@@ -1287,11 +1293,12 @@ $$ dist(xi,xj)=(\sum^n_{u=1}  |x_{iu}-x_{ju} |) $$</p>
 <p>$m_{u,a}$ 属性u在取值为a的样本数<br />
 $m_{u,a,i}$ 在第i个样本 属性u在取值为a的样本数</p>
 <h5 id="6153-minkovdm">6.1.5.3 MINKOVDM距离（无序+有序属性）</h5>
-<p>$$ MINKOVDM(xi,xj)=(\sum^n_{u=1}  |x_{iu}-x_{ju} |^p)^{1\over p}+\sum^k_{i=1} {| \frac {m_{u,a,i}} {m_{u,a}} -\frac {m_{u,b,i}} {m_{u,b}}|})$$</p>
+<p>$$ {MINKOVDM}(xi,xj)=(\sum^n_{u=1}  |x_{iu}-x_{ju} |^p)^{1\over p}+\sum^k_{i=1} {| \frac {m_{u,a,i}} {m_{u,a}} -\frac {m_{u,b,i}} {m_{u,b}}|})$$</p>
 <h5 id="6154">6.1.5.4 加权距离（无序+有序属性）</h5>
 <h5 id="6155">6.1.5.5 马氏距离</h5>
 <p>表示数据的协方差距离。它是一种有效的计算两个未知样本集的相似度的方法<br />
 $$sqrt( (x-μ)'Σ^(-1)(x-μ) )$$</p>
+<p><img alt="" src="../../../attach/images/2019-08-27-14-43-14.png" /></p>
 <h5 id="6156">6.1.5.6 非度量距离</h5>
 <h4 id="616">6.1.6 不同的聚类类型</h4>
 <h5 id="6161">6.1.6.1 按数据点的排他性</h5>

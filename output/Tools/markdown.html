@@ -2,10 +2,10 @@
 <html>
 
 <head>
-    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
-    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
-    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="Stylesheet" type="text/css" href="./Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="./Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="./Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="./Wiki/favicon.ico" type="image/x-icon">
     <title>使用Markdown - Jun's personal knowledge wiki</title>
     <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
     <meta name="description" content="A wiki website" />
@@ -24,21 +24,23 @@
     <div id="container">
         
 <div id="header">
-  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Tools">Tools</a>&nbsp;»&nbsp;使用Markdown</div>
+  <div id="post-nav"><a href="./Wiki/">Home</a>&nbsp;»&nbsp;<a href="./Wiki/#Tools">Tools</a>&nbsp;»&nbsp;使用Markdown</div>
 </div>
 <div class="clearfix"></div>
 <div id="title">使用Markdown</div>
   <div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
-<li><a href="#markdown">使用Markdown</a><ul>
-<li><a href="#1-markdown">1. Markdown数学符号&amp;公式</a></li>
-<li><a href="#_1">参考文献的方法</a></li>
+<li><a href="#1-markdown">1. 使用Markdown</a><ul>
+<li><a href="#11-markdown">1.1. Markdown数学符号&amp;公式</a></li>
+<li><a href="#12">1.2. 参考文献的方法</a></li>
+<li><a href="#13">1.3 段落自动编号</a></li>
+<li><a href="#vscode-markdown">VScode 里面的Markdown增强插件</a></li>
 </ul>
 </li>
 </ul>
 </div>
-<h1 id="markdown">使用Markdown</h1>
-<h2 id="1-markdown">1. Markdown数学符号&amp;公式</h2>
+<h1 id="1-markdown">1. 使用Markdown</h1>
+<h2 id="11-markdown">1.1. Markdown数学符号&amp;公式</h2>
 <table>
 <thead>
 <tr>
@@ -296,32 +298,6 @@
 </thead>
 <tbody>
 <tr>
-<td y="y">$\breve</td>
-<td a_b_c_d="a+b+c+d">a+b+c+d¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ \overline</td>
-<td></td>
-</tr>
-<tr>
-<td>a+b+c+d</td>
-<td a_b_c_d="a+b+c+d">$\overline</td>
-<td>平均值</td>
-</tr>
-<tr>
-<td a_b_c_d="a+b+c+d">a+b+c+d¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ \underline</td>
-<td a_b_c_d="a+b+c+d">$\underline</td>
-<td a_underbrace_b_c="a+\underbrace{b+c">a+b+c└┘−−−1.0+d2.0 \overbrace</td>
-</tr>
-</tbody>
-</table>
-<table>
-<thead>
-<tr>
-<th>符号</th>
-<th>代码</th>
-<th>描述</th>
-</tr>
-</thead>
-<tbody>
-<tr>
 <td a_underbrace_b_c="a+\underbrace{b+c">\overbrace</td>
 <td></td>
 <td></td>
@@ -558,10 +534,16 @@
 </tr>
 </tbody>
 </table>
-<h2 id="_1">参考文献的方法</h2>
+<h2 id="12">1.2. 参考文献的方法</h2>
 <div class="hlcode"><pre><span class="err">引文的插入格式</span><span class="p">[</span><span class="o">^</span><span class="n">StackOverflow_2007_web</span><span class="p">]</span>
 <span class="p">[</span><span class="o">^</span><span class="n">StackOverflow_2007_web</span><span class="p">]</span><span class="o">:</span><span class="n">XXXX</span> 
 </pre></div>
+
+
+<h2 id="13">1.3 段落自动编号</h2>
+<p>VScode 下安装 markdownIndex 插件，F1 执行markdown add index</p>
+<h2 id="vscode-markdown">VScode 里面的Markdown增强插件</h2>
+<p>https://zhuanlan.zhihu.com/p/56699805</p>
 </div>
 
     </div>

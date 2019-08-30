@@ -1,5 +1,5 @@
 ---
-title: "Tensorflow的硬件基础及安装"
+title: "[环境部署]Tensorflow的硬件基础及安装"
 date: 2019-06-17 00:00
 ---
 

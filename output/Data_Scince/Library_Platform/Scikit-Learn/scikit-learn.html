@@ -2,10 +2,10 @@
 <html>
 
 <head>
-    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
-    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
-    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="Stylesheet" type="text/css" href="./Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="./Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="./Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="./Wiki/favicon.ico" type="image/x-icon">
     <title>scikit-learn Notebook - Jun's personal knowledge wiki</title>
     <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
     <meta name="description" content="A wiki website" />
@@ -24,7 +24,7 @@
     <div id="container">
         
 <div id="header">
-  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Scince\Library_Platform\Scikit-Learn">Data_Scince\Library_Platform\Scikit-Learn</a>&nbsp;»&nbsp;scikit-learn Notebook</div>
+  <div id="post-nav"><a href="./Wiki/">Home</a>&nbsp;»&nbsp;<a href="./Wiki/#Data_Scince\Library_Platform\Scikit-Learn">Data_Scince\Library_Platform\Scikit-Learn</a>&nbsp;»&nbsp;scikit-learn Notebook</div>
 </div>
 <div class="clearfix"></div>
 <div id="title">scikit-learn Notebook</div>
@@ -60,7 +60,229 @@ sklearn 是 python 中一个非常著名的机器学习库，但是一般都是�
 </pre></div>
 
 
-<h2 id="_1">参考资料</h2>
+<p>写文章<br />
+Scikit-learn 基础<br />
+Scikit-learn 基础<br />
+iOSDevLog<br />
+iOSDevLog<br />
+iOS Dev Log<br />
+177 人赞同了该文章<br />
+1 Scikit-learn 介绍<br />
+1.1 分类<br />
+1.2 回归<br />
+1.3 聚类<br />
+1.4 降维<br />
+1.5 模型选择<br />
+1.6 预处理<br />
+2 Scikit-learn 机器学习步骤<br />
+2.1 导入常用库<br />
+2.2 加载数据<br />
+2.3 划分训练集与测试集<br />
+2.4 数据预处理<br />
+2.4.1 标准化<br />
+2.4.2 归一化<br />
+2.4.3 二值化<br />
+2.4.4 编码分类特征<br />
+2.4.5 输入缺失值<br />
+2.4.6 生成多项式特征<br />
+2.5 创建模型估计器<br />
+2.5.1 监督学习<br />
+2.5.2 无监督学习<br />
+2.6 拟合数据<br />
+2.6.1 监督学习<br />
+2.6.2 无监督学习<br />
+2.7 预测<br />
+2.7.1 监督学习<br />
+2.7.2 无监督学习<br />
+2.8 评估模型性能<br />
+2.8.1 分类指标<br />
+2.8.2 回归指标<br />
+2.8.3 群集指标<br />
+2.8.4 交叉验证<br />
+2.9 模型调整<br />
+2.9.1 网格搜索<br />
+2.9.2 随机参数优化</p>
+<p>Scikit-learn 介绍<br />
+Scikit-learn 是开源的 Python 库，通过统一的界面实现机器学习、预处理、交叉验证及可视化算法。</p>
+<p>scikit-learn 网站：https://scikit-learn.org</p>
+<p>Python 中的机器学习</p>
+<p>简单有效的数据挖掘和数据分析工具<br />
+可供所有人访问，并可在各种环境中重复使用<br />
+基于 NumPy，SciPy 和 matplotlib 构建<br />
+开源，商业上可用 - BSD 许可证</p>
+<p>分类<br />
+确定对象属于哪个类别。</p>
+<p>应用：垃圾邮件检测，图像识别。 算法： SVM，最近邻居，随机森林，......</p>
+<p>回归<br />
+预测与对象关联的连续值属性。</p>
+<p>应用：药物反应，股票价格。 算法： SVR，岭回归，套索，......</p>
+<p>聚类<br />
+将类似对象自动分组到集合中。</p>
+<p>应用：客户细分，分组实验结果 算法： k-Means，谱聚类，均值漂移，......</p>
+<p>降维<br />
+减少要考虑的随机变量的数量。</p>
+<p>应用：可视化，提高效率 算法： PCA，特征选择，非负矩阵分解。</p>
+<p>模型选择<br />
+比较，验证和选择参数和模型。</p>
+<p>目标：通过参数调整提高准确性 模块： 网格搜索，交叉验证，指标。</p>
+<p>预处理<br />
+特征提取和规范化。</p>
+<p>应用程序：转换输入数据（如文本）以与机器学习算法一起使用。 模块： 预处理，特征提取。</p>
+<p>Scikit-learn 机器学习步骤</p>
+<h1 id="sklearn">导入 sklearn</h1>
+<p>from sklearn import neighbors, datasets, preprocessing<br />
+from sklearn.model_selection import train_test_split<br />
+from sklearn.metrics import accuracy_score</p>
+<h1 id="_1">加载数据</h1>
+<p>iris = datasets.load_iris()</p>
+<h1 id="_2">划分训练集与测试集</h1>
+<p>X, y = iris.data[:, :2], iris.target<br />
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=33)</p>
+<h1 id="_3">数据预处理</h1>
+<p>scaler = preprocessing.StandardScaler().fit(X_train)<br />
+X_train = scaler.transform(X_train)<br />
+X_test = scaler.transform(X_test)</p>
+<h1 id="_4">创建模型</h1>
+<p>knn = neighbors.KNeighborsClassifier(n_neighbors=5)</p>
+<h1 id="_5">模型拟合</h1>
+<p>knn.fit(X_train, y_train)</p>
+<h1 id="_6">预测</h1>
+<p>y_pred = knn.predict(X_test)</p>
+<h1 id="_7">评估</h1>
+<p>accuracy_score(y_test, y_pred)<br />
+导入常用库<br />
+import numpy as np<br />
+import pandas as pd<br />
+import matplotlib.pyplot as plt<br />
+加载数据<br />
+Scikit-learn 处理的数据是存储为 NumPy 数组或 SciPy 稀疏矩阵的数字，还支持 Pandas 数据框等可转换为数字数组的其它数据类型。</p>
+<p>X = np.random.random((11, 5))<br />
+y = np.array(['M', 'M', 'F', 'F', 'M', 'F', 'M', 'M', 'F', 'F', 'F'])<br />
+X[X &lt; 0.7] = 0<br />
+划分训练集与测试集<br />
+from sklearn.model_selection import train_test_split<br />
+X_train, X_test, y_train, y_test = train_test_split(X, y, random_state=0)<br />
+数据预处理<br />
+标准化<br />
+from sklearn.preprocessing import StandardScaler<br />
+scaler = StandardScaler().fit(X_train)<br />
+standardized_X = scaler.transform(X_train)<br />
+standardized_X_test = scaler.transform(X_test)<br />
+归一化<br />
+from sklearn.preprocessing import Normalizer<br />
+scaler = Normalizer().fit(X_train)<br />
+normalized_X = scaler.transform(X_train)<br />
+normalized_X_test = scaler.transform(X_test)<br />
+二值化<br />
+from sklearn.preprocessing import Binarizer<br />
+binarizer = Binarizer(threshold=0.0).fit(X)<br />
+binary_X = binarizer.transform(X)<br />
+编码分类特征<br />
+from sklearn.preprocessing import LabelEncoder<br />
+enc = LabelEncoder()<br />
+y = enc.fit_transform(y)<br />
+输入缺失值<br />
+from sklearn.preprocessing import Imputer<br />
+imp = Imputer(missing_values=0, strategy='mean', axis=0)<br />
+imp.fit_transform(X_train)<br />
+生成多项式特征<br />
+from sklearn.preprocessing import PolynomialFeatures<br />
+poly = PolynomialFeatures(5)<br />
+poly.fit_transform(X)<br />
+创建模型估计器<br />
+监督学习</p>
+<h1 id="_8">线性回归</h1>
+<p>from sklearn.linear_model import LinearRegression<br />
+lr = LinearRegression(normalize=True)</p>
+<h1 id="svm">支持向量机(SVM)</h1>
+<p>from sklearn.svm import SVC<br />
+svc = SVC(kernel='linear')</p>
+<h1 id="_9">朴素贝叶斯</h1>
+<p>from sklearn.naive_bayes import GaussianNB<br />
+gnb = GaussianNB()</p>
+<h1 id="knn">KNN</h1>
+<p>from sklearn import neighbors<br />
+knn = neighbors.KNeighborsClassifier(n_neighbors=5)<br />
+无监督学习</p>
+<h1 id="pca">主成分分析（PCA)</h1>
+<p>from sklearn.cluster import KMeans<br />
+from sklearn.decomposition import PCA<br />
+pca = PCA(n_components=0.95)</p>
+<h1 id="k-means">K Means</h1>
+<p>k_means = KMeans(n_clusters=3, random_state=0)<br />
+拟合数据<br />
+监督学习<br />
+lr.fit(X, y)<br />
+knn.fit(X_train, y_train)<br />
+svc.fit(X_train, y_train)<br />
+无监督学习<br />
+k_means.fit(X_train)<br />
+pca_model = pca.fit_transform(X_train)<br />
+预测<br />
+监督学习</p>
+<h1 id="_10">预测标签</h1>
+<p>y_pred = svc.predict(np.random.random((2,5)))</p>
+<h1 id="_11">预测标签</h1>
+<p>y_pred = lr.predict(X_test)</p>
+<h1 id="_12">评估标签概率</h1>
+<p>y_pred = knn.predict_proba(X_test)<br />
+无监督学习<br />
+y_pred = k_means.predict(X_test)<br />
+评估模型性能<br />
+分类指标</p>
+<h1 id="_13">准确率</h1>
+<p>knn.score(X_test, y_test)<br />
+from sklearn.metrics import accuracy_score<br />
+accuracy_score(y_test, y_pred)</p>
+<h1 id="_14">分类预估评价函数</h1>
+<p>from sklearn.metrics import classification_report<br />
+print(classification_report(y_test, y_pred))</p>
+<h1 id="_15">混淆矩阵</h1>
+<p>from sklearn.metrics import confusion_matrix<br />
+print(confusion_matrix(y_test, y_pred))<br />
+回归指标</p>
+<h1 id="_16">平均绝对误差</h1>
+<p>from sklearn.metrics import mean_absolute_error<br />
+y_true = [3, -0.5, 2]<br />
+mean_absolute_error(y_true, y_pred)</p>
+<h1 id="_17">均方误差</h1>
+<p>from sklearn.metrics import mean_squared_error<br />
+mean_squared_error(y_test, y_pred)</p>
+<h1 id="r2">R2 评分</h1>
+<p>from sklearn.metrics import r2_score<br />
+r2_score(y_true, y_pred)<br />
+群集指标</p>
+<h1 id="_18">调整兰德系数</h1>
+<p>from sklearn.metrics import adjusted_rand_score<br />
+adjusted_rand_score(y_true, y_pred)</p>
+<h1 id="_19">同质性</h1>
+<p>from sklearn.metrics import homogeneity_score<br />
+homogeneity_score(y_true, y_pred)</p>
+<h1 id="v-measure">V-measure</h1>
+<p>from sklearn.metrics import v_measure_score<br />
+metrics.v_measure_score(y_true, y_pred)<br />
+交叉验证<br />
+from sklearn.cross_validation import cross_val_score<br />
+print(cross_val_score(knn, X_train, y_train, cv=4))<br />
+print(cross_val_score(lr, X, y, cv=2))<br />
+模型调整<br />
+网格搜索<br />
+from sklearn.grid search import GridSearchcV<br />
+params = {"n neighbors": np.arange(1, 3)，<br />
+          "metric": ["euclidean", "cityblock"]}<br />
+grid = GridSearchCV(estimator=knn,<br />
+                    param_grid-params)<br />
+grid.fit(X_train, y_train)<br />
+print(grid.best score)<br />
+print(grid.best_estimator_.n_neighbors)<br />
+随机参数优化<br />
+from sklearn.grid_search import RandomizedSearchCV<br />
+params = {"n_neighbors": range(1, 5),<br />
+          "weights": ["uniform", "distance"]}<br />
+rsearch = RandomizedSearchCV(estimator=knn,<br />
+                             rsearch.fit(X_train, y_train) random_state=5)<br />
+print(rsearch.best_score_)</p>
+<h2 id="_20">参考资料</h2>
 <div class="footnote">
 <hr />
 <ol>

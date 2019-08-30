@@ -1,5 +1,5 @@
 ---
-title: "Tensorflow 的几个模块理解"
+title: "[开发]Tensorflow 的几个模块理解(core)"
 date: 2019-06-12 00:00
 render: True 
 tag: Tensorflow,框架,AI,
@@ -7,6 +7,7 @@ tag: Tensorflow,框架,AI,
 
 [TOC]
 [![The MIT License](http://img.shields.io/badge/license-MIT-yellow.svg)](https://github.com/tankywoo/simiki/blob/master/LICENSE)
+
 # Tensorflow 的几个模块理解
 ## 1.训练的管理（tf.train）
 tensorflow 主要有2种方式进行训练监督
@@ -263,7 +264,7 @@ https://blog.csdn.net/rockingdingo/article/details/55652662
 ****
 
 
-### 2.3 产看可用设备 
+### 2.3 查看可用设备 
 
 ```python
 from tensorflow.python.client import device_lib
@@ -387,7 +388,7 @@ next_element 就是一个tensor,与tf.placehold/tf.constant 一样
 
 
 
-####  1. initializable （可初始化的）
+####  2. initializable （可初始化的）
    > Q: 为什么要创立 initializable的 dataset？
    > A:当我们想要创建一个动态的dataset的时候
 ```python        
@@ -426,7 +427,7 @@ next_element 就是一个tensor,与tf.placehold/tf.constant 一样
         'You use PyTorch'
         'I use Tensorflow' # Iterator 会回到初始的位置
 ```
-#### 2. reinitializable （可重复初始化的（一般针对多个具有相同数据结构的数据集））
+#### 3. reinitializable （可重复初始化的）
 ```python
         # 构建dataset 
         # 定义一个具有相同结构的 训练数据集 和 验证集
@@ -456,7 +457,7 @@ next_element 就是一个tensor,与tf.placehold/tf.constant 一样
                 for _ in range(50):
                         sess.run(next_element)
 ```
-#### 3. feedable （可反馈的--正对有调用机制的）
+#### 4. feedable（反馈的--正对有调用机制的）
   
    一个调用机制
 
@@ -627,7 +628,7 @@ tensorflow gfile文件操作详解
 
 https://zhuanlan.zhihu.com/p/31536538
 
-###　4.1 TFRecord 
+###　4.1 TFRecord 格式
 
 #### 4.1.1  TFRecord 是什么？
 >TFRecord 是谷歌推荐的一种二进制`文件格式`，理论上它可以保存任何格式的信息。
@@ -1146,7 +1147,7 @@ constant_graph = tf.graph_util.convert_variables_to_constants(sess, sess.graph_d
    
         print(sess.run(c))
 
-#### 1.保存
+##### 1.保存
 ```python
 #1. 创建saver
 
@@ -1160,7 +1161,7 @@ saver_path = saver.save(sess, save_path="./path/model.ckpt" ,global_step=100)
 
 ```
 
-#### 2.加载
+##### 2.加载
 1. 加载持久化图
    
         saver=tf.train.import_meta_graph(“save/model.ckpt.meta”)
@@ -1309,39 +1310,102 @@ tensorflow.python.summary.writer.writer.FileWriter
 
 ## 7. 评价模型的优劣（tf.metrics）
 
-### 7.1 tf.metrics类的特点
-1. 会创建几个变量，变量会加入tf.GraphKeys.LOCAL_VARIABLES集合中所以需要初始化 LOCAL_VARIABLES
+### 7.1 tf.metrics 类
+####  1.tf.metrics 类的通用特性
+
+1. **需要初始化 LOCAL_VARIABLES**。
+
+   计算时会创建几个变量，变量会加入tf.GraphKeys.LOCAL_VARIABLES集合中，所以需要初始化 LOCAL_VARIABLES。
+   如果不重新初始化这些 LOCAL_VARIABLES，计算的tf.metrics的几个本地变量将持续更新，不随着一个batch的结束而结束。
 
 ```python
 init_local_variables=tf.initialize_local_variables()
 sess.run (init_local_variables)
 ```
-2. 返回两个tensorflow op
+1. 返回两个tensorflow op。
 ```python
 # accuracy（相当于calculate_accuracy()）
 # update_op（相当于update_running_variables()）
-
 accuracy, update_op =tf.metrics.XXX
 ```
 
 
+
+#### 2. tf.metrics 的执行过程 
+
+以 tf.metrics.accuracy(predictions,labels )为例：
+1. 构建2个本地变量 LOCAL_VARIABLES: total 和 count
+2. 本地变量 total 和 count 初始化设置为 0
+3. 当执行 accuracy_op 的时候，只是运行除法 0/0 ==0
+4. 当执行 accuracy_update_op 的时候, 根据输入的predictions,labels的情况更新total 和count变化，并运行除法
+
+#### 3. tf.metrics 与 tf.loss 的区别
+
+1. tf.loss 及其子类用于在反向传播期间更新模型。 tf.metrics用于评估模型。
+2. tf.loss 是直接针对输入到 tf.loss.xxx(predictions,labels) 的predictions,labels进行计算； tf.metrics是根据输入到tf.metrics.xxx(predictions,labels)的predictions,labels情况，将其添加到 从上一个本地变量初始化开始的数据集，根据更新的数据集进行计算。
+
+
 ### 7.2 如何评价一个模型 
 
-#### 1 误差 error
+#### 1 误差 error--离散度的测量
 
-##### 1. 绝对误差
-mean_absolute_error(...): Computes the mean absolute error between the labels and predictions.
+##### 1. 平均绝对误差 MAE
 
-##### 2. 相对误差
-mean_relative_error(...): Computes the mean relative error by normalizing with the given values.
+平均绝对误差 MAE,也称L1损失
 
-##### 3. 平方差（方差）--离散度
-mean_squared_error(...): Computes the mean squared error between the labels and predictions.
+$$AE(y\_ ,y)=|y\_ -y|$$
 
-4. 均方差(标准差)--离散度
-   root_mean_squared_error(...): Computes the root mean squared error between the labels and predictions.
-5. 余弦相似性
-mean_cosine_distance(...): Computes the cosine distance between the labels and predictions.
+$$MAE(y\_ ,y)=\frac{1}{N}\sum\ |y\_ -y|$$
+
+
+![](../../../../attach/images/2019-08-29-10-36-45.png)
+```python
+tf.metrics.mean_absolute_error(...)
+```
+Computes the mean absolute error between the labels and predictions.
+
+##### 2. 平均相对误差 MRE
+相对误差 Relative Error (RE)
+$$RE(y\_ ,y)=\frac{|y\_ -y|}{y}$$
+
+
+平均相对误差 Mean Relative Error (MRE)，也称为L2损失
+$$MRE(y\_ ,y)=\frac{1}{N}\sum\ RE(y\_ ,y)=\frac{1}{N}\sum\frac{|y\_ -y|}{y}$$
+
+```python
+tf.metrics.mean_relative_error(...)
+```
+Computes the mean relative error by normalizing with the given values.
+
+##### 3. 平方差（方差）MSE 
+
+平方误差 squared_error  (SE)
+$$SE(y\_ ,y)=(y\_ -y)^2$$
+
+
+平均相对误差 Mean Relative Error (MRE)，也称为L2损失
+$$MRE(y\_ ,y)=\frac{1}{N}\sum\ SE(y\_ ,y)=\frac{1}{N}\sum(y\_ -y)^2$$
+
+
+![](../../../../attach/images/2019-08-29-10-37-13.png)
+```python
+tf.metrics.mean_squared_error(...):
+```
+ Computes the mean squared error between the labels and predictions.
+
+##### 4. 均方差(标准差) RMSE 
+
+$$MRE(y\_ ,y)=\frac{1}{N}\sqrt{\sum(y\_ -y)^2} $$
+```python
+tf.metrics.root_mean_squared_error(...):
+```
+Computes the root mean squared error between the labels and predictions.
+#####  5. 余弦相似性
+```python
+tf.metrics.mean_cosine_distance(...):
+```
+ Computes the cosine distance between the labels and predictions.
+
 
 
 
@@ -1356,8 +1420,10 @@ mean_cosine_distance(...): Computes the cosine distance between the labels and p
 ##### 1. 准确率 (accuracy)
    $$ accuracy =\frac{正确预测的数量}{样本总数} $$
 
-tf.metrics.accuracy()
 ```python
+tf.metrics.accuracy()
+
+
 real_label=tf.constant([[1],[1],[1]]) # [1] [1] [1]
 predict_label=tf.constant([1,1,1]) # [1] [1] [1]
 
@@ -1384,43 +1450,55 @@ tf.metrics.precision()
 ```
 
 
-3. 召回率 (recall)
+##### 3. 召回率 (recall)
    在所有可能的正类别标签中，模型正确地识别出了多少个？即
-   $$recall=正例数/(正例数+假负例数)$$
-   ```python
-   tf.metrics.recall()
+   $$recall=\frac{正例数}{(正例数+假负例数)}$$
 
-   ```
-4. AUC：ROC 曲线下面积 (AUC, Area under the ROC Curve)
+```python
+tf.metrics.recall()
+```
+##### 4. AUC
+ AUC：ROC 曲线下面积 (AUC, Area under the ROC Curve)
    >受试者工作特征曲线（receiver operating characteristic，简称 ROC 曲线）
+```python
+tf.metrics.auc()
+# Computes the approximate AUC via a Riemann sum.
+```
 
-auc(...): Computes the approximate AUC via a Riemann sum.
+##### 5. 敏感度(sensitivity)
 
-5. 敏感度(sensitivity)
-
-
+```python
 tf.metrics.mean_iou()
-6. 特异度(specificity)
+```
+##### 6. 特异度(specificity)
+
 sensitivity_at_specificity(...): Computes the specificity at a given sensitivity.
 
 
-7. 数量
-false_negatives(...): Computes the total number of false negatives.
-false_positives(...): Sum the weights of false positives.
-true_negatives(...): Sum the weights of true_negatives.
-true_positives(...): Sum the weights of true_positives.
+##### 7. 各种数量
+false_negatives(...):
+ Computes the total number of false negatives.
+false_positives(...): 
+Sum the weights of false positives.
+true_negatives(...): 
+Sum the weights of true_negatives.
+true_positives(...): 
+
+Sum the weights of true_positives.
 
 
 #### 3 基本统计量 
 
 
-mean_iou(...): Calculate per-step mean Intersection-Over-Union (mIOU).
+mean_iou(...):
+
+ Calculate per-step mean Intersection-Over-Union (mIOU).
 
 
-1. 平均数
+##### 1. 平均数
 mean(...): Computes the (weighted) mean of the given values.
 
-2. 百分百
+##### 2. 百分百
 percentage_below(...): Computes the percentage of values less than the given threshold.
 
 
@@ -1475,6 +1553,8 @@ with tf.name_scope("b"):
 2. 连续数据
    1. 回归
 
+tf.loss 类计算的都是平均值
+
 
 
 ### 9.1.  0-1函数
@@ -1523,6 +1603,9 @@ $$
 
 
 ### 9.2  绝对值损失
+
+Huber损失、Log-Cosh损失、以及常用于计算预测区间的分位数损失么？
+
 
 $$Loss(y\_ ,y)=|y\_ -y|$$
 
@@ -1639,7 +1722,10 @@ def logcoss(y_true, y_pred, eps=1e-15):
 ```
 **封装：**
 
-$$logloss=weights*(labels* \log{(predictions+epsilon)} + (1-labels)* \log{(1-predictions+epsilon)})$$
+$$logloss=weights\times(labels\times \log{(predictions+epsilon)} + (1-labels)* \log{(1-predictions+epsilon)}) $$
+
+
+$$logloss=W\times(L\times \log{(P+e)} + (1-L)\times\log{(1-P+e)}) $$
 
 ```python
 log_loss=tf.losses.log_loss(
@@ -1657,9 +1743,9 @@ log_cost=tf.reduce_mean(log_loss)
 **应用**
 Logistic回归
 
-### 9.4 平方函数:
+### 9.4 平方函数
 
-$$loss(y\_,y)=\sum{(y\_-y)^2}$$
+$$loss(y\_,y)=\frac{1}{N}\sum_{i=1}^{N}{(y\_-y)^2}$$
 
 **手动：**
 ```python
@@ -1684,7 +1770,7 @@ mean_squared_error=tf.losses.mean_squared_error(
 # mean_squared_error shape =() is a value
 
 # 平方函数实际为 均方差（MSE）
-mean_squared_error,update_op=tf.metrics.root_mean_squared_error(
+mean_squared_error,update_op=tf.metrics.mean_squared_error(
     labels,
     predictions, #　predictions　为predict＿label
     weights=None,
@@ -1694,6 +1780,22 @@ mean_squared_error,update_op=tf.metrics.root_mean_squared_error(
 )
 # mean_squared_error shape =() is a value
 ```
+**示例**
+```python
+import tensorflow as tf
+a = tf.constant([[4.0, 4.0, 4.0], [3.0, 3.0, 3.0], [1.0, 1.0, 1.0]])
+b = tf.constant([[1.0, 1.0, 1.0], [1.0, 1.0, 1.0], [2.0, 2.0, 2.0]])
+
+cost = tf.losses.mean_squared_error(a, b)     
+mse_op, mse_update_op= tf.metrics.mean_squared_error(a, b, name="mse")
+init_op=tf.initialize_all_variables()
+init_op2=tf.initialize_local_variables()
+sess.run(init_op2)
+sess.run(init_op)
+
+sess.run(cost) #4.6666665
+sess.run(mse_update_op) #4.6666665
+```
 **应用：**
 最小二乘法通常用欧式距离进行距离的度量,使用平方损失函数
 
@@ -1701,7 +1803,11 @@ mean_squared_error,update_op=tf.metrics.root_mean_squared_error(
 
 $$loss(y\_,y)=e^{-y\_·y}=\frac{e^y} {e^{y\_}}$$
 
-$$coss(y\_,y)=\frac{1}{n}\sum{e^{-y\_·y}}$$
+$$coss(y\_,y)=\frac{1}{N}\sum_{i=1}^{N}{e^{-y\_·y}}$$
+
+
+Tensorflow中没有指数损失函数的封装包，可以自定义
+
 
 ```python
 # real_label.shape ==predict_label.shape==(counts,····)
@@ -1718,7 +1824,7 @@ AdaBoost使用指数损失函数。
 
 ### 9.6 Hinge损失函数
 
-$$loss(y\_,y)=max(0,1-y\_·y)$$
+$$loss(y\_,y)=max(0,1-y\_ · y)$$
 
 **手动：**
 ```python
@@ -1742,6 +1848,11 @@ hinge_loss=tf.losses.hinge_loss(
 
 **应用**
 Hinge loss用于最大间隔（maximum-margin）分类，其中最有代表性的就是支持向量机SVM。
+
+
+### 9.7 Huber损失函数
+
+Huber损失函数，平滑平均绝对误差 相比平方误差损失，Huber损失对于数据中异常值的敏感性要差一些。在值为0时，它也是可微分的。它基本上是绝对值，在误差很小时会变为平方值。误差使其平方值的大小如何取决于一个超参数δ，该参数可以调整。当δ~ 0时，Huber损失会趋向于MAE；当δ~ ∞（很大的数字），Huber损失会趋向于MSE。
 
 
 
@@ -2939,6 +3050,12 @@ if __name__ == '__main__':
 # shell 
 python "xxx.py" --str_name hahaha
 ```
+
+**NOTE**
+在python中可以使用修饰器@对FLAGS进行更新
+
+
+
 
 ## 18.归一化  tf.nn.batch_normalization
 

@@ -1,16 +1,14 @@
 # Document:
 # http://simiki.org/docs/configuration.html
-
-url: 
+url: https://zhang787jun.github.io/Wiki
 title: Jun's personal knowledge wiki
 keywords: Technology, MachineLearning, DataMining, Wiki
-description: A wiki website 
+description: A wiki website
 author: zhang787jun
-root: /Wiki/
+root: ./Wiki
 theme: simple
 debug: True
 destination: output
 source: content
-attach: attach
-
+attach: ./attach
 # theme add MathJax.js

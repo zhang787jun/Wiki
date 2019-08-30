@@ -1,5 +1,5 @@
 ---
-title: "Tensorflow 里的优化器"
+title: "[开发]Tensorflow 里的优化器"
 date: 2019-06-12 00:00
 render: True 
 tag: Tensorflow,框架,AI,
@@ -10,13 +10,14 @@ tag: Tensorflow,框架,AI,
 # Tensorflow 里的优化器
 
 
-优化器（Optimizer）。实际上代表的是一组Operation，因为将Optimizer加入图之后，tensorflow会自动为图加入两类Operation，分别是compute_gradients()和apply_gradients()。前者接收代表损失的Tensor输入, 输出梯度Tensor，后者对梯度Tensor作一些聚合并据此用tf.assign()对模型参数变量进行更新
+优化器（Optimizer）。实际上代表的是一组Operation，因为将Optimizer加入图之后，tensorflow会自动为图加入两类Operation，分别是
+1. compute_gradients()和
+2. apply_gradients()。
+
+前者接收代表损失的Tensor输入, 输出梯度Tensor，后者对梯度Tensor作一些聚合并据此用tf.assign()对模型参数变量进行更新
 
 
 ## tf.train.Optimizer
-
-
-## 具体的 
 
 GradientDescentOptimizer
 AdagradOptimizer
@@ -38,127 +39,22 @@ optimizer = tf.train.GradientDescentOptimizer(learning_rate)
     global_step = tf.Variable(0, name='global_step', trainable=False)
     train_op = optimizer.minimize(loss, global_step=global_step)
 
-操作组 	操作
-Training 	Optimizers，Gradient Computation，Gradient Clipping，Distributed execution
-Testing 	Unit tests，Utilities，Gradient checking
-2、Tensorflow函数
-2.1 训练 (Training)
-
-一个TFRecords 文件为一个字符串序列。这种格式并非随机获取，它比较适合大规模的数据流，而不太适合需要快速分区或其他非序列获取方式。
-█ 优化 (Optimizers)
-
-tf中各种优化类提供了为损失函数计算梯度的方法，其中包含比较经典的优化算法，比如GradientDescent 和Adagrad。
-
-▶▶class tf.train.Optimizer
-操作 	描述
-class tf.train.Optimizer 	基本的优化类，该类不常常被直接调用，而较多使用其子类，
-比如GradientDescentOptimizer, AdagradOptimizer
-或者MomentumOptimizer
-tf.train.Optimizer.__init__(use_locking, name) 	创建一个新的优化器，
-该优化器必须被其子类(subclasses)的构造函数调用
-tf.train.Optimizer.minimize(loss, global_step=None, 
-var_list=None, gate_gradients=1, 
-aggregation_method=None, colocate_gradients_with_ops=False, 
-name=None, grad_loss=None) 	添加操作节点，用于最小化loss，并更新var_list
-该函数是简单的合并了compute_gradients()与apply_gradients()函数
-返回为一个优化更新后的var_list，如果global_step非None，该操作还会为global_step做自增操作
-tf.train.Optimizer.compute_gradients(loss,var_list=None, gate_gradients=1,
-aggregation_method=None, 
-colocate_gradients_with_ops=False, grad_loss=None) 	对var_list中的变量计算loss的梯度
-该函数为函数minimize()的第一部分，返回一个以元组(gradient, variable)组成的列表
-tf.train.Optimizer.apply_gradients(grads_and_vars, global_step=None, name=None) 	将计算出的梯度应用到变量上，是函数minimize()的第二部分，返回一个应用指定的梯度的操作Operation，对global_step做自增操作
-tf.train.Optimizer.get_name() 	获取名称
-
-▷ class tf.train.Optimizer 
-用法
-
-    # Create an optimizer with the desired parameters.
-    opt = GradientDescentOptimizer(learning_rate=0.1)
-    # Add Ops to the graph to minimize a cost by updating a list of variables.
-    # "cost" is a Tensor, and the list of variables contains tf.Variable objects.
-    opt_op = opt.minimize(cost, var_list=<list of variables>)
-    # Execute opt_op to do one step of training:
-    opt_op.run()
-
-    1
-    2
-    3
-    4
-    5
-    6
-    7
-
-    1
-    2
-    3
-    4
-    5
-    6
-    7
-
-▶▶在使用它们之前处理梯度 
-使用minimize()操作，该操作不仅可以计算出梯度，而且还可以将梯度作用在变量上。如果想在使用它们之前处理梯度，可以按照以下三步骤使用optimizer ：
-
-    1、使用函数compute_gradients()计算梯度
-    2、按照自己的愿望处理梯度
-    3、使用函数apply_gradients()应用处理过后的梯度
-
-例如：
-
-    # 创建一个optimizer.
-    opt = GradientDescentOptimizer(learning_rate=0.1)
-     
-    # 计算<list of variables>相关的梯度
-    grads_and_vars = opt.compute_gradients(loss, <list of variables>)
-     
-    # grads_and_vars为tuples (gradient, variable)组成的列表。
-    #对梯度进行想要的处理，比如cap处理
-    capped_grads_and_vars = [(MyCapper(gv[0]), gv[1]) for gv in grads_and_vars]
-     
-    # 令optimizer运用capped的梯度(gradients)
-    opt.apply_gradients(capped_grads_and_vars)
-
-    1
-    2
-    3
-    4
-    5
-    6
-    7
-    8
-    9
-    10
-    11
-    12
-
-    1
-    2
-    3
-    4
-    5
-    6
-    7
-    8
-    9
-    10
-    11
-    12
-
-▶▶选通梯度(Gating Gradients) 
-函数minimize() 与compute_gradients()都含有一个参数gate_gradient，用于控制在应用这些梯度时并行化的程度。
-
-其值可以取：GATE_NONE, GATE_OP 或 GATE_GRAPH 
-GATE_NONE : 并行地计算和应用梯度。提供最大化的并行执行，但是会导致有的数据结果没有再现性。比如两个matmul操作的梯度依赖输入值，使用GATE_NONE可能会出现有一个梯度在其他梯度之前便应用到某个输入中，导致出现不可再现的(non-reproducible)结果 
-GATE_OP: 对于每个操作Op，确保每一个梯度在使用之前都已经计算完成。这种做法防止了那些具有多个输入，并且梯度计算依赖输入情形中，多输入Ops之间的竞争情况出现。 
-GATE_GRAPH: 确保所有的变量对应的所有梯度在他们任何一个被使用前计算完成。该方式具有最低级别的并行化程度，但是对于想要在应用它们任何一个之前处理完所有的梯度计算时很有帮助的。
+| 操作组   | 操作                                                                       |
+| -------- | -------------------------------------------------------------------------- |
+| Training | Optimizers，Gradient Computation，Gradient Clipping，Distributed execution |
+| Testing  | Unit tests，Utilities，Gradient checking                                   |
 
 
-█ Slots
+
+
+Slots
 
 一些optimizer的之类，比如 MomentumOptimizer 和 AdagradOptimizer 分配和管理着额外的用于训练的变量。这些变量称之为’Slots’，Slots有相应的名称，可以向optimizer访问的slots名称。有助于在log debug一个训练算法以及报告slots状态
-操作 	描述
-tf.train.Optimizer.get_slot_names() 	返回一个由Optimizer所创建的slots的名称列表
-tf.train.Optimizer.get_slot(var, name) 	返回一个name所对应的slot，name是由Optimizer为var所创建
+| 操作                                   | 描述                                                   |
+| -------------------------------------- | ------------------------------------------------------ |
+| tf.train.Optimizer.get_slot_names()    | 返回一个由Optimizer所创建的slots的名称列表             |
+| tf.train.Optimizer.get_slot(var, name) | 返回一个name所对应的slot，name是由Optimizer为var所创建 |
+
 var为用于传入 minimize() 或 apply_gradients()的变量
 class tf.train.GradientDescentOptimizer 	使用梯度下降算法的Optimizer
 tf.train.GradientDescentOptimizer.__init__(learning_rate, 
@@ -254,35 +150,6 @@ decay_steps, decay_rate, staircase=False, name=None) 	对学习率进行指数�
         .minimize(...my loss..., global_step=global_step)
     )
 
-    1
-    2
-    3
-    4
-    5
-    6
-    7
-    8
-    9
-    10
-    11
-    12
-    13
-    14
-
-    1
-    2
-    3
-    4
-    5
-    6
-    7
-    8
-    9
-    10
-    11
-    12
-    13
-    14
 
 
 █ 移动平均(Moving Averages)
@@ -328,88 +195,11 @@ tf.train.ExponentialMovingAverage.variables_to_restore(moving_avg_variables=None
     saver = tf.train.Saver({shadow_var0_name: var0, shadow_var1_name: var1})
     saver.restore(...checkpoint filename...)
     # var0 and var1 now hold the moving average values
-
-    1
-    2
-    3
-    4
-    5
-    6
-    7
-    8
-    9
-    10
-    11
-    12
-    13
-    14
-    15
-    16
-    17
-    18
-    19
-    20
-    21
-    22
-    23
-    24
-    25
-    26
-    27
-    28
-    29
-    30
-    31
-    32
-
-    1
-    2
-    3
-    4
-    5
-    6
-    7
-    8
-    9
-    10
-    11
-    12
-    13
-    14
-    15
-    16
-    17
-    18
-    19
-    20
-    21
-    22
-    23
-    24
-    25
-    26
-    27
-    28
-    29
-    30
-    31
-    32
-
-▷ tf.train.ExponentialMovingAverage.variables_to_restore
+tf.train.ExponentialMovingAverage.variables_to_restore
 
      
       variables_to_restore = ema.variables_to_restore()
       saver = tf.train.Saver(variables_to_restore)
-
-    1
-    2
-    3
-    4
-
-    1
-    2
-    3
-    4
 
 
 █ 协调器和队列运行器(Coordinator and QueueRunner)
@@ -451,37 +241,6 @@ tf.train.start_queue_runners(sess=None, coord=None, daemon=True, start=True, col
     except Exception:
       ...exception that was passed to coord.request_stop()
 
-    1
-    2
-    3
-    4
-    5
-    6
-    7
-    8
-    9
-    10
-    11
-    12
-    13
-    14
-    15
-
-    1
-    2
-    3
-    4
-    5
-    6
-    7
-    8
-    9
-    10
-    11
-    12
-    13
-    14
-    15
 
 ▷ tf.train.Coordinator.stop_on_exception()
 
@@ -495,28 +254,6 @@ tf.train.start_queue_runners(sess=None, coord=None, daemon=True, start=True, col
       ...body...
     exception Exception as ex:
       coord.request_stop(ex)
-
-    1
-    2
-    3
-    4
-    5
-    6
-    7
-    8
-    9
-    10
-
-    1
-    2
-    3
-    4
-    5
-    6
-    7
-    8
-    9
-    10
 
 
 █ 布执行(Distributed execution)
@@ -1164,33 +901,6 @@ TensorFlow 提供了一个方便的继承unittest.TestCase类的方法，该类�
     if __name__ == '__main__':
       tf.test.main()
 
-    1
-    2
-    3
-    4
-    5
-    6
-    7
-    8
-    9
-    10
-    11
-    12
-    13
-
-    1
-    2
-    3
-    4
-    5
-    6
-    7
-    8
-    9
-    10
-    11
-    12
-    13
 
 
 █ 共用(Utilities)
@@ -1207,5 +917,3 @@ tf.test.is_built_with_cuda() 	返回是否Tensorflow支持CUDA(GPU)的build
 操作 	描述
 tf.test.compute_gradient(x, x_shape, y, y_shape, x_init_value=None, delta=0.001, init_targets=None) 	计算并返回理论的和数值的Jacobian矩阵
 tf.test.compute_gradient_error(x, x_shape, y, y_shape, x_init_value=None, delta=0.001, init_targets=None) 	计算梯度的error。在计算所得的与数值估计的Jacobian中 为dy/dx计算最大的error
-
-相关链接：

@@ -2,11 +2,11 @@
 <html>
 
 <head>
-    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
-    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
-    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
-    <title>Tensorflow 里的优化器 - Jun's personal knowledge wiki</title>
+    <link rel="Stylesheet" type="text/css" href="./Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="./Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="./Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="./Wiki/favicon.ico" type="image/x-icon">
+    <title>[开发]Tensorflow 里的优化器 - Jun's personal knowledge wiki</title>
     <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
     <meta name="description" content="A wiki website" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -24,15 +24,17 @@
     <div id="container">
         
 <div id="header">
-  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Scince\Library_Platform\Tensorflow">Data_Scince\Library_Platform\Tensorflow</a>&nbsp;»&nbsp;Tensorflow 里的优化器</div>
+  <div id="post-nav"><a href="./Wiki/">Home</a>&nbsp;»&nbsp;<a href="./Wiki/#Data_Scince\Library_Platform\Tensorflow">Data_Scince\Library_Platform\Tensorflow</a>&nbsp;»&nbsp;[开发]Tensorflow 里的优化器</div>
 </div>
 <div class="clearfix"></div>
-<div id="title">Tensorflow 里的优化器</div>
+<div id="title">[开发]Tensorflow 里的优化器</div>
   <div id="content">
   <h1 id="tensorflow">Tensorflow 里的优化器</h1>
-<p>优化器（Optimizer）。实际上代表的是一组Operation，因为将Optimizer加入图之后，tensorflow会自动为图加入两类Operation，分别是compute_gradients()和apply_gradients()。前者接收代表损失的Tensor输入, 输出梯度Tensor，后者对梯度Tensor作一些聚合并据此用tf.assign()对模型参数变量进行更新</p>
+<p>优化器（Optimizer）。实际上代表的是一组Operation，因为将Optimizer加入图之后，tensorflow会自动为图加入两类Operation，分别是<br />
+1. compute_gradients()和<br />
+2. apply_gradients()。</p>
+<p>前者接收代表损失的Tensor输入, 输出梯度Tensor，后者对梯度Tensor作一些聚合并据此用tf.assign()对模型参数变量进行更新</p>
 <h2 id="tftrainoptimizer">tf.train.Optimizer</h2>
-<h2 id="_1">具体的</h2>
 <p>GradientDescentOptimizer<br />
 AdagradOptimizer<br />
 AdagradDAOptimizer<br />
@@ -49,123 +51,31 @@ RMSPropOptimizer</p>
 </pre></div>
 
 
-<p>操作组     操作<br />
-Training    Optimizers，Gradient Computation，Gradient Clipping，Distributed execution<br />
-Testing     Unit tests，Utilities，Gradient checking<br />
-2、Tensorflow函数<br />
-2.1 训练 (Training)</p>
-<p>一个TFRecords 文件为一个字符串序列。这种格式并非随机获取，它比较适合大规模的数据流，而不太适合需要快速分区或其他非序列获取方式。<br />
-█ 优化 (Optimizers)</p>
-<p>tf中各种优化类提供了为损失函数计算梯度的方法，其中包含比较经典的优化算法，比如GradientDescent 和Adagrad。</p>
-<p>▶▶class tf.train.Optimizer<br />
-操作  描述<br />
-class tf.train.Optimizer    基本的优化类，该类不常常被直接调用，而较多使用其子类，<br />
-比如GradientDescentOptimizer, AdagradOptimizer<br />
-或者MomentumOptimizer<br />
-tf.train.Optimizer.<strong>init</strong>(use_locking, name)  创建一个新的优化器，<br />
-该优化器必须被其子类(subclasses)的构造函数调用<br />
-tf.train.Optimizer.minimize(loss, global_step=None, <br />
-var_list=None, gate_gradients=1, <br />
-aggregation_method=None, colocate_gradients_with_ops=False, <br />
-name=None, grad_loss=None)  添加操作节点，用于最小化loss，并更新var_list<br />
-该函数是简单的合并了compute_gradients()与apply_gradients()函数<br />
-返回为一个优化更新后的var_list，如果global_step非None，该操作还会为global_step做自增操作<br />
-tf.train.Optimizer.compute_gradients(loss,var_list=None, gate_gradients=1,<br />
-aggregation_method=None, <br />
-colocate_gradients_with_ops=False, grad_loss=None)  对var_list中的变量计算loss的梯度<br />
-该函数为函数minimize()的第一部分，返回一个以元组(gradient, variable)组成的列表<br />
-tf.train.Optimizer.apply_gradients(grads_and_vars, global_step=None, name=None)     将计算出的梯度应用到变量上，是函数minimize()的第二部分，返回一个应用指定的梯度的操作Operation，对global_step做自增操作<br />
-tf.train.Optimizer.get_name()   获取名称</p>
-<p>▷ class tf.train.Optimizer <br />
-用法</p>
-<div class="hlcode"><pre><span class="cp"># Create an optimizer with the desired parameters.</span>
-<span class="n">opt</span> <span class="o">=</span> <span class="n">GradientDescentOptimizer</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
-<span class="cp"># Add Ops to the graph to minimize a cost by updating a list of variables.</span>
-<span class="cp"># &quot;cost&quot; is a Tensor, and the list of variables contains tf.Variable objects.</span>
-<span class="n">opt_op</span> <span class="o">=</span> <span class="n">opt</span><span class="p">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">cost</span><span class="p">,</span> <span class="n">var_list</span><span class="o">=&lt;</span><span class="n">list</span> <span class="n">of</span> <span class="n">variables</span><span class="o">&gt;</span><span class="p">)</span>
-<span class="cp"># Execute opt_op to do one step of training:</span>
-<span class="n">opt_op</span><span class="p">.</span><span class="n">run</span><span class="p">()</span>
-
-<span class="mi">1</span>
-<span class="mi">2</span>
-<span class="mi">3</span>
-<span class="mi">4</span>
-<span class="mi">5</span>
-<span class="mi">6</span>
-<span class="mi">7</span>
-
-<span class="mi">1</span>
-<span class="mi">2</span>
-<span class="mi">3</span>
-<span class="mi">4</span>
-<span class="mi">5</span>
-<span class="mi">6</span>
-<span class="mi">7</span>
-</pre></div>
-
-
-<p>▶▶在使用它们之前处理梯度 <br />
-使用minimize()操作，该操作不仅可以计算出梯度，而且还可以将梯度作用在变量上。如果想在使用它们之前处理梯度，可以按照以下三步骤使用optimizer ：</p>
-<div class="hlcode"><pre><span class="mi">1</span><span class="err">、使用函数</span><span class="n">compute_gradients</span><span class="p">()</span><span class="err">计算梯度</span>
-<span class="mi">2</span><span class="err">、按照自己的愿望处理梯度</span>
-<span class="mi">3</span><span class="err">、使用函数</span><span class="n">apply_gradients</span><span class="p">()</span><span class="err">应用处理过后的梯度</span>
-</pre></div>
-
-
-<p>例如：</p>
-<div class="hlcode"><pre><span class="cp"># 创建一个optimizer.</span>
-<span class="n">opt</span> <span class="o">=</span> <span class="n">GradientDescentOptimizer</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
-
-<span class="cp"># 计算&lt;list of variables&gt;相关的梯度</span>
-<span class="n">grads_and_vars</span> <span class="o">=</span> <span class="n">opt</span><span class="p">.</span><span class="n">compute_gradients</span><span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="o">&lt;</span><span class="n">list</span> <span class="n">of</span> <span class="n">variables</span><span class="o">&gt;</span><span class="p">)</span>
-
-<span class="cp"># grads_and_vars为tuples (gradient, variable)组成的列表。</span>
-<span class="cp">#对梯度进行想要的处理，比如cap处理</span>
-<span class="n">capped_grads_and_vars</span> <span class="o">=</span> <span class="p">[(</span><span class="n">MyCapper</span><span class="p">(</span><span class="n">gv</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">gv</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="k">for</span> <span class="n">gv</span> <span class="n">in</span> <span class="n">grads_and_vars</span><span class="p">]</span>
-
-<span class="cp"># 令optimizer运用capped的梯度(gradients)</span>
-<span class="n">opt</span><span class="p">.</span><span class="n">apply_gradients</span><span class="p">(</span><span class="n">capped_grads_and_vars</span><span class="p">)</span>
-
-<span class="mi">1</span>
-<span class="mi">2</span>
-<span class="mi">3</span>
-<span class="mi">4</span>
-<span class="mi">5</span>
-<span class="mi">6</span>
-<span class="mi">7</span>
-<span class="mi">8</span>
-<span class="mi">9</span>
-<span class="mi">10</span>
-<span class="mi">11</span>
-<span class="mi">12</span>
-
-<span class="mi">1</span>
-<span class="mi">2</span>
-<span class="mi">3</span>
-<span class="mi">4</span>
-<span class="mi">5</span>
-<span class="mi">6</span>
-<span class="mi">7</span>
-<span class="mi">8</span>
-<span class="mi">9</span>
-<span class="mi">10</span>
-<span class="mi">11</span>
-<span class="mi">12</span>
-</pre></div>
-
-
-<p>▶▶选通梯度(Gating Gradients) <br />
-函数minimize() 与compute_gradients()都含有一个参数gate_gradient，用于控制在应用这些梯度时并行化的程度。</p>
-<p>其值可以取：GATE_NONE, GATE_OP 或 GATE_GRAPH <br />
-GATE_NONE : 并行地计算和应用梯度。提供最大化的并行执行，但是会导致有的数据结果没有再现性。比如两个matmul操作的梯度依赖输入值，使用GATE_NONE可能会出现有一个梯度在其他梯度之前便应用到某个输入中，导致出现不可再现的(non-reproducible)结果 <br />
-GATE_OP: 对于每个操作Op，确保每一个梯度在使用之前都已经计算完成。这种做法防止了那些具有多个输入，并且梯度计算依赖输入情形中，多输入Ops之间的竞争情况出现。 <br />
-GATE_GRAPH: 确保所有的变量对应的所有梯度在他们任何一个被使用前计算完成。该方式具有最低级别的并行化程度，但是对于想要在应用它们任何一个之前处理完所有的梯度计算时很有帮助的。</p>
-<p>█ Slots</p>
+<table>
+<thead>
+<tr>
+<th>操作组</th>
+<th>操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Training</td>
+<td>Optimizers，Gradient Computation，Gradient Clipping，Distributed execution</td>
+</tr>
+<tr>
+<td>Testing</td>
+<td>Unit tests，Utilities，Gradient checking</td>
+</tr>
+</tbody>
+</table>
+<p>Slots</p>
 <p>一些optimizer的之类，比如 MomentumOptimizer 和 AdagradOptimizer 分配和管理着额外的用于训练的变量。这些变量称之为’Slots’，Slots有相应的名称，可以向optimizer访问的slots名称。有助于在log debug一个训练算法以及报告slots状态<br />
-操作  描述<br />
-tf.train.Optimizer.get_slot_names()     返回一个由Optimizer所创建的slots的名称列表<br />
-tf.train.Optimizer.get_slot(var, name)  返回一个name所对应的slot，name是由Optimizer为var所创建<br />
-var为用于传入 minimize() 或 apply_gradients()的变量<br />
+| 操作                                   | 描述                                                   |<br />
+| -------------------------------------- | ------------------------------------------------------ |<br />
+| tf.train.Optimizer.get_slot_names()    | 返回一个由Optimizer所创建的slots的名称列表             |<br />
+| tf.train.Optimizer.get_slot(var, name) | 返回一个name所对应的slot，name是由Optimizer为var所创建 |</p>
+<p>var为用于传入 minimize() 或 apply_gradients()的变量<br />
 class tf.train.GradientDescentOptimizer     使用梯度下降算法的Optimizer<br />
 tf.train.GradientDescentOptimizer.<strong>init</strong>(learning_rate, <br />
 use_locking=False, name=’GradientDescent’)  构建一个新的梯度下降优化器(Optimizer)<br />
@@ -255,36 +165,6 @@ decay_steps, decay_rate, staircase=False, name=None)    对学习率进行指数
     <span class="n">tf</span><span class="p">.</span><span class="n">train</span><span class="p">.</span><span class="n">GradientDescentOptimizer</span><span class="p">(</span><span class="n">learning_rate</span><span class="p">)</span>
     <span class="p">.</span><span class="n">minimize</span><span class="p">(...</span><span class="n">my</span> <span class="n">loss</span><span class="p">...,</span> <span class="n">global_step</span><span class="o">=</span><span class="n">global_step</span><span class="p">)</span>
 <span class="p">)</span>
-
-<span class="mi">1</span>
-<span class="mi">2</span>
-<span class="mi">3</span>
-<span class="mi">4</span>
-<span class="mi">5</span>
-<span class="mi">6</span>
-<span class="mi">7</span>
-<span class="mi">8</span>
-<span class="mi">9</span>
-<span class="mi">10</span>
-<span class="mi">11</span>
-<span class="mi">12</span>
-<span class="mi">13</span>
-<span class="mi">14</span>
-
-<span class="mi">1</span>
-<span class="mi">2</span>
-<span class="mi">3</span>
-<span class="mi">4</span>
-<span class="mi">5</span>
-<span class="mi">6</span>
-<span class="mi">7</span>
-<span class="mi">8</span>
-<span class="mi">9</span>
-<span class="mi">10</span>
-<span class="mi">11</span>
-<span class="mi">12</span>
-<span class="mi">13</span>
-<span class="mi">14</span>
 </pre></div>
 
 
@@ -328,88 +208,12 @@ tf.train.ExponentialMovingAverage.variables_to_restore(moving_avg_variables=None
 <span class="n">saver</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">train</span><span class="p">.</span><span class="n">Saver</span><span class="p">({</span><span class="n">shadow_var0_name</span><span class="o">:</span> <span class="n">var0</span><span class="p">,</span> <span class="n">shadow_var1_name</span><span class="o">:</span> <span class="n">var1</span><span class="p">})</span>
 <span class="n">saver</span><span class="p">.</span><span class="n">restore</span><span class="p">(...</span><span class="n">checkpoint</span> <span class="n">filename</span><span class="p">...)</span>
 <span class="cp"># var0 and var1 now hold the moving average values</span>
-
-<span class="mi">1</span>
-<span class="mi">2</span>
-<span class="mi">3</span>
-<span class="mi">4</span>
-<span class="mi">5</span>
-<span class="mi">6</span>
-<span class="mi">7</span>
-<span class="mi">8</span>
-<span class="mi">9</span>
-<span class="mi">10</span>
-<span class="mi">11</span>
-<span class="mi">12</span>
-<span class="mi">13</span>
-<span class="mi">14</span>
-<span class="mi">15</span>
-<span class="mi">16</span>
-<span class="mi">17</span>
-<span class="mi">18</span>
-<span class="mi">19</span>
-<span class="mi">20</span>
-<span class="mi">21</span>
-<span class="mi">22</span>
-<span class="mi">23</span>
-<span class="mi">24</span>
-<span class="mi">25</span>
-<span class="mi">26</span>
-<span class="mi">27</span>
-<span class="mi">28</span>
-<span class="mi">29</span>
-<span class="mi">30</span>
-<span class="mi">31</span>
-<span class="mi">32</span>
-
-<span class="mi">1</span>
-<span class="mi">2</span>
-<span class="mi">3</span>
-<span class="mi">4</span>
-<span class="mi">5</span>
-<span class="mi">6</span>
-<span class="mi">7</span>
-<span class="mi">8</span>
-<span class="mi">9</span>
-<span class="mi">10</span>
-<span class="mi">11</span>
-<span class="mi">12</span>
-<span class="mi">13</span>
-<span class="mi">14</span>
-<span class="mi">15</span>
-<span class="mi">16</span>
-<span class="mi">17</span>
-<span class="mi">18</span>
-<span class="mi">19</span>
-<span class="mi">20</span>
-<span class="mi">21</span>
-<span class="mi">22</span>
-<span class="mi">23</span>
-<span class="mi">24</span>
-<span class="mi">25</span>
-<span class="mi">26</span>
-<span class="mi">27</span>
-<span class="mi">28</span>
-<span class="mi">29</span>
-<span class="mi">30</span>
-<span class="mi">31</span>
-<span class="mi">32</span>
 </pre></div>
 
 
-<p>▷ tf.train.ExponentialMovingAverage.variables_to_restore</p>
+<p>tf.train.ExponentialMovingAverage.variables_to_restore</p>
 <div class="hlcode"><pre>  <span class="n">variables_to_restore</span> <span class="o">=</span> <span class="n">ema</span><span class="p">.</span><span class="n">variables_to_restore</span><span class="p">()</span>
   <span class="n">saver</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">train</span><span class="p">.</span><span class="n">Saver</span><span class="p">(</span><span class="n">variables_to_restore</span><span class="p">)</span>
-
-<span class="mi">1</span>
-<span class="mi">2</span>
-<span class="mi">3</span>
-<span class="mi">4</span>
-
-<span class="mi">1</span>
-<span class="mi">2</span>
-<span class="mi">3</span>
-<span class="mi">4</span>
 </pre></div>
 
 
@@ -448,38 +252,6 @@ tf.train.start_queue_runners(sess=None, coord=None, daemon=True, start=True, col
   <span class="p">...</span><span class="n">was</span> <span class="n">called</span><span class="p">.</span>
 <span class="n">except</span> <span class="n">Exception</span><span class="o">:</span>
   <span class="p">...</span><span class="n">exception</span> <span class="n">that</span> <span class="n">was</span> <span class="n">passed</span> <span class="n">to</span> <span class="n">coord</span><span class="p">.</span><span class="n">request_stop</span><span class="p">()</span>
-
-<span class="mi">1</span>
-<span class="mi">2</span>
-<span class="mi">3</span>
-<span class="mi">4</span>
-<span class="mi">5</span>
-<span class="mi">6</span>
-<span class="mi">7</span>
-<span class="mi">8</span>
-<span class="mi">9</span>
-<span class="mi">10</span>
-<span class="mi">11</span>
-<span class="mi">12</span>
-<span class="mi">13</span>
-<span class="mi">14</span>
-<span class="mi">15</span>
-
-<span class="mi">1</span>
-<span class="mi">2</span>
-<span class="mi">3</span>
-<span class="mi">4</span>
-<span class="mi">5</span>
-<span class="mi">6</span>
-<span class="mi">7</span>
-<span class="mi">8</span>
-<span class="mi">9</span>
-<span class="mi">10</span>
-<span class="mi">11</span>
-<span class="mi">12</span>
-<span class="mi">13</span>
-<span class="mi">14</span>
-<span class="mi">15</span>
 </pre></div>
 
 
@@ -494,28 +266,6 @@ tf.train.start_queue_runners(sess=None, coord=None, daemon=True, start=True, col
   <span class="p">...</span><span class="n">body</span><span class="p">...</span>
 <span class="n">exception</span> <span class="n">Exception</span> <span class="n">as</span> <span class="n">ex</span><span class="o">:</span>
   <span class="n">coord</span><span class="p">.</span><span class="n">request_stop</span><span class="p">(</span><span class="n">ex</span><span class="p">)</span>
-
-<span class="mi">1</span>
-<span class="mi">2</span>
-<span class="mi">3</span>
-<span class="mi">4</span>
-<span class="mi">5</span>
-<span class="mi">6</span>
-<span class="mi">7</span>
-<span class="mi">8</span>
-<span class="mi">9</span>
-<span class="mi">10</span>
-
-<span class="mi">1</span>
-<span class="mi">2</span>
-<span class="mi">3</span>
-<span class="mi">4</span>
-<span class="mi">5</span>
-<span class="mi">6</span>
-<span class="mi">7</span>
-<span class="mi">8</span>
-<span class="mi">9</span>
-<span class="mi">10</span>
 </pre></div>
 
 
@@ -536,7 +286,7 @@ tf.train.Server.target  返回tf.Session所连接的目标服务器<br />
 tf.train.Server.server_def  返回该服务的tf.train.ServerDef<br />
 tf.train.Server.start()     开启服务<br />
 tf.train.Server.join()  阻塞直到服务已经关闭</p>
-<h1 id="_2"></h1>
+<h1 id="_1"></h1>
 <p>class tf.train.Supervisor   一个训练辅助器，用于checkpoints模型以及计算的summaries。该监视器只是一个小的外壳(wrapper),用于Coordinator, a Saver, 和a SessionManager周围<br />
 tf.train.Supervisor.<strong>init</strong>(graph=None, ready_op=0, is_chief=True, init_op=0, init_feed_dict=None, local_init_op=0, logdir=None, <br />
 summary_op=0, saver=0, global_step=0, <br />
@@ -555,13 +305,13 @@ tf.train.Supervisor.stop_on_exception()     参考 Coordinator.stop_on_exception
 tf.train.Supervisor.Loop(timer_interval_secs, target, args=None, kwargs=None)   开启一个循环器线程用于调用一个函数<br />
 每经过timer_interval_secs秒执行，target(<em>args, </em>*kwargs)<br />
 tf.train.Supervisor.coord   返回监督器(Supervisor)使用的协调器(Coordinator )</p>
-<h1 id="_3"></h1>
+<h1 id="_2"></h1>
 <p>class tf.train.SessionManager   训练的辅助器，用于从checkpoint恢复数据以及创建一个session<br />
 tf.train.SessionManager.<strong>init</strong>(local_init_op=None, ready_op=None, graph=None, recovery_wait_secs=30)  创建一个SessionManager<br />
 tf.train.SessionManager.prepare_session(master, init_op=None, saver=None, checkpoint_dir=None, wait_for_checkpoint=False, max_wait_secs=7200, config=None, init_feed_dict=None, init_fn=None)   创建一个session，并确保model可以被使用<br />
 tf.train.SessionManager.recover_session(master, saver=None, checkpoint_dir=None, wait_for_checkpoint=False, max_wait_secs=7200, config=None)    创建一个session，如果可以的话，使用恢复方法创建<br />
 tf.train.SessionManager.wait_for_session(master, config=None, max_wait_secs=inf)    创建一个session，并等待model准备完成</p>
-<h1 id="_4"></h1>
+<h1 id="_3"></h1>
 <p>class tf.train.ClusterSpec  将一个集群表示为一系列“tasks”，并整合至“jobs”中<br />
 tf.train.ClusterSpec.as_cluster_def()   返回该cluster中一个tf.train.ClusterDef协议的buffer<br />
 tf.train.ClusterSpec.as_dict()  返回一个字典，由job名称对应于网络地址<br />
@@ -1055,7 +805,7 @@ TensorBoard 将从事件文件中提取该graph，并将其显示。所以我们
 操作  描述<br />
 tf.train.global_step(sess, global_step_tensor)  一个用于获取全局step的小辅助器<br />
 tf.train.write_graph(graph_def, logdir, name, as_text=True)     将一个graph proto写入一个文件中</p>
-<h1 id="_5"></h1>
+<h1 id="_4"></h1>
 <div class="hlcode"><pre><span class="o">:</span><span class="err">—</span>
 </pre></div>
 
@@ -1167,34 +917,6 @@ tf.py_func(func, inp, Tout, stateful=True, name=None)   将python函数包装成
 
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="err">&#39;</span><span class="n">__main__</span><span class="err">&#39;</span><span class="o">:</span>
   <span class="n">tf</span><span class="p">.</span><span class="n">test</span><span class="p">.</span><span class="n">main</span><span class="p">()</span>
-
-<span class="mi">1</span>
-<span class="mi">2</span>
-<span class="mi">3</span>
-<span class="mi">4</span>
-<span class="mi">5</span>
-<span class="mi">6</span>
-<span class="mi">7</span>
-<span class="mi">8</span>
-<span class="mi">9</span>
-<span class="mi">10</span>
-<span class="mi">11</span>
-<span class="mi">12</span>
-<span class="mi">13</span>
-
-<span class="mi">1</span>
-<span class="mi">2</span>
-<span class="mi">3</span>
-<span class="mi">4</span>
-<span class="mi">5</span>
-<span class="mi">6</span>
-<span class="mi">7</span>
-<span class="mi">8</span>
-<span class="mi">9</span>
-<span class="mi">10</span>
-<span class="mi">11</span>
-<span class="mi">12</span>
-<span class="mi">13</span>
 </pre></div>
 
 
@@ -1209,7 +931,6 @@ tf.test.is_built_with_cuda()    返回是否Tensorflow支持CUDA(GPU)的build</p
 操作  描述<br />
 tf.test.compute_gradient(x, x_shape, y, y_shape, x_init_value=None, delta=0.001, init_targets=None)     计算并返回理论的和数值的Jacobian矩阵<br />
 tf.test.compute_gradient_error(x, x_shape, y, y_shape, x_init_value=None, delta=0.001, init_targets=None)   计算梯度的error。在计算所得的与数值估计的Jacobian中 为dy/dx计算最大的error</p>
-<p>相关链接：</p>
 </div>
 
     </div>

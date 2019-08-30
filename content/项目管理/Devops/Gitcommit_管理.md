@@ -1,5 +1,5 @@
 ---
-title: "commit_管理 管理"
+title: "[版本管理]git 提交的commit规范"
 layout: page
 date: 2099-06-02 00:00
 ---

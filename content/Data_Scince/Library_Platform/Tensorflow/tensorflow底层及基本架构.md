@@ -1,5 +1,5 @@
 ---
-title: "Tensorflow底层及基本架构"
+title: "[环境部署]Tensorflow底层及基本架构"
 date: 2019-06-12 00:00
 render: True 
 tag: Tensorflow,框架,AI,

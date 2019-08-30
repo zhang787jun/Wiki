@@ -1,5 +1,5 @@
 ---
-title: "关于RNN的几点理解"
+title: "[开发]结合Tensorflow 关于RNN的几点理解"
 date: 2019-06-17 00:00
 ---
 # 关于RNN的几点理解

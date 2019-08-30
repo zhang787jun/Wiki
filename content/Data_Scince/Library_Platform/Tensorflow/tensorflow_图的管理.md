@@ -1,5 +1,5 @@
 ---
-title: "Tensorflow 图的管理"
+title: "[测试]Tensorflow 图的管理"
 date: 2019-06-12 00:00
 render: True 
 tag: Tensorflow,框架,AI,

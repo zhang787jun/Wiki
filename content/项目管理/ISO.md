@@ -219,9 +219,10 @@ date: 2099-06-02 00:00
 标准详情：[查看](http://www.std.gov.cn/gb/search/gbDetailed?id=71F772D77B50D3A7E05397BE0A0AB82A)
 标准全文：[GB/T 14394-2008](http://www.gb688.cn/bzgk/gb/newGbInfo?hcno=36DA2BEACE715BA9CFFE9CB5BE1F7262)
 
+[^1]
+
 # 参考资料
 
-[1] 
-[2] 
+[^1]:  https://github.com/zhang787jun/Project_Manage
 
 

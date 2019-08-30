@@ -2,11 +2,11 @@
 <html>
 
 <head>
-    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
-    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
-    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
-    <title>Tensorflow 的几个模块理解 - Jun's personal knowledge wiki</title>
+    <link rel="Stylesheet" type="text/css" href="./Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="./Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="./Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="./Wiki/favicon.ico" type="image/x-icon">
+    <title>[开发]Tensorflow 的几个模块理解(core) - Jun's personal knowledge wiki</title>
     <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
     <meta name="description" content="A wiki website" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -24,10 +24,10 @@
     <div id="container">
         
 <div id="header">
-  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Scince\Library_Platform\Tensorflow">Data_Scince\Library_Platform\Tensorflow</a>&nbsp;»&nbsp;Tensorflow 的几个模块理解</div>
+  <div id="post-nav"><a href="./Wiki/">Home</a>&nbsp;»&nbsp;<a href="./Wiki/#Data_Scince\Library_Platform\Tensorflow">Data_Scince\Library_Platform\Tensorflow</a>&nbsp;»&nbsp;[开发]Tensorflow 的几个模块理解(core)</div>
 </div>
 <div class="clearfix"></div>
-<div id="title">Tensorflow 的几个模块理解</div>
+<div id="title">[开发]Tensorflow 的几个模块理解(core)</div>
   <div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
 <li><a href="#tensorflow">Tensorflow 的几个模块理解</a><ul>
@@ -48,16 +48,16 @@
 <li><a href="#2">2. 设备的管理</a><ul>
 <li><a href="#21-tfdevice">2.1 tf.device</a></li>
 <li><a href="#22">2.2 当设备为分布式设备时候</a></li>
-<li><a href="#23">2.3 产看可用设备</a></li>
+<li><a href="#23">2.3 查看可用设备</a></li>
 </ul>
 </li>
 <li><a href="#3-tfdata">3. 数据的输入（tf.data）</a><ul>
 <li><a href="#1">1. 构建数据集</a></li>
 <li><a href="#2_1">2. 构建迭代器</a><ul>
 <li><a href="#1-one-shot">1. one-shot</a></li>
-<li><a href="#1-initializable">1. initializable （可初始化的）</a></li>
-<li><a href="#2-reinitializable">2. reinitializable （可重复初始化的（一般针对多个具有相同数据结构的数据集））</a></li>
-<li><a href="#3-feedable-">3. feedable （可反馈的--正对有调用机制的）</a></li>
+<li><a href="#2-initializable">2. initializable （可初始化的）</a></li>
+<li><a href="#3-reinitializable">3. reinitializable （可重复初始化的）</a></li>
+<li><a href="#4-feedable-">4. feedable（反馈的--正对有调用机制的）</a></li>
 </ul>
 </li>
 <li><a href="#3">3. 数据集的操作</a><ul>
@@ -72,7 +72,7 @@
 </ul>
 </li>
 <li><a href="#4-io">4. I/O 问题</a><ul>
-<li><a href="#41-tfrecord">4.1 TFRecord</a><ul>
+<li><a href="#41-tfrecord">4.1 TFRecord 格式</a><ul>
 <li><a href="#411-tfrecord">4.1.1  TFRecord 是什么？</a></li>
 <li><a href="#412-tfrecordqueuerunner">4.1.2  为什么要使用TFRecord和Queuerunner?</a></li>
 <li><a href="#413-tfrecord-example">4.1.3 TFRecord 核心--Example</a><ul>
@@ -110,9 +110,11 @@
 </li>
 <li><a href="#3_3">3. 怎么保存</a><ul>
 <li><a href="#1_3">1.保存</a></li>
-<li><a href="#2-pd">2 pd 文件加载</a></li>
+<li><a href="#2-pd">2 pd 文件加载</a><ul>
 <li><a href="#1_4">1.保存</a></li>
 <li><a href="#2_6">2.加载</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#3-savedmodel">3. SavedModel 格式</a></li>
@@ -134,20 +136,36 @@
 </ul>
 </li>
 <li><a href="#7-tfmetrics">7. 评价模型的优劣（tf.metrics）</a><ul>
-<li><a href="#71-tfmetrics">7.1 tf.metrics类的特点</a></li>
-<li><a href="#72">7.2 如何评价一个模型</a><ul>
-<li><a href="#1-error">1 误差 error</a><ul>
-<li><a href="#1_6">1. 绝对误差</a></li>
-<li><a href="#2_8">2. 相对误差</a></li>
-<li><a href="#3-">3. 平方差（方差）--离散度</a></li>
+<li><a href="#71-tfmetrics">7.1 tf.metrics 类</a><ul>
+<li><a href="#1tfmetrics">1.tf.metrics 类的通用特性</a></li>
+<li><a href="#2-tfmetrics">2. tf.metrics 的执行过程</a></li>
+<li><a href="#3-tfmetrics-tfloss">3. tf.metrics 与 tf.loss 的区别</a></li>
 </ul>
 </li>
-<li><a href="#2_9">2 混合矩阵</a><ul>
+<li><a href="#72">7.2 如何评价一个模型</a><ul>
+<li><a href="#1-error-">1 误差 error--离散度的测量</a><ul>
+<li><a href="#1-mae">1. 平均绝对误差 MAE</a></li>
+<li><a href="#2-mre">2. 平均相对误差 MRE</a></li>
+<li><a href="#3-mse">3. 平方差（方差）MSE</a></li>
+<li><a href="#4-rmse">4. 均方差(标准差) RMSE</a></li>
+<li><a href="#5_1">5. 余弦相似性</a></li>
+</ul>
+</li>
+<li><a href="#2_8">2 混合矩阵</a><ul>
 <li><a href="#1-accuracy">1. 准确率 (accuracy)</a></li>
 <li><a href="#2-precision">2. 精确率 (precision)</a></li>
+<li><a href="#3-recall">3. 召回率 (recall)</a></li>
+<li><a href="#4-auc">4. AUC</a></li>
+<li><a href="#5-sensitivity">5. 敏感度(sensitivity)</a></li>
+<li><a href="#6-specificity">6. 特异度(specificity)</a></li>
+<li><a href="#7">7. 各种数量</a></li>
 </ul>
 </li>
-<li><a href="#3_4">3 基本统计量</a></li>
+<li><a href="#3_4">3 基本统计量</a><ul>
+<li><a href="#1_6">1. 平均数</a></li>
+<li><a href="#2_9">2. 百分百</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -160,9 +178,10 @@
 <li><a href="#_1">对于二分类问题</a></li>
 </ul>
 </li>
-<li><a href="#94">9.4 平方函数:</a></li>
+<li><a href="#94">9.4 平方函数</a></li>
 <li><a href="#95">9.5 指数损失函数</a></li>
 <li><a href="#96-hinge">9.6 Hinge损失函数</a></li>
+<li><a href="#97-huber">9.7 Huber损失函数</a></li>
 <li><a href="#97-loss-tfnnloss">9.7. 神经网络里面的loss （tf.nn.loss）</a><ul>
 <li><a href="#_2">熵</a></li>
 <li><a href="#971-tfnnsigmoid_cross_entropy_with_logits">9.7.1  tf.nn.sigmoid_cross_entropy_with_logits</a></li>
@@ -550,7 +569,7 @@ sess.run(Scaffold.init_op) 初始化模型<blockquote>
 <p>intra_op_parallelism_threads 控制运算符op内部的并行(一个op内部的多个并行)</p>
 <p>https://blog.csdn.net/rockingdingo/article/details/55652662</p>
 <hr />
-<h3 id="23">2.3 产看可用设备</h3>
+<h3 id="23">2.3 查看可用设备</h3>
 <div class="hlcode"><pre><span class="kn">from</span> <span class="nn">tensorflow.python.client</span> <span class="kn">import</span> <span class="n">device_lib</span>
 
 <span class="k">print</span> <span class="p">(</span><span class="s">&quot;可用计算硬件情况：{}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">device_lib</span><span class="o">.</span><span class="n">list_local_devices</span><span class="p">()))</span>
@@ -704,7 +723,7 @@ sess.run(Scaffold.init_op) 初始化模型<blockquote>
 </tr>
 </tbody>
 </table>
-<h4 id="1-initializable">1. initializable （可初始化的）</h4>
+<h4 id="2-initializable">2. initializable （可初始化的）</h4>
 <blockquote>
 <p>Q: 为什么要创立 initializable的 dataset？<br />
 A:当我们想要创建一个动态的dataset的时候</p>
@@ -746,7 +765,7 @@ A:当我们想要创建一个动态的dataset的时候</p>
 </pre></div>
 
 
-<h4 id="2-reinitializable">2. reinitializable （可重复初始化的（一般针对多个具有相同数据结构的数据集））</h4>
+<h4 id="3-reinitializable">3. reinitializable （可重复初始化的）</h4>
 <div class="hlcode"><pre>        <span class="c"># 构建dataset </span>
         <span class="c"># 定义一个具有相同结构的 训练数据集 和 验证集</span>
         <span class="n">training_dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
@@ -777,7 +796,7 @@ A:当我们想要创建一个动态的dataset的时候</p>
 </pre></div>
 
 
-<h4 id="3-feedable-">3. feedable （可反馈的--正对有调用机制的）</h4>
+<h4 id="4-feedable-">4. feedable（反馈的--正对有调用机制的）</h4>
 <p>一个调用机制</p>
 <blockquote>
 <ol>
@@ -958,7 +977,7 @@ i. 下载并转换为 TFRecord 格式文档包含用于创建 TFRecord 的信�
 <li>tensorflow c++文件操作接口支持多个文件系统实现，包括本地文件、谷歌云存储(以gs://开头)和HDFS(以HDFS://开头)，tensorflow封装这些接口到tf.gfile，以便我们可以使用这些接口来存储和加载检查点文件、将tensorboard log信息写到文本里以及访问训练数据(在其他用途里)。但是，如果所有文件都放在本地，那么我们直接使用python提供的常规文本操作接口也是一样效果且毫无问题的</li>
 </ol>
 <p>https://zhuanlan.zhihu.com/p/31536538</p>
-<h3 id="41-tfrecord">4.1 TFRecord</h3>
+<h3 id="41-tfrecord">4.1 TFRecord 格式</h3>
 <h4 id="411-tfrecord">4.1.1  TFRecord 是什么？</h4>
 <blockquote>
 <p>TFRecord 是谷歌推荐的一种二进制<code>文件格式</code>，理论上它可以保存任何格式的信息。</p>
@@ -1525,7 +1544,7 @@ TFLite：基于flatbuf对模型进行优化，可以直接部署到Android、iOS
 
 </li>
 </ol>
-<h4 id="1_4">1.保存</h4>
+<h5 id="1_4">1.保存</h5>
 <div class="hlcode"><pre><span class="c">#1. 创建saver</span>
 
 <span class="n">saver</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Saver</span><span class="p">()</span>
@@ -1538,7 +1557,7 @@ TFLite：基于flatbuf对模型进行优化，可以直接部署到Android、iOS
 </pre></div>
 
 
-<h4 id="2_6">2.加载</h4>
+<h5 id="2_6">2.加载</h5>
 <ol>
 <li>加载持久化图<div class="hlcode"><pre><span class="n">saver</span><span class="o">=</span><span class="n">tf</span><span class="p">.</span><span class="n">train</span><span class="p">.</span><span class="n">import_meta_graph</span><span class="p">(</span><span class="err">“</span><span class="n">save</span><span class="o">/</span><span class="n">model</span><span class="p">.</span><span class="n">ckpt</span><span class="p">.</span><span class="n">meta</span><span class="err">”</span><span class="p">)</span>
 </pre></div>
@@ -1667,45 +1686,92 @@ TFLite：基于flatbuf对模型进行优化，可以直接部署到Android、iOS
 
 
 <h2 id="7-tfmetrics">7. 评价模型的优劣（tf.metrics）</h2>
-<h3 id="71-tfmetrics">7.1 tf.metrics类的特点</h3>
+<h3 id="71-tfmetrics">7.1 tf.metrics 类</h3>
+<h4 id="1tfmetrics">1.tf.metrics 类的通用特性</h4>
 <ol>
-<li>会创建几个变量，变量会加入tf.GraphKeys.LOCAL_VARIABLES集合中所以需要初始化 LOCAL_VARIABLES</li>
+<li><strong>需要初始化 LOCAL_VARIABLES</strong>。</li>
 </ol>
+<p>计算时会创建几个变量，变量会加入tf.GraphKeys.LOCAL_VARIABLES集合中，所以需要初始化 LOCAL_VARIABLES。<br />
+   如果不重新初始化这些 LOCAL_VARIABLES，计算的tf.metrics的几个本地变量将持续更新，不随着一个batch的结束而结束。</p>
 <div class="hlcode"><pre><span class="n">init_local_variables</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">initialize_local_variables</span><span class="p">()</span>
 <span class="n">sess</span><span class="o">.</span><span class="n">run</span> <span class="p">(</span><span class="n">init_local_variables</span><span class="p">)</span>
 </pre></div>
 
 
 <ol>
-<li>返回两个tensorflow op</li>
+<li>返回两个tensorflow op。</li>
 </ol>
 <div class="hlcode"><pre><span class="c"># accuracy（相当于calculate_accuracy()）</span>
 <span class="c"># update_op（相当于update_running_variables()）</span>
-
 <span class="n">accuracy</span><span class="p">,</span> <span class="n">update_op</span> <span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">XXX</span>
 </pre></div>
 
 
-<h3 id="72">7.2 如何评价一个模型</h3>
-<h4 id="1-error">1 误差 error</h4>
-<h5 id="1_6">1. 绝对误差</h5>
-<p>mean_absolute_error(...): Computes the mean absolute error between the labels and predictions.</p>
-<h5 id="2_8">2. 相对误差</h5>
-<p>mean_relative_error(...): Computes the mean relative error by normalizing with the given values.</p>
-<h5 id="3-">3. 平方差（方差）--离散度</h5>
-<p>mean_squared_error(...): Computes the mean squared error between the labels and predictions.</p>
+<h4 id="2-tfmetrics">2. tf.metrics 的执行过程</h4>
+<p>以 tf.metrics.accuracy(predictions,labels )为例：<br />
+1. 构建2个本地变量 LOCAL_VARIABLES: total 和 count<br />
+2. 本地变量 total 和 count 初始化设置为 0<br />
+3. 当执行 accuracy_op 的时候，只是运行除法 0/0 ==0<br />
+4. 当执行 accuracy_update_op 的时候, 根据输入的predictions,labels的情况更新total 和count变化，并运行除法</p>
+<h4 id="3-tfmetrics-tfloss">3. tf.metrics 与 tf.loss 的区别</h4>
 <ol>
-<li>均方差(标准差)--离散度<br />
-   root_mean_squared_error(...): Computes the root mean squared error between the labels and predictions.</li>
-<li>余弦相似性<br />
-mean_cosine_distance(...): Computes the cosine distance between the labels and predictions.</li>
+<li>tf.loss 及其子类用于在反向传播期间更新模型。 tf.metrics用于评估模型。</li>
+<li>tf.loss 是直接针对输入到 tf.loss.xxx(predictions,labels) 的predictions,labels进行计算； tf.metrics是根据输入到tf.metrics.xxx(predictions,labels)的predictions,labels情况，将其添加到 从上一个本地变量初始化开始的数据集，根据更新的数据集进行计算。</li>
 </ol>
-<h4 id="2_9">2 混合矩阵</h4>
+<h3 id="72">7.2 如何评价一个模型</h3>
+<h4 id="1-error-">1 误差 error--离散度的测量</h4>
+<h5 id="1-mae">1. 平均绝对误差 MAE</h5>
+<p>平均绝对误差 MAE,也称L1损失</p>
+<p>$$AE(y_ ,y)=|y_ -y|$$</p>
+<p>$$MAE(y_ ,y)=\frac{1}{N}\sum\ |y_ -y|$$</p>
+<p><img alt="" src="../../../../attach/images/2019-08-29-10-36-45.png" /></p>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">mean_absolute_error</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Computes the mean absolute error between the labels and predictions.</p>
+<h5 id="2-mre">2. 平均相对误差 MRE</h5>
+<p>相对误差 Relative Error (RE)<br />
+$$RE(y_ ,y)=\frac{|y_ -y|}{y}$$</p>
+<p>平均相对误差 Mean Relative Error (MRE)，也称为L2损失<br />
+$$MRE(y_ ,y)=\frac{1}{N}\sum\ RE(y_ ,y)=\frac{1}{N}\sum\frac{|y_ -y|}{y}$$</p>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">mean_relative_error</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+</pre></div>
+
+
+<p>Computes the mean relative error by normalizing with the given values.</p>
+<h5 id="3-mse">3. 平方差（方差）MSE</h5>
+<p>平方误差 squared_error  (SE)<br />
+$$SE(y_ ,y)=(y_ -y)^2$$</p>
+<p>平均相对误差 Mean Relative Error (MRE)，也称为L2损失<br />
+$$MRE(y_ ,y)=\frac{1}{N}\sum\ SE(y_ ,y)=\frac{1}{N}\sum(y_ -y)^2$$</p>
+<p><img alt="" src="../../../../attach/images/2019-08-29-10-37-13.png" /></p>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+</pre></div>
+
+
+<p>Computes the mean squared error between the labels and predictions.</p>
+<h5 id="4-rmse">4. 均方差(标准差) RMSE</h5>
+<p>$$MRE(y_ ,y)=\frac{1}{N}\sqrt{\sum(y_ -y)^2} $$</p>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">root_mean_squared_error</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+</pre></div>
+
+
+<p>Computes the root mean squared error between the labels and predictions.</p>
+<h5 id="5_1">5. 余弦相似性</h5>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">mean_cosine_distance</span><span class="p">(</span><span class="o">...</span><span class="p">):</span>
+</pre></div>
+
+
+<p>Computes the cosine distance between the labels and predictions.</p>
+<h4 id="2_8">2 混合矩阵</h4>
 <p><img alt="avatar" src="https://upload-images.jianshu.io/upload_images/7252179-dbad746fab87dc42.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/646/format/webp" /></p>
 <h5 id="1-accuracy">1. 准确率 (accuracy)</h5>
 <p>$$ accuracy =\frac{正确预测的数量}{样本总数} $$</p>
-<p>tf.metrics.accuracy()</p>
-<div class="hlcode"><pre><span class="n">real_label</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">]])</span> <span class="c"># [1] [1] [1]</span>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">accuracy</span><span class="p">()</span>
+
+
+<span class="n">real_label</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">],[</span><span class="mi">1</span><span class="p">]])</span> <span class="c"># [1] [1] [1]</span>
 <span class="n">predict_label</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span> <span class="c"># [1] [1] [1]</span>
 
 <span class="n">accuracy_op</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">accuracy</span><span class="p">(</span><span class="n">labels</span><span class="o">=</span><span class="n">real_label</span><span class="p">,</span> <span class="n">predictions</span><span class="o">=</span><span class="n">predict_label</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;accuracy_op&quot;</span><span class="p">)</span>
@@ -1729,44 +1795,46 @@ mean_cosine_distance(...): Computes the cosine distance between the labels and p
 </pre></div>
 
 
-<ol>
-<li>召回率 (recall)<br />
-   在所有可能的正类别标签中，模型正确地识别出了多少个？即<br />
-   $$recall=正例数/(正例数+假负例数)$$<br />
-   ```python<br />
-   tf.metrics.recall()</li>
-</ol>
-<p>```<br />
-4. AUC：ROC 曲线下面积 (AUC, Area under the ROC Curve)</p>
+<h5 id="3-recall">3. 召回率 (recall)</h5>
+<p>在所有可能的正类别标签中，模型正确地识别出了多少个？即<br />
+   $$recall=\frac{正例数}{(正例数+假负例数)}$$</p>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">recall</span><span class="p">()</span>
+</pre></div>
+
+
+<h5 id="4-auc">4. AUC</h5>
+<p>AUC：ROC 曲线下面积 (AUC, Area under the ROC Curve)</p>
 <blockquote>
 <p>受试者工作特征曲线（receiver operating characteristic，简称 ROC 曲线）</p>
 </blockquote>
-<p>auc(...): Computes the approximate AUC via a Riemann sum.</p>
-<ol>
-<li>敏感度(sensitivity)</li>
-</ol>
-<p>tf.metrics.mean_iou()<br />
-6. 特异度(specificity)<br />
-sensitivity_at_specificity(...): Computes the specificity at a given sensitivity.</p>
-<ol>
-<li>数量<br />
-false_negatives(...): Computes the total number of false negatives.<br />
-false_positives(...): Sum the weights of false positives.<br />
-true_negatives(...): Sum the weights of true_negatives.<br />
-true_positives(...): Sum the weights of true_positives.</li>
-</ol>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">auc</span><span class="p">()</span>
+<span class="c"># Computes the approximate AUC via a Riemann sum.</span>
+</pre></div>
+
+
+<h5 id="5-sensitivity">5. 敏感度(sensitivity)</h5>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">mean_iou</span><span class="p">()</span>
+</pre></div>
+
+
+<h5 id="6-specificity">6. 特异度(specificity)</h5>
+<p>sensitivity_at_specificity(...): Computes the specificity at a given sensitivity.</p>
+<h5 id="7">7. 各种数量</h5>
+<p>false_negatives(...):<br />
+ Computes the total number of false negatives.<br />
+false_positives(...): <br />
+Sum the weights of false positives.<br />
+true_negatives(...): <br />
+Sum the weights of true_negatives.<br />
+true_positives(...): </p>
+<p>Sum the weights of true_positives.</p>
 <h4 id="3_4">3 基本统计量</h4>
-<p>mean_iou(...): Calculate per-step mean Intersection-Over-Union (mIOU).</p>
-<ol>
-<li>
-<p>平均数<br />
-mean(...): Computes the (weighted) mean of the given values.</p>
-</li>
-<li>
-<p>百分百<br />
-percentage_below(...): Computes the percentage of values less than the given threshold.</p>
-</li>
-</ol>
+<p>mean_iou(...):</p>
+<p>Calculate per-step mean Intersection-Over-Union (mIOU).</p>
+<h5 id="1_6">1. 平均数</h5>
+<p>mean(...): Computes the (weighted) mean of the given values.</p>
+<h5 id="2_9">2. 百分百</h5>
+<p>percentage_below(...): Computes the percentage of values less than the given threshold.</p>
 <h2 id="8-scope">8. 代码的可读性--作用域(scope)</h2>
 <p>-(tf.name_scope/tf.variable_scope)</p>
 <p>TensorFlow doesn’t know what nodes should be grouped together, unless you tell it to<br />
@@ -1813,6 +1881,7 @@ TensorFlow 并不知道那个node 需要本整合<br />
 <li>连续数据</li>
 <li>回归</li>
 </ol>
+<p>tf.loss 类计算的都是平均值</p>
 <h3 id="91-0-1">9.1.  0-1函数</h3>
 <p>$$<br />
 Loss(y_ ,y)=\begin{cases}<br />
@@ -1856,6 +1925,7 @@ $$<br />
 \end{cases}<br />
 $$</p>
 <h3 id="92">9.2  绝对值损失</h3>
+<p>Huber损失、Log-Cosh损失、以及常用于计算预测区间的分位数损失么？</p>
 <p>$$Loss(y_ ,y)=|y_ -y|$$</p>
 <p><strong>手动：</strong></p>
 <div class="hlcode"><pre><span class="c"># real_label shape =(N,···)</span>
@@ -1943,7 +2013,8 @@ $$</p>
 
 
 <p><strong>封装：</strong></p>
-<p>$$logloss=weights<em>(labels</em> \log{(predictions+epsilon)} + (1-labels)* \log{(1-predictions+epsilon)})$$</p>
+<p>$$logloss=weights\times(labels\times \log{(predictions+epsilon)} + (1-labels)* \log{(1-predictions+epsilon)}) $$</p>
+<p>$$logloss=W\times(L\times \log{(P+e)} + (1-L)\times\log{(1-P+e)}) $$</p>
 <div class="hlcode"><pre><span class="n">log_loss</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">log_loss</span><span class="p">(</span>
     <span class="n">labels</span><span class="p">,</span>
     <span class="n">predictions</span><span class="p">,</span> 
@@ -1960,8 +2031,8 @@ $$</p>
 
 <p><strong>应用</strong><br />
 Logistic回归</p>
-<h3 id="94">9.4 平方函数:</h3>
-<p>$$loss(y_,y)=\sum{(y_-y)^2}$$</p>
+<h3 id="94">9.4 平方函数</h3>
+<p>$$loss(y_,y)=\frac{1}{N}\sum_{i=1}^{N}{(y_-y)^2}$$</p>
 <p><strong>手动：</strong></p>
 <div class="hlcode"><pre><span class="c"># real_label shape =(N,···)</span>
 <span class="c"># predict_label shape =(N,···)</span>
@@ -1985,7 +2056,7 @@ Logistic回归</p>
 <span class="c"># mean_squared_error shape =() is a value</span>
 
 <span class="c"># 平方函数实际为 均方差（MSE）</span>
-<span class="n">mean_squared_error</span><span class="p">,</span><span class="n">update_op</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">root_mean_squared_error</span><span class="p">(</span>
+<span class="n">mean_squared_error</span><span class="p">,</span><span class="n">update_op</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">mean_squared_error</span><span class="p">(</span>
     <span class="n">labels</span><span class="p">,</span>
     <span class="n">predictions</span><span class="p">,</span> <span class="c">#　predictions　为predict＿label</span>
     <span class="n">weights</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
@@ -1997,11 +2068,29 @@ Logistic回归</p>
 </pre></div>
 
 
+<p><strong>示例</strong></p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">4.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]])</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">]])</span>
+
+<span class="n">cost</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>     
+<span class="n">mse_op</span><span class="p">,</span> <span class="n">mse_update_op</span><span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;mse&quot;</span><span class="p">)</span>
+<span class="n">init_op</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">initialize_all_variables</span><span class="p">()</span>
+<span class="n">init_op2</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">initialize_local_variables</span><span class="p">()</span>
+<span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">init_op2</span><span class="p">)</span>
+<span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">init_op</span><span class="p">)</span>
+
+<span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">cost</span><span class="p">)</span> <span class="c">#4.6666665</span>
+<span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">mse_update_op</span><span class="p">)</span> <span class="c">#4.6666665</span>
+</pre></div>
+
+
 <p><strong>应用：</strong><br />
 最小二乘法通常用欧式距离进行距离的度量,使用平方损失函数</p>
 <h3 id="95">9.5 指数损失函数</h3>
 <p>$$loss(y_,y)=e^{-y_·y}=\frac{e^y} {e^{y_}}$$</p>
-<p>$$coss(y_,y)=\frac{1}{n}\sum{e^{-y_·y}}$$</p>
+<p>$$coss(y_,y)=\frac{1}{N}\sum_{i=1}^{N}{e^{-y_·y}}$$</p>
+<p>Tensorflow中没有指数损失函数的封装包，可以自定义</p>
 <div class="hlcode"><pre><span class="c"># real_label.shape ==predict_label.shape==(counts,····)</span>
 <span class="n">loss</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="o">-</span><span class="n">real_label</span><span class="p">,</span><span class="n">predict_label</span><span class="p">))</span>
 <span class="c"># loss shape =(counts,····)</span>
@@ -2013,7 +2102,7 @@ Logistic回归</p>
 <p><strong>应用</strong><br />
 AdaBoost使用指数损失函数。</p>
 <h3 id="96-hinge">9.6 Hinge损失函数</h3>
-<p>$$loss(y_,y)=max(0,1-y_·y)$$</p>
+<p>$$loss(y_,y)=max(0,1-y_ · y)$$</p>
 <p><strong>手动：</strong></p>
 <div class="hlcode"><pre><span class="n">loss</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="o">-</span><span class="n">tf</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">real_label</span><span class="p">,</span> <span class="n">predict_label</span><span class="p">))</span>
 <span class="c"># loss shape =real_label.shape==predict_label.shape</span>
@@ -2036,6 +2125,8 @@ AdaBoost使用指数损失函数。</p>
 
 <p><strong>应用</strong><br />
 Hinge loss用于最大间隔（maximum-margin）分类，其中最有代表性的就是支持向量机SVM。</p>
+<h3 id="97-huber">9.7 Huber损失函数</h3>
+<p>Huber损失函数，平滑平均绝对误差 相比平方误差损失，Huber损失对于数据中异常值的敏感性要差一些。在值为0时，它也是可微分的。它基本上是绝对值，在误差很小时会变为平方值。误差使其平方值的大小如何取决于一个超参数δ，该参数可以调整。当δ~ 0时，Huber损失会趋向于MAE；当δ~ ∞（很大的数字），Huber损失会趋向于MSE。</p>
 <h3 id="97-loss-tfnnloss">9.7. 神经网络里面的loss （tf.nn.loss）</h3>
 <p>参考：https://www.tensorflow.org/api_docs/python/tf/losses</p>
 <blockquote>
@@ -3173,6 +3264,8 @@ tf.app.flags.DEFINE_string</p>
 </pre></div>
 
 
+<p><strong>NOTE</strong><br />
+在python中可以使用修饰器@对FLAGS进行更新</p>
 <h2 id="18-tfnnbatch_normalization">18.归一化  tf.nn.batch_normalization</h2>
 <p>Aliases:<br />
 tf.compat.v1.nn.batch_normalization<br />

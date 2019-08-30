@@ -1,5 +1,5 @@
 ---
-title: "Tensorflow 实现SVM"
+title: "[开发]Tensorflow 实现SVM"
 date: 2019-06-12 00:00
 render: True 
 tag: Tensorflow,框架,AI,

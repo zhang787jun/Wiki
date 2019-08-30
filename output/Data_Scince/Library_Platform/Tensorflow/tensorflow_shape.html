@@ -2,11 +2,11 @@
 <html>
 
 <head>
-    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
-    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
-    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
-    <title>Tensorflow中张量形状变换 - Jun's personal knowledge wiki</title>
+    <link rel="Stylesheet" type="text/css" href="./Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="./Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="./Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="./Wiki/favicon.ico" type="image/x-icon">
+    <title>[开发] Tensorflow中张量形状变换 - Jun's personal knowledge wiki</title>
     <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
     <meta name="description" content="A wiki website" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -24,12 +24,47 @@
     <div id="container">
         
 <div id="header">
-  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Scince\Library_Platform\Tensorflow">Data_Scince\Library_Platform\Tensorflow</a>&nbsp;»&nbsp;Tensorflow中张量形状变换</div>
+  <div id="post-nav"><a href="./Wiki/">Home</a>&nbsp;»&nbsp;<a href="./Wiki/#Data_Scince\Library_Platform\Tensorflow">Data_Scince\Library_Platform\Tensorflow</a>&nbsp;»&nbsp;[开发] Tensorflow中张量形状变换</div>
 </div>
 <div class="clearfix"></div>
-<div id="title">Tensorflow中张量形状变换</div>
+<div id="title">[开发] Tensorflow中张量形状变换</div>
   <div id="content">
-  <p>tf.one_hot</p>
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#tensorflow">Tensorflow中张量形状变换</a></li>
+<li><a href="#tensor-a-is-18-22-dtypetffloat">tensor a is [1.8, 2.2], dtype=tf.float</a></li>
+<li><a href="#tfcasta-tfint32-1-2dtypetfint32">tf.cast(a, tf.int32) ==&gt; [1, 2]，dtype=tf.int32</a></li>
+</ul>
+</div>
+<h1 id="tensorflow">Tensorflow中张量形状变换</h1>
+<p>tf.reduce_sum(Tensor) : 降维加和，比如一个数组是333大小的，那么经过这个操作之后会变为一个数字，即所有元素的加和。<br />
+tf.reduce_mean(Tensor)：降维平均，和上面的reduce_sum一样，将高维的数组变为一个数，该数是数组中所有元素的均值。</p>
+<p>tf.one_hot</p>
+<p>字符串转为数字：<br />
+tf.string_to_number<br />
+(string_tensor, out_type=None, name=None)<br />
+1<br />
+2<br />
+3<br />
+转为64位浮点类型–float64：<br />
+tf.to_double(x, name=’ToDouble’)<br />
+1<br />
+2<br />
+转为32位浮点类型–float32：<br />
+tf.to_float(x, name=’ToFloat’)<br />
+1<br />
+2<br />
+转为32位整型–int32：<br />
+tf.to_int32(x, name=’ToInt32’)<br />
+1<br />
+2<br />
+转为64位整型–int64：<br />
+tf.to_int64(x, name=’ToInt64’)<br />
+1<br />
+2<br />
+将x或者x.values转换为dtype</p>
+<h1 id="tensor-a-is-18-22-dtypetffloat">tensor a is [1.8, 2.2], dtype=tf.float</h1>
+<h1 id="tfcasta-tfint32-1-2dtypetfint32">tf.cast(a, tf.int32) ==&gt; [1, 2]，dtype=tf.int32</h1>
+<p>tf.cast(x, dtype, name=None)</p>
 </div>
 
     </div>

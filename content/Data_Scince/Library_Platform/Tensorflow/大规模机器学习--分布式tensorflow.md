@@ -1,10 +1,12 @@
 ---
-title: "大规模机器学习--分布式tensorflow"
+title: "[开发]大规模机器学习--分布式tensorflow"
 date: 2019-06-12 00:00
 render: True 
 tag: Tensorflow,框架,AI,
 ---
+
 [TOC]
+
 # 大规模计算--分布式tensorflow
 ## 1. 团队愿景--实现大规模机器学习
 ### 1.1 大规模机器学习特点

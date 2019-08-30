@@ -19,8 +19,6 @@ env.colorize_errors = True
 SUPPORTED_DEPLOY_TYPES = ('rsync', 'git', 'ftp')
 
 
-conn = fabric.Connection(host , user = 'root',port = 22, config = None, geteway = None, connect_kwargs={"password": "123456"})
-
 def do_exit(msg):
     print(red(msg))
     print(blue('Exit!'))
@@ -71,7 +69,7 @@ def deploy_rsync(deploy_configs):
 def deploy_git(deploy_configs):
     """for pages service of such as github/gitcafe ..."""
     with settings(warn_only=True):
-        res = local('which ghp-import > /dev/null 2>&1; echo $? ', capture=True)
+        res = local('which ghp-import > /dev/null 2>&1; echo $?', capture=True)
         if int(res.strip()):
             do_exit('Warning: ghp-import not installed! '
                     'run: `pip install ghp-import`')

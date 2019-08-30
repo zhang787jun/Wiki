@@ -2,10 +2,10 @@
 <html>
 
 <head>
-    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
-    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
-    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="Stylesheet" type="text/css" href="./Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="./Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="./Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="./Wiki/favicon.ico" type="image/x-icon">
     <title>01-分布式文件系统概述 - Jun's personal knowledge wiki</title>
     <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
     <meta name="description" content="A wiki website" />
@@ -24,33 +24,75 @@
     <div id="container">
         
 <div id="header">
-  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#分布式系统\01-分布式存储系统\分布式文件系统">分布式系统\01-分布式存储系统\分布式文件系统</a>&nbsp;»&nbsp;01-分布式文件系统概述</div>
+  <div id="post-nav"><a href="./Wiki/">Home</a>&nbsp;»&nbsp;<a href="./Wiki/#分布式系统\01-分布式存储系统\分布式文件系统">分布式系统\01-分布式存储系统\分布式文件系统</a>&nbsp;»&nbsp;01-分布式文件系统概述</div>
 </div>
 <div class="clearfix"></div>
 <div id="title">01-分布式文件系统概述</div>
   <div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
-<li><a href="#_1">分布式文件系统概述</a><ul>
-<li><a href="#_2">单线的文件系统</a></li>
-<li><a href="#_3">分布式文件系统</a></li>
+<li><a href="#1">1. 分布式文件系统概述</a><ul>
+<li><a href="#11">1.1. 单线的文件系统</a><ul>
+<li><a href="#111">1.1.1. 涉及概念</a></li>
+<li><a href="#112">1.1.2. 文件系统分类</a><ul>
+<li><a href="#1121">1.1.2.1. 磁盘文件系统</a></li>
+<li><a href="#1122">1.1.2.2. 光盘</a></li>
+<li><a href="#1123">1.1.2.3. 闪存文件系统</a></li>
+<li><a href="#1124">1.1.2.4. 数据库文件系统</a></li>
+<li><a href="#1125">1.1.2.5. 网络文件系统</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#12">1.2. 分布式文件系统</a><ul>
+<li><a href="#121">1.2.1. 常见的分布式文件系统有</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
 </div>
-<h1 id="_1">分布式文件系统概述</h1>
-<h2 id="_2">单线的文件系统</h2>
+<h1 id="1">1. 分布式文件系统概述</h1>
+<h2 id="11">1.1. 单线的文件系统</h2>
 <p>单线的文件系统  stand-alone (UNIX) file systems</p>
-<p>File: named collection of logically related data<br />
-文件：命名的 有逻辑相关的数据集合<br />
- – Unix file: an uninterpreted sequence of bytes</p>
-<p>• File system: – Provides a logical view of data and storage functions<br />
-文件系统： 提供数据和存储功能的逻辑视图<br />
+<h3 id="111">1.1.1. 涉及概念</h3>
+<ol>
+<li>
+<p><strong>文件</strong>：命名的有逻辑相关的数据集合<br />
+File: named collection of logically related data</p>
+</li>
+<li>
+<p><strong>Unix 文件</strong>：未解释的字节序列<br />
+Unix file: an uninterpreted sequence of bytes</p>
+</li>
+<li>
+<p><strong>文件系统</strong>： 提供数据和存储功能的逻辑视图<br />
+File system: – Provides a logical view of data and storage functions<br />
  – 对用户友好的界面 <br />
  – 便于创建、修改、组织、删除文件<br />
  – 提供共享<br />
-– 提供保护 </p>
-<h2 id="_3">分布式文件系统</h2>
-<p>分布式文件系统可以提供基于位置的寻址和冗余等功能，这些特性可以提高可靠性或降低集群其他部分的复杂性，对用户提供透明的文件服务</p>
+ – 提供保护 </p>
+</li>
+</ol>
+<h3 id="112">1.1.2. 文件系统分类</h3>
+<h4 id="1121">1.1.2.1. 磁盘文件系统</h4>
+<p>磁盘文件系统是一种设计用来利用数据存储设备来保存计算机文件的文件系统，最常用的数据存储设备是<strong>磁盘驱动器</strong>，可以直接或者间接地<strong>连接/挂载</strong>到计算机上。例如：FAT、exFAT、NTFS、HFS、HFS+、ext2、ext3、ext4、ODS-5、btrfs、XFS、UFS、ZFS。有些文件系统是行程文件系统（也有译作日志文件系统）或者追踪文件系统。</p>
+<h4 id="1122">1.1.2.2. 光盘</h4>
+<p>ISO 9660和UDF被用于CD、DVD与蓝光光盘。</p>
+<h4 id="1123">1.1.2.3. 闪存文件系统</h4>
+<p>闪存文件系统是一种设计用来在闪存上储存文件的文件系统。随着移动设备的普及和闪存容量的增加，这类文件系统越来越流行。</p>
+<p>尽管磁盘文件系统也能在闪存上使用，但闪存文件系统是闪存设备的首选，理由如下：</p>
+<p>擦除区块：闪存的区块在重新写入前必须先进行擦除。擦除区块会占用相当可观的时间。因此，在设备空闲的时候擦除未使用的区块有助于提高速度，而写入数据时也可以优先使用已经擦除的区块。<br />
+随机访问：由于在磁盘上寻址有很大的延迟，磁盘文件系统有针对寻址的优化，以尽量避免寻址。但闪存没有寻址延迟。<br />
+写入平衡（Wear levelling）：闪存中经常写入的区块往往容易损坏。闪存文件系统的设计可以使数据均匀地写到整个设备。<br />
+日志文件系统具有闪存文件系统需要的特性，这类文件系统包括JFFS2和YAFFS。也有为了避免日志频繁写入而导致闪存寿命衰减的非日志文件系统，如exFAT。</p>
+<h4 id="1124">1.1.2.4. 数据库文件系统</h4>
+<p>文件管理方面的一个新概念是一种基于数据库的文件系统的概念。不再（或者不仅仅）使用分层结构管理，文件按照他们的特征进行区分，如文件类型、专题、作者或者亚数据进行区分。于是文件检索就可以按照SQL风格甚至自然语言风格进行。</p>
+<p>例如BFS[1]和WinFS。</p>
+<h4 id="1125">1.1.2.5. 网络文件系统</h4>
+<p>主条目：分布式文件系统<br />
+网络文件系统（NFS，Network File System）是一种将远程主机上的分区（目录）经网络挂载到本地系统的一种机制</p>
+<h2 id="12">1.2. 分布式文件系统</h2>
+<p>分布式文件系统可以提供基于位置的寻址和冗余等功能，这些特性可以提高可靠性或降低集群其他部分的复杂性，对用户提供透明的文件服务。</p>
 <p>分布式文件系统可以在许多方面实现"透明性"。也就是说，它们的目标是让客户机程序"看不见"它们，这些客户端程序“看到”的事一个类似于本地文件系统的系统。在幕后，分布式文件系统处理定位文件、传输数据，并可能提供下面列出的其他功能。<br />
 • 访问透明性 ：客户端感受不到文件是分布式的，并且可以像访问本地文件一样访问它们。<br />
 • 位置透明性 ：存在一致的名字空间，包含本地文件和远程文件。文件名不提供其位置。<br />
@@ -60,13 +102,13 @@
 • 可扩展性 ：文件系统应该在小型环境（1台机器，12台机器）中运行良好，并且可以优雅地扩展到更大的（数百到数万个系统）。<br />
 • 复制透明性 ：客户端不应感受到文件复制是跨多个服务器执行的。<br />
 • 迁移透明度 ：文件在不同的服务器之间的移动不应该让客户感受到。</p>
-<p>常见的分布式文件系统有<br />
-1   Google 的GFS Google file  System<br />
+<h3 id="121">1.2.1. 常见的分布式文件系统有</h3>
+<p>1   Google 的GFS Google file  System<br />
 2   Hadoop 的HDFS<br />
 3   加州大学圣克鲁克 Ceph<br />
 4   GlusterFS （红帽）</p>
-<p>放在两台可以上网的电脑的文件，叫分布式文件系统吗？<br />
-不叫，外部不可以从一个地址寻找文件。需要基于位置的寻址，或者说没有元数据</p>
+<p><strong>Q:</strong> 放在两台可以上网的电脑的文件，叫分布式文件系统吗？<br />
+<strong>A:</strong> 不叫，外部不可以从一个地址寻找文件。需要基于位置的寻址，或者说没有元数据</p>
 <p>MetaData 元数据：描述数据的数据，主要是描述数据的属性信息，包括数据存储位置、历史数据描述、资料查找、文件记录</p>
 </div>
 

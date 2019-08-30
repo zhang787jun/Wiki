@@ -1,13 +1,14 @@
 ---
 title: "使用Markdown"
 layout: page
-date: 2099-06-02 00:00
+date: 2019-08-30 00:00
 ---
 
 [TOC]
-# 使用Markdown
 
-## 1. Markdown数学符号&公式
+# 1. 使用Markdown
+
+## 1.1. Markdown数学符号&公式
 
 
 | 符号                    | 代码           | 描述       |
@@ -65,11 +66,7 @@ date: 2099-06-02 00:00
 | yˆ \hat{y} y^   |             | $\hat{y}$     | 期望值 |
 
 
-| 符号                                                   | 代码                                          | 描述                                                                            |
-| ------------------------------------------------------ | --------------------------------------------- | ------------------------------------------------------------------------------- |
-| $\breve{y}$                                            | a+b+c+d¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ \overline{a+b+c+d} |
-| a+b+c+d                                                | $\overline{a+b+c+d}$                          | 平均值                                                                          |
-| a+b+c+d¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯ \underline{a+b+c+d} a+b+c+d | $\underline{a+b+c+d}$                         | a+b+c└┘−−−1.0+d2.0 \overbrace{a+\underbrace{b+c}_{1.0}+d}^{2.0} |
+
 
 
 | 符号                                         | 代码              | 描述       |
@@ -123,9 +120,21 @@ date: 2099-06-02 00:00
 | a¯ \overline{a} a                            | $\overline{a}$    |
 
 
-## 参考文献的方法
+## 1.2. 参考文献的方法
 
 ```Markdown
 引文的插入格式[^StackOverflow_2007_web]
 [^StackOverflow_2007_web]:XXXX 
 ```
+
+## 1.3 段落自动编号
+
+VScode 下安装 markdownIndex 插件，F1 执行markdown add index
+
+
+## VScode 里面的Markdown增强插件
+
+
+
+
+https://zhuanlan.zhihu.com/p/56699805
