@@ -1,3 +1,4 @@
 {
-    "MarkdownPaste.path": "${workspaceRoot}/attach/images"
+    "MarkdownPaste.path": "${workspaceRoot}/attach/images",
+    "python.pythonPath": "C:\\Users\\DELL\\AppData\\Local\\Programs\\Python\\Python36\\python.exe"
 }
