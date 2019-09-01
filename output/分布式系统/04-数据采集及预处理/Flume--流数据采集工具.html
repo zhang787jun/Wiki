@@ -24,13 +24,14 @@
                 image_src = image.src;
                 if (image_src.search("attach") >= 0) {
                     re_image_src = image_src.slice(image_src.search("attach"));
-                    abs_image_src = (site_root.endsWith("\\")) ? site_root + re_image_src : site_root + "\\" +
+                    abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
                         re_image_src;
                     image.src = abs_image_src;
                 }
             }
         }
-        changeImgurl("/Wiki");
+        var site_root_url = "/Wiki";
+        changeImgurl(site_root_url);
     </script>
 
 </head>
