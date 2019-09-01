@@ -26,7 +26,7 @@
 </div>
 <div class="clearfix"></div>
 <div id="title">[开发]大规模机器学习--分布式tensorflow</div>
-  <div id="content">
+<div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
 <li><a href="#-tensorflow">大规模计算--分布式tensorflow</a><ul>
 <li><a href="#1-">1. 团队愿景--实现大规模机器学习</a><ul>
@@ -185,7 +185,12 @@ MonitoredTrainingSession:<br />
 <p>图间复制（between-graph replication）与图本复制对应，是指每一个工作节点创建一个图， 训练的参数保存在参数服务器，数据不用分发，各个工作节点独立计算，计算完成后，把要更 新的参数告诉参数服务器，参数服务器来更新参数。这种模式的优势是不需要数据分发，各个 工作节点都会创建图和读取数据进行训练。劣势是工作节点既是图的创建者又是计算任务的执 行者，如果某个工作节点宕机会影响集群的工作。这种模式是在数据量在 TB 级的时候，并发 性能很高。<br />
 因此，大数据相关的深度学习还是推荐使用图间模式。在 14.6 节的对 MNIST 进行 分布式训练的例子中，我们就采用了这种方式。</p>
 </div>
+<div id="re">
+  如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多
+</div>>
 
+
+        /Wiki
         /Wiki
         /Wiki
     </div>

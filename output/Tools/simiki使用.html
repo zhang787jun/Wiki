@@ -26,7 +26,7 @@
 </div>
 <div class="clearfix"></div>
 <div id="title">Simiki--轻量级Wiki框架</div>
-  <div id="content">
+<div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
 <li><a href="#simiki">Simiki 使用教程</a><ul>
 <li><a href="#1-quick-start">1. Quick Start</a><ul>
@@ -44,9 +44,9 @@
 <li><a href="#2_1">2. 本地图片及文件的支持</a></li>
 <li><a href="#3">3. 图片缩放</a></li>
 <li><a href="#4-favicon">4. Favicon 支持</a></li>
+<li><a href="#5css">5.二级网页css 不能正常布置的问题</a></li>
 </ul>
 </li>
-<li><a href="#css">二级网页css 不能正常布置的问题</a></li>
 <li><a href="#github-page">发布Github Page</a><ul>
 <li><a href="#fabric">Fabric 部署</a></li>
 <li><a href="#ghp-import">ghp-import 部署</a></li>
@@ -145,7 +145,7 @@
 </pre></div>
 
 
-<h2 id="css">二级网页css 不能正常布置的问题</h2>
+<h3 id="5css">5.二级网页css 不能正常布置的问题</h3>
 <p>CSS路径有问题，你这里用到了二级目录</p>
 <p>主题里配置CSS文件路径应该改为:</p>
 <div class="hlcode"><pre><span class="o">&lt;</span><span class="n">link</span> <span class="n">rel</span><span class="o">=</span><span class="s">&quot;Stylesheet&quot;</span> <span class="n">type</span><span class="o">=</span><span class="s">&quot;text/css&quot;</span> <span class="n">href</span><span class="o">=</span><span class="s">&quot;{{ site.root }}/static/css/style.css&quot;</span><span class="o">&gt;</span>
@@ -157,9 +157,14 @@
 
 
 <p>且在 _config.yml 中配置:</p>
-<p>root: /wiki</p>
-<p>g158yp</p>
+<p>root: /Wiki/</p>
 <h2 id="github-page">发布Github Page</h2>
+<p>在 _config.yml 中配置</p>
+<div class="hlcode"><pre><span class="n">url</span><span class="o">:</span><span class="n">https</span><span class="o">://</span><span class="n">xx</span><span class="o">.</span><span class="na">github</span><span class="o">.</span><span class="na">io</span><span class="sr">/Wiki/</span>
+<span class="n">root</span><span class="o">:</span> <span class="sr">/Wiki/</span>
+</pre></div>
+
+
 <h3 id="fabric">Fabric 部署</h3>
 <p>simiki官方的推荐使用 Fabric 部署，Fabric目前版本较乱，注意</p>
 <p>如果使用Fabric, 可能会出现一些问题, 首先确认安装了以下模块:</p>
@@ -202,7 +207,12 @@
 
 <p>[1]https://help.github.com/articles/creating-project-pages-manually/</p>
 </div>
+<div id="re">
+  如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多
+</div>>
 
+
+        /Wiki
         /Wiki
         /Wiki
     </div>

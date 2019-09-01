@@ -9,7 +9,6 @@ date: 2099-06-02 00:00
 
 
 
-
 Simiki is a simple wiki framework, written in [Python](https://www.python.org/).
 
 * Easy to use. Creating a wiki only needs a few steps
@@ -117,13 +116,36 @@ CSS路径有问题，你这里用到了二级目录
 
 且在 _config.yml 中配置:
 
-root: /wiki
-
-g158yp
+root: /Wiki/
 
 
-## 发布Github Page
 
+## Smiki 生成wiki 并发布到Github Page
+
+### github page的相关概念
+
+#### user pages
+1. 数量
+Github 为每一个账户都设置了一个默认的user pages, 如果你要使用，创建的 <repository name> 必须符合 XXX.github.io
+2. 发布分支
+并且 user pages 只能使用这个项目的主分支master来作为发布源。
+
+例如本账户的user pages 地址就是 https://zhang787jun.github.io
+
+
+#### project page
+1. 数量
+每个账户下可以创建多个项目，每一个项目都可以创建 一个project pages 来发布github page。
+2.
+对于project page，你可以选择 master 作为 githubpages 发布源，也可以选择 gh-pages 分支作为发布源，因为pages一般是用来说明项目的，因此项目一般不要使用主分支发布，直接使用 gh-pages 分支更好，这样就和你的 master 代码分开了。如果你就是想要在主分支发布，那么在主分支的root目录下必须要有一个 /docs 目录，发布源代码需要在 /docs 目录下。 自定义域名只要 在发布源的代码目录下面加入CNAME文件即可，里面只需要填写你的自定义域名！如果你的域名还未被DNS收录，那么github会发出警告消息。
+
+我的wiki就是使用 project page，然后 master 是所有的源文件代码目录和markdown笔记文件，但是这个并不是发布源，发布源使用 gh-pages 分支，每次只发布 output 目录下的东西，也就是说我的 gh-pages 分支，只有simiki 生成的output目录下的内容。主分支是整个内容。每次最终要发布的内容推送到 gh-pages 分支，然后备份是推送到 master 分支，这样我的md文件就不会丢失了！在其他电脑上我也可以下载下来编辑和修改，然后重新发布！
+
+在 _config.yml 中配置
+```
+url:https://xx.github.io/Wiki/
+root: /Wiki/
+```
 ###  Fabric 部署
 simiki官方的推荐使用 Fabric 部署，Fabric目前版本较乱，注意
 
@@ -137,6 +159,9 @@ pip install ecdsa
 
 
 ### ghp-import 部署
+
+
+
 同时可以使用 [ghp-import](https://github.com/davisp/ghp-import) 部署 
 ```
 Usage: ghp-import [OPTIONS] DIRECTORY
@@ -165,9 +190,6 @@ ghp-import -p -m "Update output documentation" -r origin -b gh-pages output
 git checkout gh-pages
 git push origin gh-pages
 ```
-
-
-
 
 
 [1]https://help.github.com/articles/creating-project-pages-manually/
