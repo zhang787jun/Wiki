@@ -1,10 +1,13 @@
 ---
-title: "Simiki 使用教程"
+title: "Simiki--轻量级Wiki框架"
 layout: page
 date: 2099-06-02 00:00
 ---
 [TOC]
+
 # Simiki 使用教程
+
+
 
 
 Simiki is a simple wiki framework, written in [Python](https://www.python.org/).
@@ -15,7 +18,6 @@ Simiki is a simple wiki framework, written in [Python](https://www.python.org/).
 * Static HTML output
 * A CLI tool to manage the wiki
 
-Simiki is short for `Simple Wiki` :)
 
 ## 1. Quick Start
 
@@ -100,6 +102,26 @@ Favicon
 <link rel="shortcut icon" href="{{ site.root }}/favicon.ico" type="image/x-icon">
 <link rel="icon" href="{{ site.root }}/favicon.ico" type="image/x-icon">
 ```
+
+## 二级网页css 不能正常布置的问题
+
+CSS路径有问题，你这里用到了二级目录
+
+主题里配置CSS文件路径应该改为:
+
+    <link rel="Stylesheet" type="text/css" href="{{ site.root }}/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="{{ site.root }}/static/css/tango.css">
+
+
+	simiki generate --ignore-root
+
+且在 _config.yml 中配置:
+
+root: /wiki
+
+g158yp
+
+
 ## 发布Github Page
 
 ###  Fabric 部署
