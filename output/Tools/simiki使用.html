@@ -2,11 +2,11 @@
 <html>
 
 <head>
-    <link rel="Stylesheet" type="text/css" href="/wiki/static/css/style.css">
-    <link rel="Stylesheet" type="text/css" href="/wiki/static/css/tango.css">
-    <link rel="shortcut icon" href="/wiki/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="/wiki/favicon.ico" type="image/x-icon">
-    <title>Simiki 使用教程 - Jun's personal knowledge wiki</title>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Simiki--轻量级Wiki框架 - Jun's personal knowledge wiki</title>
     <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
     <meta name="description" content="A wiki website" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -22,10 +22,10 @@
     <div id="container">
         
 <div id="header">
-  <div id="post-nav"><a href="/wiki/">Home</a>&nbsp;»&nbsp;<a href="/wiki/#Tools">Tools</a>&nbsp;»&nbsp;Simiki 使用教程</div>
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Tools">Tools</a>&nbsp;»&nbsp;Simiki--轻量级Wiki框架</div>
 </div>
 <div class="clearfix"></div>
-<div id="title">Simiki 使用教程</div>
+<div id="title">Simiki--轻量级Wiki框架</div>
   <div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
 <li><a href="#simiki">Simiki 使用教程</a><ul>
@@ -46,6 +46,7 @@
 <li><a href="#4-favicon">4. Favicon 支持</a></li>
 </ul>
 </li>
+<li><a href="#css">二级网页css 不能正常布置的问题</a></li>
 <li><a href="#github-page">发布Github Page</a><ul>
 <li><a href="#fabric">Fabric 部署</a></li>
 <li><a href="#ghp-import">ghp-import 部署</a></li>
@@ -65,7 +66,6 @@
 <li>Static HTML output</li>
 <li>A CLI tool to manage the wiki</li>
 </ul>
-<p>Simiki is short for <code>Simple Wiki</code> :)</p>
 <h2 id="1-quick-start">1. Quick Start</h2>
 <h3 id="install">Install</h3>
 <div class="hlcode"><pre><span class="n">pip</span> <span class="n">install</span> <span class="n">simiki</span>
@@ -145,6 +145,20 @@
 </pre></div>
 
 
+<h2 id="css">二级网页css 不能正常布置的问题</h2>
+<p>CSS路径有问题，你这里用到了二级目录</p>
+<p>主题里配置CSS文件路径应该改为:</p>
+<div class="hlcode"><pre><span class="o">&lt;</span><span class="n">link</span> <span class="n">rel</span><span class="o">=</span><span class="s">&quot;Stylesheet&quot;</span> <span class="n">type</span><span class="o">=</span><span class="s">&quot;text/css&quot;</span> <span class="n">href</span><span class="o">=</span><span class="s">&quot;{{ site.root }}/static/css/style.css&quot;</span><span class="o">&gt;</span>
+<span class="o">&lt;</span><span class="n">link</span> <span class="n">rel</span><span class="o">=</span><span class="s">&quot;Stylesheet&quot;</span> <span class="n">type</span><span class="o">=</span><span class="s">&quot;text/css&quot;</span> <span class="n">href</span><span class="o">=</span><span class="s">&quot;{{ site.root }}/static/css/tango.css&quot;</span><span class="o">&gt;</span>
+
+
+<span class="n">simiki</span> <span class="n">generate</span> <span class="o">--</span><span class="n">ignore</span><span class="o">-</span><span class="n">root</span>
+</pre></div>
+
+
+<p>且在 _config.yml 中配置:</p>
+<p>root: /wiki</p>
+<p>g158yp</p>
 <h2 id="github-page">发布Github Page</h2>
 <h3 id="fabric">Fabric 部署</h3>
 <p>simiki官方的推荐使用 Fabric 部署，Fabric目前版本较乱，注意</p>
@@ -189,8 +203,8 @@
 <p>[1]https://help.github.com/articles/creating-project-pages-manually/</p>
 </div>
 
-        /wiki
-        /wiki
+        /Wiki
+        /Wiki
     </div>
     <div id="footer">
         <span>
