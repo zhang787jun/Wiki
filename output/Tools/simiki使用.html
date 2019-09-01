@@ -15,6 +15,22 @@
     </script>
     <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
     </script>
+    <script>
+        function changeImgurl(site_root_url) {
+            var images = document.images;
+            var site_root = site_root_url;
+            for (i = 0, len = images.length; i < len; i++) {
+                image = images[i];
+                image_src = image.src;
+                if (image_src.search("attach") >= 0) {
+                    re_image_src = image_src.slice(image_src.search("attach"));
+                    abs_image_src = (site_root.endsWith("\\")) ? site_root + re_image_src : site_root + "\\" +
+                        re_image_src;
+                    image.src = abs_image_src;
+                }
+            }
+            changeImgurl("/Wiki")
+    </script>
 
 </head>
 
@@ -47,7 +63,12 @@
 <li><a href="#5css">5.二级网页css 不能正常布置的问题</a></li>
 </ul>
 </li>
-<li><a href="#github-page">发布Github Page</a><ul>
+<li><a href="#smiki-wiki-github-page">Smiki 生成wiki 并发布到Github Page</a><ul>
+<li><a href="#github-page">github page的相关概念</a><ul>
+<li><a href="#user-pages">user pages</a></li>
+<li><a href="#project-page">project page</a></li>
+</ul>
+</li>
 <li><a href="#fabric">Fabric 部署</a></li>
 <li><a href="#ghp-import">ghp-import 部署</a></li>
 <li><a href="#git">git手动部署</a></li>
@@ -158,7 +179,24 @@
 
 <p>且在 _config.yml 中配置:</p>
 <p>root: /Wiki/</p>
-<h2 id="github-page">发布Github Page</h2>
+<h2 id="smiki-wiki-github-page">Smiki 生成wiki 并发布到Github Page</h2>
+<h3 id="github-page">github page的相关概念</h3>
+<h4 id="user-pages">user pages</h4>
+<ol>
+<li>数量<br />
+Github 为每一个账户都设置了一个默认的user pages, 如果你要使用，创建的 <repository name> 必须符合 XXX.github.io</li>
+<li>发布分支<br />
+并且 user pages 只能使用这个项目的主分支master来作为发布源。</li>
+</ol>
+<p>例如本账户的user pages 地址就是 https://zhang787jun.github.io</p>
+<h4 id="project-page">project page</h4>
+<ol>
+<li>数量<br />
+每个账户下可以创建多个项目，每一个项目都可以创建 一个project pages 来发布github page。<br />
+2.<br />
+对于project page，你可以选择 master 作为 githubpages 发布源，也可以选择 gh-pages 分支作为发布源，因为pages一般是用来说明项目的，因此项目一般不要使用主分支发布，直接使用 gh-pages 分支更好，这样就和你的 master 代码分开了。如果你就是想要在主分支发布，那么在主分支的root目录下必须要有一个 /docs 目录，发布源代码需要在 /docs 目录下。 自定义域名只要 在发布源的代码目录下面加入CNAME文件即可，里面只需要填写你的自定义域名！如果你的域名还未被DNS收录，那么github会发出警告消息。</li>
+</ol>
+<p>我的wiki就是使用 project page，然后 master 是所有的源文件代码目录和markdown笔记文件，但是这个并不是发布源，发布源使用 gh-pages 分支，每次只发布 output 目录下的东西，也就是说我的 gh-pages 分支，只有simiki 生成的output目录下的内容。主分支是整个内容。每次最终要发布的内容推送到 gh-pages 分支，然后备份是推送到 master 分支，这样我的md文件就不会丢失了！在其他电脑上我也可以下载下来编辑和修改，然后重新发布！</p>
 <p>在 _config.yml 中配置</p>
 <div class="hlcode"><pre><span class="n">url</span><span class="o">:</span><span class="n">https</span><span class="o">://</span><span class="n">xx</span><span class="o">.</span><span class="na">github</span><span class="o">.</span><span class="na">io</span><span class="sr">/Wiki/</span>
 <span class="n">root</span><span class="o">:</span> <span class="sr">/Wiki/</span>
