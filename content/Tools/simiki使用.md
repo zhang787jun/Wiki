@@ -83,6 +83,9 @@ vim  ./themes/xxx/base.html
 在`_config.yml`配置文件中，配置 attach，默认值为"attach"文件夹
 新建`./attach` 文件夹,运行`simiki -g` 时将会把 `./attach` 文件夹的内容复制到 `./output/attach`
 
+
+
+
 ### 3. 图片缩放
 jquery
 
@@ -114,9 +117,37 @@ CSS路径有问题，你这里用到了二级目录
 
 	simiki generate --ignore-root
 
-且在 _config.yml 中配置:
 
-root: /Wiki/
+### 6. 图片指向位置不正确
+在主题的模板文件修改html 文件，在html文件后面增加js 脚本文件。
+
+```shell
+vim  ./themes/xxx/base.html 
+```
+
+```html
+
+
+<script>
+        function changeImgurl(site_root_url) {
+            var images = document.images;
+            var site_root = site_root_url;
+            for (i = 0, len = images.length; i < len; i++) {
+                image = images[i];
+                image_src = image.src;
+                if (image_src.search("attach") >= 0) {
+                    re_image_src = image_src.slice(image_src.search("attach"));
+                    abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                        re_image_src;
+                    image.src = abs_image_src;
+                }
+            }
+        }
+        var site_root_url = "{{ site.root }}";
+        changeImgurl(site_root_url);
+</script>
+```
+
 
 
 
@@ -146,6 +177,8 @@ Github 为每一个账户都设置了一个默认的user pages, 如果你要使�
 url:https://xx.github.io/Wiki/
 root: /Wiki/
 ```
+
+
 ###  Fabric 部署
 simiki官方的推荐使用 Fabric 部署，Fabric目前版本较乱，注意
 
@@ -159,7 +192,6 @@ pip install ecdsa
 
 
 ### ghp-import 部署
-
 
 
 同时可以使用 [ghp-import](https://github.com/davisp/ghp-import) 部署 

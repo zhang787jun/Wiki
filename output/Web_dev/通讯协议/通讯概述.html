@@ -46,17 +46,39 @@
 <div id="title">通讯协议概述 </div>
 <div id="content">
   <h1 id="_1">通讯协议概述</h1>
+<h2 id="_2">对于同一服务器上</h2>
+<p>Unix 提供了信号、管道、命名管道、消息列队、共享内存等通讯机制</p>
+<p>linux下进程间通信的几种主要手段简介：</p>
+<ol>
+<li>管道（Pipe）及有名管道（named pipe）：管道可用于具有亲缘关系进程间的通信，有名管道克服了管道没有名字的限制，因此，除具有管道所具有的功能外，它还允许无亲缘关系进程间的通信；<br />
+信号（Signal）：信号是比较复杂的通信方式，用于通知接受进程有某种事件发生，除了用于进程间通信外，进程还可以发送信号给进程本身；linux除了支持Unix早期信号语义函数sigal外，还支持语义符合Posix.1标准的信号函数sigaction（实际上，该函数是基于BSD的，BSD为了实现可靠信号机制，又能够统一对外接口，用sigaction函数重新实现了signal函数）；<br />
+报文（Message）队列（消息队列）：消息队列是消息的链接表，包括Posix消息队列system V消息队列。有足够权限的进程可以向队列中添加消息，被赋予读权限的进程则可以读走队列中的消息。消息队列克服了信号承载信息量少，管道只能承载无格式字节流以及缓冲区大小受限等缺点。<br />
+共享内存：使得多个进程可以访问同一块内存空间，是最快的可用IPC形式。是针对其他通信机制运行效率较低而设计的。往往与其它通信机制，如信号量结合使用，来达到进程间的同步及互斥。<br />
+信号量（semaphore）：主要作为进程间以及同一进程不同线程之间的同步手段。<br />
+套接口（Socket）：更为一般的进程间通信机制，可用于不同机器之间的进程间通信。起初是由Unix系统的BSD分支开发出来的，但现在一般可以移植到其它类Unix系统上：Linux和System V的变种都支持套接字。</li>
+</ol>
+<p>消息列队<br />
+消息的链表</p>
+<p>共享内存<br />
+多个进程共享一个指定的存储区</p>
+<div class="hlcode"><pre><span class="mf">2.</span> <span class="err">对于不同节点上</span>
+</pre></div>
+
+
+<p>提供了网络套接字等</p>
+<div class="hlcode"><pre><span class="mf">1.</span> <span class="n">socket</span><span class="err">通信</span>
+<span class="mf">2.</span> <span class="n">PVM</span><span class="o">/</span><span class="n">MPI</span><span class="err">通信</span>
+<span class="mf">3.</span> <span class="err">中间件模式的通信</span>
+    <span class="n">a</span><span class="p">.</span> <span class="n">rpc</span>
+</pre></div>
+
+
+<p>基于web服务的通信</p>
 <p>TCP/IP是个协议组，可分为四个层次：网络接口层、网络层、传输层和应用层。</p>
 <p>在网络层有IP协议、ICMP协议、ARP协议、RARP协议和BOOTP协议。</p>
 <p>在传输层中有TCP协议与UDP协议。</p>
 <p>在应用层有FTP、HTTP、TELNET、SMTP、DNS等协议。</p>
-<p>因此，HTTP本身就是一个协议，是从Web服务器传输超文本到本地浏览器的传送协议<br />
-TCP   HTTP   UDP三者的关系:<br />
-     TCP/IP是个协议组，可分为四个层次：网络接口层、网络层、传输层和应用层。</p>
-<p>在网络层有IP协议、ICMP协议、ARP协议、RARP协议和BOOTP协议。</p>
-<p>在传输层中有TCP协议与UDP协议。</p>
-<p>在应用层有FTP、HTTP、TELNET、SMTP、DNS等协议。</p>
-<p>因此，HTTP本身就是一个协议，是从Web服务器传输超文本到本地浏览器的传送协议。    </p>
+<p>因此，HTTP本身就是一个协议，是从Web服务器传输超文本到本地浏览器的传送协议</p>
 </div>
 <div id="re">
   如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多
