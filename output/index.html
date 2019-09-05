@@ -13,27 +13,6 @@
     <script type="text/javascript" async
         src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
     </script>
-    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
-    </script>
-    <script>
-        function changeImgurl(site_root_url) {
-            var images = document.images;
-            var site_root = site_root_url;
-            for (i = 0, len = images.length; i < len; i++) {
-                image = images[i];
-                image_src = image.src;
-                if (image_src.search("attach") >= 0) {
-                    re_image_src = image_src.slice(image_src.search("attach"));
-                    abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
-                        re_image_src;
-                    image.src = abs_image_src;
-                }
-            }
-        }
-        var site_root_url = "/Wiki";
-        changeImgurl(site_root_url);
-    </script>
-
 </head>
 
 <body>
@@ -56,7 +35,7 @@
       </ul>
     <div class="clearfix"></div>
     
-  
+    
     
     
     <h2 id="Basic_CS">Basic_CS</h2>
@@ -70,11 +49,6 @@
           
         <li class="pagelist">
           <a href="./Basic_CS/Linux.html">Linux</a>
-        </li>
-          
-          
-        <li class="pagelist">
-          <a href="./Basic_CS/rpc.html">rpc</a>
         </li>
           
           
@@ -100,7 +74,7 @@
       </ul>
     <div class="clearfix"></div>
     
-  
+    
     
     
     <h2 id="Big_Data">Big_Data</h2>
@@ -126,7 +100,7 @@
       </ul>
     <div class="clearfix"></div>
     
-  
+    
     
     
     <h2 id="Data_Scince">Data_Scince</h2>
@@ -287,7 +261,7 @@
       </ul>
     <div class="clearfix"></div>
     
-  
+    
     
     
     <h2 id="Programing_Language">Programing_Language</h2>
@@ -322,6 +296,11 @@
           
           
         <li class="pagelist">
+          <a href="./Programing_Language/Python/单元测试.html">python单元测试实践</a>
+        </li>
+          
+          
+        <li class="pagelist">
           <a href="./Programing_Language/Python/多任务编程.html">Python的多任务编程</a>
         </li>
           
@@ -343,6 +322,11 @@
           
         <li class="pagelist">
           <a href="./Programing_Language/Python/工程实践_给函数取一个好的名字.html">工程实践：给函数取一个好的名字</a>
+        </li>
+          
+          
+        <li class="pagelist">
+          <a href="./Programing_Language/Python/数据科学.html">数据处理的一些问题</a>
         </li>
           
           
@@ -372,7 +356,7 @@
       </ul>
     <div class="clearfix"></div>
     
-  
+    
     
     
     <h2 id="Tools">Tools</h2>
@@ -390,13 +374,18 @@
           
           
         <li class="pagelist">
+          <a href="./Tools/VScode.html">VScode 的奇技淫巧</a>
+        </li>
+          
+          
+        <li class="pagelist">
           <a href="./Tools/markdown.html">使用Markdown</a>
         </li>
           
       </ul>
     <div class="clearfix"></div>
     
-  
+    
     
     
     <h2 id="Web_dev">Web_dev</h2>
@@ -423,33 +412,38 @@
         </li>
           
           
+        <li class="pagelist">
+          <a href="./Web_dev/授权及密码管理.html">授权及密码管理</a>
+        </li>
+          
+          
         
-        <li class="pagelist" id="Web_dev-通讯协议">通讯协议</li>
+        <li class="pagelist" id="Web_dev-通讯">通讯</li>
             
             <ul>
           
         <li class="pagelist">
-          <a href="./Web_dev/通讯协议/restful.html">RESTful </a>
+          <a href="./Web_dev/通讯/restful.html">RESTful </a>
         </li>
           
           
         <li class="pagelist">
-          <a href="./Web_dev/通讯协议/websocket.html">websocket开发 </a>
+          <a href="./Web_dev/通讯/websocket.html">websocket开发 </a>
         </li>
           
           
         <li class="pagelist">
-          <a href="./Web_dev/通讯协议/FTP.html">文件传输协议FTP</a>
+          <a href="./Web_dev/通讯/FTP.html">文件传输协议FTP</a>
         </li>
           
           
         <li class="pagelist">
-          <a href="./Web_dev/通讯协议/rpc.html">远程过程调用协议 RPC</a>
+          <a href="./Web_dev/通讯/rpc.html">远程过程调用协议 RPC</a>
         </li>
           
           
         <li class="pagelist">
-          <a href="./Web_dev/通讯协议/通讯概述.html">通讯协议概述 </a>
+          <a href="./Web_dev/通讯/通讯概述.html">通讯概述 </a>
         </li>
           
       </ul>
@@ -457,7 +451,7 @@
       </ul>
     <div class="clearfix"></div>
     
-  
+    
     
     
     <h2 id="分布式系统">分布式系统</h2>
@@ -502,15 +496,15 @@
             <ul>
           
         <li class="pagelist">
+          <a href="./分布式系统/01-分布式存储系统/02-分布式数据库/从数据库扩容讲开始.html">01-分布式数据库--从数据库扩容开始</a>
+        </li>
+          
+          
+        <li class="pagelist">
           <a href="./分布式系统/01-分布式存储系统/02-分布式数据库/hbase.html">Hbase</a>
         </li>
           
       </ul>
-          
-          
-        <li class="pagelist">
-          <a href="./分布式系统/01-分布式存储系统/从数据库扩容讲开始.html">分布式存储系统--从数据库扩容讲开始</a>
-        </li>
           
       </ul>
           
@@ -546,18 +540,6 @@
           
         <li class="pagelist">
           <a href="./分布式系统/04-数据采集及预处理/Flume--流数据采集工具.html">Flume--流数据采集工具</a>
-        </li>
-          
-      </ul>
-          
-          
-        
-        <li class="pagelist" id="分布式系统-05-分布式系统通信">05-分布式系统通信</li>
-            
-            <ul>
-          
-        <li class="pagelist">
-          <a href="./分布式系统/05-分布式系统通信/通信.html">通信</a>
         </li>
           
       </ul>
@@ -601,7 +583,7 @@
       </ul>
     <div class="clearfix"></div>
     
-  
+    
     
     
     <h2 id="虚拟化与云计算">虚拟化与云计算</h2>
@@ -620,7 +602,7 @@
       </ul>
     <div class="clearfix"></div>
     
-  
+    
     
     
     <h2 id="项目管理">项目管理</h2>
@@ -676,7 +658,7 @@
       </ul>
     <div class="clearfix"></div>
     
-  
+    
     </div>
 
     </div>
@@ -689,6 +671,21 @@
     
 </body>
 <script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
     changeImgurl(site_root_url);
 </script>
 

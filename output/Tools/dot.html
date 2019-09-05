@@ -13,27 +13,6 @@
     <script type="text/javascript" async
         src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
     </script>
-    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
-    </script>
-    <script>
-        function changeImgurl(site_root_url) {
-            var images = document.images;
-            var site_root = site_root_url;
-            for (i = 0, len = images.length; i < len; i++) {
-                image = images[i];
-                image_src = image.src;
-                if (image_src.search("attach") >= 0) {
-                    re_image_src = image_src.slice(image_src.search("attach"));
-                    abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
-                        re_image_src;
-                    image.src = abs_image_src;
-                }
-            }
-        }
-        var site_root_url = "/Wiki";
-        changeImgurl(site_root_url);
-    </script>
-
 </head>
 
 <body>
@@ -45,7 +24,12 @@
 <div class="clearfix"></div>
 <div id="title">Dot 画图</div>
 <div id="content">
-  <p>参考https://www.ibm.com/developerworks/cn/aix/library/au-aix-graphviz/index.html</p>
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#dot">DOT 画图</a></li>
+<li><a href="#_1">参考资料</a></li>
+</ul>
+</div>
+<h1 id="dot">DOT 画图</h1>
 <p>示例：</p>
 <div class="hlcode"><pre><span class="n">digraph</span> <span class="n">a</span><span class="p">{</span>
     <span class="n">size</span><span class="o">=</span><span class="s">&quot;41,42&quot;</span><span class="p">;</span>
@@ -243,10 +227,23 @@
 
 <span class="p">}</span>
 </pre></div>
+
+
+<p><sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup></p>
+<h1 id="_1">参考资料</h1>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>使用 Graphviz 生成自动化系统图<br />
+https://www.ibm.com/developerworks/cn/aix/library/au-aix-graphviz/index.html&#160;<a class="footnote-backref" href="#fnref:1" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
 </div>
-<div id="re">
+</div>
+<div id="renote">
   如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多
-</div>>
+</div>
 
     </div>
     <div id="footer">
@@ -258,6 +255,21 @@
     
 </body>
 <script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
     changeImgurl(site_root_url);
 </script>
 

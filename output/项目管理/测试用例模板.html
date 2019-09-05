@@ -13,27 +13,6 @@
     <script type="text/javascript" async
         src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
     </script>
-    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
-    </script>
-    <script>
-        function changeImgurl(site_root_url) {
-            var images = document.images;
-            var site_root = site_root_url;
-            for (i = 0, len = images.length; i < len; i++) {
-                image = images[i];
-                image_src = image.src;
-                if (image_src.search("attach") >= 0) {
-                    re_image_src = image_src.slice(image_src.search("attach"));
-                    abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
-                        re_image_src;
-                    image.src = abs_image_src;
-                }
-            }
-        }
-        var site_root_url = "/Wiki";
-        changeImgurl(site_root_url);
-    </script>
-
 </head>
 
 <body>
@@ -281,9 +260,9 @@ QA：Tom12 (tom12@test.com)</p>
 <p>集成测试（Integration Test）。这一步最主要的事情，就是自动部署代码到一个拟真的环境，之行端到端的测试。比如说，发布的产品是远程的 API，UT 关注的是功能单元，测试的对象是具体的类和方法；而在 IT 中，更关心暴露的远程接口，既包括功能，也包括性能。集成测试的成熟程度，往往是一个项目质量的一个非常好的体现。在某些团队中，集成测试通过几个不同的环境来完成，比如α环境、β环境、γ环境等等，依次递进，越来越接近生产环境。比如α环境是部署在开发机上的，而γ环境则是线上环境的拷贝，连数据库的数据都是从线上定期同步而来的。</p>
 <p>冒烟测试（Smoke Testing）。冒烟测试最关心的不是功能的覆盖，而是对重要功能，或者核心功能的保障。到了这一步，通常在线上部署完成后，为了进一步确保它是一次成功的部署，需要有快速而易于执行的测试来覆盖核心测试用例。这就像每年的常规体检，不可能事无巨细地做各种各样侵入性强的检查，而是通过快速的几项，比如血常规、心跳、血压等等来执行核心的几项检查。在某些公司，冒烟测试还被称作“Sanity Test”，从字面意思也可以得知，测试的目的仅仅是保证系统“没有发疯”。除了功能上的快速冒烟覆盖，在某些系统中，性能是一个尤其重要的关注点，那么还会划分出 Soak Testing 这样的针对性能的测试来，当然，它对系统的影响可能较大，有时候不会部署在生产环境，而是在前面提到的镜像环境中。</p>
 </div>
-<div id="re">
+<div id="renote">
   如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多
-</div>>
+</div>
 
     </div>
     <div id="footer">
@@ -295,6 +274,21 @@ QA：Tom12 (tom12@test.com)</p>
     
 </body>
 <script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
     changeImgurl(site_root_url);
 </script>
 

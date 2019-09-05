@@ -1,0 +1,131 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>数据处理的一些问题 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+</head>
+
+<body>
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Programing_Language\Python">Programing_Language\Python</a>&nbsp;»&nbsp;数据处理的一些问题</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">数据处理的一些问题</div>
+<div id="content">
+  <p>如何以我通常使用列表(List)的方式使用Numpy数组或矩阵? 我想创建一个空的数组(或矩阵)，然后每次添加一列(或行)到这个数组(或矩阵)。</p>
+<p>目前能想到的方法是：</p>
+<p>mat = None<br />
+for col in columns:<br />
+    if mat is None:<br />
+        mat = col<br />
+    else:<br />
+        mat = hstack((mat, col))<br />
+而如果它是一个列表，我会这样做：</p>
+<p>list = []<br />
+for item in data:<br />
+    list.append(item)<br />
+有没有办法在NumPy中这样使用数组或矩阵？</p>
+<p>最佳解决方案<br />
+上面对Numpy的使用观念可能有误。 NumPy数组存储在连续的内存块中，如果要将行或列添加到现有数组中，则需要将整个数组复制到一个新的内存块，从而为要存储的新元素创建间隙。如果重复建立一个数组，这是非常低效的。</p>
+<p>在添加行的情况下，最好的办法是创建一个与您的数据集最终大小一样的数组，然后向其中按行添加数据：</p>
+<blockquote>
+<blockquote>
+<blockquote>
+<p>import numpy<br />
+a = numpy.zeros(shape=(5,2))<br />
+a<br />
+array([[ 0.,  0.],<br />
+   [ 0.,  0.],<br />
+   [ 0.,  0.],<br />
+   [ 0.,  0.],<br />
+   [ 0.,  0.]])<br />
+a[0] = [1,2]<br />
+a[1] = [2,3]<br />
+a<br />
+array([[ 1.,  2.],<br />
+   [ 2.,  3.],<br />
+   [ 0.,  0.],<br />
+   [ 0.,  0.],<br />
+   [ 0.,  0.]])<br />
+次佳解决方案<br />
+NumPy数组是一个与列表非常不同的数据结构，它被设计为以不同的方式使用。您对hstack的使用可能非常低效......每当您调用它时，现有数组中的所有数据都将被复制到一个新的数据中。 (append函数将有相同的问题。)如果您想一次构建您的只有一个列的矩阵，最好将它保存在列表中，直到它完成，然后才转换为一个数组。</p>
+</blockquote>
+</blockquote>
+</blockquote>
+<p>例如</p>
+<p>mylist = []<br />
+for item in data:<br />
+    mylist.append(item)<br />
+mat = numpy.array(mylist)<br />
+item可以是一个列表，一个数组或任何可迭代的结构，只要每个item具有相同数量的元素。在这个特定的情况下(data是一些迭代持有矩阵列)，你可以简单地使用</p>
+<p>mat = numpy.array(data)<br />
+(还要注意，使用list作为变量名可能不是一个好的做法，因为它掩盖了内置类型的名称，这可能会导致错误。)</p>
+<p>编辑：</p>
+<p>如果由于某种原因，你真的想创建一个空的数组，你可以使用 numpy.array([])，但这是很少有用的！</p>
+<p>第三种解决方案<br />
+在NumPy中创建一个空的多维数组(例如一个二维数组m*n来存储你的矩阵)，如果你不知道(m)你会追加多少行，而不关心计算成本(即在每次附加元素时re-buildinging数组)，您可以设置0为要添加到的维度：X = np.empty(shape=[0, n])。</p>
+<p>这样你可以使用例如(这里我们假设我们不知道什么时候创建空矩阵m = 5和n = 2)：</p>
+<p>import numpy as np</p>
+<p>n = 2<br />
+X = np.empty(shape=[0, n])</p>
+<p>for i in range(5):<br />
+    for j  in range(2):<br />
+        X = np.append(X, [[i, j]], axis=0)</p>
+<p>print X<br />
+这会给你：</p>
+<p>[[ 0.  0.]<br />
+ [ 0.  1.]<br />
+ [ 1.  0.]<br />
+ [ 1.  1.]<br />
+ [ 2.  0.]<br />
+ [ 2.  1.]<br />
+ [ 3.  0.]<br />
+ [ 3.  1.]<br />
+ [ 4.  0.]<br />
+ [ 4.  1.]]</p>
+</div>
+<div id="renote">
+  如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2019 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+</script>
+
+</html>

@@ -13,27 +13,6 @@
     <script type="text/javascript" async
         src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
     </script>
-    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
-    </script>
-    <script>
-        function changeImgurl(site_root_url) {
-            var images = document.images;
-            var site_root = site_root_url;
-            for (i = 0, len = images.length; i < len; i++) {
-                image = images[i];
-                image_src = image.src;
-                if (image_src.search("attach") >= 0) {
-                    re_image_src = image_src.slice(image_src.search("attach"));
-                    abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
-                        re_image_src;
-                    image.src = abs_image_src;
-                }
-            }
-        }
-        var site_root_url = "/Wiki";
-        changeImgurl(site_root_url);
-    </script>
-
 </head>
 
 <body>
@@ -135,7 +114,13 @@
 </tr>
 </tbody>
 </table>
-<p>布尔相关的命名加上 is、can、should、has 等前缀。</p>
+<p>布尔相关的命名加上 is、can、should、has 等前缀。<br />
+| 单词   | 含义 |<br />
+| ------ | ---- |<br />
+| is     | 是   |<br />
+| can    | 可以 |<br />
+| should | 应该 |<br />
+| has    | 用   |</p>
 <h4 id="2">2. 名词合理</h4>
 <p>使用 i、j、k 作为循环迭代器的名字过于简单，user_i、member_i 这种名字会更有表达力。因为循环层次越多，代码越难理解，有表达力的迭代器名字可读性会更高。</p>
 <p>为名字添加形容词等信息能让名字更具有表达力，但是名字也会变长。名字长短的准则是：作用域越大，名字越长。因此只有在短作用域才能使用一些简单名字。</p>
@@ -213,9 +198,9 @@
 <h2 id="3_2">3. 代码鲁棒性</h2>
 <p>考虑负面输入</p>
 </div>
-<div id="re">
+<div id="renote">
   如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多
-</div>>
+</div>
 
     </div>
     <div id="footer">
@@ -227,6 +212,21 @@
     
 </body>
 <script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
     changeImgurl(site_root_url);
 </script>
 

@@ -127,14 +127,17 @@ date: 2019-08-30 00:00
 [^StackOverflow_2007_web]:XXXX 
 ```
 
-## 1.3 段落自动编号
+## 1.3. 3 段落自动编号
 
 VScode 下安装 markdownIndex 插件，F1 执行markdown add index
 
 
-## VScode 里面的Markdown增强插件
+# 2. VSCode- Markdown Preview Enhanced
+
+[^1]
 
 
 
 
-https://zhuanlan.zhihu.com/p/56699805
+# 3. 参考资料
+[^1]: https://zhuanlan.zhihu.com/p/56699805

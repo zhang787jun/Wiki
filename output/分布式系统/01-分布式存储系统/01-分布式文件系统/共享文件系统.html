@@ -13,27 +13,6 @@
     <script type="text/javascript" async
         src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
     </script>
-    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
-    </script>
-    <script>
-        function changeImgurl(site_root_url) {
-            var images = document.images;
-            var site_root = site_root_url;
-            for (i = 0, len = images.length; i < len; i++) {
-                image = images[i];
-                image_src = image.src;
-                if (image_src.search("attach") >= 0) {
-                    re_image_src = image_src.slice(image_src.search("attach"));
-                    abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
-                        re_image_src;
-                    image.src = abs_image_src;
-                }
-            }
-        }
-        var site_root_url = "/Wiki";
-        changeImgurl(site_root_url);
-    </script>
-
 </head>
 
 <body>
@@ -114,13 +93,12 @@ Samba是一种开放源代码的自由软件，可以为SMB/CIFS客户提供所�
 <h1 id="2">2. 局域网的共享文件夹设置</h1>
 <p>性能问题<br />
 一般认为SMB协议会占用很多网络带宽，因为每个客户端均在整个子网内广播其存在。但是SMB本身并不使用广播。SMB造成的广播问题实际上是NetBIOS的服务定位协议造成的。一般来说Microsoft Windows服务器使用NetBIOS来协议和定位服务。而NetBIOS则定时向一个特定的服务器广播一个服务的存在。对于一个少于20个服务器的网络来说这个方式是可行的。但是随服务器数目的增加广播造成的交通会导致问题。通过适当地实现WINS定位协议这个问题可以被缓和。WINS使用更高级的系统来确定和中央化服务需求，但是造成自己的设计和保管网络的问题。动态DNS是另一个解决方法。微软本身推荐在微软的活动目录环境下使用动态DNS。网络延迟对SMB协议的速度有非常大的冲击。在服务器之间网络延迟大的情况下通过SMB来更换文件夹非常明显地反映了这个问题。比如在通过万维网使用虚拟专用网时网络延迟就会比较大，这时使用SMB就很恼人</p>
-<p>attach</p>
 <p><img alt="" src="../../../../attach/images/2019-08-30-15-59-04.png" /></p>
 <p>https://support.microsoft.com/zh-cn/help/4092694/windows-10-file-sharing-over-a-network</p>
 </div>
-<div id="re">
+<div id="renote">
   如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多
-</div>>
+</div>
 
     </div>
     <div id="footer">
@@ -132,6 +110,21 @@ Samba是一种开放源代码的自由软件，可以为SMB/CIFS客户提供所�
     
 </body>
 <script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
     changeImgurl(site_root_url);
 </script>
 

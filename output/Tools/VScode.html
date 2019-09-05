@@ -1,0 +1,75 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>VScode 的奇技淫巧 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+</head>
+
+<body>
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Tools">Tools</a>&nbsp;»&nbsp;VScode 的奇技淫巧</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">VScode 的奇技淫巧</div>
+<div id="content">
+  <h1 id="vscode">VScode 配置同步</h1>
+<p>安装Setting Sync 插件。<br />
+Setting Sync 可同步包含的所有扩展和完整的用户文件夹</p>
+<p>1) 设置文件</p>
+<p>2) 快捷键设置文件</p>
+<p>3) Launch File</p>
+<p>4) Snippets Folder</p>
+<p>5) VSCode 扩展设置</p>
+<p>6) 工作空间</p>
+<p>Setting Sync 快捷键：</p>
+<p>1) 上传： Shift + Alt + U (Sync: Update / Upload Settings)</p>
+<p>2) 下载： Shift + Alt + D (Sync: Download  Settings)</p>
+<p>如果快捷键有冲突，可Ctrl + K + S快捷键设置配置其它快捷键 或 Ctrl + P / F1 在命令窗口输入 &gt;sync 即会出现相应命令供选择</p>
+<h1 id="vscode_1">VScode 远程开发</h1>
+<h1 id="vscode-markdown">VSCode-Markdown 图片复制插件路径配置</h1>
+</div>
+<div id="renote">
+  如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2019 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+</script>
+
+</html>

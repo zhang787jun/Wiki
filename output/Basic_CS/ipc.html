@@ -13,9 +13,6 @@
     <script type="text/javascript" async
         src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
     </script>
-    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
-    </script>
-
 </head>
 
 <body>
@@ -49,14 +46,10 @@ Berkeley套接字 多数操作系统<br />
 Message Passing 用于MPI规范，Java RMI，CORBA，MSMQ，MailSlot以及其他<br />
 Memory-Mapped File  所有的POSIX系统，Windows</p>
 </div>
-<div id="re">
+<div id="renote">
   如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多
-</div>>
+</div>
 
-
-        /Wiki
-        /Wiki
-        /Wiki
     </div>
     <div id="footer">
         <span>
@@ -66,5 +59,23 @@ Memory-Mapped File  所有的POSIX系统，Windows</p>
     </div>
     
 </body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+</script>
 
 </html>

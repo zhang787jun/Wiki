@@ -13,27 +13,6 @@
     <script type="text/javascript" async
         src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
     </script>
-    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
-    </script>
-    <script>
-        function changeImgurl(site_root_url) {
-            var images = document.images;
-            var site_root = site_root_url;
-            for (i = 0, len = images.length; i < len; i++) {
-                image = images[i];
-                image_src = image.src;
-                if (image_src.search("attach") >= 0) {
-                    re_image_src = image_src.slice(image_src.search("attach"));
-                    abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
-                        re_image_src;
-                    image.src = abs_image_src;
-                }
-            }
-        }
-        var site_root_url = "/Wiki";
-        changeImgurl(site_root_url);
-    </script>
-
 </head>
 
 <body>
@@ -63,6 +42,7 @@
 <li><a href="#3">3. 图片缩放</a></li>
 <li><a href="#4-favicon">4. Favicon 支持</a></li>
 <li><a href="#5css">5.二级网页css 不能正常布置的问题</a></li>
+<li><a href="#6">6. 图片指向位置不正确</a></li>
 </ul>
 </li>
 <li><a href="#smiki-wiki-github-page">Smiki 生成wiki 并发布到Github Page</a><ul>
@@ -179,8 +159,33 @@
 </pre></div>
 
 
-<p>且在 _config.yml 中配置:</p>
-<p>root: /Wiki/</p>
+<h3 id="6">6. 图片指向位置不正确</h3>
+<p>在主题的模板文件修改html 文件，在html文件后面增加js 脚本文件。</p>
+<div class="hlcode"><pre><span class="n">vim</span>  <span class="p">.</span><span class="o">/</span><span class="n">themes</span><span class="o">/</span><span class="n">xxx</span><span class="o">/</span><span class="n">base</span><span class="p">.</span><span class="n">html</span> 
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="nt">&lt;script&gt;</span>
+        <span class="kd">function</span> <span class="nx">changeImgurl</span><span class="p">(</span><span class="nx">site_root_url</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">images</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">images</span><span class="p">;</span>
+            <span class="kd">var</span> <span class="nx">site_root</span> <span class="o">=</span> <span class="nx">site_root_url</span><span class="p">;</span>
+            <span class="k">for</span> <span class="p">(</span><span class="nx">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">len</span> <span class="o">=</span> <span class="nx">images</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">len</span><span class="p">;</span> <span class="nx">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">image</span> <span class="o">=</span> <span class="nx">images</span><span class="p">[</span><span class="nx">i</span><span class="p">];</span>
+                <span class="nx">image_src</span> <span class="o">=</span> <span class="nx">image</span><span class="p">.</span><span class="nx">src</span><span class="p">;</span>
+                <span class="k">if</span> <span class="p">(</span><span class="nx">image_src</span><span class="p">.</span><span class="nx">search</span><span class="p">(</span><span class="s2">&quot;attach&quot;</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>
+                    <span class="nx">re_image_src</span> <span class="o">=</span> <span class="nx">image_src</span><span class="p">.</span><span class="nx">slice</span><span class="p">(</span><span class="nx">image_src</span><span class="p">.</span><span class="nx">search</span><span class="p">(</span><span class="s2">&quot;attach&quot;</span><span class="p">));</span>
+                    <span class="nx">abs_image_src</span> <span class="o">=</span> <span class="p">(</span><span class="nx">site_root</span><span class="p">.</span><span class="nx">endsWith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">))</span> <span class="o">?</span> <span class="nx">site_root</span> <span class="o">+</span> <span class="nx">re_image_src</span> <span class="o">:</span> <span class="nx">site_root</span> <span class="o">+</span> <span class="s2">&quot;/&quot;</span> <span class="o">+</span>
+                        <span class="nx">re_image_src</span><span class="p">;</span>
+                    <span class="nx">image</span><span class="p">.</span><span class="nx">src</span> <span class="o">=</span> <span class="nx">abs_image_src</span><span class="p">;</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="kd">var</span> <span class="nx">site_root_url</span> <span class="o">=</span> <span class="s2">&quot;{{ site.root }}&quot;</span><span class="p">;</span>
+        <span class="nx">changeImgurl</span><span class="p">(</span><span class="nx">site_root_url</span><span class="p">);</span>
+<span class="nt">&lt;/script&gt;</span>
+</pre></div>
+
+
 <h2 id="smiki-wiki-github-page">Smiki 生成wiki 并发布到Github Page</h2>
 <h3 id="github-page">github page的相关概念</h3>
 <h4 id="user-pages">user pages</h4>
@@ -247,9 +252,9 @@ Github 为每一个账户都设置了一个默认的user pages, 如果你要使�
 
 <p>[1]https://help.github.com/articles/creating-project-pages-manually/</p>
 </div>
-<div id="re">
+<div id="renote">
   如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多
-</div>>
+</div>
 
     </div>
     <div id="footer">
@@ -261,6 +266,21 @@ Github 为每一个账户都设置了一个默认的user pages, 如果你要使�
     
 </body>
 <script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
     changeImgurl(site_root_url);
 </script>
 

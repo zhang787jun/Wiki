@@ -3,8 +3,9 @@ title: "Dot 画图"
 layout: page
 date: 2099-06-02 00:00
 ---
+[TOC]
+# DOT 画图
 
-参考https://www.ibm.com/developerworks/cn/aix/library/au-aix-graphviz/index.html
 
 示例：
 ```shell
@@ -202,3 +203,7 @@ subgraph cluster_3{
 
 }
 ```
+[^1]
+# 参考资料
+[^1]:使用 Graphviz 生成自动化系统图
+https://www.ibm.com/developerworks/cn/aix/library/au-aix-graphviz/index.html

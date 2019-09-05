@@ -13,27 +13,6 @@
     <script type="text/javascript" async
         src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
     </script>
-    <script type="text/javascript" async src="https://cdn.bootcss.com/mathjax-mhchem/3.3.2/mhchem.js">
-    </script>
-    <script>
-        function changeImgurl(site_root_url) {
-            var images = document.images;
-            var site_root = site_root_url;
-            for (i = 0, len = images.length; i < len; i++) {
-                image = images[i];
-                image_src = image.src;
-                if (image_src.search("attach") >= 0) {
-                    re_image_src = image_src.slice(image_src.search("attach"));
-                    abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
-                        re_image_src;
-                    image.src = abs_image_src;
-                }
-            }
-        }
-        var site_root_url = "/Wiki";
-        changeImgurl(site_root_url);
-    </script>
-
 </head>
 
 <body>
@@ -57,6 +36,7 @@
 <li><a href="#1125">1.1.2.5. 网络文件系统</a></li>
 </ul>
 </li>
+<li><a href="#113">1.1.3. 查看文件系统</a></li>
 </ul>
 </li>
 <li><a href="#12">1.2. 分布式文件系统</a><ul>
@@ -100,13 +80,84 @@ File system: – Provides a logical view of data and storage functions<br />
 <p>尽管磁盘文件系统也能在闪存上使用，但闪存文件系统是闪存设备的首选，理由如下：</p>
 <p>擦除区块：闪存的区块在重新写入前必须先进行擦除。擦除区块会占用相当可观的时间。因此，在设备空闲的时候擦除未使用的区块有助于提高速度，而写入数据时也可以优先使用已经擦除的区块。<br />
 随机访问：由于在磁盘上寻址有很大的延迟，磁盘文件系统有针对寻址的优化，以尽量避免寻址。但闪存没有寻址延迟。<br />
-写入平衡（Wear levelling）：闪存中经常写入的区块往往容易损坏。闪存文件系统的设计可以使数据均匀地写到整个设备。<br />
-日志文件系统具有闪存文件系统需要的特性，这类文件系统包括JFFS2和YAFFS。也有为了避免日志频繁写入而导致闪存寿命衰减的非日志文件系统，如exFAT。</p>
+写入平衡（Wear levelling）：闪存中经常写入的区块往往容易损坏。闪存文件系统的设计可以使数据均匀地写到整个设备。</p>
+<p>日志文件系统具有闪存文件系统需要的特性，这类文件系统包括JFFS2和YAFFS。也有为了避免日志频繁写入而导致闪存寿命衰减的非日志文件系统，如exFAT。</p>
 <h4 id="1124">1.1.2.4. 数据库文件系统</h4>
 <p>文件管理方面的一个新概念是<strong>一种基于数据库的文件系统</strong>的概念。不再（或者不仅仅）使用<strong>分层结构管理</strong>，文件按照他们的<strong>特征进行区分</strong>，如文件类型、专题、作者或者亚数据进行区分。于是文件检索就可以按照SQL风格甚至自然语言风格进行。</p>
 <p>例如BFS和WinFS。</p>
 <h4 id="1125">1.1.2.5. 网络文件系统</h4>
 <p>网络文件系统（NFS，Network File System）是一种将远程主机上的分区（目录）经网络挂载到本地系统的一种机制</p>
+<table>
+<thead>
+<tr>
+<th>文件系统</th>
+<th>最小块</th>
+<th>最大块</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>NTFS格式(windows的分区，Linux也能用)</td>
+<td></td>
+<td>支持最大分区为2TB，最大文件为2TB；</td>
+</tr>
+<tr>
+<td>FAT32格式(windows的分区，Linux也能用)</td>
+<td></td>
+<td>支持最大分区为128GB，最大文件为4GB；</td>
+</tr>
+<tr>
+<td>NTFS格式(windows的分区，Linux也能用)</td>
+<td></td>
+<td>支持最大分区为2TB，最大文件为2TB；</td>
+</tr>
+<tr>
+<td>Ext2格式</td>
+<td></td>
+<td>最大分区大小为4TB，最大文件大小为1TB；</td>
+</tr>
+<tr>
+<td>Ext3格式</td>
+<td></td>
+<td>最大分区大小为16TB，最大文件大小为2TB；</td>
+</tr>
+<tr>
+<td>Ext4格式</td>
+<td></td>
+<td>最大分区大小为1EB，最大文件大小为16TB;</td>
+</tr>
+<tr>
+<td>ReiserFS格式</td>
+<td></td>
+<td>最大分区大小为4TB，最大文件大小为1TB；</td>
+</tr>
+</tbody>
+</table>
+<p>注：1EB=1024PB，1PB=1024TB，1TB=1024GB</p>
+<h3 id="113">1.1.3. 查看文件系统</h3>
+<p>Linux</p>
+<p>查看</p>
+<div class="hlcode"><pre><span class="cp">#只可以查看已经挂载的分区和文件系统类型。</span>
+<span class="n">df</span> <span class="o">-</span><span class="n">T</span> 
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">Filesystem</span> <span class="n">Type</span> <span class="mi">1</span><span class="n">K</span><span class="o">-</span><span class="n">blocks</span> <span class="n">Used</span> <span class="n">Available</span> <span class="n">Use</span><span class="o">%</span> <span class="n">Mounted</span> <span class="n">on</span>
+<span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">sda1</span> <span class="n">ext4</span> <span class="mi">20642428</span> <span class="mi">3698868</span> <span class="mi">15894984</span> <span class="mi">19</span><span class="o">%</span> <span class="o">/</span>
+<span class="n">tmpfs</span> <span class="n">tmpfs</span> <span class="mi">32947160</span> <span class="mi">0</span> <span class="mi">32947160</span> <span class="mi">0</span><span class="o">%</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">shm</span>
+
+<span class="cp">#也可以查看未挂载的文件系统类型。</span>
+<span class="n">lsblk</span> <span class="o">-</span><span class="n">f</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">NAME</span> <span class="n">FSTYPE</span> <span class="n">LABEL</span> <span class="n">UUID</span> <span class="n">MOUNTPOINT</span>
+<span class="n">sda</span> 
+<span class="o">|-</span><span class="n">sda1</span> <span class="n">ext4</span> <span class="n">c4f338b7</span><span class="o">-</span><span class="mi">13</span><span class="n">b4</span><span class="o">-</span><span class="mi">48</span><span class="n">d2</span><span class="o">-</span><span class="mi">9</span><span class="n">a09</span><span class="o">-</span><span class="mi">8</span><span class="n">c12194a3e95</span> <span class="o">/</span>
+<span class="o">|-</span><span class="n">sda2</span> <span class="n">swap</span> <span class="mi">21</span><span class="n">ead8d0</span><span class="o">-</span><span class="mf">411f</span><span class="o">-</span><span class="mi">4</span><span class="n">c23</span><span class="o">-</span><span class="n">bdca</span><span class="o">-</span><span class="mi">642643</span><span class="n">aa234b</span> <span class="p">[</span><span class="n">SWAP</span><span class="p">]</span>
+<span class="o">|-</span><span class="n">sda3</span> <span class="n">ext4</span> <span class="mi">2872</span><span class="n">b14e</span><span class="o">-</span><span class="mi">45</span><span class="n">va</span><span class="o">-</span><span class="mf">461e-8667</span><span class="o">-</span><span class="mi">43</span><span class="n">a6f04b7bc9</span>
+</pre></div>
+
+
+<p>Linux操作系统使用虚拟文件系统（VFS）向上和用户进程文件访问系统调用接口，向下和具体不同文件系统的实现接口。VFS屏蔽了具体文件的实现细节，向上提供统一的操作接口。通过VFS可以实现任意的文件系统，这些文件系统通过文件访问系统调用都可以访问。所以Linux系统核心可以支持十多种文件系统类型，比如Btrfs、JFS、 ReiserFS、ext、ext2、ext3、ext4、ISO9660、XFS、Minx、MSDOS、UMSDOS、VFAT、NTFS、HPFS、NFS、SMB、SysV、PROC等。</p>
+<p>DrvFs<br />
+为了便于和Windows系统之间的互操作，WSL使用了DrvFs文件系统。WSL将具有可支持文件系统的固定驱动器自动挂载到/mnt目录中，例如/mnt/c、/mnt/d等。目前，仅能支持NTFS和ReFs卷标。</p>
 <h2 id="12">1.2. 分布式文件系统</h2>
 <p><img alt="" src="../../../../attach/images/2019-09-02-16-47-24.png" /></p>
 <p>分布式文件系统可以提供基于位置的寻址和冗余等功能，这些特性可以提高可靠性或降低集群其他部分的复杂性，对用户提供透明的文件服务。</p>
@@ -126,11 +177,21 @@ File system: – Provides a logical view of data and storage functions<br />
 4   GlusterFS （红帽）</p>
 <p><strong>Q:</strong> 放在两台可以上网的电脑的文件，叫分布式文件系统吗？<br />
 <strong>A:</strong> 不叫，外部不可以从一个地址寻找文件。需要基于位置的寻址，或者说没有元数据</p>
-<p>MetaData 元数据：描述数据的数据，主要是描述数据的属性信息，包括数据存储位置、历史数据描述、资料查找、文件记录</p>
+<p>MetaData 元数据：描述数据的数据，主要是描述数据的属性信息，包括数据存储位置、历史数据描述、资料查找、文件记录<br />
+<sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup></p>
+<p>参考资料</p>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>https://www.cnblogs.com/alantu2018/p/8461749.html&#160;<a class="footnote-backref" href="#fnref:1" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
 </div>
-<div id="re">
+</div>
+<div id="renote">
   如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多
-</div>>
+</div>
 
     </div>
     <div id="footer">
@@ -142,6 +203,21 @@ File system: – Provides a logical view of data and storage functions<br />
     
 </body>
 <script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
     changeImgurl(site_root_url);
 </script>
 
