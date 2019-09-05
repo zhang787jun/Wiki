@@ -43,6 +43,12 @@ class Car(object):
 | make  | create、set up、build、generate、compose、add、new |
 
 布尔相关的命名加上 is、can、should、has 等前缀。
+| 单词   | 含义 |
+| ------ | ---- |
+| is     | 是   |
+| can    | 可以 |
+| should | 应该 |
+| has    | 用   |
 
 #### 2. 名词合理
 
