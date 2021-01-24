@@ -215,7 +215,7 @@ pip install --upgrade pip # 升级pip
 在境内地区的国际站点的网络连接速度通常较慢，pip可通过国内镜像加速
 
 清华：https://pypi.tuna.tsinghua.edu.cn/simple
-阿里云：http://mirrors.aliyun.com/pypi/simple/
+阿里云：https://mirrors.aliyun.com/pypi/simple/
 中国科技大学 https://pypi.mirrors.ustc.edu.cn/simple/
 华中理工大学：http://pypi.hustunique.com/
 山东理工大学：http://pypi.sdutlinux.org/ 

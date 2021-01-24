@@ -304,7 +304,10 @@ gst_init (&argc, &argv);
 在不需要gst_init处理命令行参数时，我们可以讲NULL作为其参数，例如：gst_init(NULL, NULL);
 
 ## 6.2. 创建Pipeline
-　　当我们用字符串描述Pipeline时，每个Element之间需要通过叹号 “!" 分隔Element，这样gst-launch才能正确识别。
+
+> 用字符串描述Pipeline
+> 
+当我们用字符串描述Pipeline时，每个Element之间需要通过叹号 “!" 分隔Element，这样gst-launch才能正确识别。
 　　在使用gst-launch时，根据不同的应用场景，我们可以分为以下的类型。
 
 采用默认的参数创建Pipeline
@@ -313,6 +316,17 @@ gst_init (&argc, &argv);
 ```shell
 gst-launch-1.0 videotestsrc ! videoconvert ! autovideosink
 ```
+
+### 创建rtsp
+
+```markdown
+!gst-launch-1.0 rtspsrc location=rtsp://10.1.224.30:55402/PSIA/Streaming/channels/2?videoCodecType=H.264! rtph264depay ! h264parse ! avdec_h264 ! appsink
+```
+
+
+`nvvidconv`: 还有一个用来进行某种视频转换的nvvidconv功能块，该功能块里面需要进行一次Device->Host的传输。在完成了一次性的传输后，这个功能块后面，还有一个CPU上的xvimagesink功能块。
+
+`appsink`: **Sinks**：负责媒体流输出到指定设备或目的地
 
 ## 6.3. 播放文件
 
@@ -328,7 +342,9 @@ gst-launch-1.0 videotestsrc ! videoconvert ! autovideosink
 
 GStreamer针对常见的容器提供了相应的demuxer，如果一个容器文件中包含多种媒体数据（例如：一路视频，两路音频），这种情况下，demuxer会为些数据分别创建不同的Source Pad，每一个Source Pad可以被认为一个处理分支，可以创建多个分支分别处理相应的数据。
 
+```shell 
 gst-launch-1.0 filesrc location=sintel_trailer-480p.ogv ! oggdemux name=demux ! queue ! vorbisdec ! autoaudiosink demux. ! queue ! theoradec ! videoconvert ! autovideosink
+```
 通过上面的命令播放文件时，会创建具有2个分支的Pipeline：
 
 

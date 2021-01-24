@@ -13,24 +13,24 @@ date: 2099-06-02 00:00
 
 ![](../../../attach/images/2020-07-18-10-04-08.png)
 
-## 控制单元
+## 2.1. 控制单元
 
-## 2.1. 运算单元
+## 2.2. 运算单元
 
-### 2.1.1. 插槽
+### 2.2.1. 插槽
 
 - [ ] `socket` : 插槽、插口
 - [x] `sockets/number of sockets` : 主板上CPU插口的数量，指的是整个主板上物理CPU的个数。
 
 
-### 2.1.2. 核
+### 2.2.2. 核
 - [ ] `Core` : 核 ，就是平时说的核，双核、四核等。
 - [x] `Cores` ：核数，又称为运算核心数，是指每个CPU上的核数。
 
 `Cores=sockets * Cores per socket`
 
 $$总核数 = 物理CPU个数 \times  每颗物理CPU的核数$$
-### 2.1.3. 超线程技术 
+### 2.2.3. 超线程技术 
 
 - [ ] `超线程技术（HT, Hyper-Threading）` : 也成为`CPU虚拟化技术`，是在一个实体CPU中提供多个逻辑线程的技术。
 - [x] `Thread(s) per core` : 单核线程数，指的是每个CPU核的线程数。
@@ -44,7 +44,7 @@ $$总核数 = 物理CPU个数 \times  每颗物理CPU的核数$$
 4核8线程：即物理核心是4个，但是从计算机的角度来看，被虚拟为了8个核心。
 
 
-### 2.1.4. 逻辑CPU数量
+### 2.2.4. 逻辑CPU数量
 
 - [x] `CPU(s)`: 逻辑CPU数量
   
@@ -72,7 +72,7 @@ Cache 技术所依赖的原理是`程序执行与数据访问的局部性原理`
 
 
 
-## 2.2. 查看CPU信息
+## 2.4. 查看CPU信息
 **Linux**
 ```shell
 lscpu 
@@ -97,7 +97,8 @@ Virtualization:      VT-x
 Hypervisor vendor:   Windows Subsystem for Linux
 Virtualization type: container
 ```
-
+Family（系列）
+系列标识可用来确定处理器属于那一代产品。如6系列的INTEL处理器包括Pentium Pro、Pentium II、Pentium II Xeon、Pentium III和Pentium III Xeon处理器。5系列（第五代）包括Pentium处理器和采用 MMX技术的Pentium处理器。AMD的6系列实际指有K7系列CPU，有DURON和ATHION两大类。最新一代的INTEL Pentium 4系列处理器（包括相同核心的Celerom处理器）的系列值为“F”
 
 **Windows下**：
 在cmd命令中输入`wmic`，然后在出现的新窗口中输入`cpu get *`
@@ -127,7 +128,7 @@ NumberOfLogicalProcessors
 
 # 3. 指令集问题
 
-## 背景
+## 3.1. 背景
 - [ ] `指令集` ：存储在CPU内部，对CPU运算进行指导和优化的硬程序。
 
 拥有这些指令集，CPU就可以更高效地运行。

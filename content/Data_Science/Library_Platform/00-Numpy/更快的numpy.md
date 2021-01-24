@@ -216,6 +216,108 @@ time cost 0:00:13.737275 # windows conda numpy
 time cost 0:00:20.864863 # colab Linux numpy
 ```
 
+# 连续内存
+
+np.ascontiguousarray
+ascontiguousarray函数将一个内存不连续存储的数组转换为内存连续存储的数组，使得运行速度更快。
+
+C order vs Fortran order
+C order 指的是行优先的顺序（Row-major Order)，即内存中同行的元素存在一起，
+Fortran Order则指的是列优先的顺序（Column-major Order)，即内存中同列的元素存在一起。
+Pascal, C，C++，Python都是行优先存储的，而Fortran，MatLab是列优先存储的。
+
+Contiguous array
+contiguous array指的是数组在内存中存放的地址也是连续的（注意内存地址实际是一维的）。
+
+2维数组arr = np.arange(12).reshape(3,4)。数组结构如下
+
+image
+在内存里中实际存储如下：
+
+image
+arr是 C order 的，在内存是行优先的。如果想要向下移动一列，则需要跳过3个块（例如，从0到4只需要跳过1,2和3）。
+
+如果经过转置，arr.T没有了C连续特性，因为内存中元素的地址不变，同一行中的相邻元素在内存中不是连续的:
+
+image
+这时，arr.T变成了Fortran order，因为相邻列中的元素在内存中是相邻存储的。
+
+从性能上来说，获取内存中相邻的地址比不相邻的地址速度要快很多（从RAM读取一个数值的时候可以连着一起读一块地址中的数值，并且可以保存在Cache中），这意味着对连续数组的操作会快很多。
+
+由于arr是C连续的，因此对其进行行操作比进行列操作速度要快。通常来说
+
+np.sum(arr, axis=1) # 按行求和
+会比
+
+np.sum(arr, axis=0) # 按列求和
+稍微快些。
+同理，在arr.T上，列操作比行操作会快些。
+
+使用 np.ascontiguousarray()
+Numpy中，随机初始化的数组默认都是C连续的。
+
+经过不规则的slice操作，则会改变连续性，可能会变成既不是C连续，也不是Fortran连续的。
+
+可以通过数组的.flags属性，查看一个数组是C连续还是Fortran连续的
+
+>>> import numpy as np
+>>> arr = np.arange(12).reshape(3, 4)
+>>> arr.flags
+    C_CONTIGUOUS : True
+    F_CONTIGUOUS : False
+    OWNDATA : False
+    WRITEABLE : True
+    ALIGNED : True
+    WRITEBACKIFCOPY : False
+    UPDATEIFCOPY : False
+从输出可以看到数组arr是C连续的。
+对arr进行按列的slice操作，不改变每行的值，则还是C连续的：
+
+>>> arr
+array([[ 0,  1,  2,  3],
+        [ 4,  5,  6,  7],
+        [ 8,  9, 10, 11]])
+>>> arr1 = arr[:2, :]
+>>> arr1
+array([[ 0,  1,  2,  3],
+        [ 4,  5,  6,  7]])
+>>> arr1.flags
+    C_CONTIGUOUS : True
+    F_CONTIGUOUS : False
+    OWNDATA : False
+    WRITEABLE : True
+    ALIGNED : True
+    WRITEBACKIFCOPY : False
+    UPDATEIFCOPY : False
+如果进行在行上的slice，则会改变连续性，成为既不C连续，也不Fortran连续的：
+
+
+>>> arr1 = arr[:, 1:3]
+>>> arr1.flags
+    C_CONTIGUOUS : False
+    F_CONTIGUOUS : False
+    OWNDATA : False
+    WRITEABLE : True
+    ALIGNED : True
+    WRITEBACKIFCOPY : False
+    UPDATEIFCOPY : False
+此时利用ascontiguousarray函数，可以将其变为连续的：
+
+
+>>> arr2 = np.ascontiguousarray(arr1)
+>>> arr2.flags
+    C_CONTIGUOUS : True
+    F_CONTIGUOUS : False
+    OWNDATA : True
+    WRITEABLE : True
+    ALIGNED : True
+    WRITEBACKIFCOPY : False
+    UPDATEIFCOPY : False
+参考
+从Numpy中的ascontiguousarray说起 - 知乎
+Numpy文档
+
+
 # 4. 参考资料
 
 [^1]: How To Make Your Pandas Loop 71803 Times Faster https://towardsdatascience.com/how-to-make-your-pandas-loop-71-803-times-faster-805030df4f06
