@@ -56,7 +56,7 @@ $$3^3=27$$
 **适用性**
 小样本 ，大样本计算量大太
 
-### 4.2.2. Best path decoding(Greedy decode 贪心搜索)
+### 4.2.2. Best path decoding (Greedy decode 贪心搜索)
 
 **基本步骤**
 1. 选取每个步长概率最高的字符
@@ -71,19 +71,30 @@ tf.nn.ctc_greedy_decoder(inputs, sequence_length, merge_repeated=True)
 output = tf.edit_distance(hypothesis, truth, normalize=True, name='edit_distance')
 ```
 **缺点**
-这个方法最大的缺点是忽略了一个输出可能对应多个对齐方式。但是这样的方法不能保证一定会找到最大概率的sequence
+这个方法最大的缺点是忽略了一个输出可能对应多个对齐(alignments)方式。虽然单个路径可能分数很高，但是这样的方法不能保证一定会找到最大概率的sequence。
+
+### 4.2.3. Beam search decoding
+
+#### 基础版本
+
+**基本步骤**
 
 
-### 4.2.3. beam decode
+1)(2). Then, the algorithm iterates over all time-steps of the NN output matrix (3–15). At each time-step, only the best scoring beams from the previous time-step are kept (4). The beam width (BW) specifies the number of beams to keep. For each of these beams, the score at the current time-step is calculated (8). Further, each beam is extended by all possible characters from the alphabet (10) and again, a score is calculated (11). After the last time-step, the best beam is returned as a result (16).
 
-Beam Search是寻找全局最优值和Greedy Search在查找时间和模型精度的一个折中。一个简单的beam search在每个时间片计算所有可能假设的概率，并从中选出最高的几个作为一组。然后再从这组假设的基础上产生概率最高的几个作为一组假设，依次进行，直到达到最后一个时间片，下图是beam search的宽度为3的搜索过程，红线为选中的假设。
+1. 创建候选项目（beams）
+> creates text candidates (beams)
+> the list of beams is initialized with an empty beam (line 1) and a corresponding score 
+1. 计算概率
+> scores them.
 
 
-Top-path is (1, 0, 1), after many-to-one map, the path is (1, 1) which is different from top-path in raw decode, and the score is 0.08 which is lower than score in raw decode.
+Beam Search是寻找全局最优值和Greedy Search在查找时间和模型精度的一个折中。一个简单的beam search在每个时间片计算所有可能假设的概率，并从中选出最高的几个作为一组。然后再从这组假设的基础上产生概率最高的几个作为一组假设，依次进行，直到达到最后一个时间片。
 
 
-### 4.2.4. Beam search with character-LM
+#### 改进版本1-  Beam search with character-LM
 
+时间复杂度 `O(T·BW·C·log(BW·C))`
 ### 4.2.5. Token passing
 
 Token passing: “A random number”. This algorithm uses a dictionary and word-LM. It searches for the most probable sequence of dictionary words in the NN output. But it can’t handle arbitrary character sequences (numbers, punctuation marks) like “: 1234.”.
