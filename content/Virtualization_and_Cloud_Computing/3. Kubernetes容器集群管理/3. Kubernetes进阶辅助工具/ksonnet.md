@@ -128,10 +128,13 @@ make install
 curl -o ks_0.9.2_linux_amd64.tar.gz http://kubeflow.oss-cn-beijing.aliyuncs.com/ks_0.9.2_linux_amd64.tar.gz
 
 tar -xvf ks_0.9.2_linux_amd64.tar.gz
-cp ks_0.9.2_linux_amd64/ks /usr/local/bin/
+sudo cp ks_0.9.2_linux_amd64/ks /usr/local/bin/
 #检查是否安装成功
 ks version
 >>>
+ksonnet version: 0.9.2
+jsonnet version: v0.9.5
+client-go version: 1.8
 
 ```
 

@@ -510,20 +510,8 @@ Spark 记录该对象释放的内存，删除该对象的引用<br />
 <p>在默认情况下堆外内存并不启用，可通过配置 spark.memory.offHeap.enabled 参数启用，并由 spark.memory.offHeap.size 参数设定堆外空间的大小。除了没有 other 空间，堆外内存与堆内内存的划分方式相同，所有运行中的并发任务共享存储内存和执行内存。</p>
 <p>1.3 内存管理接口<br />
 Spark 为存储内存和执行内存的管理提供了统一的接口——MemoryManager，同一个 Executor 内的任务都调用这个接口的方法来申请或释放内存:</p>
-<p>清单 1 . 内存管理接口的主要方法<br />
-1<br />
-2<br />
-3<br />
-4<br />
-5<br />
-6<br />
-7<br />
-8<br />
-9<br />
-10<br />
-11<br />
-12<br />
-//申请存储内存<br />
+<p>清单 1 . 内存管理接口的主要方法</p>
+<p>//申请存储内存<br />
 def acquireStorageMemory(blockId: BlockId, numBytes: Long, memoryMode: MemoryMode): Boolean<br />
 //申请展开内存<br />
 def acquireUnrollMemory(blockId: BlockId, numBytes: Long, memoryMode: MemoryMode): Boolean<br />

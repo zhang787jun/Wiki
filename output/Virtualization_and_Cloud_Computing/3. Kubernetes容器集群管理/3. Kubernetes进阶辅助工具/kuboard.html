@@ -34,24 +34,30 @@
 <div id="title">kuboard--国产kubernetes的可视化面板</div>
 <div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
-<li><a href="#1">1. 安装</a></li>
-<li><a href="#21-token">2.1. 获取 Token</a><ul>
-<li><a href="#211">2.1.1. 管理员用户</a></li>
-<li><a href="#212">2.1.2. 只读用户</a></li>
-<li><a href="#22-kuboard">2.2. 访问 Kuboard</a><ul>
-<li><a href="#221-nodeport">2.2.1. 通过NodePort访问</a></li>
-<li><a href="#222-port-forward">2.2.2. 通过port-forward访问</a></li>
+<li><a href="#1">1. 安装</a><ul>
+<li><a href="#11-token">1.1. 获取 Token</a><ul>
+<li><a href="#111">1.1.1. 管理员用户</a></li>
+<li><a href="#112">1.1.2. 只读用户</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#_1">使用教程</a></li>
-<li><a href="#_2">参考资料</a></li>
+<li><a href="#2">2. 使用</a><ul>
+<li><a href="#21-kuboard">2.1. 访问 Kuboard</a><ul>
+<li><a href="#211-nodeport">2.1.1. 通过NodePort访问</a></li>
+<li><a href="#212-port-forward">2.1.2. 通过port-forward访问</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#3">3. 使用教程</a></li>
+<li><a href="#4">4. 参考资料</a></li>
 </ul>
 </div>
 <h1 id="1">1. 安装</h1>
 <p>安装 Kuboard。</p>
 <div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="o">:</span><span class="c1">//kuboard.cn/install-script/kuboard.yaml</span>
+<span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="o">:</span><span class="c1">//addons.kuboard.cn/metrics-server/0.3.7/metrics-server.yaml</span>
 </pre></div>
 
 
@@ -71,9 +77,9 @@
 </pre></div>
 
 
-<h1 id="21-token">2.1. 获取 Token</h1>
+<h2 id="11-token">1.1. 获取 Token</h2>
 <p>您可以获得管理员用户、只读用户的Token</p>
-<h3 id="211">2.1.1. 管理员用户</h3>
+<h3 id="111">1.1.1. 管理员用户</h3>
 <p><strong>拥有的权限</strong></p>
 <ul>
 <li>此Token拥有 ClusterAdmin 的权限，可以执行所有操作</li>
@@ -101,7 +107,7 @@
 </pre></div>
 
 
-<h3 id="212">2.1.2. 只读用户</h3>
+<h3 id="112">1.1.2. 只读用户</h3>
 <p><strong>拥有的权限</strong></p>
 <ul>
 <li>view  可查看名称空间的内容</li>
@@ -134,9 +140,10 @@
 </pre></div>
 
 
-<h2 id="22-kuboard">2.2. 访问 Kuboard</h2>
+<h1 id="2">2. 使用</h1>
+<h2 id="21-kuboard">2.1. 访问 Kuboard</h2>
 <p>您可以通过 NodePort、port-forward 两种方式当中的任意一种访问 Kuboard</p>
-<h3 id="221-nodeport">2.2.1. 通过NodePort访问</h3>
+<h3 id="211-nodeport">2.1.1. 通过NodePort访问</h3>
 <p>Kuboard Service 使用了 NodePort 的方式暴露服务，NodePort 为 32567；您可以按如下方式访问 Kuboard。</p>
 <p><code>http://任意一个Worker节点的IP地址:32567/</code></p>
 <p>输入前一步骤中获得的 token，可进入 <strong>Kuboard 集群概览页</strong></p>
@@ -146,7 +153,7 @@
 <li>您也可以修改 Kuboard.yaml 文件，使用自己定义的 NodePort 端口号</li>
 </ul>
 </blockquote>
-<h3 id="222-port-forward">2.2.2. 通过port-forward访问</h3>
+<h3 id="212-port-forward">2.1.2. 通过port-forward访问</h3>
 <p>在您的客户端电脑中执行如下命令</p>
 <div class="hlcode"><pre>kubectl port-forward service/kuboard 8080:80 -n kube-system
 </pre></div>
@@ -155,8 +162,8 @@
 <p>在浏览器打开链接 （请使用 kubectl 所在机器的IP地址）</p>
 <p><code>http://localhost:8080</code></p>
 <p>输入前一步骤中获得的 token，可进入 <strong>Kuboard 集群概览页</strong></p>
-<h1 id="_1">使用教程</h1>
-<h1 id="_2">参考资料</h1>
+<h1 id="3">3. 使用教程</h1>
+<h1 id="4">4. 参考资料</h1>
 <p>https://kuboard.cn/guide/</p>
 </div>
 <div id="renote">

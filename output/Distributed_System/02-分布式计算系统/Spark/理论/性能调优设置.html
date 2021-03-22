@@ -35,7 +35,7 @@
 <div id="content">
   <h1 id="_1">并行度设置</h1>
 <p>并行度：其实就是指的是，Spark作业中，各个stage的task数量，也就代表了Spark作业的在各个阶段（stage）的并行度。</p>
-<p>官方推荐，task数量设置成spark application总cpu core数量的2~3倍，比如150个cpu core，基本要设置task数量为300~500</p>
+<p>官方推荐，task数量设置成<code>spark application</code>总cpu core数量的2~3倍，比如150个cpu core，基本要设置task数量为300~500</p>
 <div class="hlcode"><pre><span class="n">SparkConf</span> <span class="n">conf</span> <span class="o">=</span> <span class="k">new</span> <span class="n">SparkConf</span><span class="o">()</span>
   <span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="s">&quot;spark.default.parallelism&quot;</span><span class="o">,</span> <span class="s">&quot;500&quot;</span><span class="o">)</span>
 </pre></div>

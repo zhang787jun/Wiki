@@ -35,9 +35,10 @@
 <div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
 <li><a href="#1-docker">1. Docker 安装</a><ul>
-<li><a href="#11-for-linux">1.1. For Linux</a></li>
-<li><a href="#12-for-windows">1.2. For windows</a></li>
-<li><a href="#13">1.3. 注意与优化</a></li>
+<li><a href="#11">1.1. 版本情况说明</a></li>
+<li><a href="#12-for-linux">1.2. For Linux</a></li>
+<li><a href="#13-for-windows">1.3. For windows</a></li>
+<li><a href="#14">1.4. 注意与优化</a></li>
 </ul>
 </li>
 <li><a href="#2-docker">2. Docker 概念</a></li>
@@ -85,22 +86,26 @@
 </li>
 </ul>
 </li>
-<li><a href="#7">7. 参考资料</a></li>
+<li><a href="#7">7. 镜像存储目录迁移</a></li>
+<li><a href="#8">8. 参考资料</a></li>
 </ul>
 </div>
 <p>Docker 的主要笔记资料参考：<br />
 1. <a href="https://yeasy.gitbooks.io/docker_practice/content/">Docker — 从入门到实践</a></p>
 <h1 id="1-docker">1. Docker 安装</h1>
-<p>目前Docker已经分为社区版（Docker CE）和商业版（docker EE）。docker-ce 是docker公司维护的开源项目， 本节主要针对此版本进行说明。</p>
-<p>Docker 分为 CE 和 EE 两大版本。CE 即社区版（免费，支持周期 7 个月），EE 即企业版，强调安全，付费使用，支持周期 24 个月。<br />
-Docker CE 分为 stable test 和 nightly 三个更新频道。</p>
-<h2 id="11-for-linux">1.1. For Linux</h2>
+<h2 id="11">1.1. 版本情况说明</h2>
+<p>目前Docker已经分为<br />
+1. 社区版（Docker CE）--免费，支持周期7个月<br />
+2. 商业版（docker EE）--强调安全，付费使用，支持周期 4个月</p>
+<p>Docker-CE 是docker公司维护的开源项目，本节主要针对此版本进行说明。</p>
+<p>Docker CE 分为 stable、test 和 nightly 三个更新频道。</p>
+<h2 id="12-for-linux">1.2. For Linux</h2>
 <div class="hlcode"><pre><span class="cp"># 使用官方安装脚本自动安装 （仅适用于公网环境 阿里云）</span>
 <span class="n">curl</span> <span class="o">-</span><span class="n">fsSL</span> <span class="n">https</span><span class="o">:</span><span class="c1">//get.docker.com | bash -s docker --mirror Aliyun</span>
 </pre></div>
 
 
-<h2 id="12-for-windows">1.2. For windows</h2>
+<h2 id="13-for-windows">1.3. For windows</h2>
 <p>Docker Windos客户端 主要由2种：<br />
 1. 针对Windows 10+ ，开启Hyper-V的系统：推荐使用 <code>Docker for Windows</code>（下载地址：<a href="http://mirrors.aliyun.com/docker-toolbox/windows/docker-for-windows/">点击这里</a>）<br />
 2. 针对Windows 10- ,使用 <code>Docker Toolbox
@@ -108,7 +113,7 @@ Windows</code>（下载地址：<a href="http://mirrors.aliyun.com/docker-toolbo
 <ul>
 <li>可以使用迅雷p2p 下载境外资源</li>
 </ul>
-<h2 id="13">1.3. 注意与优化</h2>
+<h2 id="14">1.4. 注意与优化</h2>
 <ol>
 <li>Docker for Windows 和 Docker Toolbox互不兼容，如果同时安装两者的话，需要使用 hyper-v的参数启动。</li>
 </ol>
@@ -150,6 +155,17 @@ EOF
 因为docker for windows安装时会校验windows版本，因此我们需要通过以下方式通过校验：将以下代码复制并保存为<code>.cmd</code>文件并右键管理员方式运行</li>
 </ol>
 <div class="hlcode"><pre><span class="n">REG</span> <span class="n">ADD</span> <span class="s">&quot;HKEY_LOCAL_MACHINE\software\Microsoft\Windows NT\CurrentVersion&quot;</span> <span class="o">/</span><span class="n">v</span> <span class="n">EditionId</span> <span class="o">/</span><span class="n">T</span> <span class="n">REG_EXPAND_SZ</span> <span class="o">/</span><span class="n">d</span> <span class="n">Professional</span> <span class="o">/</span><span class="n">F</span>
+</pre></div>
+
+
+<ol>
+<li>Linux 下用户权限</li>
+</ol>
+<div class="hlcode"><pre>sudo groupadd docker
+sudo usermod -aG docker <span class="cp">${</span><span class="n">USER</span><span class="cp">}</span>
+sudo systemctl restart docker
+
+newgrp - docker
 </pre></div>
 
 
@@ -397,6 +413,7 @@ Docker Repository：Docker仓库,一个仓库对应一个软件，一个软件�
 <h2 id="61-docker-registry">6.1. Docker Registry</h2>
 <div class="hlcode"><pre><span class="cp"># 查看Registry</span>
 <span class="n">docker</span> <span class="n">system</span> <span class="n">info</span>
+<span class="n">docker</span> <span class="n">info</span>
 </pre></div>
 
 
@@ -413,6 +430,19 @@ Docker Repository：Docker仓库,一个仓库对应一个软件，一个软件�
 <p><strong>Windows10</strong> Hyper 模式镜像文件是存储在虚拟硬盘上，虚拟硬盘的位置为<code>C:\Users\Public\Documents\Hyper-V\Virtual hard disks</code></p>
 <p><strong>Linux</strong> 下为<code>/var/lib/docker</code></p>
 <h3 id="621">6.2.1. 更换镜像下载镜像</h3>
+<p><strong>Ubuntu 系统</strong></p>
+<div class="hlcode"><pre>sudo mkdir <span class="o">-</span>p <span class="o">/</span>etc<span class="o">/</span>docker
+sudo tee <span class="o">/</span>etc<span class="o">/</span>docker<span class="o">/</span>daemon.json <span class="o">&lt;&lt;-</span><span class="s">&#39;EOF&#39;</span>
+<span class="p">{</span>
+  <span class="s">&quot;registry-mirrors&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s">&quot;http://hub-mirror.c.163.com&quot;</span><span class="p">,</span>
+  <span class="s">&quot;https://docker.mirrors.ustc.edu.cn&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+EOF
+sudo systemctl daemon<span class="o">-</span>reload
+sudo systemctl restart docker
+</pre></div>
+
+
 <p><strong>针对Docker Toolbox用户</strong><br />
 1. 创建一台安装有Docker环境的Linux虚拟机，指定机器名称为default，同时配置Docker加速器地址。</p>
 <div class="hlcode"><pre><span class="n">docker</span><span class="o">-</span><span class="n">machine</span> <span class="n">create</span> <span class="o">--</span><span class="n">engine</span><span class="o">-</span><span class="n">registry</span><span class="o">-</span><span class="n">mirror</span><span class="o">=</span><span class="n">http</span><span class="o">:</span><span class="c1">//hub-mirror.c.163.com -d virtualbox default</span>
@@ -509,7 +539,44 @@ docker push registry.cn-hangzhou.aliyuncs.com/<span class="nt">&lt;NAMESPACEs&gt
 
 
 <p>d<sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup><sup id="fnref:2"><a class="footnote-ref" href="#fn:2" rel="footnote">2</a></sup></p>
-<h1 id="7">7. 参考资料</h1>
+<h1 id="7">7. 镜像存储目录迁移</h1>
+<div class="hlcode"><pre><span class="cp">#备份fstab文件</span>
+<span class="n">sudo</span> <span class="n">cp</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">fstab</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">fstab</span><span class="p">.</span><span class="err">$</span><span class="p">(</span><span class="n">date</span> <span class="o">+%</span><span class="n">Y</span><span class="o">-%</span><span class="n">m</span><span class="o">-%</span><span class="n">d</span><span class="p">)</span>
+
+<span class="cp">#停止docker</span>
+<span class="n">sudo</span> <span class="n">service</span> <span class="n">docker</span> <span class="n">stop</span>
+
+<span class="cp">#/data/docker/为目标路径，根据机器情况设定。</span>
+<span class="n">export</span> <span class="n">DOCKER_PATH</span><span class="o">=/</span><span class="n">data</span><span class="o">/</span><span class="n">docker</span><span class="o">/</span>
+
+<span class="cp">#用rsync同步/var/lib/docker到新位置</span>
+<span class="n">sudo</span> <span class="n">rsync</span> <span class="o">-</span><span class="n">avPHSX</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">docker</span><span class="o">/</span><span class="p">.</span>  <span class="err">$</span><span class="n">DOCKER_PATH</span>
+
+<span class="n">sudo</span> <span class="n">echo</span> <span class="err">$</span><span class="n">DOCKER_PATH</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">docker</span>  <span class="n">none</span> <span class="n">bind</span> <span class="mi">0</span> <span class="mi">0</span> <span class="o">&gt;&gt;</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">fstab</span>
+<span class="n">sudo</span> <span class="n">mount</span> <span class="o">-</span><span class="n">a</span>
+<span class="n">df</span> <span class="o">-</span><span class="n">h</span>
+
+<span class="n">sudo</span> <span class="n">service</span> <span class="n">docker</span> <span class="n">start</span>
+</pre></div>
+
+
+<ol>
+<li>查看docker和文件系统</li>
+</ol>
+<p>Docker的镜像以及一些数据都是在<code>/var/lib/docker</code>目录下，它占用的是Linux的系统分区，也就是下面的/dev/vda1,当有多个镜像时，/dev/vda1的空间可能不足，我们可以把docker的数据挂载到数据盘，例如：/dev/vdb目录下。</p>
+<div class="hlcode"><pre><span class="n">df</span> <span class="o">-</span><span class="n">lhT</span>
+<span class="o">&gt;&gt;&gt;</span> 
+<span class="n">Filesystem</span>     <span class="n">Type</span>      <span class="n">Size</span>  <span class="n">Used</span> <span class="n">Avail</span> <span class="n">Use</span><span class="o">%</span> <span class="n">Mounted</span> <span class="n">on</span>
+<span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">vda1</span>      <span class="n">xfs</span>        <span class="mi">20</span><span class="n">G</span>  <span class="mf">3.8</span><span class="n">G</span>   <span class="mi">16</span><span class="n">G</span>  <span class="mi">20</span><span class="o">%</span> <span class="o">/</span>
+<span class="n">devtmpfs</span>       <span class="n">devtmpfs</span>  <span class="mi">916</span><span class="n">M</span>     <span class="mi">0</span>  <span class="mi">916</span><span class="n">M</span>   <span class="mi">0</span><span class="o">%</span> <span class="o">/</span><span class="n">dev</span>
+<span class="n">tmpfs</span>          <span class="n">tmpfs</span>     <span class="mi">921</span><span class="n">M</span>     <span class="mi">0</span>  <span class="mi">921</span><span class="n">M</span>   <span class="mi">0</span><span class="o">%</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">shm</span>
+<span class="n">tmpfs</span>          <span class="n">tmpfs</span>     <span class="mi">921</span><span class="n">M</span>   <span class="mi">43</span><span class="n">M</span>  <span class="mi">878</span><span class="n">M</span>   <span class="mi">5</span><span class="o">%</span> <span class="o">/</span><span class="n">run</span>
+<span class="n">tmpfs</span>          <span class="n">tmpfs</span>     <span class="mi">921</span><span class="n">M</span>     <span class="mi">0</span>  <span class="mi">921</span><span class="n">M</span>   <span class="mi">0</span><span class="o">%</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">fs</span><span class="o">/</span><span class="n">cgroup</span>
+<span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">vdb</span>       <span class="n">xfs</span>       <span class="mi">100</span><span class="n">G</span>   <span class="mi">11</span><span class="n">G</span>   <span class="mi">90</span><span class="n">G</span>  <span class="mi">11</span><span class="o">%</span> <span class="o">/</span><span class="n">data</span>
+</pre></div>
+
+
+<h1 id="8">8. 参考资料</h1>
 <div class="footnote">
 <hr />
 <ol>

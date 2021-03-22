@@ -36,23 +36,23 @@
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
 <li><a href="#1-cpu">1. CPU概念</a></li>
 <li><a href="#2-cpu">2. CPU 结构</a><ul>
-<li><a href="#_1">控制单元</a></li>
-<li><a href="#21">2.1. 运算单元</a><ul>
-<li><a href="#211">2.1.1. 插槽</a></li>
-<li><a href="#212">2.1.2. 核</a></li>
-<li><a href="#213">2.1.3. 超线程技术</a></li>
-<li><a href="#214-cpu">2.1.4. 逻辑CPU数量</a></li>
+<li><a href="#21">2.1. 控制单元</a></li>
+<li><a href="#22">2.2. 运算单元</a><ul>
+<li><a href="#221">2.2.1. 插槽</a></li>
+<li><a href="#222">2.2.2. 核</a></li>
+<li><a href="#223">2.2.3. 超线程技术</a></li>
+<li><a href="#224-cpu">2.2.4. 逻辑CPU数量</a></li>
 </ul>
 </li>
 <li><a href="#23">2.3. 存储单元</a><ul>
 <li><a href="#231-cache">2.3.1. 高速缓存Cache</a></li>
 </ul>
 </li>
-<li><a href="#22-cpu">2.2. 查看CPU信息</a></li>
+<li><a href="#24-cpu">2.4. 查看CPU信息</a></li>
 </ul>
 </li>
 <li><a href="#3">3. 指令集问题</a><ul>
-<li><a href="#_2">背景</a></li>
+<li><a href="#31">3.1. 背景</a></li>
 </ul>
 </li>
 <li><a href="#4">4. 虚拟化问题</a></li>
@@ -64,21 +64,21 @@
 <p>中央处理器（英文Central Processing Unit，CPU）是一台计算机的运算核心和控制核心。</p>
 <h1 id="2-cpu">2. CPU 结构</h1>
 <p><img alt="" src="../../../attach/images/2020-07-18-10-04-08.png" /></p>
-<h2 id="_1">控制单元</h2>
-<h2 id="21">2.1. 运算单元</h2>
-<h3 id="211">2.1.1. 插槽</h3>
+<h2 id="21">2.1. 控制单元</h2>
+<h2 id="22">2.2. 运算单元</h2>
+<h3 id="221">2.2.1. 插槽</h3>
 <ul>
 <li>[ ] <code>socket</code> : 插槽、插口</li>
 <li>[x] <code>sockets/number of sockets</code> : 主板上CPU插口的数量，指的是整个主板上物理CPU的个数。</li>
 </ul>
-<h3 id="212">2.1.2. 核</h3>
+<h3 id="222">2.2.2. 核</h3>
 <ul>
 <li>[ ] <code>Core</code> : 核 ，就是平时说的核，双核、四核等。</li>
 <li>[x] <code>Cores</code> ：核数，又称为运算核心数，是指每个CPU上的核数。</li>
 </ul>
 <p><code>Cores=sockets * Cores per socket</code></p>
 <p>$$总核数 = 物理CPU个数 \times  每颗物理CPU的核数$$</p>
-<h3 id="213">2.1.3. 超线程技术</h3>
+<h3 id="223">2.2.3. 超线程技术</h3>
 <ul>
 <li>[ ] <code>超线程技术（HT, Hyper-Threading）</code> : 也成为<code>CPU虚拟化技术</code>，是在一个实体CPU中提供多个逻辑线程的技术。</li>
 <li>[x] <code>Thread(s) per core</code> : 单核线程数，指的是每个CPU核的线程数。</li>
@@ -87,7 +87,7 @@
 <p><code>Thread(s) per core=2</code></p>
 <p><strong>示例</strong>：</p>
 <p>4核8线程：即物理核心是4个，但是从计算机的角度来看，被虚拟为了8个核心。</p>
-<h3 id="214-cpu">2.1.4. 逻辑CPU数量</h3>
+<h3 id="224-cpu">2.2.4. 逻辑CPU数量</h3>
 <ul>
 <li>[x] <code>CPU(s)</code>: 逻辑CPU数量</li>
 </ul>
@@ -104,7 +104,7 @@
 1. <code>时间局部性</code>：如果程序中的某条指令一旦执行，不久以后该指令可能再次执行，如果某数据被访问过，不久以后该数据可能再次被访问。<br />
 2. <code>空间局部性</code>：一旦程序访问了某个存储单元，在不久之后，其附近的存储单元也将被访问，即程序在一段时间内所访问的地址，可能集中在一定的范围之内，这是因为指令或数据通常是顺序存放的。</p>
 <p>时间局部性是通过将近来使用的指令和数据保存到Cache中实现。空间局部性通常是使用较大的高速缓存，并将 预取机制 集成到高速缓存控制逻辑中来实现。</p>
-<h2 id="22-cpu">2.2. 查看CPU信息</h2>
+<h2 id="24-cpu">2.4. 查看CPU信息</h2>
 <p><strong>Linux</strong></p>
 <div class="hlcode"><pre><span class="n">lscpu</span> 
 <span class="o">&gt;&gt;&gt;</span>
@@ -130,6 +130,8 @@
 </pre></div>
 
 
+<p>Family（系列）<br />
+系列标识可用来确定处理器属于那一代产品。如6系列的INTEL处理器包括Pentium Pro、Pentium II、Pentium II Xeon、Pentium III和Pentium III Xeon处理器。5系列（第五代）包括Pentium处理器和采用 MMX技术的Pentium处理器。AMD的6系列实际指有K7系列CPU，有DURON和ATHION两大类。最新一代的INTEL Pentium 4系列处理器（包括相同核心的Celerom处理器）的系列值为“F”</p>
 <p><strong>Windows下</strong>：<br />
 在cmd命令中输入<code>wmic</code>，然后在出现的新窗口中输入<code>cpu get *</code></p>
 <div class="hlcode"><pre><span class="n">wmic</span>
@@ -157,7 +159,7 @@
 
 <p><img alt="" src="../../../attach/images/2019-10-08-14-44-50.png" /></p>
 <h1 id="3">3. 指令集问题</h1>
-<h2 id="_2">背景</h2>
+<h2 id="31">3.1. 背景</h2>
 <ul>
 <li>[ ] <code>指令集</code> ：存储在CPU内部，对CPU运算进行指导和优化的硬程序。</li>
 </ul>

@@ -48,7 +48,8 @@
 </li>
 <li><a href="#3">3. 为了更加高效</a><ul>
 <li><a href="#31">3.1. 文档生成</a></li>
-<li><a href="#32-autodocstring">3.2. autoDocstring</a></li>
+<li><a href="#32-vscode-autodocstring">3.2. VScode--autoDocstring</a></li>
+<li><a href="#33-vscode-header">3.3. VScode--header</a></li>
 </ul>
 </li>
 </ul>
@@ -169,8 +170,29 @@
 </pre></div>
 
 
-<h2 id="32-autodocstring">3.2. autoDocstring</h2>
+<h2 id="32-vscode-autodocstring">3.2. VScode--autoDocstring</h2>
 <p>这边推荐谷歌风格的注释规范. 如果使用vscode的话,有一个插件 <code>autoDocstring</code> 可以非常简单的创建符合各种风格的docstring模板,只需要在config中设置下"autoDocstring.docstringFormat": "google",即可.</p>
+<h2 id="33-vscode-header">3.3. VScode--header</h2>
+<p>左下角<code>设置</code>--&gt;<code>用户代码片段</code>--&gt;</p>
+<div class="hlcode"><pre><span class="p">{</span>
+    <span class="nt">&quot;HEADER&quot;</span><span class="p">:{</span>
+        <span class="nt">&quot;prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;header&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;body&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;#!/usr/bin/env python3&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;# -*- encoding: utf-8 -*-&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;&#39;&#39;&#39;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;@File    :   $TM_FILENAME&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;@Time    :   $CURRENT_YEAR/$CURRENT_MONTH/$CURRENT_DATE $CURRENT_HOUR:$CURRENT_MINUTE:$CURRENT_SECOND&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;@Author  :   张俊 B05GA68&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;@Version :   1.0&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;@Contact :   zhangj414@vanke.com&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;@License :   (C)Copyright 2020, onewo&quot;</span><span class="p">,</span>        
+        <span class="s2">&quot;&#39;&#39;&#39;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;$0&quot;</span>
+    <span class="p">],</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
 </div>
 <div id="renote">
   <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>

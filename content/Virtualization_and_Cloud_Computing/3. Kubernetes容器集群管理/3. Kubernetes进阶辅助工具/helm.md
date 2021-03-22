@@ -337,6 +337,8 @@ Helm: http://mirror.azure.cn/kubernetes/helm/
 
 2. Helm的Charts 资源镜像
 ```
+helm init --stable-repo-url=http://mirror.azure.cn/kubernetes/charts/
+
 Stable Charts: http://mirror.azure.cn/kubernetes/charts/
 
 Incubator Charts: http://mirror.azure.cn/kubernetes/charts-incubator/
@@ -357,3 +359,4 @@ https://v2.helm.sh/docs/helm/
 [^2]:[Install applications with Helm in Azure Kubernetes Service (AKS)](https://docs.microsoft.com/en-us/azure/aks/kubernetes-helm#configure-helm)
 
 [^3]:[官方网页指令](https://v2.helm.sh/docs/helm/)
+

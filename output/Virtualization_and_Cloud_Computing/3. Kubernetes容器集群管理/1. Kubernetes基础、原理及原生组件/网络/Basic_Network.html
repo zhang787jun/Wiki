@@ -132,9 +132,12 @@ EOF
 
 
 <h3 id="244-calico">2.4.4. calico</h3>
-<p>需要 kubeadm init 时设置 --pod-network-cidr=192.168.0.0/16<br />
-kubectl apply -f https://docs.projectcalico.org/v3.1/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml<br />
-kubectl apply -f https://docs.projectcalico.org/v3.1/getting-started/kubernetes/installati</p>
+<p>需要 kubeadm init 时设置 --pod-network-cidr=192.168.0.0/16</p>
+<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="o">:</span><span class="c1">//docs.projectcalico.org/v3.1/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml</span>
+<span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="o">:</span><span class="c1">//docs.projectcalico.org/v3.1/getting-started/kubernetes/installati</span>
+</pre></div>
+
+
 <p>单节点，设置master节点也可以运行Pod<br />
 kubernetes官方默认策略是worker节点运行Pod，master节点不运行Pod。如果只是为了开发或者其他目的而需要部署单节点集群，可以通过以下的命令设置：<br />
 kubectl taint nodes --all node-role.kubernetes.io/master-</p>

@@ -54,7 +54,6 @@
 </ul>
 </li>
 <li><a href="#6-lda">6. 线性判别分析 LDA</a></li>
-<li><a href="#kmean">Kmean</a></li>
 <li><a href="#7">7. 参考资料</a></li>
 </ul>
 </div>
@@ -365,53 +364,6 @@ Decision Tree Classifiers/Random Forests</p>
 <li><code>lsqr</code> 最小二乘法 solver 是一种有效的算法，只适用于分类。它支持shrinkage ，支持特征缩放（L2/L1 正则化） </li>
 <li><code>eigen</code> 特征值分解，它可以被用于 classification （分类）以及 transform （转换），可以用fit_transform()方法，可以降维。solver需要计算协方差矩阵，因此它可能不适合具有大量特征的, 支持特征缩放（L2/L1 正则化） </li>
 </ul>
-<h1 id="kmean">Kmean</h1>
-<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">sklearn.cluster</span> <span class="kn">import</span> <span class="n">KMeans</span>
-
-
-<span class="n">KMeans</span><span class="p">(</span><span class="n">n_clusters</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">init</span><span class="o">=</span><span class="s">&#39;k-means++&#39;</span><span class="p">,</span> <span class="n">n_init</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">precompute_distances</span><span class="o">=</span><span class="s">&#39;auto&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">copy_x</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s">&#39;auto&#39;</span><span class="p">)</span>
-</pre></div>
-
-
-<p><strong>参数说明</strong> </p>
-<p><code>n_clusters</code> : int<br />
-- 选取的n个簇</p>
-<p><code>init</code> : {'k-means++', 'random' or an ndarray}<br />
-- 簇位置的初始化方法 <br />
-- 如果是np.array ,shape= (n_clusters, n_features)</p>
-<p><code>n_init</code> : int, default: 10<br />
--  用不同的聚类中心初始化值运行算法的次数，最终解是在inertia(每个簇内到其质心的距离相加) 意义下选出的最优结果</p>
-<p><code>max_iter</code> : int, default: 300<br />
- - 最大迭代次数</p>
-<p><code>tol</code> : float, default: 1e-4<br />
-    Relative tolerance with regards to inertia to declare convergence</p>
-<p><code>precompute_distances</code> : {'auto', True, False}<br />
--　预计算距离，计算速度更快但占用更多内存。<br />
-　　1. auto：如果 样本数乘以聚类数(n_samples*n_clusters)大于 12 million 的话则不预计算距离。<br />
-　　2. True：总是预先计算距离。<br />
-　　3. False：永远不预先计算距离。</p>
-<p><code>verbose</code> : int, default 0<br />
-      Verbosity mode.是否输出详细信息，0 不输出</p>
-<p><code>random_state</code> : int, RandomState instance or None (default)<br />
-    Determines random number generation for centroid initialization. Use<br />
-    an int to make the randomness deterministic.<br />
-    See :term:<code>Glossary &lt;random_state&gt;</code>.</p>
-<p><code>copy_x</code> : boolean, optional<br />
-    When pre-computing distances it is more numerically accurate to center<br />
-    the data first.  If copy_x is True (default), then the original data is<br />
-    not modified, ensuring X is C-contiguous.  If False, the original data<br />
-    is modified, and put back before the function returns, but small<br />
-    numerical differences may be introduced by subtracting and then adding<br />
-    the data mean, in this case it will also not ensure that data is<br />
-    C-contiguous which may cause a significant slowdown.</p>
-<p><code>n_jobs</code> : int or None, optional (default=None)<br />
-- 计算使用的cpu数量<br />
-- 默认None=1，-1 表示最大</p>
-<p><code>algorithm</code> : "auto", "full" or "elkan", default="auto"<br />
-- 使用的算法<br />
-- full 是经典的EM 算法<br />
-- elkan elkan 算法利用了两边之和大于等于第三边,以及两边之差小于第三边的三角形性质，来减少距离的计算。<br />
-- "auto" 对稀疏矩阵使用elkan 算法，对稠密矩阵使用EM 算法</p>
 <h1 id="7">7. 参考资料</h1>
 <p><a href="https://datascience.stackexchange.com/questions/51813/what-are-the-differences-between-svc-nusvc-and-linearsvc">What are the differences between SVC, NuSVC, and LinearSVC?</a></p>
 </div>

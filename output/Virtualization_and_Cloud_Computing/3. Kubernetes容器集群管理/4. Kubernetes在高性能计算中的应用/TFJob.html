@@ -1,0 +1,305 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>TF job - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Virtualization_and_Cloud_Computing">Virtualization_and_Cloud_Computing</a>&nbsp;»&nbsp;<a href="/Wiki/#-3. Kubernetes容器集群管理">3. Kubernetes容器集群管理</a>&nbsp;»&nbsp;<a href="/Wiki/#-4. Kubernetes在高性能计算中的应用">4. Kubernetes在高性能计算中的应用</a>&nbsp;»&nbsp;TF job</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">TF job</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#tfjob">TFJob</a></li>
+</ul>
+</div>
+<h1 id="tfjob">TFJob</h1>
+<p>此教程主要培训描述一个tensorflow 的训练过程。</p>
+<p>Kubernetes Custom Resource Definition<br />
+Kubernetes has a concept of Custom Resources (often abbreviated CRD) that allows us to create custom object that we will then be able to use. In the case of Kubeflow, after installation, a new TFJob object will be available in our cluster. This object allows us to describe a TensorFlow training.</p>
+<p>TFJob Specifications<br />
+Before going further, let's take a look at what the TFJob object looks like:</p>
+<p><strong>TFJob 定义的yml文件</strong></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>apiVersion</td>
+<td>string</td>
+<td>Versioned schema of this representation of an object. In our case, it's kubeflow.org/v1beta1</td>
+</tr>
+<tr>
+<td>kind</td>
+<td>string</td>
+<td>Value representing the REST resource this object represents. In our case it's TFJob</td>
+</tr>
+<tr>
+<td>metadata</td>
+<td>ObjectMeta</td>
+<td>Standard object's metadata.</td>
+</tr>
+<tr>
+<td>spec</td>
+<td>TFJobSpec</td>
+<td>The actual specification of our TensorFlow job, defined below.</td>
+</tr>
+<tr>
+<td>spec is the most important part, so let's look at it too:</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>TFJobSpec Object</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TFReplicaSpec</td>
+<td>TFReplicaSpec array</td>
+<td>Specification for a set of TensorFlow processes, defined below</td>
+</tr>
+</tbody>
+</table>
+<p>TFReplicaSpec Object</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Type</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>TfReplicaType</td>
+<td>string</td>
+<td>What type of replica are we defining? Can be MASTER, WORKER or PS. When not doing distributed TensorFlow, we just use MASTER which happens to be the default value.</td>
+</tr>
+<tr>
+<td>Replicas</td>
+<td>int</td>
+<td>Number of replicas of TfReplicaType. Again this is useful only for distributed TensorFLow. Default value is 1.</td>
+</tr>
+<tr>
+<td>Template</td>
+<td>PodTemplateSpec</td>
+<td>Describes the pod that will be created when executing a job. This is the standard Pod description that we have been using everywhere.</td>
+</tr>
+<tr>
+<td>Here is what a simple TensorFlow training looks like using this TFJob object:</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<div class="hlcode"><pre><span class="n">apiVersion</span><span class="o">:</span> <span class="n">kubeflow</span><span class="o">.</span><span class="na">org</span><span class="o">/</span><span class="n">v1beta1</span>
+<span class="n">kind</span><span class="o">:</span> <span class="n">TFJob</span>
+<span class="n">metadata</span><span class="o">:</span>
+  <span class="n">name</span><span class="o">:</span> <span class="n">example</span><span class="o">-</span><span class="n">tfjob</span>
+<span class="n">spec</span><span class="o">:</span>
+  <span class="n">tfReplicaSpecs</span><span class="o">:</span>
+    <span class="n">MASTER</span><span class="o">:</span>
+      <span class="n">replicas</span><span class="o">:</span> <span class="mi">1</span>
+      <span class="n">template</span><span class="o">:</span>
+        <span class="n">spec</span><span class="o">:</span>
+          <span class="n">containers</span><span class="o">:</span>
+            <span class="o">-</span> <span class="n">image</span><span class="o">:</span> <span class="o">&lt;</span><span class="n">DOCKER_USERNAME</span><span class="o">&gt;/</span><span class="n">tf</span><span class="o">-</span><span class="n">mnist</span><span class="o">:</span><span class="n">gpu</span>
+              <span class="n">name</span><span class="o">:</span> <span class="n">tensorflow</span>
+              <span class="n">resources</span><span class="o">:</span>
+                <span class="n">limits</span><span class="o">:</span>
+                  <span class="n">nvidia</span><span class="o">.</span><span class="na">com</span><span class="o">/</span><span class="n">gpu</span><span class="o">:</span> <span class="mi">1</span>
+          <span class="n">restartPolicy</span><span class="o">:</span> <span class="n">OnFailure</span>
+</pre></div>
+
+
+<p>创建 <code>tfjod.yaml</code> 如下：</p>
+<div class="hlcode"><pre><span class="n">apiVersion</span><span class="o">:</span> <span class="n">kubeflow</span><span class="o">.</span><span class="na">org</span><span class="o">/</span><span class="n">v1beta1</span>
+<span class="n">kind</span><span class="o">:</span> <span class="n">TFJob</span>
+<span class="n">metadata</span><span class="o">:</span>
+  <span class="n">name</span><span class="o">:</span> <span class="n">module6</span><span class="o">-</span><span class="n">ex1</span><span class="o">-</span><span class="n">gpu</span>
+<span class="n">spec</span><span class="o">:</span>
+  <span class="n">tfReplicaSpecs</span><span class="o">:</span>
+    <span class="n">MASTER</span><span class="o">:</span>
+      <span class="n">replicas</span><span class="o">:</span> <span class="mi">1</span>
+      <span class="n">template</span><span class="o">:</span>
+        <span class="n">spec</span><span class="o">:</span>
+          <span class="n">containers</span><span class="o">:</span>
+            <span class="o">-</span> <span class="n">image</span><span class="o">:</span> <span class="o">&lt;</span><span class="n">DOCKER_USERNAME</span><span class="o">&gt;/</span><span class="n">tf</span><span class="o">-</span><span class="n">mnist</span><span class="o">:</span><span class="n">gpu</span> <span class="err">#</span> <span class="err">从镜像中拉取</span>
+              <span class="n">name</span><span class="o">:</span> <span class="n">tensorflow</span>
+              <span class="n">resources</span><span class="o">:</span>
+                <span class="n">limits</span><span class="o">:</span>
+                  <span class="n">nvidia</span><span class="o">.</span><span class="na">com</span><span class="o">/</span><span class="n">gpu</span><span class="o">:</span> <span class="mi">1</span>
+          <span class="n">restartPolicy</span><span class="o">:</span> <span class="n">OnFailure</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="o">&lt;</span><span class="n">template</span><span class="o">-</span><span class="n">path</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<p>Let's look at what has been created in our cluster.<br />
+First a TFJob was created:</p>
+<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">get</span> <span class="n">tfjob</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">NAME</span>              <span class="n">AGE</span>
+<span class="n">module6</span><span class="o">-</span><span class="n">ex1</span><span class="o">-</span><span class="n">gpu</span>   <span class="mi">5</span><span class="n">s</span>
+</pre></div>
+
+
+<p>As well as a Pod, which was actually created by the operator:</p>
+<p>kubectl get pod<br />
+Returns:</p>
+<p>NAME                                            READY     STATUS      RESTARTS   AGE<br />
+module6-ex1-master-xs4b-0-6gpfn                 1/1       Running     0          2m<br />
+Note that the Pod might take a few minutes before actually running, the docker image needs to be pulled on the node first.</p>
+<p>Once the Pod's status is either Running or Completed we can start looking at it's logs:</p>
+<p>kubectl logs <your-pod-name><br />
+This container is pretty verbose, but you should see a TensorFlow training happening:</p>
+<p>[...]<br />
+INFO:tensorflow:2017-11-20 20:57:22.314198: Step 480: Cross entropy = 0.142486<br />
+INFO:tensorflow:2017-11-20 20:57:22.370080: Step 480: Validation accuracy = 85.0% (N=100)<br />
+INFO:tensorflow:2017-11-20 20:57:22.896383: Step 490: Train accuracy = 98.0%<br />
+INFO:tensorflow:2017-11-20 20:57:22.896600: Step 490: Cross entropy = 0.075210<br />
+INFO:tensorflow:2017-11-20 20:57:22.945611: Step 490: Validation accuracy = 91.0% (N=100)<br />
+INFO:tensorflow:2017-11-20 20:57:23.407756: Step 499: Train accuracy = 94.0%<br />
+INFO:tensorflow:2017-11-20 20:57:23.407980: Step 499: Cross entropy = 0.170348<br />
+INFO:tensorflow:2017-11-20 20:57:23.457325: Step 499: Validation accuracy = 89.0% (N=100)<br />
+INFO:tensorflow:Final test accuracy = 88.4% (N=353)<br />
+[...]<br />
+That's great and all, but how do we grab our trained model and TensorFlow's summaries?</p>
+<p>Well currently we can't. As soon as the training is complete, the container stops and everything inside it, including model and logs are lost.</p>
+<p>Thankfully, Kubernetes Volumes can help us here. If you remember, we quickly introduced Volumes in module 2 - Kubernetes, and that's what we already used to mount the drivers from the node into the container. But Volumes are not just for mounting things from a node, we can also use them to mount a lot of different storage solutions, you can see the full list here.</p>
+<p>In our case we are going to use Azure Files, as it is really easy to use with Kubernetes.</p>
+<p>Exercise 2: Azure Files to the Rescue<br />
+Creating a New File Share and Kubernetes Secret<br />
+In the official documentation: Persistent volumes with Azure files, follow the steps listed under Create storage account, Create storage class, and Create persistent volume claim. Be aware of a few details first:</p>
+<p>It is very important that you create your storage account in the same region and the same resource group (with MC_ prefix) as your Kubernetes cluster: because Azure File uses the SMB protocol it won't work cross-regions. AKS_PERS_LOCATION should be updated accordingly.<br />
+While this document specifically refers to AKS, it will work for any K8s cluster<br />
+Once the PVC is created, you will see a new file share under that storage account. All subsequent modules will be writing to that file share.<br />
+PVC are namespaced so be sure to create it on the same namespace that is launching the TFJob objects<br />
+If you are using RBAC might need to run the cluster role and binding: see docs here<br />
+Once you completed all the steps, run:</p>
+<p>kubectl get pvc<br />
+Which should return:</p>
+<p>NAME             STATUS    VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE<br />
+azurefile        Bound     pvc-346ab93b-4cbf-11e8-9fed-000d3a17b5e9   5Gi        RWO            azurefile      5m<br />
+Updating our example to use our Azure File Share<br />
+Now we need to mount our new file share into our container so the model and the summaries can be persisted. Turns out mounting an Azure File share into a container is really easy, we simply need to reference our PVC in the Volume definition:</p>
+<p>[...]<br />
+ containers:<br />
+  - image: <IMAGE><br />
+    name: tensorflow<br />
+    resources:<br />
+      limits:<br />
+        nvidia.com/gpu: 1<br />
+    volumeMounts:<br />
+      - name: azurefile<br />
+        subPath: module6-ex2-gpu<br />
+        mountPath: /tmp/tensorflow<br />
+ volumes:<br />
+  - name: azurefile<br />
+    persistentVolumeClaim:<br />
+      claimName: azurefile<br />
+Update your template from exercise 1 to mount the Azure File share into your container, and create your new job.</p>
+<p>Once the container starts running, if you go to the Azure Portal, into your storage account, and browse your tensorflow file share, you should see something like that:</p>
+<p>file-share</p>
+<p>This means that when we run a training, all the important data is now stored in Azure File and is still available as long as we don't delete the file share.</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

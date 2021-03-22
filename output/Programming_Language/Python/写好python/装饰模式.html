@@ -48,7 +48,7 @@
 <li><a href="#2223-property-">2.2.2.3. @property--属性</a></li>
 </ul>
 </li>
-<li><a href="#classmethodstaticmethod">为什么classmethod和staticmethod</a></li>
+<li><a href="#classmethodstaticmethod">为什么有 classmethod和staticmethod</a></li>
 </ul>
 </li>
 <li><a href="#23">2.3. 进阶修饰器</a><ul>
@@ -263,8 +263,8 @@
 </pre></div>
 
 
-<p>@property的实现比较复杂，我们先考察如何使用。把一个getter方法变成属性，只需要加上@property就可以了，此时，@property本身又创建了另一个装饰器@score.setter，负责把一个setter方法变成属性赋值，于是，我们就拥有一个可控的属性操作：</p>
-<p>还可以定义只读属性，只定义getter方法，不定义setter方法就是一个只读属性：</p>
+<p>@property的实现比较复杂，我们先考察如何使用。把一个getter方法变成属性，只需要加上<code>@property</code>就可以了，此时，@property本身又创建了另一个装饰器<code>@score.setter</code>，负责把一个<code>setter</code>方法变成属性赋值，于是，我们就拥有一个可控的属性操作：</p>
+<p>还可以定义只读属性，只定义<code>getter</code>方法，不定义<code>setter</code>方法就是一个只读属性：</p>
 <div class="hlcode"><pre><span class="k">class</span> <span class="nc">Student</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 
     <span class="nd">@property</span>
@@ -282,8 +282,10 @@
 
 
 <p>上面的birth是可读写属性，而age就是一个只读属性，因为age可以根据birth和当前时间计算出来</p>
-<h4 id="classmethodstaticmethod">为什么classmethod和staticmethod</h4>
-<p>Python使用classmethod和staticmethod装饰器声明类方法和静态方法.学过Java面向对象编程的人可能觉得奇怪,为什么Python提供两个这样的装饰器,而不是只提供一个?java中只有静态方法.</p>
+<h4 id="classmethodstaticmethod">为什么有 classmethod和staticmethod</h4>
+<p>Python使用classmethod和staticmethod装饰器声明类方法和静态方法。</p>
+<p>学过Java面向对象编程的人可能觉得奇怪,为什么Python提供两个这样的装饰器,而不是只提供一个?</p>
+<p>java中只有静态方法.</p>
 <p>先来看classmethod它的用法:定义操作类,而不是操作实例的方法.classmethod改变了调用方法的方式,因此类方法的第一个参数是类本身,而不是实例.classmethod最常见的用途是定义备选构造方法.</p>
 <p>再看staticmethod装饰器也会改变方法的调用方式,但是第一个参数不是特殊的值.其实,静态方法就是普通的函数,只是碰巧在类的定义体中,而不是在模块层定义.</p>
 <p>classmethod装饰器非常有用,但是我从未见过不得不用staticmethod的情况.如果想定义不需要与类交互的函数,那么在模块中定义就好了.有时,函数虽然从不处理类,但是函数的功能与类紧密相关,因此想把它放在近处.即便如此,在同一模块中的类前面或后面定义函数也就行了.</p>

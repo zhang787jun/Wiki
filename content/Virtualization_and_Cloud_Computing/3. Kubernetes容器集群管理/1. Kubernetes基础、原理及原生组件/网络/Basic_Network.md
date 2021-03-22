@@ -108,8 +108,10 @@ kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl versio
 
 
 需要 kubeadm init 时设置 --pod-network-cidr=192.168.0.0/16
+```shell
 kubectl apply -f https://docs.projectcalico.org/v3.1/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml
 kubectl apply -f https://docs.projectcalico.org/v3.1/getting-started/kubernetes/installati
+```
 
 
 单节点，设置master节点也可以运行Pod

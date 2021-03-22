@@ -1,0 +1,226 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>逻辑回归模型 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Algorithm">Algorithm</a>&nbsp;»&nbsp;<a href="/Wiki/#-01-机器学习基础">01-机器学习基础</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-经典模型">02-经典模型</a>&nbsp;»&nbsp;逻辑回归模型</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">逻辑回归模型</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#_1">基本形式</a></li>
+<li><a href="#_2">参考资料</a></li>
+<li><a href="#lda">LDA</a></li>
+</ul>
+</div>
+<h1 id="_1">基本形式</h1>
+<p><img alt="" src="/attach/images/2020-03-21-23-22-38.png" /><br />
+LogisticRegression</p>
+<p>已知：</p>
+<p>$$log\frac{p}{1-p}=\theta^Tx$$</p>
+<p>$$Pp=P(y=1|x) ,即输入x预测为正样本的概率$$</p>
+<p>求：<br />
+$$\theta$$</p>
+<h1 id="_2">参考资料</h1>
+<h1 id="lda">LDA</h1>
+<p>在主成分分析（PCA）原理总结中，我们对降维算法PCA做了总结。这里我们就对另外一种经典的降维方法线性判别分析（Linear Discriminant Analysis, 以下简称LDA）做一个总结。LDA在模式识别领域（比如人脸识别，舰艇识别等图形图像识别领域）中有非常广泛的应用，因此我们有必要了解下它的算法原理。</p>
+<p>在学习LDA之前，有必要将其自然语言处理领域的LDA区别开来，在自然语言处理领域， LDA是隐含狄利克雷分布（Latent Dirichlet Allocation，简称LDA），他是一种处理文档的主题模型。我们本文只讨论线性判别分析，因此后面所有的LDA均指线性判别分析。</p>
+<ol>
+<li>LDA的思想<br />
+　　　　LDA是一种监督学习的降维技术，也就是说它的数据集的每个样本是有类别输出的。这点和PCA不同。PCA是不考虑样本类别输出的无监督降维技术。LDA的思想可以用一句话概括，就是“投影后类内方差最小，类间方差最大”。什么意思呢？ 我们要将数据在低维度上进行投影，投影后希望每一种类别数据的投影点尽可能的接近，而不同类别的数据的类别中心之间的距离尽可能的大。</li>
+</ol>
+<p>可能还是有点抽象，我们先看看最简单的情况。假设我们有两类数据 分别为红色和蓝色，如下图所示，这些数据特征是二维的，我们希望将这些数据投影到一维的一条直线，让每一种类别数据的投影点尽可能的接近，而红色和蓝色数据中心之间的距离尽可能的大。</p>
+<p>上图中国提供了两种投影方式，哪一种能更好的满足我们的标准呢？从直观上可以看出，右图要比左图的投影效果好，因为右图的黑色数据和蓝色数据各个较为集中，且类别之间的距离明显。左图则在边界处数据混杂。以上就是LDA的主要思想了，当然在实际应用中，我们的数据是多个类别的，我们的原始数据一般也是超过二维的，投影后的也一般不是直线，而是一个低维的超平面。</p>
+<p>在我们将上面直观的内容转化为可以度量的问题之前，我们先了解些必要的数学基础知识，这些在后面讲解具体LDA原理时会用到。</p>
+<ol>
+<li>瑞利商（Rayleigh quotient）与广义瑞利商（genralized Rayleigh quotient） <br />
+　　　　我们首先来看看瑞利商的定义。瑞利商是指这样的函数R(A,x):<br />
+R(A,x)=xHAxxHx<br />
+　　　　其中x为非零向量，而A为n×n的Hermitan矩阵。所谓的Hermitan矩阵就是满足共轭转置矩阵和自己相等的矩阵，即AH=A。如果我们的矩阵A是实矩阵，则满足AT=A的矩阵即为Hermitan矩阵。</li>
+</ol>
+<p>瑞利商R(A,x)有一个非常重要的性质，即它的最大值等于矩阵A最大的特征值，而最小值等于矩阵A的最小的特征值，也就是满足<br />
+λmin≤xHAxxHx≤λmax<br />
+　　　　具体的证明这里就不给出了。当向量x是标准正交基时，即满足xHx=1时，瑞利商退化为：R(A,x)=xHAx，这个形式在谱聚类和PCA中都有出现。</p>
+<p>以上就是瑞利商的内容，现在我们再看看广义瑞利商。广义瑞利商是指这样的函数R(A,B,x):<br />
+R(A,x)=xHAxxHBx<br />
+　　　　其中x为非零向量，而A,B为n×n的Hermitan矩阵。B为正定矩阵。它的最大值和最小值是什么呢？其实我们只要通过将其通过标准化就可以转化为瑞利商的格式。我们令x=B−1/2x′,则分母转化为：<br />
+xHBx=x′H(B−1/2)HBB−1/2x′=x′HB−1/2BB−1/2x′=x′Hx′<br />
+　　　　而分子转化为：<br />
+xHAx=x′HB−1/2AB−1/2x′<br />
+　　　　此时我们的R(A,B,x)转化为R(A,B,x′):<br />
+R(A,B,x′)=x′HB−1/2AB−1/2x′x′Hx′<br />
+　　　　利用前面的瑞利商的性质，我们可以很快的知道，R(A,B,x′)的最大值为矩阵B−1/2AB−1/2的最大特征值，或者说矩阵B−1A的最大特征值，而最小值为矩阵B−1A的最小特征值。如果你看过我写的谱聚类（spectral clustering）原理总结第6.2节的话，就会发现这里使用了一样的技巧，即对矩阵进行标准化。</p>
+<ol>
+<li>二类LDA原理<br />
+　　　　现在我们回到LDA的原理上，我们在第一节说讲到了LDA希望投影后希望同一种类别数据的投影点尽可能的接近，而不同类别的数据的类别中心之间的距离尽可能的大，但是这只是一个感官的度量。现在我们首先从比较简单的二类LDA入手，严谨的分析LDA的原理。</li>
+</ol>
+<p>假设我们的数据集D={(x1,y1),(x2,y2),...,((xm,ym))},其中任意样本xi为n维向量，yi∈{0,1}。我们定义Nj(j=0,1)为第j类样本的个数，Xj(j=0,1)为第j类样本的集合，而μj(j=0,1)为第j类样本的均值向量，定义Σj(j=0,1)为第j类样本的协方差矩阵（严格说是缺少分母部分的协方差矩阵）。</p>
+<p>μj的表达式为：<br />
+μj=1Nj∑x∈Xjx(j=0,1)<br />
+　　　　Σj的表达式为：<br />
+Σj=∑x∈Xj(x−μj)(x−μj)T(j=0,1)<br />
+　　　　由于是两类数据，因此我们只需要将数据投影到一条直线上即可。假设我们的投影直线是向量w,则对任意一个样本本xi,它在直线w的投影为wTxi,对于我们的两个类别的中心点μ0,μ1,在在直线w的投影为wTμ0和wTμ1。由于LDA需要让不同类别的数据的类别中心之间的距离尽可能的大，也就是我们要最大化||wTμ0−wTμ1||22,同时我们希望同一种类别数据的投影点尽可能的接近，也就是要同类样本投影点的协方差wTΣ0w和wTΣ1w尽可能的小，即最小化wTΣ0w+wTΣ1w。综上所述，我们的优化目标为：<br />
+argmaxwJ(w)=||wTμ0−wTμ1||22wTΣ0w+wTΣ1w=wT(μ0−μ1)(μ0−μ1)TwwT(Σ0+Σ1)w<br />
+　　　　我们一般定义类内散度矩阵Sw为：<br />
+Sw=Σ0+Σ1=∑x∈X0(x−μ0)(x−μ0)T+∑x∈X1(x−μ1)(x−μ1)T<br />
+　　　　同时定义类间散度矩阵Sb为：<br />
+Sb=(μ0−μ1)(μ0−μ1)T<br />
+　　　　这样我们的优化目标重写为：<br />
+argmaxwJ(w)=wTSbwwTSww<br />
+　　　　仔细一看上式，这不就是我们的广义瑞利商嘛！这就简单了，利用我们第二节讲到的广义瑞利商的性质，我们知道我们的J(w′)最大值为矩阵S−12wSbS−12w的最大特征值，而对应的w′为S−12wSbS−12w的最大特征值对应的特征向量! 而S−1wSb的特征值和S−12wSbS−12w的特征值相同,S−1wSb的特征向量w和S−12wSbS−12w的特征向量w′满足w=S−12ww′的关系! </p>
+<p>注意到对于二类的时候，Sbw的方向恒平行于μ0−μ1,不妨令Sbw=λ(μ0−μ1)，将其带入：(S−1wSb)w=λw，可以得到w=S−1w(μ0−μ1)， 也就是说我们只要求出原始二类样本的均值和方差就可以确定最佳的投影方向w了。</p>
+<ol>
+<li>多类LDA原理<br />
+　　　　有了二类LDA的基础，我们再来看看多类别LDA的原理。</li>
+</ol>
+<p>假设我们的数据集D={(x1,y1),(x2,y2),...,((xm,ym))},其中任意样本xi为n维向量，yi∈{C1,C2,...,Ck}。我们定义Nj(j=1,2...k)为第j类样本的个数，Xj(j=1,2...k)为第j类样本的集合，而μj(j=1,2...k)为第j类样本的均值向量，定义Σj(j=1,2...k)为第j类样本的协方差矩阵。在二类LDA里面定义的公式可以很容易的类推到多类LDA。</p>
+<p>由于我们是多类向低维投影，则此时投影到的低维空间就不是一条直线，而是一个超平面了。假设我们投影到的低维空间的维度为d，对应的基向量为(w1,w2,...wd)，基向量组成的矩阵为W, 它是一个n×d的矩阵。</p>
+<p>此时我们的优化目标应该可以变成为:<br />
+WTSbWWTSwW<br />
+　　　　其中Sb=∑j=1kNj(μj−μ)(μj−μ)T,μ为所有样本均值向量。Sw=∑j=1kSwj=∑j=1k∑x∈Xj(x−μj)(x−μj)T<br />
+　　　　但是有一个问题，就是WTSbW和WTSwW都是矩阵，不是标量，无法作为一个标量函数来优化！也就是说，我们无法直接用二类LDA的优化方法，怎么办呢？一般来说，我们可以用其他的一些替代优化目标来实现。</p>
+<p>常见的一个LDA多类优化目标函数定义为：<br />
+argmaxWJ(W)=∏diagWTSbW∏diagWTSwW<br />
+　　　　其中∏diagA为A的主对角线元素的乘积，W为n×d的矩阵。</p>
+<p>J(W)的优化过程可以转化为：<br />
+J(W)=∏i=1dwTiSbwi∏i=1dwTiSwwi=∏i=1dwTiSbwiwTiSwwi<br />
+　　　　仔细观察上式最右边，这不就是广义瑞利商嘛！最大值是矩阵S−1wSb的最大特征值,最大的d个值的乘积就是矩阵S−1wSb的最大的d个特征值的乘积,此时对应的矩阵W为这最大的d个特征值对应的特征向量张成的矩阵。</p>
+<p>由于W是一个利用了样本的类别得到的投影矩阵，因此它的降维到的维度d最大值为k-1。为什么最大维度不是类别数k呢？因为Sb中每个μj−μ的秩为1，因此协方差矩阵相加后最大的秩为k(矩阵的秩小于等于各个相加矩阵的秩的和)，但是由于如果我们知道前k-1个μj后，最后一个μk可以由前k-1个μj线性表示，因此Sb的秩最大为k-1，即特征向量最多有k-1个。</p>
+<ol>
+<li>LDA算法流程<br />
+　　　　在第三节和第四节我们讲述了LDA的原理，现在我们对LDA降维的流程做一个总结。</li>
+</ol>
+<p>输入：数据集D={(x1,y1),(x2,y2),...,((xm,ym))},其中任意样本xi为n维向量，yi∈{C1,C2,...,Ck}，降维到的维度d。</p>
+<p>输出：降维后的样本集$D′$</p>
+<p>1) 计算类内散度矩阵Sw</p>
+<p>2) 计算类间散度矩阵Sb</p>
+<p>3) 计算矩阵S−1wSb</p>
+<p>4）计算S−1wSb的最大的d个特征值和对应的d个特征向量(w1,w2,...wd),得到投影矩阵WW</p>
+<p>5) 对样本集中的每一个样本特征xi,转化为新的样本zi=WTxi<br />
+　　　　6) 得到输出样本集D′={(z1,y1),(z2,y2),...,((zm,ym))}</p>
+<p>以上就是使用LDA进行降维的算法流程。实际上LDA除了可以用于降维以外，还可以用于分类。一个常见的LDA分类基本思想是假设各个类别的样本数据符合高斯分布，这样利用LDA进行投影后，可以利用极大似然估计计算各个类别投影数据的均值和方差，进而得到该类别高斯分布的概率密度函数。当一个新的样本到来后，我们可以将它投影，然后将投影后的样本特征分别带入各个类别的高斯分布概率密度函数，计算它属于这个类别的概率，最大的概率对应的类别即为预测类别。</p>
+<p>由于LDA应用于分类现在似乎也不是那么流行，至少我们公司里没有用过，这里我就不多讲了。</p>
+<ol>
+<li>LDA vs PCA<br />
+　　　　LDA用于降维，和PCA有很多相同，也有很多不同的地方，因此值得好好的比较一下两者的降维异同点。</li>
+</ol>
+<p>首先我们看看相同点：</p>
+<p>1）两者均可以对数据进行降维。</p>
+<p>2）两者在降维时均使用了矩阵特征分解的思想。</p>
+<p>3）两者都假设数据符合高斯分布。</p>
+<p>我们接着看看不同点：</p>
+<p>1）LDA是有监督的降维方法，而PCA是无监督的降维方法</p>
+<p>2）LDA降维最多降到类别数k-1的维数，而PCA没有这个限制。</p>
+<p>3）LDA除了可以用于降维，还可以用于分类。</p>
+<p>4）LDA选择分类性能最好的投影方向，而PCA选择样本点投影具有最大方差的方向。</p>
+<p>这点可以从下图形象的看出，在某些数据分布下LDA比PCA降维较优。</p>
+<p>当然，某些某些数据分布下PCA比LDA降维较优，如下图所示：</p>
+<ol>
+<li>LDA算法小结<br />
+　　　　LDA算法既可以用来降维，又可以用来分类，但是目前来说，主要还是用于降维。在我们进行图像识别图像识别相关的数据分析时，LDA是一个有力的工具。下面总结下LDA算法的优缺点。</li>
+</ol>
+<p>LDA算法的主要优点有：</p>
+<p>1）在降维过程中可以使用类别的先验知识经验，而像PCA这样的无监督学习则无法使用类别先验知识。</p>
+<p>2）LDA在样本分类信息依赖均值而不是方差的时候，比PCA之类的算法较优。</p>
+<p>LDA算法的主要缺点有：</p>
+<p>1）LDA不适合对非高斯分布样本进行降维，PCA也有这个问题。</p>
+<p>2）LDA降维最多降到类别数k-1的维数，如果我们降维的维度大于k-1，则不能使用LDA。当然目前有一些LDA的进化版算法可以绕过这个问题。</p>
+<p>3）LDA在样本分类信息依赖方差而不是均值的时候，降维效果不好。</p>
+<p>4）LDA可能过度拟合数据。</p>
+<p>（欢迎转载，转载请注明出处。欢迎沟通交流： liujianping-ok@163.com） </p>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p><a href="https://tech.meituan.com/2015/05/08/intro-to-logistic-regression.html">美团技术：Logistic Regression 模型简介</a>&#160;<a class="footnote-backref" href="#fnref:1" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

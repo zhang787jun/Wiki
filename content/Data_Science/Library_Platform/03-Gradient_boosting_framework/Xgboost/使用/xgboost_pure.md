@@ -1,5 +1,5 @@
 ---
-title: "xgboost--原生API使用"
+title: "xgboost--基于原生API使用"
 layout: page
 date: 2099-06-02 00:00
 ---

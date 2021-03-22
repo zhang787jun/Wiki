@@ -5,7 +5,7 @@ date: 2099-06-02 00:00
 ---
 
 [TOC]
-# 3. Spark Core 基本用法
+# 1. Spark Core 基本用法
 
 Programming in Spark 
 1. 创建RDD,Create RDDs 
@@ -17,7 +17,7 @@ RDD，全称为 Resilient Distributed Datasets，是一个容错的、并行的�
 RDD 是不可变Java虚拟机（JVM）对象的分布式集合。我们使用python时候，尤其要注意，python数据是存储在JVM对象中的 
 
 
-### 3.1. Create RDDs
+### 1.0.1. Create RDDs
 ```python
 
 # 1.SparkContext 类
@@ -71,10 +71,8 @@ data = sc.parallelize(
 data_from_file = sc.textFile('/Users/drabast/Documents/PySpark_Data/VS14MORT.txt.gz',4)
 ## 4： Parallelize  range output  into 4 partitions 
 
-
-
 ```
-### 3.2. Apply transformations
+### 1.0.2. Apply transformations
 
 
 
@@ -100,7 +98,7 @@ data_from_file = sc.textFile('/Users/drabast/Documents/PySpark_Data/VS14MORT.txt
 | coalesce(numPartitions)                              | Decrease the number of partitions in the RDD to numPartitions. Useful for running operations more efficiently after filtering down a large dataset.                                                                                                                                                                                                                                                                                                             |
 | repartition(numPartitions)                           | Reshuffle the data in the RDD randomly to create either more or fewer partitions and balance it across them. This always shuffles all data over the network.                                                                                                                                                                                                                                                                                                    |
 
-### 3.3. Perform actions
+### 1.0.3. Perform actions
 
 
 | Action                                    | Meaning                                                                                                                                                                                                                                                                                                                                                                                                             |
