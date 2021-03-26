@@ -282,9 +282,10 @@ Kubernetes 安装成功后，默认有初始化了3个名称空间：
 2. `kube-system` Kubernetes系统创建的对象放在此名称空间下
 3. `kube-public` 此名称空间自动在安装集群是自动创建，并且所有用户都是可以读取的（即使是那些未登录的用户）。主要是为集群预留的，例如，某些情况下，某些Kubernetes对象应该被所有集群用户看到。
 
-## 2.4. 在指定Namespace下 运行pod
+## 2.4. pod
 
 ```shell
+# 在指定Namespace下 运行 pod
 kubectl run nginx --image=nginx --namespace=<您的名称空间>
 kubectl get pods --namespace=<您的名称空间>
 ```
@@ -439,9 +440,9 @@ kubectl get pod private-reg
 # 5. 参考资料
 
 
-[^2]: [官方]网络插件：https://kubernetes.io/zh/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/
+1. [官方]网络插件：https://kubernetes.io/zh/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/
 
-https://kuboard.cn/learning/k8s-basics/k8s-core-concepts.html#service
+2. https://kuboard.cn/learning/k8s-basics/k8s-core-concepts.html#service
 
 
 

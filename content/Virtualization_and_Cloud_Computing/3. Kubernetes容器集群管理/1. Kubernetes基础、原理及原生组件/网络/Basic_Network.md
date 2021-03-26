@@ -6,7 +6,7 @@ date: 2099-06-02 00:00
 [TOC]
 
 
-# 2. Kubernetes 的网络[^2]
+# 1. Kubernetes 的网络[^2]
 
 参考资料
 
@@ -14,41 +14,41 @@ date: 2099-06-02 00:00
 2. 
 sd[^2]
 
-## 2.1. Network routing in Linux
+## 1.1. Network routing in Linux
 
 ![](../../../../attach/images/2019-12-18-11-27-23.png)!
 
-## 2.2. Understanding network requirements
-## 2.3. Exploring the Endpoints
+## 1.2. Understanding network requirements
+## 1.3. Exploring the Endpoints
 
-### 2.3.1. Balancing in-cluster traffic
-### 2.3.2. Routing traffic with `kube-proxy`
-### 2.3.3. CRI, CNI, CSI: interfaces for the kubelet
+### 1.3.1. Balancing in-cluster traffic
+### 1.3.2. Routing traffic with `kube-proxy`
+### 1.3.3. CRI, CNI, CSI: interfaces for the kubelet
 
 kubelet 的接口
-### 2.3.4. Choosing between latency and load balancing
-### 2.3.5. Pros and cons of the 4 types of Services
+### 1.3.4. Choosing between latency and load balancing
+### 1.3.5. Pros and cons of the 4 types of Services
 
 
-### 2.3.6. Discovering Services
+### 1.3.6. Discovering Services
 发现服务 
-### 2.3.7. Routing traffic with an `Ingress` controller
+### 1.3.7. Routing traffic with an `Ingress` controller
 
 带有Ingress控制器的远程通讯
 
 
-### 2.3.8. End-to-end traffic journey
+### 1.3.8. End-to-end traffic journey
 
 端对端的通讯日志
 
-## 2.4. 添加网络插件
+## 1.4. 添加网络插件
 
 上面安装成功后如果通过查询kube-system下Pod的运行情况，会放下和网络相关的Pod都处于Pending的状态，这是因为缺少相关的网络插件，而网络插件有很多个（以下任选一个），可以选择自己需要的。
 安装参考： https://kubernetes.feisky.xyz/bu-shu-pei-zhi/cluster/kubeadm#pei-zhi-network-plugin
 
 CNI(container network interface)
 
-### 2.4.1. CNI bridge
+### 1.4.1. CNI bridge
 
 kubenet：这是一个基于CNI bridge的网络插件（在bridge插件的基础上扩展了port mapping和traffic shaping），是目前推荐的默认插件
 
@@ -81,7 +81,7 @@ cat >/etc/cni/net.d/99-loopback.conf <<-EOF
 }
 EOF
 ```
-### 2.4.2. flannel
+### 1.4.2. flannel
 
 Flannel是CoreOS团队针对Kubernetes设计的一个网络规划服务，简单来说，它的功能是让集群中的不同节点主机创建的Docker容器都具有全集群唯一的虚拟IP地址。 ... 并使这些容器之间能够之间通过IP地址相互找到，也就是相互ping通。
 
@@ -90,7 +90,7 @@ Flannel是CoreOS团队针对Kubernetes设计的一个网络规划服务，简单
 kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/v0.10.0/Documentation/kube-flannel.yml
 ```
 
-### 2.4.3. weave
+### 1.4.3. weave
 
 Weave Net是一个多主机容器网络方案，支持去中心化的控制平面，各个host上的wRouter间通过建立Full Mesh的TCP链接，并通过Gossip来同步控制信息。这种方式省去了集中式的K/V Store，能够在一定程度上减低部署的复杂性，Weave将其称为“data centric”，而非RAFT或者Paxos的“algorithm centric”。
 
@@ -104,7 +104,7 @@ sysctl net.bridge.bridge-nf-call-iptables=1
 kubectl apply -f "https://cloud.weave.works/k8s/net?k8s-version=$(kubectl version | base64 | tr -d '\n')"
 ```
 
-### 2.4.4. calico
+### 1.4.4. calico
 
 
 需要 kubeadm init 时设置 --pod-network-cidr=192.168.0.0/16

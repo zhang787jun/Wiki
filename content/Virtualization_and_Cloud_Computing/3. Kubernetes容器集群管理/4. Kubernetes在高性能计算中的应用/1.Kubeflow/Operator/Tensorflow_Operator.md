@@ -1,5 +1,5 @@
 ---
-title: "分布式Tensorflow"
+title: "Tensorflow_Operator "
 layout: page
 date: 2099-06-02 00:00
 ---

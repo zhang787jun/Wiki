@@ -1,5 +1,5 @@
 ---
-title: "Arena--基于Kubeflow的简化命令工具"
+title: "Arena--基于Kubeflow的简化命令工具（阿里）"
 layout: page
 date: 2099-06-02 00:00
 ---
@@ -7,8 +7,8 @@ date: 2099-06-02 00:00
 [TOC]
 # 1. 概述
 
-Arena 是kubeflow 的一个子项目
 
+Arena（阿里云Kubernetes深度学习工具）是一种命令行界面工具，可以很方便、快捷地运行和监控机器学习训练作业，并检查结果。它兼容多种深度学习框架，是kubeflow 的一个子项目
 
 简而言之， Arena 的目标是让数据科学家感觉自己就像是在一台机器上工作，而实际上还可以享受到 GPU 集群的强大力量。
 

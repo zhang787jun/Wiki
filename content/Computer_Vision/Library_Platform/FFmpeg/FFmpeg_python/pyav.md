@@ -8,12 +8,11 @@ date: 2099-06-02 00:00
 
 官网 https://pyav.org/docs/stable/
 
-PyAV库使用介绍
-PyAV
-Posted by Shaozi on March 26, 2020
+# PyAV库使用介绍
+
 目前使用最广泛的视频编解码库为FFmepg，虽然该库有Python的封装ffmpeg-python，但是该封装功能简单，只能替代在python中调用命令行工具罢了。PyAV同样是FFmpeg封装，不过功能更为强大，能够灵活的编解码视频和音频，并且支持Python常用的数据格式（如numpy）。由于PyAV在ffmpeg的基础上进行开发，所以并不会提升编解码的效率。但是能够方便Python的开发者对视频或者音频数据进行处理。在模型的训练测试中能够发挥很好的作用。
 
-安装
+# 安装
 ```shell
 # 通过conda-forge，该方法会同时安装需要的ffmpeg库，比较方便
 conda install av -c conda-forge
@@ -34,9 +33,10 @@ pip install --upgrade -r tests/requirements.txt
 ./scripts/build-deps
 ## Build PyAV.
 make
-使用示例
+
 ```
-抽取所有帧
+# 使用示例
+### 抽取所有帧
 ```shell
 import av
 
@@ -137,6 +137,20 @@ except Exception as e:
 cv2.destroyAllWindows()
 ```
 以上代码示例基本满足通常使用需求，更多内容可以参考文档和git主页
+
+```python
+
+video = av.open('rtmp://10.106.18.31/live/test', 'r')
+
+for packet in video.demux():
+    print (acket.stream.type)
+    for frame in packet.decode():
+        if packet.stream.type == 'video':
+            print("frame = ", frame)
+
+
+
+```
 # 实践
 
 ## 关键帧提取

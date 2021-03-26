@@ -1,5 +1,5 @@
 ---
-title: "Kubeflow--让分布式ML在k8s上更便捷"
+title: "Kubeflow--101"
 layout: page
 date: 2099-06-02 00:00
 ---
@@ -11,9 +11,9 @@ date: 2099-06-02 00:00
 Kubeflow 是 Google 发布的用于在 Kubernetes 集群中部署和管理分布式机器学习工作流的框架，其致力于使机器学习（ML）工作流在Kubernetes上的部署简单，可移植且可扩展。
 
 tensorflow 任务的框架。主要功能包括
-1. 用于管理 Jupyter 的 
-2. 用于管理训练任务的 Tensorflow Training Controller
-3. 用于模型服务的 TF Serving 容器
+1. 用于管理 Jupyter 的 JupyterHub
+2. 用于管理训练任务的 Controller
+3. 用于模型服务的 Serving 容器
 
 **Kubeflow核心组件介绍**：
 1. JupyterHub 服务： 多租户NoteBook服务
@@ -47,9 +47,7 @@ tensorflow 任务的框架。主要功能包括
 因为ML实践者使用不同的工具集，其中一个关键目标是根据用户需求（在合理的范围内）定制堆栈，并让系统处理“无聊的事情”。虽然我们从一系列技术开始，但我们正在处理许多不同的项目，以包括其他工具。
 最后，我们希望有一组简单的清单，让您在Kubernetes已经运行的任何地方都可以使用一个易于使用的ML堆栈，并且可以根据它部署到的集群进行自我配置。
 
-
-
-## 架构
+## 1.1. 架构
 
 List of Kubeflow components available
 1. Ambassador
@@ -59,23 +57,23 @@ List of Kubeflow components available
 
 
 
-# 2. 安装
+# 2. 安装与卸载
 
 **在现有kebernetes群集上的部署概述**
 
 ## 2.1. 最低系统要求
 Kubernetes集群必须满足以下最低要求：
-您的集群必须至少包含一个工作节点(Work node)，且最少为：
-1. 4个CPU
-2. 50 GB的存储空间
-3. 12 GB内存
+您的集群必须至少包含**1个工作节点**(Work node)，且最少为：
+1. **4个CPU**
+2. **50 GB的存储空间**
+3. **12 GB内存**
 
 
 
 **资源部署配置**
 
 
-4. 社区版本的配置
+社区版本的配置
 
 | 部署配置             | 描述                                                                                                     |
 | -------------------- | -------------------------------------------------------------------------------------------------------- |
@@ -89,7 +87,7 @@ cd ${KF_DIR}
 kfctl apply -V -f kfctl_k8s_istio.yaml 
 ```
 
-2. 供应商版本
+1. 供应商版本
 本节包括特定供应商/提供者支持的部署解决方案。
  
 
@@ -307,18 +305,19 @@ ks apply default -c kubeflow-core
 
 
 
-## 阿里镜像1.0版本
+## 2.4. 阿里镜像1.0版本
 
 
 ```shell
+# 1. 安装kfctl
 wget http://kubeflow.oss-cn-beijing.aliyuncs.com/kfctl_v1.0-0-g94c35cf_linux.tar.gz
 tar zxvf kfctl_v1.0-0-g94c35cf_linux.tar.gz
-mv kfctl /usr/bin/
-
+sudo mv kfctl /usr/bin/
 ```
 
 
 ```shell
+# 2. 通过kfctl应用配置文件
 export KF_NAME=my-kubeflow-1
 export BASE_DIR=/home
 export KF_DIR=${BASE_DIR}/${KF_NAME}
@@ -328,12 +327,16 @@ sudo chmod -R 777 ${KF_DIR}
 cd ${KF_DIR}
 kfctl build -V -f ${CONFIG_URI}
 export CONFIG=${KF_DIR}/kfctl_k8s_istio.v1.0.1.yaml
-
 ```
 
 
 
 ```shell
+# 3. 设置存储机制
+## 3.1 确保k8s 的pvc 机制正常
+# sudo apt install nfs-kernel-server
+
+## 3.2 
 cat << EOF > local_pv.yaml
 apiVersion: v1
 kind: PersistentVolume
@@ -407,10 +410,157 @@ spec:
     type: DirectoryOrCreate
 EOF
 kubectl create -f local_pv.yaml
+```
+
+
+
+```shell
+for i in $(seq 1 4); do
+cat <<EOF | kubectl create -f -
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+    name: kubeflow-pv${i}
+spec:
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  nfs:
+    server: 172.18.43.250
+    path: /ssd/nfs-data/kubeflow/kubeflow-pv${i}
+EOF
+ done
+```
+
+
+
+```shell
+
+$ kubectl create -f deploy/auth/serviceaccount.yaml
+serviceaccount "nfs-client-provisioner" created
+$ kubectl create -f deploy/auth/clusterrole.yaml
+clusterrole "nfs-client-provisioner-runner" created
+$ kubectl create -f deploy/auth/clusterrolebinding.yaml
+clusterrolebinding "run-nfs-client-provisioner" created
+$ kubectl patch deployment nfs-client-provisioner -p '{"spec":{"template":{"spec":{"serviceAccount":"nfs-client-provisioner"}}}}'
+
+```
+
+```shell
+cat << EOF > my_nfs.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: nfs-client-provisioner
+---
+kind: Deployment
+apiVersion: extensions/v1beta1
+metadata:
+  name: nfs-provisioner
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: nfs-provisioner
+    spec:
+      serviceAccount: nfs-client-provisioner
+      containers:
+        - name: nfs-provisioner
+          image: registry.cn-hangzhou.aliyuncs.com/open-ali/nfs-client-provisioner
+          volumeMounts:
+            - name: nfs-client-root
+              mountPath: /persistentvolumes
+          env:
+            - name: PROVISIONER_NAME
+              value: kubeflow/nfs
+            - name: NFS_SERVER
+              value: 172.18.43.250
+            - name: NFS_PATH
+              value: /ssd/nfsdata/kubeflow/defstor
+      volumes:
+        - name: nfs-client-root
+          nfs:
+            server: 172.18.43.250
+            path: /ssd/nfsdata/kubeflow/defstor
+EOF
+kubectl create -f my_nfs.yaml
+```
+
+
+
+```shell
+cat << EOF > my_clusterrole.yaml
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: run-nfs-client-provisioner
+subjects:
+  - kind: ServiceAccount
+    name: nfs-client-provisioner
+    namespace: kubeflow-anonymous
+roleRef:
+  kind: ClusterRole
+  name: nfs-client-provisioner-runner
+  apiGroup: rbac.authorization.k8s.io
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: nfs-client-provisioner-runner
+rules:
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["persistentvolumeclaims"]
+    verbs: ["get", "list", "watch", "update"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["list", "watch", "create", "update", "patch"]
+EOF
+kubectl create -f my_clusterrole.yaml
+
+```
+
+
+
+
+```shell
+cat << EOF > my_StorageClass.yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: kubeflow-nfs-storage
+provisioner: kubeflow/nfs
+EOF
+kubectl create -f my_StorageClass.yaml
+```
+
+```shell
 kfctl apply -V -f ${CONFIG}
 
 ```
-## 2.4. 官方版本
+
+**问题1**：安装的时候，一班需要多次运行kfctl apply命令出现如下问题
+```shell
+WARN[0598] Encountered error applying application tf-job-crds:  (kubeflow.error): Code 500 with message: Apply.Run  Error error when applying patch:
+............
+for: "/tmp/kout686424655": CustomResourceDefinition.apiextensions.k8s.io "tfjobs.kubeflow.org" is invalid: [spec.version: Invalid value: "v1beta1": must match the first version in spec.versions, status.storedVersions[0]: Invalid value: "v1beta1": must appear in spec.versions]
+```
+我是通过先执行删除命令，之后又重新安装就可以了
+
+```shell
+kubectl kustomize  kustomize/tf-job-crds/ | kubectl delete -f -
+kubectl kustomize  kustomize/tf-job-crds/ | kubectl apply -f -
+```
+## 2.5. 官方版本
 
 ```shell
 set -ex
@@ -440,7 +590,7 @@ cp -r ${KUBEFLOW_SOURCE}/deployment ./
 
 
 
-# 运维与查看 
+# 3. 运维与查看 
 
 ```shell
 # 查看Kubeflow下的pod是否启动正常
@@ -450,10 +600,9 @@ kubectl get pods -n kubeflow
 kubectl get svc -n istio-system istio-ingressgateway
 ```
 
-# 3. 使用
+# 4. 使用
 
-## 
-## 查看状态
+## 4.2. 查看状态
 
 ```shell
 kubectl get service tf-hub-lb  -n kubeflow
@@ -482,7 +631,7 @@ curl -k -H "Content-Type: application/json" -X PUT --data-binary @temp.json 127.
 
 ```
 
-# 4. 使用流程
+# 5. 使用流程
 
 To use Kubeflow, the basic workflow is:
 
@@ -491,13 +640,13 @@ To use Kubeflow, the basic workflow is:
 3. 运行特定脚本发布容器到特定环境中 
 {"nvidia.com/gpu": "1"}
 
-# 5. Spawner
+# 6. Spawner
 
 https://jupyterhub.readthedocs.io/en/stable/reference/spawners.html
 
 
-# Kubeflow UI
-查看Service中，可以看到kubeflow v0.3.0版本中，附帶了許多Web UI:
+# 7. Kubeflow UI
+查看Service中，可以看到kubeflow中，附附带了许多Web UI:
 
 1. Argo UI
 2. Central UI for navigation
@@ -506,4 +655,8 @@ https://jupyterhub.readthedocs.io/en/stable/reference/spawners.html
 5. TFJobs Dashboard
 
 
+# 参考资料 
 
+1.[阿里云Kubeflow 1.0 上线： 体验生产级的机器学习平台
+](https://developer.aliyun.com/article/758776)
+2. 
