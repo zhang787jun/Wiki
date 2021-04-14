@@ -4,6 +4,8 @@ layout: page
 date: 2099-06-02 00:00
 ---
 [TOC]
+
+
 # 1. Shuffle
 ## 1.1. 怎么定义Shuffle
 Shuffling is a process of redistributing data across partitions[^1]
@@ -141,7 +143,7 @@ BypassMergeSortShuffleWriter、SortShuffleWriter和UnasfeSortShuffleWriter。
 
  
 
-## 1.4. 编程实践的注意事项
+## 1.3. 编程实践的注意事项
 
 用户在编写spark应用程序的时候应当尽可能考虑shuffle相关的优化，提升spark应用程序的性能。下面简单列举几点关于spark shuffle调优的参考。
 

@@ -1,7 +1,7 @@
 ---
-title: "Hadoop Yarn "
+title: "Apache Mesos"
 layout: page
 date: 2099-06-02 00:00
 ---
 [TOC]
-# Hadoop Yarn 资源调度
+# Apache  Mesos

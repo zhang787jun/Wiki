@@ -38,7 +38,7 @@ XGBoost 本身的核心是基于梯度提升树实现的集成算法，整体来
 ****
 `reg:squarederror`：损失平方回归。
 
-`reg:squaredlogerror`：对数损失平方回归 12[log(pred+1)−log(label+1)]2。所有输入标签都必须大于-1。
+`reg:squaredlogerror`：对数损失平方回归 $log(pred+1)−log(label+1)$。所有输入标签都必须大于-1。
 
 `reg:logistic`：逻辑回归
 
@@ -76,8 +76,8 @@ XGBoost 本身的核心是基于梯度提升树实现的集成算法，整体来
 对于足够的迭代次数，更改此值不会有太大影响。
 #### 1.1.3. 模型评价
 * `eval_metric` [根据目标函数确定默认值]
-- 验证数据的评估指标，将根据目标分配默认指标（回归均方根，分类误差，排名的平均平均精度）
-- 用户可以添加多个评估指标。Python用户：记住将指标作为参数对的列表而不是映射进行传递，以使后者eval_metric不会覆盖前一个
+  - 验证数据的评估指标，将根据目标分配默认指标（回归均方根，分类误差，排名的平均平均精度）
+  - 用户可以添加多个评估指标。Python用户：记住将指标作为参数对的列表而不是映射进行传递，以使后者eval_metric不会覆盖前一个
 
 下面列出了这些选择:
 `rmse`:均方根误差
@@ -93,7 +93,7 @@ XGBoost 本身的核心是基于梯度提升树实现的集成算法，整体来
 `ndcg`:归一化累计折扣
 `map`:平均平均精度
 `ndcg@n`，`map@n`:'n'可以被指定为整数，以切断列表中的最高位置以进行评估。
-`ndcg-`，`map-`，`ndcg@n-`，`map@n-`:在XGBoost，NDCG和MAP将评估清单的比分没有任何阳性样品为1加入-在评价指标XGBoost将评估这些得分为0，是在一定条件下一致“”。
+`ndcg-`，`map-`，`ndcg@n-`，`map@n-`:在XGBoost，NDCG和MAP将评估清单的比分没有任何阳性样品为1加入-在评价指标XGBoost将评估这些得分为0，是在一定条件下一致。
 `poisson-nloglik`:泊松回归的负对数似然
 `gamma-nloglik`:伽马回归的对数似然率
 `cox-nloglik`:Cox比例风险回归的负对数似然率
@@ -101,7 +101,7 @@ XGBoost 本身的核心是基于梯度提升树实现的集成算法，整体来
 `tweedie-nloglik`:Tweedie回归的负对数似然（在tweedie_variance_power参数的指定值处）
 
 
-### 1.2. 计算过程设置
+### 1.2. 训练过程参数
 
 * `seed` [default=0]
   - 随机数种子
@@ -144,8 +144,9 @@ XGBoost 本身的核心是基于梯度提升树实现的集成算法，整体来
 
 
 ### 1.3. 集成算法设置
-* `n_estimator`(num_boosting_rounds): 
-生成的最大树的数目，也是最大的迭代次数。
+
+* `n_estimator`(sklean中叫n_estimator,xgb原生中的num_boosting_rounds): Number of gradient boosted trees(理解为梯度提升树的迭代生成每个版本的数量/次数). Equivalent to number of boosting rounds.
+也是最大的迭代次数。
 
 
 * `learning_rate`(eta)[default=0.3]: 

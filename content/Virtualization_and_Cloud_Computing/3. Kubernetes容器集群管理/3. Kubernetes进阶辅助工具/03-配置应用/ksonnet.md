@@ -15,7 +15,6 @@ ksonnet 是一个基于jsonnet的快速简化kubernetes yaml 配置的工具，�
 一个ksonnet应用就是一个结构化的Kubernetes配置文件夹
 A ksonnet application represents a well-structured directory of Kubernetes manifests.
 
-
 ### 1.1.2. ksonnet component组件
 一个应用可以分成多个组件,一个组件可以是一个Kubernetes资源 或者多个资源
 

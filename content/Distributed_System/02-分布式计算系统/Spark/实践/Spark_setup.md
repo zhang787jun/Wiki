@@ -111,7 +111,6 @@ kubectl get svc
 
 ```shell
 kubectl get pod
-
 ```
 利用如下命令获得 Spark Web UI 的访问地址。
 

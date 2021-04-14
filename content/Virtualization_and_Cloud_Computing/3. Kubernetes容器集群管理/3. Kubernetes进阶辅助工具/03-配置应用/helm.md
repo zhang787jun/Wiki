@@ -102,8 +102,6 @@ dfsdk
 ## 1.3. Helm 基本概念
 
 ![](../../../../attach/images/2019-12-20-10-49-53.png)
-
-
 Helm 本质是个C/S 机制的包管理程序，分为客户端和服务端两部分
 
 ### 1.3.1. Helm client
@@ -311,6 +309,9 @@ helm uninstall my-nginx-ingress
 
 # 升级 charts
 helm upgrade <YOUR-HELM-RELEASE-NAME> <repo-name>/<charts-name> --version=v0.6 -f config.yaml
+
+# 查找
+helm search -l <repo-name>/<charts-name> 
 ```
 对于` helm install` 的执行顺序发现是按照 
 1. configmap.yaml, 
@@ -347,8 +348,11 @@ Incubator Charts: http://mirror.azure.cn/kubernetes/charts-incubator/
 
 添加镜像示例：
 ```shell
+helm repo remove stable
+helm repo remove  incubator
+
 helm repo add stable http://mirror.azure.cn/kubernetes/charts/
-helm repo add incubator http://mirror.azure.cn/kubernetes/charts-incubator/rep
+helm repo add incubator http://mirror.azure.cn/kubernetes/charts-incubator/
 ```
 # 5. 参考资料
 
