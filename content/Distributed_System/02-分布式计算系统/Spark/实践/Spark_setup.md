@@ -90,7 +90,7 @@ docker run --rm -it --name spark-worker1 --hostname spark-worker1 \
 输入如下命令。
 
 ```shell
-helm install --name myspark stable/spark
+helm install stable/spark --namespace spark-on-k8s --generate-name
 
 # 得到如下的结果。
 >>>
@@ -135,7 +135,6 @@ STATUS: DEPLOYED
 
 ```shell
 kubectl get pod
-
 ```
 在浏览器上刷新 Spark 的 Web UI，可以看到此时 worker 数量已经变为 4 个。
 

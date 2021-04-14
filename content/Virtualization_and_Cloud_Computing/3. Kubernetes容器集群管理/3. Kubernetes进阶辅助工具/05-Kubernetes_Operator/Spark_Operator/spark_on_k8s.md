@@ -356,12 +356,12 @@ spec:
 EOF
 kubectl create -f zeppelin-service.yaml
 ```
-## 验证
+## 2.2. 验证
 ```shell
 kubectl exec -it $(kubectl get pods -n spark-cluster| grep "zeppelin-controller"| awk '{print $1 }')  -n spark-cluster pyspark
 ```
 
-## 2.2. Spark Operator
+## 2.3. Spark Operator
 
 
 
