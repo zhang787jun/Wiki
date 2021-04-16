@@ -8,24 +8,55 @@ date: 2099-06-02 00:00
 # 1. 基础概念
 ## 1.1. 什么是 DataFrames
 
-DataFrame is a **new API** for Apache Spark. It is basically a **distributed**, **strongly-typed collection** of data, i.e., a dataset, which is organized into named columns. A DataFrame is equivalent to what a table is in a relational database, except for the fact that it has richer optimization options.
-## 1.2. 什么是  Dataset
+DataFrame is a **new API** for Apache Spark. It is basically a **distributed**, **strongly-typed collection** of data. A DataFrame is equivalent to what a table is in a relational database, except for the fact that it has richer optimization options.
+
+
+在Spark 中， DataFrame 是以RDD 为基础的 **分布式**数据集。类似传统数据库里面的二维数据表
+
+```
+DataFrame（表）= Schema（表结构） + Data（表数据）
+
+```
+
+
+## 1.2. 什么是 Dataset
 `Dataset`: 分布式的数据集合。
-## 1.3. 与RDD的关系与对比
 
-事实上 DataFrame 和 Dataset 也透过Catalyst基于由 RDD 提供的。
-
-Catalyst Optimizer 是 Spark SQL 中建立的一個模組，提供基於查詢與運算優化 RDD 配置的一個最佳化工具。換句話說，我們所宣告的 DataFrame 和 DataSet 將根據我們對其處理的動作，在 Spark 底層轉化成 RDD。
-此時，出現一個有趣的問題: 為什麼直接操作 RDD，會比較沒有效率？而透過 DataFrame 或是 DataSet 的抽象操作反而更有效率呢？這是因為當我們直接操作 RDD 時，會傾向重複宣告 RDD，或是對一個大型的 RDD 進行操作，而不是真的對需要的資料進行操作。
+Dataset是在Spark 1.6中添加的一个新接口，是DataFrame之上更高一级的抽象。它提供了RDD的优点（强类型化）以及Spark SQL优化后的执行引擎的优点。一个Dataset 可以从JVM对象构造，然后使用函数转换（map， flatMap，filter等）去操作。 Dataset API 支持Scala和Java。 **Python（PySpark）不支持Dataset API**。
 
 
-## 1.4. 该什么时候使用 DataFrame 或 Dataset 呢？
-如果你需要丰富的语义、高级抽象和特定领域专用的 API，那就使用 DataFrame 或 Dataset；
-如果你的处理需要对半结构化数据进行高级处理，如 filter、map、aggregation、average、sum、SQL 查询、列式访问或使用 lambda 函数，那就使用 DataFrame 或 Dataset；
-如果你想在编译时就有高度的类型安全，想要有类型的 JVM 对象，用上 Catalyst 优化，并得益于 Tungsten 生成的高效代码，那就使用 Dataset；
-如果你想在不同的 Spark 库之间使用一致和简化的 API，那就使用 DataFrame 或 Dataset；
-如果你是 R 语言使用者，就用 DataFrame；
-如果你是 Python 语言使用者，就用 DataFrame，在需要更细致的控制时就退回去使用 RDD；
+## 1.3. 比较RDD、DataFrames、Dataset
+
+事实上 DataFrame 和 Dataset 是Catalyst由 RDD 构造的。
+
+
+| 项目 | RDD                           | DataFrame                                                                                                                                                                                 | Dataset |
+| ---- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| 定义 | RDD是分布式的Java对象的集合。 | DataFrame 是分布式的Row对象的集合。                                                                                                                                                       |
+| 组成 |                               | 带有Schema元数据，列名称                                                                                                                                                                  |
+| 计算 |                               | DataFrame除了提供了比RDD更丰富的算子以外，更重要的特点是提升执行效率、减少数据读取以及执行计划的优化，比如filter下推、裁剪等。我们直接操作 RDD 时，會傾向重复声明（定义） RDD造成效率低下 |
+
+
+
+
+### 适用场景
+
+**RDD**
+在需要更细致的控制时就退回去使用 RDD；
+
+
+**DataFrame**
+如果你需要丰富的语义、高级抽象和特定领域专用的 API，
+如果你的处理需要对半结构化数据进行高级处理，如 filter、map、aggregation、average、sum、SQL 查询、列式访问或使用 lambda 函数
+如果你想在不同的 Spark 库之间使用一致和简化的
+如果你是 Python /R 语言使用者
+
+**Dataset**
+1. 如果你需要丰富的语义、高级抽象和特定领域专用的 API，
+2. 如果你的处理需要对半结构化数据进行高级处理，如 filter、map、aggregation、average、sum、SQL 查询、列式访问或使用 lambda 函数
+如果你想在编译时就有高度的类型安全，想要有类型的 JVM 对象，用上 Catalyst 优化，并得益于 Tungsten 生成的高效代码，那就使用Dataset；
+如果你想在不同的 Spark 库之间使用一致和简化的 API
+
 
 
 # 2. DataFrames 操作
@@ -76,21 +107,17 @@ df = spark.createDataFrame(rdd, person_type)
 
 ### 2.1.2. 从外部读取
 
+#### 文件系统
 ```python
-#---[1]- read 文件
-# 1. json 键值对
-df1 = spark.read.json("python/test_support/sql/people.json")
-df1.dtypes
-# [('age', 'bigint'), ('name', 'string')]
-df2 = sc.textFile("python/test_support/sql/people.json")
-# df1.dtypes 和 df2.dtypes是一样的
-
-# 2. text 文本文件 
+# 1. 指定文件格式 
 # 每一行就是一个Row，默认的列名是Value
+df = spark.read.json("python/test_support/sql/people.json")
 df = spark.read.text("python/test_support/sql/text-test.txt")
+df = spark.read.csv("python/test_support/sql/text-test.csv")
+df = spark.read.parquet("python/test_support/sql/text-test.parquet")
+
 df.collect()
 # [Row(value=u'hello'), Row(value=u'this')]
-
 
 #---[2]- load 数据源
 
@@ -99,11 +126,16 @@ df.collect()
 df2 = spark.read.load("people.json", format="json")
 df3 = spark.read.load("users.parquet")
 
-
 ## sql
-df5 = spark.sql("SELECT * FROM customer").show()
-peopledf2 = spark.sql("SELECT * FROM global_temp.people").show()
+df = spark.sql("SELECT * FROM customer").show()
+
+df = spark.read.format("jdbc").options(url="jdbc:mysql://1.1.1.1:3306/test",driver="com.mysql.jdbc.Driver",dbtable="(SELECT * FROM yourtable) tmp",user="username",password="password").load()
+
+df2 = sc.textFile("python/test_support/sql/people.json")
+# df1.dtypes 和 df2.dtypes是一样的
 ```
+
+
 
 ## 2.2. 查看 Dataframe
 ```python
@@ -177,10 +209,8 @@ df.sort(df.age.desc()).collect()
 ## 2.5. 增删改列
 
 ```python
-
 # Rename Column
 df = df.withColumnRenamed('median_income', 'my_median_income')
-
 
 # 去重
 df = df.dropDuplicates()  
@@ -191,30 +221,49 @@ df = df.drop(df.address).drop(df.phoneNumber)
 ```
 
 
-## 2.6. 其他格式转换
+## 2.6. 格式转换
 
-### 2.6.1. DataFrame--DataSet
-DataFrame和DataSet可以相互转化，`df.as[ElementType]`这样可以把DataFrame转化为DataSet，`ds.toDF()`这样可以把DataSet转化为DataFrame。
+
 
 ```python
-# to ds
+# DataFrame转化为DataSet
+# to ds 
 ds=df.as[ElementType]
+# 把DataSet转化为DataFrame
 # to dF
 df=ds.toDF()
-```
-### 2.6.2. DataFrame--RDD
 
-```python
+# to rdd
 rdd1 = df.rdd
-```
-RDD是分布式的Java对象的集合。DataFrame是分布式的Row对象的集合。DataFrame除了提供了比RDD更丰富的算子以外，更重要的特点是提升执行效率、减少数据读取以及执行计划的优化，比如filter下推、裁剪等。
-### 2.6.3. DataFrame--Pandas 
-```
+
 df.toPandas()
-
 ```
 
+![image](https://img.shields.io/badge/图学习-PyG-blue.svg)
+![image](https://img.shields.io/badge/NLP-Tensorflow-orange.svg)
 
+![image](https://img.shields.io/badge/推荐-Tensorflow,Xgboost-orange.svg)
+
+![image](https://img.shields.io/badge/推荐-Tensorflow-orange.svg)
+
+![image](https://img.shields.io/badge/时序-Tensorflow-orange.svg)
+
+
+![image](https://img.shields.io/badge/CV-Pytorch,OpenCV,Gst-blue.svg)
+
+![image](https://img.shields.io/badge/时序,IOT-TensorFlow,sklearn-orange.svg)
+
+
+## 2.7. 持久化
+```python 
+df.write.save("nameAndCity.parquet")
+df.write.save("namesAndAges.json",format="json")
+```
+
+cache()
+使用默认存储级别（MEMORY_AND_DISK）持久保存DataFrame。
+
+traffic.cache()
 
 # 3. 参考资料 
 
