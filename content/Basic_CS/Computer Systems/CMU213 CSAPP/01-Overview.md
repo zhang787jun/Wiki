@@ -6,11 +6,14 @@ date: 2099-06-02 00:00
 
 [TOC]
 
+![](https://gblobscdn.gitbook.com/assets%2F-MHt_spaxGgCbp2POnfq%2F-MHtt00XBvS4gFjhfw7b%2F-MHttfdsLWUPlWSz8ANj%2F%E6%B7%B1%E5%85%A5%E7%90%86%E8%A7%A3%E8%AE%A1%E7%AE%97%E6%9C%BA%E7%B3%BB%E7%BB%9F%20%E5%8E%9F%E4%B9%A6%E7%AC%AC3%E7%89%88.pdf..20200922190952319_00.png?alt=media&token=f65abe2d-0a5c-4e2c-91b8-5f008051209c)
+
 Randal E. Bryant and David R. O'Hallaron,
 Computer Systems: A Programmer's Perspective, Third Edition, Pearson, 2016
 深入理解计算机系统《第三版》
 
-# 书籍目录
+
+# 1. 书籍目录
 
 第1章 计算机漫游
 第2章 信息的表示和处理
@@ -25,7 +28,7 @@ Computer Systems: A Programmer's Perspective, Third Edition, Pearson, 2016
 第11章 网络编程
 第12章 并发编程
 
-# 课程目录
+# 2. 课程目录
 
 
 
@@ -266,3 +269,7 @@ Thu
 Dec
 10
 No class
+# 3. 参考资料
+
+
+https://hansimov.gitbook.io/csapp/
