@@ -15,3 +15,4 @@ xgboost 使用 Scikit-Learn API 需要提前安装sklearn
 1. eta –> learning_rate
 2. lambda –> reg_lambda
 3. alpha –> reg_alpha
+4. num_round ->n_estimators

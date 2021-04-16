@@ -11,17 +11,24 @@ Docker 的主要笔记资料参考：
 
 
 # 1. Docker 安装
-目前Docker已经分为社区版（Docker CE）和商业版（docker EE）。docker-ce 是docker公司维护的开源项目， 本节主要针对此版本进行说明。
+## 1.1. 版本情况说明 
+目前Docker已经分为
+1. 社区版（Docker CE）--免费，支持周期7个月
+2. 商业版（docker EE）--强调安全，付费使用，支持周期 4个月
 
-Docker 分为 CE 和 EE 两大版本。CE 即社区版（免费，支持周期 7 个月），EE 即企业版，强调安全，付费使用，支持周期 24 个月。
-Docker CE 分为 stable test 和 nightly 三个更新频道。
+Docker-CE 是docker公司维护的开源项目，本节主要针对此版本进行说明。
 
-## 1.1. For Linux
+Docker CE 分为 stable、test 和 nightly 三个更新频道。
+
+
+
+
+## 1.2. For Linux
 ```shell 
 # 使用官方安装脚本自动安装 （仅适用于公网环境 阿里云）
 curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
 ```
-## 1.2. For windows
+## 1.3. For windows
 
 Docker Windos客户端 主要由2种：
 1. 针对Windows 10+ ，开启Hyper-V的系统：推荐使用 `Docker for Windows`（下载地址：[点击这里](http://mirrors.aliyun.com/docker-toolbox/windows/docker-for-windows/)）
@@ -31,7 +38,7 @@ Windows`（下载地址：[点击这里](http://mirrors.aliyun.com/docker-toolbo
 * 可以使用迅雷p2p 下载境外资源
 
 
-## 1.3. 注意与优化
+## 1.4. 注意与优化
 
 
 1. Docker for Windows 和 Docker Toolbox互不兼容，如果同时安装两者的话，需要使用 hyper-v的参数启动。
@@ -49,6 +56,9 @@ sudo tee /etc/docker/daemon.json <<-'EOF'
   "registry-mirrors": ["http://hub-mirror.c.163.com"]
 }
 EOF
+
+
+
 ```
 
 3. Windows 10 家庭版开启 hyper-v
@@ -70,6 +80,18 @@ Dism /online /enable-feature /featurename:Microsoft-Hyper-V-All /LimitAccess /AL
 ```shell
 REG ADD "HKEY_LOCAL_MACHINE\software\Microsoft\Windows NT\CurrentVersion" /v EditionId /T REG_EXPAND_SZ /d Professional /F
 ```
+
+5. Linux 下用户权限
+```shell
+sudo groupadd docker
+sudo usermod -aG docker ${USER}
+sudo systemctl restart docker
+
+newgrp - docker
+
+
+```
+
 
 
 # 2. Docker 概念
@@ -396,6 +418,7 @@ digraph a{
 ```shell
 # 查看Registry
 docker system info
+docker info
 
 ```
 
@@ -421,6 +444,20 @@ docker pull [选项] [Docker Registry 地址[:端口号]/]仓库名:[标签]
 
 
 ### 6.2.1. 更换镜像下载镜像
+
+
+**Ubuntu 系统**
+```shell
+sudo mkdir -p /etc/docker
+sudo tee /etc/docker/daemon.json <<-'EOF'
+{
+  "registry-mirrors": ["http://hub-mirror.c.163.com",
+  "https://docker.mirrors.ustc.edu.cn"]
+}
+EOF
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+```
 
 **针对Docker Toolbox用户**
 1. 创建一台安装有Docker环境的Linux虚拟机，指定机器名称为default，同时配置Docker加速器地址。
@@ -517,9 +554,50 @@ docker push registry-vpc.cn-hangzhou.aliyuncs.com/acs/agent:0.7-dfb6816
 d[^1][^2]
 
 
+# 7. 镜像存储目录迁移
 
 
-# 7. 参考资料
+```shell
+#备份fstab文件
+sudo cp /etc/fstab /etc/fstab.$(date +%Y-%m-%d)
+
+#停止docker
+sudo service docker stop
+
+#/data/docker/为目标路径，根据机器情况设定。
+export DOCKER_PATH=/data/docker/
+
+#用rsync同步/var/lib/docker到新位置
+sudo rsync -avPHSX /var/lib/docker/.  $DOCKER_PATH
+
+sudo echo $DOCKER_PATH /var/lib/docker  none bind 0 0 >> /etc/fstab
+sudo mount -a
+df -h
+
+sudo service docker start
+
+```
+
+1. 查看docker和文件系统
+   
+Docker的镜像以及一些数据都是在`/var/lib/docker`目录下，它占用的是Linux的系统分区，也就是下面的/dev/vda1,当有多个镜像时，/dev/vda1的空间可能不足，我们可以把docker的数据挂载到数据盘，例如：/dev/vdb目录下。
+
+```shell
+df -lhT
+>>> 
+Filesystem     Type      Size  Used Avail Use% Mounted on
+/dev/vda1      xfs        20G  3.8G   16G  20% /
+devtmpfs       devtmpfs  916M     0  916M   0% /dev
+tmpfs          tmpfs     921M     0  921M   0% /dev/shm
+tmpfs          tmpfs     921M   43M  878M   5% /run
+tmpfs          tmpfs     921M     0  921M   0% /sys/fs/cgroup
+/dev/vdb       xfs       100G   11G   90G  11% /data
+```
+
+
+
+
+# 8. 参考资料
 
 [^1]: [Docker — 从入门到实践](https://yeasy.gitbooks.io/docker_practice/content/)
 

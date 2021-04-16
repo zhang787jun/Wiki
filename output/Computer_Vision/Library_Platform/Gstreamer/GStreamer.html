@@ -95,7 +95,10 @@
 </li>
 <li><a href="#6">6. 实践</a><ul>
 <li><a href="#61">6.1. 初始化</a></li>
-<li><a href="#62-pipeline">6.2. 创建Pipeline</a></li>
+<li><a href="#62-pipeline">6.2. 创建Pipeline</a><ul>
+<li><a href="#rtsp">创建rtsp</a></li>
+</ul>
+</li>
 <li><a href="#63">6.3. 播放文件</a></li>
 <li><a href="#64-streaming">6.4. Streaming 在线播放</a><ul>
 <li><a href="#641">6.4.1. 概述</a></li>
@@ -340,14 +343,24 @@ appsrc有2中模式：<br />
 </ol>
 <p>在不需要gst_init处理命令行参数时，我们可以讲NULL作为其参数，例如：gst_init(NULL, NULL);</p>
 <h2 id="62-pipeline">6.2. 创建Pipeline</h2>
+<blockquote>
+<p>用字符串描述Pipeline</p>
 <p>当我们用字符串描述Pipeline时，每个Element之间需要通过叹号 “!" 分隔Element，这样gst-launch才能正确识别。<br />
 　　在使用gst-launch时，根据不同的应用场景，我们可以分为以下的类型。</p>
+</blockquote>
 <p>采用默认的参数创建Pipeline<br />
 　　这种方式我们只需将所使用的Element使用叹号分隔即可，例如：</p>
 <div class="hlcode"><pre><span class="n">gst</span><span class="o">-</span><span class="n">launch</span><span class="o">-</span><span class="mf">1.0</span> <span class="n">videotestsrc</span> <span class="o">!</span> <span class="n">videoconvert</span> <span class="o">!</span> <span class="n">autovideosink</span>
 </pre></div>
 
 
+<h3 id="rtsp">创建rtsp</h3>
+<div class="hlcode"><pre><span class="sx">!gst-launch-1.0 rtspsrc location=rtsp://10.1.224.30:55402/PSIA/Streaming/channels/2?videoCodecType=H.264! rtph264depay ! h264parse ! avdec_h264 ! appsink</span>
+</pre></div>
+
+
+<p><code>nvvidconv</code>: 还有一个用来进行某种视频转换的nvvidconv功能块，该功能块里面需要进行一次Device-&gt;Host的传输。在完成了一次性的传输后，这个功能块后面，还有一个CPU上的xvimagesink功能块。</p>
+<p><code>appsink</code>: <strong>Sinks</strong>：负责媒体流输出到指定设备或目的地</p>
 <h2 id="63">6.3. 播放文件</h2>
 <p>摘要<br />
 在以前的文章中，我们了解到了2种播放文件的方式：一种是在知道了文件的类型及编码方式后，手动创建所需Element并构造Pipeline；另一种是直接使用playbin，由playbin内部动态创建所需Element并连接Pipeline。很明显使用playbin的方式更加灵活，我们不需要在一开始就创建各种Pipeline，只需由playbin内部根据文件类型，自动构造Pipeline。 在了解了Pad的作用后，本文通过一个例子来了解如何通过Pad事件动态的连接Pipeline，为了解playbin内部是如何动态创建Pipeline打下基础。</p>
@@ -355,8 +368,11 @@ appsrc有2中模式：<br />
 在本章的例子中，我们在将Pipeline设置为PLAYING状态之前，不会将所有的Element都连接起来，这种处理方式是可以的，但需要额外的处理。如果在设置PLAYING状态后不做任何操作，数据无法到达Sink，Pipeline会直接抛出一个错误并退出。如果在收到相应事件后，对其进行处理，并将Pipeline连接起来，Pipeline就可以正常工作。</p>
 <p>我们常见的媒体，音频和视频都是通过某一种容器格式被包含中同一个文件中。播放时，我们需要将音视频数据分离出来，通常将具备这种功能的模块称为分离器（demuxer）。</p>
 <p>GStreamer针对常见的容器提供了相应的demuxer，如果一个容器文件中包含多种媒体数据（例如：一路视频，两路音频），这种情况下，demuxer会为些数据分别创建不同的Source Pad，每一个Source Pad可以被认为一个处理分支，可以创建多个分支分别处理相应的数据。</p>
-<p>gst-launch-1.0 filesrc location=sintel_trailer-480p.ogv ! oggdemux name=demux ! queue ! vorbisdec ! autoaudiosink demux. ! queue ! theoradec ! videoconvert ! autovideosink<br />
-通过上面的命令播放文件时，会创建具有2个分支的Pipeline：</p>
+<div class="hlcode"><pre><span class="n">gst</span><span class="o">-</span><span class="n">launch</span><span class="o">-</span><span class="mf">1.0</span> <span class="n">filesrc</span> <span class="n">location</span><span class="o">=</span><span class="n">sintel_trailer</span><span class="o">-</span><span class="mi">480</span><span class="n">p</span><span class="p">.</span><span class="n">ogv</span> <span class="o">!</span> <span class="n">oggdemux</span> <span class="n">name</span><span class="o">=</span><span class="n">demux</span> <span class="o">!</span> <span class="n">queue</span> <span class="o">!</span> <span class="n">vorbisdec</span> <span class="o">!</span> <span class="n">autoaudiosink</span> <span class="n">demux</span><span class="p">.</span> <span class="o">!</span> <span class="n">queue</span> <span class="o">!</span> <span class="n">theoradec</span> <span class="o">!</span> <span class="n">videoconvert</span> <span class="o">!</span> <span class="n">autovideosink</span>
+</pre></div>
+
+
+<p>通过上面的命令播放文件时，会创建具有2个分支的Pipeline：</p>
 <p>使用demuxer需要注意的一点是：demuxer只有在收到足够的数据时才能确定容器中包含哪些媒体信息，因此demuxer开始没有Source Pad，所以其他的Element无法在Pipeline创建时就连接到demuxer。<br />
 解决这种问题的办法是：在创建Pipeline时，我们只将Source Element到demuxer之间的Elements连接好，然后设置Pipeline状态为PLAYING，当demuxer收到足够的数据可以确定文件总包含哪些媒体流时，demuxer会创建相应的Source Pad，并通过事件告诉应用程序。我们可以通过监听demuxer的事件，在新的Source Pad被创建时，我们根据数据类型，创建相应的Element，再将其连接到Source Pad，形成完整的Pipeline。</p>
 <h2 id="64-streaming">6.4. Streaming 在线播放</h2>

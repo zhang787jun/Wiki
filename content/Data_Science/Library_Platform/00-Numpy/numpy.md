@@ -1,10 +1,9 @@
 ---
-title: "Numpy 基础"
+title: "01_Numpy 基础"
 layout: page
 date: 2099-06-02 00:00
 ---
 [TOC]
-
 
 # 1. 简介
 

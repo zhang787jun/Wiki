@@ -6,46 +6,47 @@ date: 2099-06-02 00:00
 
 [TOC]
 
-# 1. (Streaming) Media Server （流）媒体服务器
 
-## 1.1. 什么是媒体服务
+# 1. 什么是（流）媒体服务
 
 A  Media Server is a computer appliance or an application software that stores digital media (video, audio or images) and makes it available over a network.
 
 ![](https://docs.microsoft.com/zh-cn/azure/media-services/latest/media/live-streaming/live-encoding.svg)
 
-# 3. 功能
+# 2. 功能
 
 ![](https://img-blog.csdnimg.cn/20190422113053807.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9odWF3ZWljbG91ZC5ibG9nLmNzZG4ubmV0,size_16,color_FFFFFF,t_70)
 
-流媒体服务器最主要功能是
+流媒体服务器最主要功能是：
 1. **拉流**。以流式协议（RTP/RTSP、MMS、RTMP等）将视频文件传输到客户端，供用户在线观看；
 2. **推流**。
 
-其他：
+其他功能：
 1. 用户安全管理
 2. 内容分发加速
 3. 媒体存储
 
 
-# 4. 典型的解决方案
+# 3. 典型的解决方案
 
-## Windows Media Service
-
+## 3.1. Windows Media Service
 
 微软的Windows Media Service（WMS），它采用MMS协议接收、传输视频，采用Windows Media Player（WMP）作为前端播放器；
-## Helix Server
+
+## 3.2. Helix Server
+
 RealNetworks公司的Helix Server，采用RTP/RTSP协议接收、传输视频，采用Real Player作为播放前端；
 
-## Flash Media Server
+## 3.3. Flash Media Server
 Adobe公司的Flash Media Server,采用RTMP(RTMPT/RTMPE/RTMPS)协议接收、传输视频，采用Flash Player作为播放前端。值得注意的是，随着Adobe公司的Flash播放器的普及（根据Adobe官方数据，Flash播放器装机量已高达99%以上），越来越多的网络视频开始采用Flash播放器作为播放前端，因此，越来越多的企业开始采用兼容Flash播放器的流媒体服务器，而开始淘汰其他类型的流媒体服务器。支持Flash播放器的流媒体服务器，除了Adobe Flash Media Server，还有sewise的流媒体服务器软件和Ultrant Flash Media Server流媒体服务器软件，以及基于Java语言的开源软件Red5。
 
 
-## 4.2. Darwin Streaming Server 
+## 3.4. Darwin Streaming Server 
 
 Darwin Streaming Server简称DSS。DSS是Apple公司提供的开源实时流媒体播放服务器程序。整个程序使用C++编写，在设计上遵循高性能，简单，模块化等程序设计原则，务求做到程序高效，可扩充性好。并且DSS是一个开放源代码的，基于标准的流媒体服务器，可以运行在Windows NT和Windows 2000，以及几个UNIX实现上，包括Mac OS X，Linux，FreeBSD，和Solaris操作系统上的。
 
-## 4.3. rtsp-server
+## 3.5. rtsp-server
+
 [rtsp-server](https://github.com/revmischa/rtsp-server) 一般是指 revmischa 写的一个开源的轻量级RTSP/RTP 流媒体服务 (Lightweight RTSP/RTP streaming media server)
 
 
@@ -165,31 +166,27 @@ found configure failed
 
 注：笔者的rtsp server 与 client的播放均在同一台PC，因此可以使用127.0.0.1，不同需求可更改IP地址进行适配。
 
-# 4.4. 云解决方案
+# 4. 云解决方案
 
 
 
-## 4.5. jasonrivers/nginx-rtmp
+## 4.1. jasonrivers/nginx-rtmp
 
 
 ffmpeg推送阿里云流媒体服务器脚本
-左羊公社
-左羊公社
-北漂肄业程序员 公众号：左羊公社
-1 人赞同了该文章
-最近有位前辈询问左羊能否不借助Java程序直接将多个rtsp协议网络摄像头的视频流推送阿里云的直播域名上面去，有左羊当时琐事较多吧！没有时间去想，今天小羊闲下来了，细细思索下还是直接使用shell编写脚本最为便捷了
 
-环境：linux，ffmpeg，阿里云直播域名
 
 阿里云的推流域名是有安全认证的，所我们在处理推流地址时需要获取时间戳并且计算过期时间再进行MD5加密，这么做主要是为了防止所有人都可向你的服务器推流造成流量经济损失！
 
 首先左羊先大家从ffmepg命令逐级讲解：
 
+```shell
 ffmpeg -re -rtsp_transport tcp -i $rtspUrl -c:a copy -c:v libx264 -preset:v fast -tune:v zerolatency -max_delay 100 -f flv -g 5 -b 1024k $rtmpUrl
+```
 $rtspUrl：rtsp抓流地址
 $rtmpUrl：rtmp推流地址
 我在这里主要说下rtmp推流地址的组成方式
-
+```shell
 $rtmp2'?auth_key='$timestamp'-0-0-'$md5Str2
 $rtmp2：rtmp推流域名
 $timestamp:过期时间戳
@@ -204,6 +201,7 @@ MD5加密串
 
 md5Url2='/'$appName'/202-'$timestamp'-0-0-'$pushIdentKey
 md5Str2=$(echo -n $md5Url2 | md5sum | awk '{print $1}')
+```
 最后附上完整脚本
 ```shell
 
@@ -296,6 +294,5 @@ case $1 in
     ;;
    *)
       echo $"Usage: $0 {start|stop|restart}"  
-发布于 2020-05-27
 
 ```

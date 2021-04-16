@@ -36,39 +36,53 @@
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
 <li><a href="#1">1. 安装</a><ul>
 <li><a href="#11">1.1. 安装前提</a></li>
-<li><a href="#12-for-all-nodes">1.2. 安装组件 For all nodes</a></li>
-<li><a href="#13-master">1.3. 初始化集群控制平台节点 master</a></li>
-<li><a href="#14-pod">1.4. 安装pod网络插件</a><ul>
-<li><a href="#141-flannel">1.4.1. 使用 flannel插件</a></li>
+<li><a href="#12">1.2. 自定义安装</a><ul>
+<li><a href="#121">1.2.1. 所有节点安装组件</a></li>
+<li><a href="#122-master">1.2.2. master节点</a><ul>
+<li><a href="#1221">1.2.2.1. 初始化</a></li>
+<li><a href="#1222">1.2.2.2. 权限配置</a></li>
+<li><a href="#1223">1.2.2.3. 网络配置</a><ul>
+<li><a href="#12231-flannel">1.2.2.3.1. 使用 flannel插件</a></li>
 </ul>
 </li>
-<li><a href="#15-worknode">1.5. Worknode 加入</a></li>
-<li><a href="#16">1.6. 安装遇到的问题汇总</a><ul>
-<li><a href="#161-not-ready">1.6.1. not-ready</a></li>
+<li><a href="#1224">1.2.2.4. 其他</a></li>
 </ul>
 </li>
-<li><a href="#17">1.7. 其他</a><ul>
-<li><a href="#171-cgroups">1.7.1. 进程对硬件资源使用的限制(cgroups)</a></li>
+<li><a href="#123-work">1.2.3. Work节点初始化</a></li>
 </ul>
 </li>
+<li><a href="#13">1.3. 安装遇到的问题汇总</a><ul>
+<li><a href="#131-not-ready">1.3.1. not-ready</a></li>
 </ul>
 </li>
-<li><a href="#_1">第三方管理安装工具</a></li>
+<li><a href="#14">1.4. 其他</a><ul>
+<li><a href="#141-cgroups">1.4.1. 进程对硬件资源使用的限制(cgroups)</a></li>
+</ul>
+</li>
+<li><a href="#15">1.5. 第三方管理安装工具</a></li>
+<li><a href="#16">1.6. 脚本汇总</a></li>
+</ul>
+</li>
 <li><a href="#2">2. 卸载</a></li>
-<li><a href="#kuberneters">公有云上部署 kuberneters</a></li>
+<li><a href="#3-kuberneters">3. 公有云上部署 kuberneters</a></li>
 </ul>
 </div>
 <h1 id="1">1. 安装</h1>
 <h2 id="11">1.1. 安装前提</h2>
 <ol>
-<li>一台或多台运行以下其中一项的计算机：<br />
-    Ubuntu 16.04以上<br />
-    Debian 9+<br />
-    CentOS的7<br />
-    红帽企业Linux（RHEL）7<br />
-    Fedora 25+<br />
-    HypriotOS v1.0.1 +<br />
-    容器Linux（已通过1800.6.0测试）</li>
+<li>一台或多台运行以下其中一项的计算机：</li>
+</ol>
+<div class="hlcode"><pre>    <span class="n">Ubuntu</span> <span class="mf">16.04</span><span class="err">以上</span>
+    <span class="n">Debian</span> <span class="mi">9</span><span class="o">+</span>
+    <span class="n">CentOS</span><span class="err">的</span><span class="mi">7</span>
+    <span class="err">红帽企业</span><span class="n">Linux</span><span class="err">（</span><span class="n">RHEL</span><span class="err">）</span><span class="mi">7</span>
+    <span class="n">Fedora</span> <span class="mi">25</span><span class="o">+</span>
+    <span class="n">HypriotOS</span> <span class="n">v1</span><span class="mf">.0.1</span> <span class="o">+</span>
+    <span class="err">容器</span><span class="n">Linux</span><span class="err">（已通过</span><span class="mf">1800.6.0</span><span class="err">测试）</span>
+</pre></div>
+
+
+<ol>
 <li>每台机器2 GB或更多的RAM（更少的空间将为您的应用程序留出很少的空间）</li>
 <li>2个或更多CPU</li>
 <li>群集中所有计算机之间的完整网络连接（可以使用公用或专用网络）</li>
@@ -82,56 +96,96 @@
 <span class="cp"># 永久禁用</span>
 <span class="n">sudo</span> <span class="n">sed</span> <span class="o">-</span><span class="n">i</span> <span class="s">&quot;/ swap / s/^/#/&quot;</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">fstab</span>
 <span class="n">sudo</span> <span class="n">swapoff</span> <span class="o">-</span><span class="n">a</span>
+<span class="cp"># 8. 关闭防火墙</span>
+<span class="n">sudo</span> <span class="n">ufw</span> <span class="n">disable</span>
 </pre></div>
 
 
-<ol>
-<li>关闭防火墙</li>
-</ol>
-<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">ufw</span> <span class="n">disable</span>
+<h2 id="12">1.2. 自定义安装</h2>
+<h3 id="121">1.2.1. 所有节点安装组件</h3>
+<p>集群中的<strong>所有节点</strong>需要安装<br />
+1. <code>kubeadm</code> :引导启动集群的 the command to bootstrap the cluster.<br />
+2. <code>kubelet</code> :在所有节点上执行启动pod及容器的组件 the component that runs on all of the machines in your cluster and does things like starting pods and containers.<br />
+3. <code>kubectl</code> :与集群沟通工具 the command line util to talk to your cluster.<br />
+4. <code>docker</code>：</p>
+<div class="hlcode"><pre><span class="c1"># 国内建议更换镜像 </span>
+apt<span class="o">-</span>get update <span class="o">&amp;&amp;</span> apt<span class="o">-</span>get install <span class="o">-</span>y apt<span class="o">-</span>transport<span class="o">-</span>https
+curl https<span class="o">://</span>mirrors.aliyun.com<span class="o">/</span>kubernetes<span class="o">/</span>apt<span class="o">/</span>doc<span class="o">/</span>apt<span class="o">-</span>key.gpg <span class="o">|</span> apt<span class="o">-</span>key add <span class="o">-</span>
+cat <span class="o">&lt;&lt;</span>EOF <span class="o">&gt;/</span>etc<span class="o">/</span>apt<span class="o">/</span>sources.list.d<span class="o">/</span>kubernetes.list
+deb https<span class="o">://</span>mirrors.aliyun.com<span class="o">/</span>kubernetes<span class="o">/</span>apt<span class="o">/</span> kubernetes<span class="o">-</span>xenial main
+EOF
+apt<span class="o">-</span>get update
+<span class="c1"># 安装 kubelet kubeadm kubectl</span>
+sudo apt<span class="o">-</span>get install <span class="o">-</span>y kubelet<span class="o">=</span><span class="m">1.15.0-00</span> kubeadm<span class="o">=</span><span class="m">1.15.0-00</span>  kubectl<span class="o">=</span><span class="m">1.15.0-00</span> 
+<span class="c1"># 标记该软件包不被自动更新</span>
+sudo apt<span class="o">-</span>mark hold kubelet kubeadm kubectl
+<span class="c1"># 安装docker</span>
+curl <span class="o">-</span>fsSL https<span class="o">://</span>get.docker.com <span class="o">|</span> bash <span class="o">-</span>s docker <span class="o">--</span>mirror Aliyun
+
+<span class="c1"># 修改docker 镜像</span>
+
+sudo mkdir <span class="o">-</span>p <span class="o">/</span>etc<span class="o">/</span>docker
+sudo tee <span class="o">/</span>etc<span class="o">/</span>docker<span class="o">/</span>daemon.json <span class="o">&lt;&lt;-</span><span class="s">&#39;EOF&#39;</span>
+
+<span class="p">{</span>
+    <span class="s">&quot;registry-mirrors&quot;</span><span class="o">:</span> <span class="p">[</span>
+      <span class="s">&quot;http://hub-mirror.c.163.com&quot;</span><span class="p">,</span>
+      <span class="s">&quot;https://docker.mirrors.ustc.edu.cn&quot;</span>
+      <span class="p">]</span>
+
+<span class="p">}</span>
+EOF
+sudo systemctl daemon<span class="o">-</span>reload
+sudo systemctl restart docker
+
+
+<span class="c1"># FOR GPU</span>
+
+sudo mkdir <span class="o">-</span>p <span class="o">/</span>etc<span class="o">/</span>docker
+sudo tee <span class="o">/</span>etc<span class="o">/</span>docker<span class="o">/</span>daemon.json <span class="o">&lt;&lt;-</span><span class="s">&#39;EOF&#39;</span>
+
+<span class="p">{</span>
+    <span class="s">&quot;graph&quot;</span><span class="o">:</span><span class="s">&quot;/data/docker&quot;</span><span class="p">,</span>
+    <span class="s">&quot;default-runtime&quot;</span><span class="o">:</span> <span class="s">&quot;nvidia&quot;</span><span class="p">,</span>
+    <span class="s">&quot;runtimes&quot;</span><span class="o">:</span> <span class="p">{</span>
+        <span class="s">&quot;nvidia&quot;</span><span class="o">:</span> <span class="p">{</span>
+            <span class="s">&quot;path&quot;</span><span class="o">:</span> <span class="s">&quot;/usr/bin/nvidia-container-runtime&quot;</span><span class="p">,</span>
+            <span class="s">&quot;runtimeArgs&quot;</span><span class="o">:</span> <span class="p">[]</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="s">&quot;registry-mirrors&quot;</span><span class="o">:</span> <span class="p">[</span>
+      <span class="s">&quot;https://registry.docker-cn.com&quot;</span><span class="p">,</span>
+      <span class="s">&quot;http://hub-mirror.c.163.com&quot;</span><span class="p">,</span>
+      <span class="s">&quot;https://docker.mirrors.ustc.edu.cn&quot;</span>
+      <span class="p">]</span>
+
+<span class="p">}</span>
+EOF
+sudo systemctl daemon<span class="o">-</span>reload
+sudo systemctl restart docker
+
+
+<span class="c1">#--------------------</span>
+<span class="c1">### 官方指令</span>
+sudo apt<span class="o">-</span>get update <span class="o">&amp;&amp;</span> sudo apt<span class="o">-</span>get install <span class="o">-</span>y apt<span class="o">-</span>transport<span class="o">-</span>https curl
+curl <span class="o">-</span>s https<span class="o">://</span>packages.cloud.google.com<span class="o">/</span>apt<span class="o">/</span>doc<span class="o">/</span>apt<span class="o">-</span>key.gpg <span class="o">|</span> sudo apt<span class="o">-</span>key add <span class="o">-</span>
+cat <span class="o">&lt;&lt;</span>EOF <span class="o">|</span> sudo tee <span class="o">/</span>etc<span class="o">/</span>apt<span class="o">/</span>sources.list.d<span class="o">/</span>kubernetes.list
+deb https<span class="o">://</span>apt.kubernetes.io<span class="o">/</span> kubernetes<span class="o">-</span>xenial main
+EOF
+sudo apt<span class="o">-</span>get update
+<span class="c1"># 安装 kubelet kubeadm kubectl</span>
+sudo apt<span class="o">-</span>get install <span class="o">-</span>y kubelet kubeadm kubectl  
+<span class="c1"># 标记该软件包不被自动更新</span>
+sudo apt<span class="o">-</span>mark hold kubelet kubeadm kubectl
 </pre></div>
 
 
-<h2 id="12-for-all-nodes">1.2. 安装组件 For all nodes</h2>
-<p>集群中的<strong>所有节点</strong>需要安装 1.<code>kubeadm</code> ,2.<code>kubelet</code> , 3.<code>kubectl</code> 4.<code>docker</code>：<br />
-<code>kubeadm</code>: 引导启动集群的 the command to bootstrap the cluster.<br />
-<code>kubelet</code>: 再所有节点上执行启动pod及容器的组件 the component that runs on all of the machines in your cluster and does things like starting pods and containers.<br />
-<code>kubectl</code>: 与集群沟通工具 the command line util to talk to your cluster.</p>
-<div class="hlcode"><pre><span class="cp"># 国内建议更换镜像 </span>
-<span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span> <span class="o">&amp;&amp;</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">apt</span><span class="o">-</span><span class="n">transport</span><span class="o">-</span><span class="n">https</span>
-<span class="n">curl</span> <span class="n">https</span><span class="o">:</span><span class="c1">//mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg | apt-key add -</span>
-<span class="n">cat</span> <span class="o">&lt;&lt;</span><span class="n">EOF</span> <span class="o">&gt;/</span><span class="n">etc</span><span class="o">/</span><span class="n">apt</span><span class="o">/</span><span class="n">sources</span><span class="p">.</span><span class="n">list</span><span class="p">.</span><span class="n">d</span><span class="o">/</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">list</span>
-<span class="n">deb</span> <span class="n">https</span><span class="o">:</span><span class="c1">//mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main</span>
-<span class="n">EOF</span>
-<span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
-<span class="cp"># 安装 kubelet kubeadm kubectl</span>
-<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">kubelet</span><span class="o">=</span><span class="mf">1.15.0</span><span class="o">-</span><span class="mo">00</span> <span class="n">kubeadm</span><span class="o">=</span><span class="mf">1.15.0</span><span class="o">-</span><span class="mo">00</span>  <span class="n">kubectl</span><span class="o">=</span><span class="mf">1.15.0</span><span class="o">-</span><span class="mo">00</span> 
-<span class="cp"># 标记该软件包不被自动更新</span>
-<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">mark</span> <span class="n">hold</span> <span class="n">kubelet</span> <span class="n">kubeadm</span> <span class="n">kubectl</span>
-<span class="cp"># 安装docker</span>
-<span class="n">curl</span> <span class="o">-</span><span class="n">fsSL</span> <span class="n">https</span><span class="o">:</span><span class="c1">//get.docker.com | bash -s docker --mirror Aliyun</span>
-
-
-<span class="cp">#--------------------</span>
-<span class="cp">### 官方指令</span>
-<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span> <span class="o">&amp;&amp;</span> <span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">apt</span><span class="o">-</span><span class="n">transport</span><span class="o">-</span><span class="n">https</span> <span class="n">curl</span>
-<span class="n">curl</span> <span class="o">-</span><span class="n">s</span> <span class="n">https</span><span class="o">:</span><span class="c1">//packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -</span>
-<span class="n">cat</span> <span class="o">&lt;&lt;</span><span class="n">EOF</span> <span class="o">|</span> <span class="n">sudo</span> <span class="n">tee</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">apt</span><span class="o">/</span><span class="n">sources</span><span class="p">.</span><span class="n">list</span><span class="p">.</span><span class="n">d</span><span class="o">/</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">list</span>
-<span class="n">deb</span> <span class="n">https</span><span class="o">:</span><span class="c1">//apt.kubernetes.io/ kubernetes-xenial main</span>
-<span class="n">EOF</span>
-<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
-<span class="cp"># 安装 kubelet kubeadm kubectl</span>
-<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">kubelet</span> <span class="n">kubeadm</span> <span class="n">kubectl</span>  
-<span class="cp"># 标记该软件包不被自动更新</span>
-<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">mark</span> <span class="n">hold</span> <span class="n">kubelet</span> <span class="n">kubeadm</span> <span class="n">kubectl</span>
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">enable</span> <span class="n">kubelet</span>
 </pre></div>
 
 
-<div class="hlcode"><pre><span class="n">systemctl</span> <span class="n">enable</span> <span class="n">kubelet</span>
-</pre></div>
-
-
-<h2 id="13-master">1.3. 初始化集群控制平台节点 master</h2>
+<h3 id="122-master">1.2.2. master节点</h3>
+<h4 id="1221">1.2.2.1. 初始化</h4>
 <div class="hlcode"><pre><span class="cp"># 官方指令</span>
 <span class="n">kubeadm</span> <span class="n">init</span>
 
@@ -163,6 +217,7 @@
 </pre></div>
 
 
+<h4 id="1222">1.2.2.2. 权限配置</h4>
 <p>如果期望以常规用户（运行，执行以下命令 ：</p>
 <div class="hlcode"><pre><span class="cp">#root用户也要</span>
 <span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="err">$</span><span class="n">HOME</span><span class="o">/</span><span class="p">.</span><span class="n">kube</span>
@@ -176,40 +231,15 @@
 </pre></div>
 
 
-<p>使用<code>kubeadm init</code>设置集群时，要记住几点，并且在Kubernetes站点kubeadm cluster create上有明确记录：</p>
-<ol>
-<li>如果您已经创建了先前的集群，则 <code>kubeadm reset</code></li>
-<li>从主目录或根目录中删除<code>.kube</code>文件夹（也可以使用systemctl停止kubelet，以实现平稳设置）</li>
-<li>永久禁用计算机上的交换<code>swap</code>，尤其是在重新引导Linux系统时</li>
-<li>别忘了，根据网站上（不是Kubernetes网站）上提供的说明安装 a pod network add-on 插件。</li>
-<li>遵循kubeadm在命令窗口上给出的后期初始化步骤。</li>
-</ol>
-<div class="hlcode"><pre><span class="n">docker</span> <span class="n">images</span>
-
-<span class="o">&gt;&gt;&gt;</span>
-<span class="n">registry</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">google_containers</span><span class="o">/</span><span class="n">kube</span><span class="o">-</span><span class="n">proxy</span>                <span class="n">v1</span><span class="mf">.17.0</span>             <span class="mi">7</span><span class="n">d54289267dc</span>        <span class="mi">10</span> <span class="n">days</span> <span class="n">ago</span>         <span class="mi">116</span><span class="n">MB</span>
-<span class="n">registry</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">google_containers</span><span class="o">/</span><span class="n">kube</span><span class="o">-</span><span class="n">scheduler</span>            <span class="n">v1</span><span class="mf">.17.0</span>             <span class="mi">78</span><span class="n">c190f736b1</span>        <span class="mi">10</span> <span class="n">days</span> <span class="n">ago</span>         <span class="mf">94.4</span><span class="n">MB</span>
-<span class="n">registry</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">google_containers</span><span class="o">/</span><span class="n">kube</span><span class="o">-</span><span class="n">apiserver</span>            <span class="n">v1</span><span class="mf">.17.0</span>             <span class="mi">0</span><span class="n">cae8d5cc64c</span>        <span class="mi">10</span> <span class="n">days</span> <span class="n">ago</span>         <span class="mi">171</span><span class="n">MB</span>
-<span class="n">registry</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">google_containers</span><span class="o">/</span><span class="n">kube</span><span class="o">-</span><span class="n">controller</span><span class="o">-</span><span class="n">manager</span>   <span class="n">v1</span><span class="mf">.17.0</span>             <span class="mi">5</span><span class="n">eb3b7486872</span>        <span class="mi">10</span> <span class="n">days</span> <span class="n">ago</span>         <span class="mi">161</span><span class="n">MB</span>
-<span class="n">registry</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">google_containers</span><span class="o">/</span><span class="n">coredns</span>                   <span class="mf">1.6.5</span>               <span class="mf">70f</span><span class="mi">311871</span><span class="n">ae1</span>        <span class="mi">6</span> <span class="n">weeks</span> <span class="n">ago</span>         <span class="mf">41.6</span><span class="n">MB</span>
-<span class="n">registry</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">google_containers</span><span class="o">/</span><span class="n">etcd</span>                      <span class="mf">3.4.3</span><span class="o">-</span><span class="mi">0</span>             <span class="mi">303</span><span class="n">ce5db0e90</span>        <span class="mi">7</span> <span class="n">weeks</span> <span class="n">ago</span>         <span class="mi">288</span><span class="n">MB</span>
-<span class="n">registry</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">google_containers</span><span class="o">/</span><span class="n">pause</span>                     <span class="mf">3.1</span>                 <span class="n">da86e6ba6ca1</span>        <span class="mi">24</span> <span class="n">months</span> <span class="n">ago</span>       <span class="mi">742</span><span class="n">kB</span>
-</pre></div>
-
-
-<p>另外，请不要忘记执行以下命令以在创建的集群上启用调度</p>
-<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">taint</span> <span class="n">nodes</span> <span class="o">--</span><span class="n">all</span> <span class="n">node</span><span class="o">-</span><span class="n">role</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">master</span><span class="o">-</span>
-</pre></div>
-
-
-<h2 id="14-pod">1.4. 安装pod网络插件</h2>
+<h4 id="1223">1.2.2.3. 网络配置</h4>
+<p>1.3. 安装pod网络插件</p>
 <p>使用kubectl选择合适的网络组件</p>
 <div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="o">&lt;</span><span class="n">add</span><span class="o">-</span><span class="n">on</span><span class="p">.</span><span class="n">yaml</span><span class="o">&gt;</span>
 </pre></div>
 
 
 <p>每个群集<strong>只能</strong>安装一种pod网络插件，且每个群集<strong>必需</strong>有一个pod网络插件，使得pods之间可以通讯</p>
-<h3 id="141-flannel">1.4.1. 使用 flannel插件</h3>
+<h5 id="12231-flannel">1.2.2.3.1. 使用 flannel插件</h5>
 <p>要求：</p>
 <ol>
 <li>再执行 <code>kubeadm init</code> 时添加<code>--pod-network-cidr=10.244.0.0/16</code>参数</li>
@@ -223,14 +253,17 @@
 <ol>
 <li>设IPv4流量通过路由表</li>
 </ol>
-<div class="hlcode"><pre><span class="n">sysctl</span> <span class="n">net</span><span class="p">.</span><span class="n">bridge</span><span class="p">.</span><span class="n">bridge</span><span class="o">-</span><span class="n">nf</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">iptables</span><span class="o">=</span><span class="mi">1</span> 
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">sysctl</span> <span class="n">net</span><span class="p">.</span><span class="n">bridge</span><span class="p">.</span><span class="n">bridge</span><span class="o">-</span><span class="n">nf</span><span class="o">-</span><span class="n">call</span><span class="o">-</span><span class="n">iptables</span><span class="o">=</span><span class="mi">1</span> 
 </pre></div>
 
 
 <ol>
 <li>确保防火墙规则允许参与覆盖网络的所有主机的UDP端口8285和8472通信</li>
 </ol>
-<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="o">:</span><span class="c1">//raw.githubusercontent.com/coreos/flannel/2140ac876ef134e0ed5af15c65e414cf26827915/Documentation/kube-flannel.yml</span>
+<div class="hlcode"><pre><span class="cp"># 推荐（国内阿里）</span>
+<span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="o">:</span><span class="c1">//raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel-aliyun.yml</span>
+<span class="cp"># 官方</span>
+<span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="o">:</span><span class="c1">//raw.githubusercontent.com/coreos/flannel/2140ac876ef134e0ed5af15c65e414cf26827915/Documentation/kube-flannel.yml</span>
 </pre></div>
 
 
@@ -388,22 +421,67 @@
 </pre></div>
 
 
-<h2 id="15-worknode">1.5. Worknode 加入</h2>
+<h4 id="1224">1.2.2.4. 其他</h4>
+<p>使用<code>kubeadm init</code>设置集群时，要记住几点，并且在Kubernetes站点kubeadm cluster create上有明确记录：</p>
+<ol>
+<li>如果您已经创建了先前的集群，则 <code>kubeadm reset</code></li>
+<li>从主目录或根目录中删除<code>.kube</code>文件夹（也可以使用systemctl停止kubelet，以实现平稳设置）</li>
+<li>永久禁用计算机上的交换<code>swap</code>，尤其是在重新引导Linux系统时</li>
+<li>别忘了，根据网站上（不是Kubernetes网站）上提供的说明安装 a pod network add-on 插件。</li>
+<li>遵循kubeadm在命令窗口上给出的后期初始化步骤。</li>
+</ol>
+<div class="hlcode"><pre><span class="n">docker</span> <span class="n">images</span>
+
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">registry</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">google_containers</span><span class="o">/</span><span class="n">kube</span><span class="o">-</span><span class="n">proxy</span>                <span class="n">v1</span><span class="mf">.17.0</span>             <span class="mi">7</span><span class="n">d54289267dc</span>        <span class="mi">10</span> <span class="n">days</span> <span class="n">ago</span>         <span class="mi">116</span><span class="n">MB</span>
+<span class="n">registry</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">google_containers</span><span class="o">/</span><span class="n">kube</span><span class="o">-</span><span class="n">scheduler</span>            <span class="n">v1</span><span class="mf">.17.0</span>             <span class="mi">78</span><span class="n">c190f736b1</span>        <span class="mi">10</span> <span class="n">days</span> <span class="n">ago</span>         <span class="mf">94.4</span><span class="n">MB</span>
+<span class="n">registry</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">google_containers</span><span class="o">/</span><span class="n">kube</span><span class="o">-</span><span class="n">apiserver</span>            <span class="n">v1</span><span class="mf">.17.0</span>             <span class="mi">0</span><span class="n">cae8d5cc64c</span>        <span class="mi">10</span> <span class="n">days</span> <span class="n">ago</span>         <span class="mi">171</span><span class="n">MB</span>
+<span class="n">registry</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">google_containers</span><span class="o">/</span><span class="n">kube</span><span class="o">-</span><span class="n">controller</span><span class="o">-</span><span class="n">manager</span>   <span class="n">v1</span><span class="mf">.17.0</span>             <span class="mi">5</span><span class="n">eb3b7486872</span>        <span class="mi">10</span> <span class="n">days</span> <span class="n">ago</span>         <span class="mi">161</span><span class="n">MB</span>
+<span class="n">registry</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">google_containers</span><span class="o">/</span><span class="n">coredns</span>                   <span class="mf">1.6.5</span>               <span class="mf">70f</span><span class="mi">311871</span><span class="n">ae1</span>        <span class="mi">6</span> <span class="n">weeks</span> <span class="n">ago</span>         <span class="mf">41.6</span><span class="n">MB</span>
+<span class="n">registry</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">google_containers</span><span class="o">/</span><span class="n">etcd</span>                      <span class="mf">3.4.3</span><span class="o">-</span><span class="mi">0</span>             <span class="mi">303</span><span class="n">ce5db0e90</span>        <span class="mi">7</span> <span class="n">weeks</span> <span class="n">ago</span>         <span class="mi">288</span><span class="n">MB</span>
+<span class="n">registry</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">google_containers</span><span class="o">/</span><span class="n">pause</span>                     <span class="mf">3.1</span>                 <span class="n">da86e6ba6ca1</span>        <span class="mi">24</span> <span class="n">months</span> <span class="n">ago</span>       <span class="mi">742</span><span class="n">kB</span>
+</pre></div>
+
+
+<p>另外，请不要忘记执行以下命令以在创建的集群上启用调度</p>
+<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">taint</span> <span class="n">nodes</span> <span class="o">--</span><span class="n">all</span> <span class="n">node</span><span class="o">-</span><span class="n">role</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">master</span><span class="o">-</span>
+</pre></div>
+
+
+<h3 id="123-work">1.2.3. Work节点初始化</h3>
 <p>在worknode 上运行以下命令 加入集群</p>
-<div class="hlcode"><pre><span class="n">kubeadm</span> <span class="n">join</span> <span class="mf">172.24.195.43</span><span class="o">:</span><span class="mi">6443</span> <span class="o">--</span><span class="n">token</span> <span class="n">bdibtv</span><span class="mf">.8</span><span class="n">iu07mfcpssfdrmg</span> \
-    <span class="o">--</span><span class="n">discovery</span><span class="o">-</span><span class="n">token</span><span class="o">-</span><span class="n">ca</span><span class="o">-</span><span class="n">cert</span><span class="o">-</span><span class="n">hash</span> <span class="n">sha256</span><span class="o">:</span><span class="mi">6732957</span><span class="n">bd86580ac23b70bb7a1a0135149db580e3f25a7ce24c4c1409cd5b923</span>
+<div class="hlcode"><pre><span class="nx">kubeadm</span> <span class="nb">token</span> <span class="nb">create</span> <span class="o">--</span><span class="nx">print</span><span class="na">-join-command</span>
+<span class="o">&gt;&gt;&gt;&gt;</span>
+
+<span class="nx">kubeadm</span> <span class="k">join</span> <span class="o">&lt;</span><span class="nx">ip</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="nb">port</span><span class="o">&gt;</span> <span class="o">--</span><span class="nb">token</span> <span class="o">&lt;</span><span class="nb">token</span><span class="o">&gt;</span>
+
+<span class="nx">kubeadm</span> <span class="k">join</span> <span class="mf">172.24.195.43</span><span class="p">:</span><span class="mi">6443</span> <span class="o">--</span><span class="nb">token</span> <span class="nx">bdibtv.8iu07mfcpssfdrmg</span> <span class="o">\</span>
+    <span class="o">--</span><span class="nx">discovery</span><span class="na">-token-ca-cert-hash</span> <span class="nx">sha256</span><span class="p">:</span><span class="mi">6732957</span><span class="nx">bd86580ac23b70bb7a1a0135149db580e3f25a7ce24c4c1409cd5b923</span>
 </pre></div>
 
 
-<p>kubeadm join 192.168.1.66:6443 --token 8wnr18.w4d1q0tybbyf02mv \<br />
-    --discovery-token-ca-cert-hash sha256:4096879f382499fa82a935e7c10ded9c14fe56c155eef0b1170f2839d09489c5 </p>
-<h2 id="16">1.6. 安装遇到的问题汇总</h2>
-<h3 id="161-not-ready">1.6.1. not-ready</h3>
-<div class="hlcode"><pre><span class="nl">https:</span><span class="c1">//stackoverflow.com/questions/47107117/how-to-debug-when-kubernetes-nodes-are-in-not-ready-state</span>
+<p>如果忘记了tokne</p>
+<div class="hlcode"><pre><span class="cp">#查看token</span>
+<span class="n">kubeadm</span> <span class="n">token</span> <span class="n">list</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="cp"># 创建token</span>
+<span class="n">kubeadm</span> <span class="n">token</span> <span class="n">create</span>
+<span class="o">&gt;&gt;&gt;</span>
 </pre></div>
 
 
-<h2 id="17">1.7. 其他</h2>
+<h2 id="13">1.3. 安装遇到的问题汇总</h2>
+<h3 id="131-not-ready">1.3.1. not-ready</h3>
+<p>参考 <a href="https://stackoverflow.com/questions/47107117/how-to-debug-when-kubernetes-nodes-are-in-not-ready-state">Stackoverflow:How to debug when Kubernetes nodes are in 'Not Ready' state</a><br />
+https://stackoverflow.com/questions/47107117/how-to-debug-when-kubernetes-nodes-are-in-not-ready-state</p>
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">daemon</span><span class="o">-</span><span class="n">reload</span>
+<span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">restart</span> <span class="n">docker</span>
+<span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">restart</span> <span class="n">kubelet</span>
+<span class="n">sudo</span> <span class="n">systemctl</span> <span class="n">restart</span> <span class="n">kube</span><span class="o">-</span><span class="n">proxy</span>
+</pre></div>
+
+
+<h2 id="14">1.4. 其他</h2>
 <ol>
 <li>kubelet会 自动重启<br />
 The kubelet is now restarting every few seconds, as it waits in a crashloop for kubeadm to tell it what to do.</li>
@@ -443,7 +521,7 @@ The kubelet is now restarting every few seconds, as it waits in a crashloop for 
 </pre></div>
 
 
-<h3 id="171-cgroups">1.7.1. 进程对硬件资源使用的限制(cgroups)</h3>
+<h3 id="141-cgroups">1.4.1. 进程对硬件资源使用的限制(cgroups)</h3>
 <p><code>Cgroup</code>是control group的简写，属于Linux内核提供的一个特性，用于限制和隔离一组进程对系统资源的使用，也就是做资源QoS，这些资源主要包括CPU、内存、block I/O和网络带宽。Cgroup从2.6.24开始进入内核主线，目前各大发行版都默认打开了Cgroup特性。<br />
 Cgroups提供了以下四大功能:</p>
 <ol>
@@ -453,31 +531,66 @@ Cgroups提供了以下四大功能:</p>
 <li>进程控制（Control）：cgroups可以对进程组执行挂起、恢复等操作。</li>
 </ol>
 <p><img alt="" src="../../attach/images/2019-12-09-15-51-28.png" /></p>
-<h1 id="_1">第三方管理安装工具</h1>
+<h2 id="15">1.5. 第三方管理安装工具</h2>
 <p>推荐查阅<br />
 https://github.com/easzlab/kubeasz</p>
+<h2 id="16">1.6. 脚本汇总</h2>
+<p><strong>脚本汇总</strong></p>
+<div class="hlcode"><pre># 临时禁用 swap
+sudo swapoff -a
+
+# 永久禁用swap
+sudo sed -i &quot;/ swap / s/^/#/&quot; /etc/fstab
+sudo swapoff -a
+
+# 关闭防火墙
+sudo ufw disable
+
+
+
+
+export MASTER_IP=10.0.77.98
+# 替换 apiserver.demo 为 您想要的 dnsName
+export APISERVER_NAME=apiserver.demo
+# Kubernetes 容器组所在的网段，该网段安装完成后，由 kubernetes 创建，事先并不存在于您的物理网络中
+export POD_SUBNET=10.100.0.1/16
+echo &quot;<span class="cp">${</span><span class="n">MASTER_IP</span><span class="cp">}</span>    <span class="cp">${</span><span class="n">APISERVER_NAME</span><span class="cp">}</span>&quot; &gt;&gt; /etc/hosts
+curl -sSL https://kuboard.cn/install-script/v1.20.x/init_master.sh | sh -s 1.15.0
+</pre></div>
+
+
 <h1 id="2">2. 卸载</h1>
-<div class="hlcode"><pre><span class="n">kubeadm</span> <span class="n">reset</span>
-<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">purge</span> <span class="n">kubeadm</span> <span class="n">kubectl</span> <span class="n">kubelet</span> <span class="n">kubernetes</span><span class="o">-</span><span class="n">cni</span>
-<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">autoremove</span>  
+<div class="hlcode"><pre><span class="n">sudo</span> <span class="n">Yes</span><span class="o">|</span><span class="n">kubeadm</span> <span class="n">reset</span> 
+<span class="n">sudo</span> <span class="n">iptables</span> <span class="o">-</span><span class="n">F</span> <span class="o">&amp;&amp;</span> <span class="n">sudo</span> <span class="n">iptables</span> <span class="o">-</span><span class="n">t</span> <span class="n">nat</span> <span class="o">-</span><span class="n">F</span> <span class="o">&amp;&amp;</span> <span class="n">sudo</span> <span class="n">iptables</span> <span class="o">-</span><span class="n">t</span> <span class="n">mangle</span> <span class="o">-</span><span class="n">F</span> <span class="o">&amp;&amp;</span> <span class="n">sudo</span> <span class="n">iptables</span> <span class="o">-</span><span class="n">X</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="o">-</span><span class="n">y</span> <span class="n">purge</span> <span class="n">kubeadm</span> <span class="n">kubectl</span> <span class="n">kubelet</span> <span class="n">kubernetes</span><span class="o">-</span><span class="n">cni</span>
+<span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="o">-</span><span class="n">y</span> <span class="n">autoremove</span>  
 <span class="n">sudo</span> <span class="n">rm</span> <span class="o">-</span><span class="n">rf</span> <span class="o">~/</span><span class="p">.</span><span class="n">kube</span>
 </pre></div>
 
 
-<h1 id="kuberneters">公有云上部署 kuberneters</h1>
-<p>公有云<br />
-在公有云上使用kubeasz部署k8s集群需要注意以下几个常见问题。</p>
-<p>安全组<br />
+<h1 id="3-kuberneters">3. 公有云上部署 kuberneters</h1>
+<p>在公有云上使用kubeasz部署k8s集群需要注意以下几个常见问题。</p>
+<ol>
+<li>
+<p><strong>安全组</strong><br />
 注意虚机的安全组规则配置，一般集群内部节点之间端口放开即可；</p>
+</li>
+<li>
 <p>网络组件<br />
-一般公有云对网络限制较多，跨节点 pod 通讯需要使用 OVERLAY 添加报头；比如可以使用如下：(kubeasz 项目中已默认配置)</p>
-<p>flannel 使用 vxlan 模式：roles/flannel/defaults/main.yml<br />
+一般公有云对网络限制较多，跨节点 pod 通讯需要使用 OVERLAY 添加报头；比如可以使用如下：(kubeasz 项目中已默认配置)<br />
+flannel 使用 vxlan 模式：roles/flannel/defaults/main.yml<br />
 calico 开启 ipinip：roles/calico/defaults/main.yml<br />
-kube-router 开启 ipinip：roles/kube-router/defaults/main.yml<br />
-节点公网访问<br />
+kube-router 开启 ipinip：roles/kube-router/defaults/main.yml</p>
+</li>
+<li>
+<p>节点公网访问<br />
 可以在安装时每个节点绑定弹性公网地址(EIP)，装完集群解绑；也可以开通NAT网关，或者利用iptables自建上网网关等方式</p>
+</li>
+<li>
 <p>负载均衡<br />
 一般云厂商会限制使用keepalived+haproxy自建负载均衡，你可以根据云厂商文档使用云负载均衡（内网）四层TCP负载模式；</p>
+</li>
+</ol>
 <p>kubeasz 2x 版本已无需依赖外部负载均衡实现apiserver的高可用，详见 2x架构<br />
 kubeasz 1x 及以前版本需要负载均衡实现apiserver高可用，详见 1x架构<br />
 时间同步<br />

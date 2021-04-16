@@ -23,6 +23,7 @@ FFmpeg功能强大，用途广泛，大量用于视频网站和商业软件（�
 如果需要在Linux下进行H.264编码，需要先安装X264，
 
 ```shell
+apt-get install ffmpeg
 # libavcodec-dev
 # 
 # FFmpeg dev package
@@ -68,8 +69,8 @@ export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH
 
 echo $PKG_CONFIG_PATH
 ```
-# ffmpeg
-## 1.2. Tips
+# 2. ffmpeg
+## 2.1. Tips
 
 上面命令会输出很多冗余信息，加上`-hide_banner`参数，可以只显示元信息。
 
@@ -77,7 +78,7 @@ echo $PKG_CONFIG_PATH
 ```shell
 ffmpeg -i input.mp4 -hide_banner
 ```
-## 1.3. 验证
+## 2.2. 验证
 
 ```shell
 # 验证安装
@@ -88,14 +89,14 @@ ffmpeg version 3.4.8-0ubuntu0.2 Copyright (c) 2000-2020 the FFmpeg developers
 ```
 
 
-### 1.3.1. 支持的容器
+### 2.2.1. 支持的容器
 
 ```shell
 # 查看 FFmpeg 支持的容器。
 ffmpeg -formats
 ffmpeg -formats -hide_banner| grep "mp4" 
 ```
-### 1.3.2. 支持的编解码格式
+### 2.2.2. 支持的编解码格式
 ```shell 
 # 查看 FFmpeg 支持的编码格式。
 ffmpeg -codecs 
@@ -105,7 +106,7 @@ ffmpeg -codecs -hide_banner| grep "h264"
 ffmpeg -encoders -hide_banner| grep "h264" 
 ```
 
-#### 1.3.2.1. h264
+#### 2.2.2.1. h264
 
 `h264_amf` to access **AMD gpu**, (windows only)
 `h264_nvenc` use **nvidia gpu** cards (work with windows and linux)
@@ -116,7 +117,7 @@ ffmpeg -encoders -hide_banner| grep "h264"
 `h264_videotoolbox` use videotoolbox an API to access hardware on OS X
 
 
-### 1.3.3. 支持的硬件加速方法
+### 2.2.3. 支持的硬件加速方法
 
 ```shell
 ffmpeg -hwaccels -hide_banner
@@ -141,8 +142,8 @@ cuvid
 
 
 
-# 2. 组成
-## 2.1. 工具视角
+# 3. 组成
+## 3.1. 工具视角
 1）第一部分是四个作用不同的工具软件，分别是：ffmpeg.exe，ffplay.exe，ffserver.exe和ffprobe.exe。
 
 ffmpeg.exe：音视频转码、转换器
@@ -152,7 +153,7 @@ ffplay.exe：简单的音视频播放器
 ffserver.exe：流媒体服务器
 
 ffprobe.exe：简单的多媒体码流分析器
-## 2.2. SDK视角
+## 3.2. SDK视角
 FFmpeg主要由 `format`,`codec`,`util` 三大核心模块的功能。
 
 ```shell
@@ -165,11 +166,11 @@ libswresample-dev # 用于音频重采样和格式转换等功能
 libavutil-dev # 包含多媒体应用常用的简化编程的工具，如随机数生成器、数据结构、数学函数等功能
 ```
 
-### 2.2.1. format
-### 2.2.2. codec
-### 2.2.3. util
+### 3.2.1. format
+### 3.2.2. codec
+### 3.2.3. util
 
-# 3. FFmpeg 的使用格式
+# 4. FFmpeg 的使用格式
 FFmpeg 的命令行参数非常多，可以分成五个部分。
 
 ```shell
@@ -198,9 +199,26 @@ output.webm # 输出文件
 ffmpeg -i input.avi output.mp4
 ```
 
-# 4. 推流
+## 常见参数
 
-## 4.1. 推UDP协议
+```shell
+-re  # Read input at native frame rate
+```
+
+## 更多参数
+参考
+https://ffmpeg.org/ffmpeg-all.html#Main-options
+
+
+# 5. 推流
+
+常用参数
+```shell
+-stream_loop -1 # 循环
+
+```
+
+## 5.1. 推UDP协议
 
 
 ```shell
@@ -212,7 +230,7 @@ ffplay  udp://127.0.0.1:1234
 ffplay -f h264 udp://127.0.0.1:1234
 ```
 
-## 4.2. 推RTP协议
+## 5.2. 推RTP协议
 
 ```shell
 # push stream local
@@ -247,7 +265,7 @@ ffplay a.sdp -protocol_whitelist file,udp,rtp
 
 ```
 
-## 4.3. 推RTMP
+## 5.3. 推RTMP
 
 ```shell
 # push stream local
@@ -261,9 +279,11 @@ ffplay rtmp://192.168.0.157:1935/live/stream
 rtmp服务器的部署方法见这篇博客：https://blog.csdn.net/yeshennet/article/details/72240465
 
 
-# 5. 参考资料
 
-https://zhuanlan.zhihu.com/p/143195044
 
-[阮一峰的网络日志: FFmpeg 视频处理入门教程
+# 6. 参考资料
+
+1. https://zhuanlan.zhihu.com/p/143195044
+
+2. [阮一峰的网络日志: FFmpeg 视频处理入门教程
 ](http://www.ruanyifeng.com/blog/2020/01/ffmpeg.html)

@@ -1,5 +1,5 @@
 ---
-title: "xgboost--原生API使用"
+title: "xgboost--基于原生API使用"
 layout: page
 date: 2099-06-02 00:00
 ---
@@ -91,7 +91,8 @@ print(evals_result)
 >>>
 {'watchlist中的name': {'eval_metric 中的类型': [0.151299, 0.150435, 0.150391, 0.150028, 0.149955, 0.150004, 0.149852, 0.149685, 0.149008, 0.148895], 'auc': [0.719014, 0.72576, 0.73082, 0.733395, 0.738091, 0.74203, 0.745483, 0.747434, 0.750762, 0.754281]}}
 ```
-## 1.5. 模型保存
+## 1.5. 模型保存与加载
+### 1.5.1. 保存
 训练之后，您可以保存模型并将其转储出去。
 ```python
 bst.save_model('0001.model')
@@ -104,13 +105,13 @@ bst.dump_model('dump.raw.txt')
 # 转储模型和特征映射
 bst.dump_model('dump.raw.txt','featmap.txt')
 ```
-## 1.6. 加载模型
+### 1.5.2. 加载模型
 当您保存模型后, 您可以使用如下方式在任何时候加载模型文件
 ```python 
 bst = xgb.Booster({'nthread':4}) #init model
 bst.load_model("model.bin") # load data
 ```
-## 1.7. 预测
+## 1.6. 预测
 ```python 
 ypred = bst.predict(dtest)
 
@@ -119,9 +120,30 @@ type(ypred)
 numpy.array 
 
 ```
+### 1.6.1. 获取叶子节点
+```python
+#(叶节点索引)
+train_leaf_preds = bst.predict(dtrain, pred_leaf = True)
+type(train_leaf_preds)
+>>>
+numpy.array
+train_leaf_preds.shape
+>>>
+n x m(sample x trees)
 
-## 1.8. 绘图
-xgb 的 plotting（绘图）模块可以绘制出 importance（重要性）以及输出的 tree（树）.
+会输出每个样本在每个子树的哪个叶子上。它是一个的矩阵。每个子树的叶节点都是从1 开始编号的。
+```
+
+## 1.7. 树结构
+### 1.7.1. 结构化描述
+
+```python
+
+bst_df=bst.trees_to_dataframe()
+```
+
+### 1.7.2. 树结构可视化
+xgb 的 plotting（绘图）模块可以绘制出importance（重要性）以及输出的 tree（树）.
 前提：
 1. matplotlib
 2. graphviz
@@ -141,7 +163,7 @@ xgb.to_graphviz(bst, num_trees=2)
 ```
 
 
-## 1.9. GPU 加速
+## 1.8. GPU 加速
 xgboost的GPU 加速只支持 英伟达 显卡的CUDA 上，且只有在 P100 之后的显卡才效率的有显著提高。对Pascal架构之前的显卡会使得计算变得更慢。
 
 参考 ：https://xgboost.readthedocs.io/en/latest/gpu/index.html
@@ -149,9 +171,10 @@ xgboost的GPU 加速只支持 英伟达 显卡的CUDA 上，且只有在 P100 �
 **NOTE**
 Pascal架构作为 Maxwell 架构的升级版，2016 发布第一款产品 Tesla P100 (GP100) 
 
-## 1.10. 特征重要性
-评价特征重要性的指标：
+## 1.9. 特征重要性
 
+### 1.9.1. 量化指标
+评价特征重要性的指标：
 1. `weight`
     - 在这个树集合模型中，用该特征进行决策树分割的总次数
     - the number of times a feature is used to split the data across all trees.
@@ -184,3 +207,15 @@ score_dict=regr.get_booster().get_score(importance_type="gain")
 ```
 
 
+
+### 1.9.2. 可视化
+
+
+当您使用 IPython时, 你可以使用 to_graphviz 函数, 它可以将 target tree（目标树） 转换成 graphviz 实例. graphviz 实例会自动的在 IPython 上呈现.
+
+```python
+import xgboost as xgb
+
+xgb.plot_importance(bst)
+
+```

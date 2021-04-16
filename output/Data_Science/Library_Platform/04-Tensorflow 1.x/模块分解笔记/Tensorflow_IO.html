@@ -68,10 +68,11 @@
 <li><a href="#1434-padded_batch">1.4.3.4. padded_batch</a></li>
 <li><a href="#1435-repeat">1.4.3.5. repeat</a></li>
 <li><a href="#1436-prefetch">1.4.3.6.  prefetch</a></li>
+<li><a href="#1437-take-skip">1.4.3.7. take skip 划分数据集</a></li>
 </ul>
 </li>
 <li><a href="#144">1.4.4. 在训练中使用</a><ul>
-<li><a href="#1441-session">1.4.4.1. 在Session中使用</a></li>
+<li><a href="#1441-session">1.4.4.1. 在Session 模式下中使用</a></li>
 <li><a href="#1442-keras-tfdata">1.4.4.2. keras 里面使用tf.data</a></li>
 </ul>
 </li>
@@ -97,15 +98,15 @@
 </li>
 <li><a href="#224">2.2.4. 实践</a><ul>
 <li><a href="#2241-tfrecord">2.2.4.1. 存储为 TFrecord格式文件</a><ul>
-<li><a href="#_1">通用</a></li>
+<li><a href="#22411">2.2.4.1.1. 通用</a></li>
 </ul>
 </li>
-<li><a href="#tensor">将tensor 写入</a></li>
-<li><a href="#2242-tensorflow">2.2.4.2. 输入到tensorflow计算图中</a><ul>
-<li><a href="#22421">2.2.4.2.1. 导入</a></li>
-<li><a href="#22422">2.2.4.2.2. 序列化样本解析</a></li>
-<li><a href="#22423">2.2.4.2.3. 执行解析函数</a></li>
-<li><a href="#22424">2.2.4.2.4. 创建迭代器</a></li>
+<li><a href="#2242-tensor">2.2.4.2. 将tensor 写入</a></li>
+<li><a href="#2243-tensorflow">2.2.4.3. 输入到tensorflow计算图中</a><ul>
+<li><a href="#22431">2.2.4.3.1. 导入</a></li>
+<li><a href="#22432">2.2.4.3.2. 序列化样本解析</a></li>
+<li><a href="#22433">2.2.4.3.3. 执行解析函数</a></li>
+<li><a href="#22434">2.2.4.3.4. 创建迭代器</a></li>
 </ul>
 </li>
 </ul>
@@ -591,7 +592,18 @@ A: 当我们想要创建一个动态的dataset的时候</p>
 
 <p><strong>buffer_size 的理解</strong></p>
 <p>代表將被加入緩衝器的元素的<strong>最大数量</strong>。<br />
-buffer_size 需要合理取值，然而不当的buffer size，会导致shuffle无意义。如 <code>buffer_size=1</code></p>
+buffer_size 需要合理取值，然而不当的buffer size，会导致shuffle无意义。如 <code>buffer_size=1</code><br />
+需要明确的是：<br />
+1. 无论 ·<code>buffer_size</code> qqzhi</p>
+<p>No matter what buffer size you will choose, all samples will be used, it only affects the randomness of the shuffle.</p>
+<p>If buffer size is 100, it means that Tensorflow will keep a buffer of the next 100 samples, and will randomly select one those 100 samples. it then adds the next element to the buffer.</p>
+<p>so, if buffer_size = 1 there is no shuffle at all, and if buffer_size &gt; data_set_size a perfect uniform random shuffle is guaranteed.</p>
+<p>I would highly suggest to shuffle the data set before creating the TFrecords, and keep a small buffer size.</p>
+<p>154</p>
+<p>TL;DR Despite their similar names, these arguments have quite difference meanings. The buffer_size in Dataset.shuffle() can affect the randomness of your dataset, and hence the order in which elements are produced. The buffer_size in Dataset.prefetch() only affects the time it takes to produce the next element.</p>
+<p>The buffer_size argument in tf.data.Dataset.prefetch() and the output_buffer_size argument in tf.contrib.data.Dataset.map() provide a way to tune the performance of your input pipeline: both arguments tell TensorFlow to create a buffer of at most buffer_size elements, and a background thread to fill that buffer in the background. (Note that we removed the output_buffer_size argument from Dataset.map() when it moved from tf.contrib.data to tf.data. New code should use Dataset.prefetch() after map() to get the same behavior.)</p>
+<p>Adding a prefetch buffer can improve performance by overlapping the preprocessing of data with downstream computation. Typically it is most useful to add a small prefetch buffer (with perhaps just a single element) at the very end of the pipeline, but more complex pipelines can benefit from additional prefetching, especially when the time to produce a single element can vary.</p>
+<p>By contrast, the buffer_size argument to tf.data.Dataset.shuffle() affects the randomness of the transformation. We designed the Dataset.shuffle() transformation (like the tf.train.shuffle_batch() function that it replaces) to handle datasets that are too large to fit in memory. Instead of shuffling the entire dataset, it maintains a buffer of buffer_size elements, and randomly selects the next element from that buffer (replacing it with the next input element, if one is available). Changing the value of buffer_size affects how uniform the shuffling is: if buffer_size is greater than the number of elements in the dataset, you get a uniform shuffle; if it is 1 then you get no shuffling at all. For very large datasets, a typical "good enough" approach is to randomly shard the data into multiple files once before training, then shuffle the filenames uniformly, and then use a smaller shuffle buffer. However, the appropriate choice will depend on the exact nature of your training job</p>
 <p><img alt="dd" src="../../../../../attach/images/2019-07-25-10-26-19.png" /></p>
 <h4 id="1434-padded_batch">1.4.3.4. padded_batch</h4>
 <div class="hlcode"><pre><span class="n">dataset</span><span class="o">.</span><span class="n">padded_batch</span><span class="p">(</span>
@@ -636,8 +648,14 @@ buffer_size 需要合理取值，然而不当的buffer size，会导致shuffle�
 
 <p>count: (Optional.) A tf.int64 scalar tf.Tensor, representing the number of times the dataset should be repeated. The default behavior (if count is None or -1) is for the dataset be repeated indefinitely.(无限复制))</p>
 <h4 id="1436-prefetch">1.4.3.6.  prefetch</h4>
+<h4 id="1437-take-skip">1.4.3.7. take skip 划分数据集</h4>
+<div class="hlcode"><pre><span class="n">train_db</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>  <span class="c"># 前1000个batch</span>
+<span class="n">test_db</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>  <span class="c"># 跳过前1000，选取后面的</span>
+</pre></div>
+
+
 <h3 id="144">1.4.4. 在训练中使用</h3>
-<h4 id="1441-session">1.4.4.1. 在Session中使用</h4>
+<h4 id="1441-session">1.4.4.1. 在Session 模式下中使用</h4>
 <div class="hlcode"><pre><span class="n">iterator</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">make_one_shot_iterator</span><span class="p">()</span>
 <span class="n">next_example</span><span class="p">,</span> <span class="n">next_label</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
 <span class="n">loss</span> <span class="o">=</span> <span class="n">model_function</span><span class="p">(</span><span class="n">next_example</span><span class="p">,</span> <span class="n">next_label</span><span class="p">)</span>
@@ -758,7 +776,7 @@ Tensorflow为此提供了两个组件：<br />
 
 <h3 id="224">2.2.4. 实践</h3>
 <h4 id="2241-tfrecord">2.2.4.1. 存储为 TFrecord格式文件</h4>
-<h5 id="_1">通用</h5>
+<h5 id="22411">2.2.4.1.1. 通用</h5>
 <div class="hlcode"><pre><span class="n">float_list</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Int64List</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="nb">list</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
 <span class="n">feature_value</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Feature</span><span class="p">(</span><span class="n">FloatList</span><span class="o">=</span><span class="n">float_list</span><span class="p">)</span>
 <span class="n">feature_dict</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;feature_key&quot;</span><span class="p">,</span><span class="n">feature_value</span><span class="p">}</span>
@@ -781,7 +799,7 @@ Tensorflow为此提供了两个组件：<br />
 </pre></div>
 
 
-<h4 id="tensor">将tensor 写入</h4>
+<h4 id="2242-tensor">2.2.4.2. 将tensor 写入</h4>
 <div class="hlcode"><pre><span class="n">import</span> <span class="n">tensorflow</span> <span class="n">as</span> <span class="n">tf</span>
 
 <span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">],</span>
@@ -802,16 +820,16 @@ Tensorflow为此提供了两个组件：<br />
 </pre></div>
 
 
-<h4 id="2242-tensorflow">2.2.4.2. 输入到tensorflow计算图中</h4>
+<h4 id="2243-tensorflow">2.2.4.3. 输入到tensorflow计算图中</h4>
 <p>使用tf.data将TFrecord格式文件输入到tensorflow图中</p>
-<h5 id="22421">2.2.4.2.1. 导入</h5>
+<h5 id="22431">2.2.4.3.1. 导入</h5>
 <p>从多个tfrecord文件中导入数据到Dataset类</p>
 <div class="hlcode"><pre><span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;test.tfrecord&quot;</span><span class="p">,</span> <span class="s">&quot;test2.tfrecord&quot;</span><span class="p">]</span>
 <span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">TFRecordDataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span>
 </pre></div>
 
 
-<h5 id="22422">2.2.4.2.2. 序列化样本解析</h5>
+<h5 id="22432">2.2.4.3.2. 序列化样本解析</h5>
 <p>tfrecord文件是序列化样本，所以我们需要对每一个样本进行解析。 具体实现 通过dataset 的map方法，如下：</p>
 <div class="hlcode"><pre><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">parse_function</span><span class="p">)</span>
 <span class="c"># parse_function 解析函数</span>
@@ -925,13 +943,13 @@ parse_function 解析函数</p>
 </pre></div>
 
 
-<h5 id="22423">2.2.4.2.3. 执行解析函数</h5>
+<h5 id="22433">2.2.4.3.3. 执行解析函数</h5>
 <p>创建好解析函数后，将创建的parse_function送入dataset.map()得到新的数据集</p>
 <div class="hlcode"><pre><span class="n">new_dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">parse_function</span><span class="p">)</span>
 </pre></div>
 
 
-<h5 id="22424">2.2.4.2.4. 创建迭代器</h5>
+<h5 id="22434">2.2.4.3.4. 创建迭代器</h5>
 <p>后续与其他dataset 处理一致</p>
 <div class="hlcode"><pre><span class="n">iterator</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">make_one_shot_iterator</span><span class="p">()</span>
 </pre></div>

@@ -1,0 +1,240 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>线性回归模型 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Algorithm">Algorithm</a>&nbsp;»&nbsp;<a href="/Wiki/#-01-机器学习基础">01-机器学习基础</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-经典模型">02-经典模型</a>&nbsp;»&nbsp;线性回归模型</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">线性回归模型</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 概述</a></li>
+<li><a href="#2">2. 普通线性回归</a></li>
+<li><a href="#3-l2">3. 岭回归 L2</a><ul>
+<li><a href="#31">3.1. 内核岭回归</a></li>
+</ul>
+</li>
+<li><a href="#4-lasso-l1">4. LASSO L1 回归</a></li>
+<li><a href="#5-elasticnet-l1l2">5. ElasticNet 弹性网回归 L1+L2</a></li>
+</ul>
+</div>
+<h1 id="1">1. 概述</h1>
+<p>对于<br />
+$$y=wX+b$$</p>
+<p>求W，b</p>
+<h1 id="2">2. 普通线性回归</h1>
+<p>linear_model.LinearRegression 使用普通小二乘法OLS的线性回归</p>
+<div class="hlcode"><pre><span class="n">sklearn</span><span class="o">.</span><span class="n">linear_model</span><span class="o">.</span><span class="n">LinearRegression</span><span class="p">(</span><span class="n">fit_intercept</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">copy_X</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="c"># fit_intercept 拟合截距</span>
+<span class="c"># copy_X 在X.copy上操作</span>
+</pre></div>
+
+
+<p>$$ Loss=||y - Xw||^2 $$<br />
+$$ w=(X^TX)^{-1}X^Ty $$<br />
+权重w只与输入数据(x,y)相关,要求 X 不为全0 </p>
+<h1 id="3-l2">3. 岭回归 L2</h1>
+<p>$$ Loss=(y - Xw)^2 + alpha * w^2$$<br />
+β=(λI+K)−1yβ=(λI+K)−1y</p>
+<div class="hlcode"><pre><span class="n">sklearn</span><span class="o">.</span><span class="n">linear_model</span><span class="o">.</span><span class="n">Ridge</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">fit_intercept</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">copy_X</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="err">’</span><span class="n">auto</span><span class="err">’</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="c"># max_iter 共轭梯度求解器的最大迭代次数</span>
+<span class="c"># solver: 根据数据类型自动选择求解器。{&#39;auto&#39;，&#39;svd&#39;，&#39;cholesky&#39;，&#39;lsqr&#39;，&#39;sparse_cg&#39;，&#39;sag&#39;,&#39;saga&#39;}</span>
+</pre></div>
+
+
+<p><strong>参数解释</strong><br />
+1. solver [defualt='auto'] <br />
+   - <code>auto</code>:根据数据类型自动选择求解器<br />
+   - <code>svd</code> :奇异值分解SVD Singular Value Decomposition<br />
+   - <code>cholesky</code>: 使用标准的 <code>scipy.linalg.solve</code> 函数获得一个封闭解<br />
+   - <code>sparse_cg</code>: 使用<code>scipy.sparse.linalg.cg</code>中的共轭梯度解算器作为一种迭代算法，这个解算器比cholesky更适合于大规模数据（设置tol和max_iter的可能性）。<br />
+   -  <code>lsqr</code>:  使用 <code>scipy.sparse.linalg.lsqr</code> 求解，最快的迭代方法<br />
+   -  <code>sag</code>: 使用随机平均梯度下降<br />
+   -  <code>saga</code>: 使用其无偏版本随机平均梯度下降<br />
+2. max_iter<br />
+   - 'sparse_cg'和'lsqr'求解器，默认值由scipy.sparse.linalg确定<br />
+   - 'sag'求解器，默认值为1000</p>
+<p>linear_model.Ridge 岭回归，一种将L2作为正则化工具的线性小二乘回归<br />
+linear_model.RidgeCV 带交叉验证的岭回归<br />
+linear_model.RidgeClassiﬁer 岭回归的分类器<br />
+linear_model.RidgeClassiﬁerCV 带交叉验证的岭回归的分类器<br />
+linear_model.ridge_regression 【函数】用正太方程法求解岭回归</p>
+<h2 id="31">3.1. 内核岭回归</h2>
+<div class="hlcode"><pre><span class="n">sklearn</span><span class="o">.</span><span class="n">kernel_ridge</span><span class="o">.</span><span class="n">KernelRidge</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kernel</span><span class="o">=</span><span class="err">’</span><span class="n">linear</span><span class="err">’</span><span class="p">,</span> <span class="n">gamma</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">coef0</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">kernel_params</span><span class="o">=</span><span class="bp">None</span><span class="p">)[</span><span class="n">source</span><span class="p">]</span>
+</pre></div>
+
+
+<p><strong>参数解释</strong><br />
+1. alpha:<br />
+2. kernel : string or callable, default=”linear”<br />
+    Kernel mapping used internally. A callable should accept two arguments and the keyword arguments passed to this object as kernel_params, and should return a floating point number.<br />
+3. gamma : float, default=None<br />
+   - rbf、laplacian、多项式、指数chi2和sigmoid核的gamma参数。<br />
+4. degree : float, default=3<br />
+   - 只针对polynomial kernel核有效，对于其他核忽略<br />
+5. coef0 : float, default=1<br />
+    Zero coefficient for polynomial and sigmoid kernels. Ignored by other kernels.</p>
+<p>内核岭回归（KRR）将岭回归（具有L2-范数正则化的线性最小二乘）与<code>核技巧</code>结合在一起。</p>
+<p>KRR学习的模型的形式与支持向量回归（SVR）相同。但是，使用了不同的损失函数：KRR使用平方误差损失，而支持向量回归使用epsilon不敏感损失，两者均与12正则化结合。</p>
+<p>与SVR相比，KRR模型的拟合可以封闭形式进行，对于中等规模的数据集通常更快。另一方面，学习的模型是非稀疏的，因此比SVR慢，后者在预测时学习epsilon&gt; 0的稀疏模型。<br />
+</p>
+<h1 id="4-lasso-l1">4. LASSO L1 回归</h1>
+<p>$$Loss=\frac{1}{2 * n}  * (y - Xw)^2 + alpha * |w|$$<br />
+在sklearn中，lasso回归使用的就是坐标下降法</p>
+<div class="hlcode"><pre><span class="n">sklearn</span><span class="o">.</span><span class="n">linear_model</span><span class="o">.</span><span class="n">Lasso</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">fit_intercept</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">precompute</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">copy_X</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">warm_start</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">positive</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">selection</span><span class="o">=</span><span class="s">&#39;cyclic&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>参数解释</strong><br />
+1. precompute: <br />
+   - 是否使用预先计算的 Gram 矩阵来加速计算。<br />
+2. tol<br />
+   - 数据解算精度。<br />
+3. positive<br />
+   - positive: 强制系数为正值。</p>
+<ol>
+<li>selection[defualt='cyclic']: <ul>
+<li>cyclic: 循环每次迭代使用原来的seed</li>
+<li>random: 每次迭代都会更新一个seed。设置random 通常会使得收敛更加迅速，特别是设置tol&gt;1e-4。</li>
+</ul>
+</li>
+</ol>
+<p>linear_model.Lasso Lasso，使用L1作为正则化工具来训练的线性回归模型<br />
+linear_model.LassoCV 带交叉验证和正则化迭代路径的Lasso<br />
+linear_model.LassoLars 使用小角度回归求解的Lasso<br />
+linear_model.LassoLarsCV 带交叉验证的使用小角度回归求解的Lasso<br />
+linear_model.LassoLarsIC<br />
+使用BIC或AIC进行模型选择的，使用小角度回归求解的 Lasso<br />
+linear_model.MultiTaskLasso 使用L1 / L2混合范数作为正则化工具训练的多标签Lasso<br />
+linear_model.MultiTaskLassoCV<br />
+使用L1 / L2混合范数作为正则化工具训练的，带交叉验证 的多标签Lasso<br />
+linear_model.lasso_path 【函数】用坐标下降计算Lasso路径<br />
+</p>
+<h1 id="5-elasticnet-l1l2">5. ElasticNet 弹性网回归 L1+L2</h1>
+<div class="hlcode"><pre><span class="n">sklearn</span><span class="o">.</span><span class="n">linear_model</span><span class="o">.</span><span class="n">ElasticNet</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">l1_ratio</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">fit_intercept</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">precompute</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">copy_X</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">warm_start</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">positive</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">selection</span><span class="o">=</span><span class="err">’</span><span class="n">cyclic</span><span class="err">’</span>
+</pre></div>
+
+
+<p>$$ Loss=\frac{1}{2n}(y-Xw)^2+alpha<em>l1ratio</em>|w|+ \frac{alpha}{2}(1 - l1ratio) *w^2$$</p>
+<p>linear_model.ElasticNet 弹性网，一种将L1和L2组合作为正则化工具的线性回归<br />
+linear_model.ElasticNetCV 带交叉验证和正则化迭代路径的弹性网<br />
+linear_model.MultiTaskElasticNet 多标签弹性网<br />
+linear_model.MultiTaskElasticNetCV 带交叉验证的多标签弹性网<br />
+linear_model.enet_path 【函数】用坐标下降法计算弹性网的路径</p>
+<hr />
+<p>类/函数 含义<br />
+普通线性回归  <br />
+linear_model.LinearRegression 使用普通小二乘法OLS的线性回归</p>
+<p>岭回归  <br />
+linear_model.Ridge 岭回归，一种将L2作为正则化工具的线性小二乘回归<br />
+linear_model.RidgeCV 带交叉验证的岭回归<br />
+linear_model.RidgeClassiﬁer 岭回归的分类器<br />
+linear_model.RidgeClassiﬁerCV 带交叉验证的岭回归的分类器<br />
+linear_model.ridge_regression 【函数】用正太方程法求解岭回归<br />
+<br />
+LASSO  <br />
+linear_model.Lasso Lasso，使用L1作为正则化工具来训练的线性回归模型<br />
+linear_model.LassoCV 带交叉验证和正则化迭代路径的Lasso<br />
+linear_model.LassoLars 使用小角度回归求解的Lasso<br />
+linear_model.LassoLarsCV 带交叉验证的使用小角度回归求解的Lasso<br />
+linear_model.LassoLarsIC<br />
+使用BIC或AIC进行模型选择的，使用小角度回归求解的 Lasso<br />
+linear_model.MultiTaskLasso 使用L1 / L2混合范数作为正则化工具训练的多标签Lasso<br />
+linear_model.MultiTaskLassoCV<br />
+使用L1 / L2混合范数作为正则化工具训练的，带交叉验证 的多标签Lasso<br />
+linear_model.lasso_path 【函数】用坐标下降计算Lasso路径<br />
+<br />
+弹性网  <br />
+linear_model.ElasticNet 弹性网，一种将L1和L2组合作为正则化工具的线性回归<br />
+linear_model.ElasticNetCV 带交叉验证和正则化迭代路径的弹性网<br />
+linear_model.MultiTaskElasticNet 多标签弹性网<br />
+linear_model.MultiTaskElasticNetCV 带交叉验证的多标签弹性网<br />
+linear_model.enet_path 【函数】用坐标下降法计算弹性网的路径</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

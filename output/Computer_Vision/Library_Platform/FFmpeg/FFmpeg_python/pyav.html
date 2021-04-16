@@ -41,6 +41,138 @@
 </ul>
 </div>
 <p>官网 https://pyav.org/docs/stable/</p>
+<p>PyAV库使用介绍<br />
+PyAV<br />
+Posted by Shaozi on March 26, 2020<br />
+目前使用最广泛的视频编解码库为FFmepg，虽然该库有Python的封装ffmpeg-python，但是该封装功能简单，只能替代在python中调用命令行工具罢了。PyAV同样是FFmpeg封装，不过功能更为强大，能够灵活的编解码视频和音频，并且支持Python常用的数据格式（如numpy）。由于PyAV在ffmpeg的基础上进行开发，所以并不会提升编解码的效率。但是能够方便Python的开发者对视频或者音频数据进行处理。在模型的训练测试中能够发挥很好的作用。</p>
+<p>安装</p>
+<div class="hlcode"><pre><span class="cp"># 通过conda-forge，该方法会同时安装需要的ffmpeg库，比较方便</span>
+<span class="n">conda</span> <span class="n">install</span> <span class="n">av</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cp"># 如果想使用现有的ffmpeg库，可以使用pip安装</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">av</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cp"># 另外也可以通过源码安装</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">git</span><span class="err">@</span><span class="n">github</span><span class="p">.</span><span class="n">com</span><span class="o">:</span><span class="n">mikeboers</span><span class="o">/</span><span class="n">PyAV</span>
+<span class="n">cd</span> <span class="n">PyAV</span>
+<span class="n">source</span> <span class="n">scripts</span><span class="o">/</span><span class="n">activate</span><span class="p">.</span><span class="n">sh</span>
+<span class="cp">## Either install the testing dependencies:</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="o">--</span><span class="n">upgrade</span> <span class="o">-</span><span class="n">r</span> <span class="n">tests</span><span class="o">/</span><span class="n">requirements</span><span class="p">.</span><span class="n">txt</span>
+<span class="cp">## or have it all, including FFmpeg, built/installed for you:</span>
+<span class="p">.</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">build</span><span class="o">-</span><span class="n">deps</span>
+<span class="cp">## Build PyAV.</span>
+<span class="n">make</span>
+<span class="err">使用示例</span>
+</pre></div>
+
+
+<p>抽取所有帧</p>
+<div class="hlcode"><pre><span class="n">import</span> <span class="n">av</span>
+
+<span class="n">container</span> <span class="o">=</span> <span class="n">av</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="n">path_to_video</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">frame</span> <span class="n">in</span> <span class="n">container</span><span class="p">.</span><span class="n">decode</span><span class="p">(</span><span class="n">video</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span><span class="o">:</span>
+    <span class="n">frame</span><span class="p">.</span><span class="n">to_image</span><span class="p">().</span><span class="n">save</span><span class="p">(</span><span class="err">&#39;</span><span class="n">frame</span><span class="o">-%</span><span class="mo">04</span><span class="n">d</span><span class="p">.</span><span class="n">jpg</span><span class="err">&#39;</span> <span class="o">%</span> <span class="n">frame</span><span class="p">.</span><span class="n">index</span><span class="p">)</span>
+</pre></div>
+
+
+<p>抽取关键帧</p>
+<div class="hlcode"><pre><span class="n">import</span> <span class="n">av</span>
+<span class="n">import</span> <span class="n">av</span><span class="p">.</span><span class="n">datasets</span>
+
+
+<span class="n">content</span> <span class="o">=</span> <span class="err">&#39;</span><span class="n">video_pth</span><span class="err">&#39;</span>
+<span class="n">with</span> <span class="n">av</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="n">content</span><span class="p">)</span> <span class="n">as</span> <span class="n">container</span><span class="o">:</span>
+    <span class="err">#</span> <span class="n">Signal</span> <span class="n">that</span> <span class="n">we</span> <span class="n">only</span> <span class="n">want</span> <span class="n">to</span> <span class="n">look</span> <span class="n">at</span> <span class="n">keyframes</span><span class="p">.</span>     <span class="n">stream</span> <span class="o">=</span> <span class="n">container</span><span class="p">.</span><span class="n">streams</span><span class="p">.</span><span class="n">video</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">stream</span><span class="p">.</span><span class="n">codec_context</span><span class="p">.</span><span class="n">skip_frame</span> <span class="o">=</span> <span class="err">&#39;</span><span class="n">NONKEY</span><span class="err">&#39;</span>
+
+    <span class="k">for</span> <span class="n">frame</span> <span class="n">in</span> <span class="n">container</span><span class="p">.</span><span class="n">decode</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span><span class="o">:</span>
+
+        <span class="n">print</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span>
+
+        <span class="err">#</span> <span class="n">We</span> <span class="n">use</span> <span class="err">`</span><span class="n">frame</span><span class="p">.</span><span class="n">pts</span><span class="err">`</span> <span class="n">as</span> <span class="err">`</span><span class="n">frame</span><span class="p">.</span><span class="n">index</span><span class="err">`</span> <span class="n">won</span><span class="err">&#39;</span><span class="n">t</span> <span class="n">make</span> <span class="n">must</span> <span class="n">sense</span> <span class="n">with</span> <span class="n">the</span> <span class="err">`</span><span class="n">skip_frame</span><span class="err">`</span><span class="p">.</span>         <span class="n">frame</span><span class="p">.</span><span class="n">to_image</span><span class="p">().</span><span class="n">save</span><span class="p">(</span>
+            <span class="err">&#39;</span><span class="n">night</span><span class="o">-</span><span class="n">sky</span><span class="p">.{</span><span class="o">:</span><span class="mo">04</span><span class="n">d</span><span class="p">}.</span><span class="n">jpg</span><span class="err">&#39;</span><span class="p">.</span><span class="n">format</span><span class="p">(</span><span class="n">frame</span><span class="p">.</span><span class="n">pts</span><span class="p">),</span>
+            <span class="n">quality</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span>
+        <span class="p">)</span>
+</pre></div>
+
+
+<p>合成视频</p>
+<div class="hlcode"><pre><span class="n">import</span> <span class="n">numpy</span> <span class="n">as</span> <span class="n">np</span>
+<span class="n">import</span> <span class="n">av</span>
+
+<span class="n">duration</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="n">fps</span> <span class="o">=</span> <span class="mi">24</span>
+<span class="n">total_frames</span> <span class="o">=</span> <span class="n">duration</span> <span class="o">*</span> <span class="n">fps</span>
+<span class="n">container</span> <span class="o">=</span> <span class="n">av</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="err">&#39;</span><span class="n">test</span><span class="p">.</span><span class="n">mp4</span><span class="err">&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="sc">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">stream</span> <span class="o">=</span> <span class="n">container</span><span class="p">.</span><span class="n">add_stream</span><span class="p">(</span><span class="err">&#39;</span><span class="n">mpeg4</span><span class="err">&#39;</span><span class="p">,</span> <span class="n">rate</span><span class="o">=</span><span class="n">fps</span><span class="p">)</span>
+<span class="n">stream</span><span class="p">.</span><span class="n">width</span> <span class="o">=</span> <span class="mi">480</span>
+<span class="n">stream</span><span class="p">.</span><span class="n">height</span> <span class="o">=</span> <span class="mi">320</span>
+<span class="n">stream</span><span class="p">.</span><span class="n">pix_fmt</span> <span class="o">=</span> <span class="err">&#39;</span><span class="n">yuv420p</span><span class="err">&#39;</span>
+
+<span class="k">for</span> <span class="n">frame_i</span> <span class="n">in</span> <span class="n">range</span><span class="p">(</span><span class="n">total_frames</span><span class="p">)</span><span class="o">:</span>
+
+    <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">480</span><span class="p">,</span> <span class="mi">320</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">img</span><span class="p">[</span><span class="o">:</span><span class="p">,</span> <span class="o">:</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="mi">0</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">+</span> <span class="n">frame_i</span> <span class="o">/</span> <span class="n">total_frames</span><span class="p">))</span>
+    <span class="n">img</span><span class="p">[</span><span class="o">:</span><span class="p">,</span> <span class="o">:</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">+</span> <span class="n">frame_i</span> <span class="o">/</span> <span class="n">total_frames</span><span class="p">))</span>
+    <span class="n">img</span><span class="p">[</span><span class="o">:</span><span class="p">,</span> <span class="o">:</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">sin</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="p">.</span><span class="n">pi</span> <span class="o">*</span> <span class="p">(</span><span class="mi">2</span> <span class="o">/</span> <span class="mi">3</span> <span class="o">+</span> <span class="n">frame_i</span> <span class="o">/</span> <span class="n">total_frames</span><span class="p">))</span>
+
+    <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">round</span><span class="p">(</span><span class="mi">255</span> <span class="o">*</span> <span class="n">img</span><span class="p">).</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="p">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="p">.</span><span class="n">clip</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)</span>
+
+    <span class="n">frame</span> <span class="o">=</span> <span class="n">av</span><span class="p">.</span><span class="n">VideoFrame</span><span class="p">.</span><span class="n">from_ndarray</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">format</span><span class="o">=</span><span class="err">&#39;</span><span class="n">rgb24</span><span class="err">&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">packet</span> <span class="n">in</span> <span class="n">stream</span><span class="p">.</span><span class="n">encode</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span><span class="o">:</span>
+        <span class="n">container</span><span class="p">.</span><span class="n">mux</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+<span class="cp"># Flush stream for packet in stream.encode():</span>
+    <span class="n">container</span><span class="p">.</span><span class="n">mux</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+<span class="cp"># Close the file container.close()</span>
+<span class="err">提取音频</span>
+<span class="n">import</span> <span class="n">av</span>
+<span class="n">in_container</span> <span class="o">=</span> <span class="n">av</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="n">video_path</span><span class="p">)</span>
+<span class="n">in_stream</span> <span class="o">=</span> <span class="n">in_container</span><span class="p">.</span><span class="n">streams</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">audio</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+<span class="n">out_container</span> <span class="o">=</span> <span class="n">av</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="n">self</span><span class="p">.</span><span class="n">audio_pth</span><span class="p">,</span> <span class="sc">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">out_stream</span> <span class="o">=</span> <span class="n">out_container</span><span class="p">.</span><span class="n">add_stream</span><span class="p">(</span><span class="err">&#39;</span><span class="n">mp3</span><span class="err">&#39;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">frame</span> <span class="n">in</span> <span class="n">in_container</span><span class="p">.</span><span class="n">decode</span><span class="p">(</span><span class="n">in_stream</span><span class="p">)</span><span class="o">:</span>
+    <span class="n">print</span><span class="p">(</span><span class="err">&#39;\</span><span class="n">rAudio</span> <span class="n">frame</span><span class="o">:</span> <span class="n">pts</span> <span class="o">%</span><span class="n">d</span><span class="p">,</span> <span class="n">time</span> <span class="o">%</span><span class="n">f</span><span class="err">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">frame</span><span class="p">.</span><span class="n">pts</span><span class="p">,</span> <span class="n">frame</span><span class="p">.</span><span class="n">time</span><span class="p">),</span> <span class="n">end</span> <span class="o">=</span> <span class="err">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">frame</span><span class="p">.</span><span class="n">pts</span> <span class="o">=</span> <span class="n">None</span>
+    <span class="k">for</span> <span class="n">packet</span> <span class="n">in</span> <span class="n">out_stream</span><span class="p">.</span><span class="n">encode</span><span class="p">(</span><span class="n">frame</span><span class="p">)</span><span class="o">:</span>
+        <span class="n">out_container</span><span class="p">.</span><span class="n">mux</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">packet</span> <span class="n">in</span> <span class="n">out_stream</span><span class="p">.</span><span class="n">encode</span><span class="p">(</span><span class="n">None</span><span class="p">)</span><span class="o">:</span>
+        <span class="n">out_container</span><span class="p">.</span><span class="n">mux</span><span class="p">(</span><span class="n">packet</span><span class="p">)</span>
+    <span class="n">out_container</span><span class="p">.</span><span class="n">close</span><span class="p">()</span>
+<span class="err">提取音频帧</span>
+<span class="n">import</span> <span class="n">av</span>
+<span class="n">import</span> <span class="n">numpy</span> <span class="n">as</span> <span class="n">np</span>
+<span class="n">in_container</span> <span class="o">=</span> <span class="n">av</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="n">audio_path</span><span class="p">)</span>
+<span class="n">stream</span> <span class="o">=</span> <span class="n">in_container</span><span class="p">.</span><span class="n">streams</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="n">audio</span><span class="o">=</span><span class="mi">0</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">frame</span> <span class="n">in</span> <span class="n">in_container</span><span class="p">.</span><span class="n">decode</span><span class="p">(</span><span class="n">stream</span><span class="p">)</span><span class="o">:</span>
+    <span class="n">print</span><span class="p">(</span><span class="err">&#39;\</span><span class="n">rFrame</span> <span class="n">info</span><span class="o">:</span> <span class="n">pts</span> <span class="o">%</span><span class="n">d</span><span class="p">,</span> <span class="n">time</span> <span class="o">%</span><span class="n">f</span><span class="err">&#39;</span><span class="o">%</span><span class="p">(</span><span class="n">frame</span><span class="p">.</span><span class="n">pts</span><span class="p">,</span> <span class="n">frame</span><span class="p">.</span><span class="n">time</span><span class="p">),</span> <span class="n">end</span> <span class="o">=</span> <span class="err">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">frame_value</span> <span class="o">=</span> <span class="n">frame</span><span class="p">.</span><span class="n">to_ndarray</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+<span class="err">访问网络视频流</span>
+<span class="n">import</span> <span class="n">av</span>
+<span class="n">import</span> <span class="n">cv2</span>
+
+<span class="cp">#video = av.open(&#39;rtsp:</span><span class="c1">//admin:ts123456@10.21.38.241:554&#39;, &#39;r&#39;) video = av.open(&#39;url&#39;, &#39;r&#39;)</span>
+<span class="n">index</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="nl">try:</span>
+    <span class="k">for</span> <span class="n">frame</span> <span class="n">in</span> <span class="n">video</span><span class="p">.</span><span class="n">decode</span><span class="p">()</span><span class="o">:</span>
+        <span class="n">img</span> <span class="o">=</span> <span class="n">frame</span><span class="p">.</span><span class="n">to_nd_array</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="err">&#39;</span><span class="n">bgr24</span><span class="err">&#39;</span><span class="p">)</span>
+        <span class="n">cv2</span><span class="p">.</span><span class="n">imshow</span><span class="p">(</span><span class="s">&quot;Test&quot;</span><span class="p">,</span> <span class="n">img</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cv2</span><span class="p">.</span><span class="n">waitKey</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0xFF</span> <span class="o">==</span> <span class="n">ord</span><span class="p">(</span><span class="sc">&#39;q&#39;</span><span class="p">)</span><span class="o">:</span>
+            <span class="k">break</span>
+<span class="n">except</span> <span class="n">Exception</span> <span class="n">as</span> <span class="n">e</span><span class="o">:</span>
+    <span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="n">fate</span> <span class="n">erro</span><span class="o">:</span><span class="p">{}</span><span class="err">&#39;</span><span class="p">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+<span class="n">cv2</span><span class="p">.</span><span class="n">destroyAllWindows</span><span class="p">()</span>
+</pre></div>
+
+
+<p>以上代码示例基本满足通常使用需求，更多内容可以参考文档和git主页</p>
 <h1 id="_1">实践</h1>
 <h2 id="_2">关键帧提取</h2>
 <div class="hlcode"><pre><span class="kn">import</span> <span class="nn">av</span>
