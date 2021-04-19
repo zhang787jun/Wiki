@@ -1,0 +1,254 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>数据 Shuffle - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Distributed_System">Distributed_System</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-分布式计算系统">02-分布式计算系统</a>&nbsp;»&nbsp;<a href="/Wiki/#-Spark">Spark</a>&nbsp;»&nbsp;<a href="/Wiki/#-理论">理论</a>&nbsp;»&nbsp;<a href="/Wiki/#-02_内存管理">02_内存管理</a>&nbsp;»&nbsp;数据 Shuffle</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">数据 Shuffle</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-shuffle">1. Shuffle</a><ul>
+<li><a href="#11-shuffle">1.1. 怎么定义Shuffle</a></li>
+<li><a href="#12">1.2. 原理</a><ul>
+<li><a href="#121">1.2.1. 发展进程</a></li>
+<li><a href="#122-v1-hash-shuffle">1.2.2. V1 Hash Shuffle</a></li>
+<li><a href="#123-v2-sort-shuffle">1.2.3. V2 Sort Shuffle</a><ul>
+<li><a href="#1231">1.2.3.1. 实现策略</a><ul>
+<li><a href="#12311-bypassmergesortshufflewriter">1.2.3.1.1. BypassMergeSortShuffleWriter</a></li>
+<li><a href="#12312-sortshufflewriter">1.2.3.1.2. SortShuffleWriter</a></li>
+<li><a href="#12313-unasfesortshufflewriter">1.2.3.1.3. UnasfeSortShuffleWriter</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#124-smart-shuffle">1.2.4. smart Shuffle</a></li>
+</ul>
+</li>
+<li><a href="#13">1.3. 编程实践的注意事项</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1-shuffle">1. Shuffle</h1>
+<h2 id="11-shuffle">1.1. 怎么定义Shuffle</h2>
+<p>Shuffling is a process of redistributing data across partitions<sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup></p>
+<p>Shuffling is the process of data transfer between stages</p>
+<p>在DAG阶段以shuffle为界，划分stage，<br />
+<img alt="" src="/attach/images/2019-11-28-15-42-52.png" /></p>
+<p><strong>目的</strong>： 解决数据平衡问题</p>
+<p><strong>主要操作</strong>：</p>
+<ol>
+<li>
+<p><code>shuffle write</code><br />
+   上游stage做map task，每个map task将计算结果数据分成多份，每一份对应到下游stage的每个partition中，并将其临时写到磁盘，该过程叫做shuffle write</p>
+</li>
+<li>
+<p><code>shuffle read</code><br />
+   下游stage做reduce task，每个reduce task通过网络拉取上游stage中所有map task的指定分区结果数据，该过程叫做shuffle read</p>
+</li>
+</ol>
+<p>Shuffle涉及到<code>磁盘IO</code>(shuffle中间结果落地)、<code>CPU计算</code>（数据序列化计算)、<code>网络IO</code>(跨节点数据传输)。</p>
+<p><strong>Shuffle的内存压力</strong><br />
+Shuffle操作会占用大量的堆内存，在传输data之前或者之后，都会使用内存中的数据结构去组织这些record。也就是说，在map端，会创建这些structures，在reduce端会生成这些structures。在内存中存不下时，就会写到磁盘中。</p>
+<p>组织数据过程：<br />
+1. 一系列map任务；<br />
+2. shuffle这些data；<br />
+3. 聚合data：一系列reduce任务。</p>
+<p>一些map的结果会写到内存里，当太大时，会以分区排好序，然后写到单个文件里。在reduce端，task会读取相关的有序的block。</p>
+<p><strong>Shuffle的磁盘压力</strong></p>
+<p>Shuffle操作会在磁盘上生成大量的中间文件，并且在RDD不再被使用并且被垃圾回收之前，这些文件都将被一直保留。因为lineage(血统,DAG图)要被重新计算的话，就不会再次shuffle了。如果保留RDD的引用或者垃圾回收不频繁，那么Spark会占用大量的磁盘空间。<br />
+文件目录可由<code>spark.local.dir</code>配置。</p>
+<p>我们可以在Spark的配置指南中配置各种参数</p>
+<h2 id="12">1.2. 原理</h2>
+<h3 id="121">1.2.1. 发展进程</h3>
+<ol>
+<li>Spark&lt;1.1,一直是采用Hash Shuffle的实现的方式，</li>
+<li>Spark=1.1,版本时参考Hadoop MapReduce的实现开始引入Sort Shuffle，</li>
+<li>Spark=1.5,开始Tungsten钨丝计划，引入UnSafe Shuffle优化内存及CPU的使用，</li>
+<li>Spark=1.6,Tungsten统一到Sort Shuffle中，实现自我感知选择最佳Shuffle方式（Smart Shuffle ），</li>
+<li>Spark=2.0,Hash Shuffle已被删除，所有Shuffle方式全部统一到Sort Shuffle一个实现中。</li>
+</ol>
+<p>下图是spark shuffle实现的一个版本演进。</p>
+<p><img alt="" src="/attach/images/2019-11-28-15-49-15.png" /></p>
+<h3 id="122-v1-hash-shuffle">1.2.2. V1 Hash Shuffle</h3>
+<p><img alt="" src="/attach/images/2019-11-28-16-02-10.png" /><br />
+2个 map task， 3个 reducer， 会产生 6 个小文件</p>
+<p><img alt="" src="/attach/images/2019-11-28-16-46-36.png" /><br />
+4个 map task， 3个 reducer， 会产生 12个小文件</p>
+<p>m个 map task， n个 reducer， 会产生 m*n个小文件</p>
+<p>目标之一就是避免不需要的排序（Hadoop Map Reduce被人诟病的地方，很多不需要sort的地方的sort导致了不必要的开销）。</p>
+<p>但是它在处理超大规模数据集的时候，产生了大量的DiskIO和内存的消耗，这无疑很影响性能。对文件系统压力大 </p>
+<h3 id="123-v2-sort-shuffle">1.2.3. V2 Sort Shuffle</h3>
+<p><img alt="" src="/attach/images/2019-11-28-16-02-37.png" /><br />
+4个 map task， 3个 reducer，2个core 会产生 6个小文件</p>
+<p><img alt="" src="../../../../../attach/images/2019-11-28-16-47-47.png" /><br />
+6个 map task， 3个 reducer，2个core 会产生 6个小文件</p>
+<p>同一core(节点/执行器)上运行的多个Mapper 输出的合并到同一个文件。这样文件数目就变成了 cores x n</p>
+<p><strong>针对file</strong></p>
+<p>记录进行排序来做shuffle<br />
+它会将所有的结果写到一个文件里，同时会生成一个index文件，Reducer可以通过这个index文件取得它需要处理的数据</p>
+<p><img alt="这里写图片描述" src="https://img-blog.csdn.net/20170527173819501?watermark/2/text/aHR0cDovL2Jsb2cuY3Nkbi5uZXQvdTAxMTU2NDE3Mg==/font/5a6L5L2T/fontsize/400/fill/I0JBQkFCMA==/dissolve/70/gravity/SouthEast" /></p>
+<h4 id="1231">1.2.3.1. 实现策略</h4>
+<p>sort-Based Shuffle 有几种不同的策略：</p>
+<p>BypassMergeSortShuffleWriter、SortShuffleWriter和UnasfeSortShuffleWriter。</p>
+<p><img alt="" src="/attach/images/2019-11-28-17-08-53.png" /></p>
+<h5 id="12311-bypassmergesortshufflewriter">1.2.3.1.1. BypassMergeSortShuffleWriter</h5>
+<p>对于BypassMergeSortShuffleWriter，使用这个模式特点：</p>
+<ul>
+<li>
+<p>主要用于处理不需要排序和聚合的Shuffle操作，所以数据是直接写入文件，数据量较大的时候，网络I/O和内存负担较重</p>
+</li>
+<li>
+<p>主要适合处理Reducer任务数量比较少的情况下</p>
+</li>
+<li>
+<p>将每一个分区写入一个单独的文件，最后将这些文件合并,减少文件数量；但是这种方式需要并发打开多个文件，对内存消耗比较大</p>
+</li>
+</ul>
+<p>因为BypassMergeSortShuffleWriter这种方式比SortShuffleWriter更快，所以如果在Reducer数量不大，又不需要在map端聚合和排序，而且Reducer的数目 &lt;  spark.shuffle.sort.bypassMergeThrshold指定的阀值，就是用的是这种方式。</p>
+<h5 id="12312-sortshufflewriter">1.2.3.1.2. SortShuffleWriter</h5>
+<p>对于SortShuffleWriter,使用这个模式特点：</p>
+<ul>
+<li>
+<p>比较适合数据量很大的场景或者集群规模很大</p>
+</li>
+<li>
+<p>引入了外部外部排序器，可以支持在Map端进行本地聚合或者不聚合</p>
+</li>
+<li>
+<p>如果外部排序器enable了spill功能，如果内存不够，可以先将输出溢写到本地磁盘，最后将内存结果和本地磁盘的溢写文件进行合并</p>
+</li>
+</ul>
+<p>另外这个Sort-Based Shuffle跟Executor核数没有关系，即跟并发度没有关系，它是每一个ShuffleMapTask都会产生一个data文件和index文件，所谓合并也只是将该ShuffleMapTask的各个partition对应的分区文件合并到data文件而已。所以这个就需要个Hash-BasedShuffle的consolidation机制区别开来。</p>
+<h5 id="12313-unasfesortshufflewriter">1.2.3.1.3. UnasfeSortShuffleWriter</h5>
+<p>从spark 1.5.0开始，spark开始了钨丝计划(Tungsten)，目的是优化内存和CPU的使用，进一步提升spark的性能。为此，引入Unsafe Shuffle，它的做法是将数据记录用二进制的方式存储，直接在序列化的二进制数据上sort而不是在java 对象上，这样一方面可以减少memory的使用和GC的开销，另一方面避免shuffle过程中频繁的序列化以及反序列化。在排序过程中，它提供cache-efficient sorter，使用一个8 bytes的指针，把排序转化成了一个指针数组的排序，极大的优化了排序性能。更多Tungsten详细介绍请移步databricks博客。</p>
+<p>但是使用Unsafe Shuffle有几个限制，shuffle阶段不能有aggregate操作，分区数不能超过一定大小(224−1，这是可编码的最大parition id)，所以像reduceByKey这类有aggregate操作的算子是不能使用Unsafe Shuffle，它会退化采用Sort Shuffle。</p>
+<h3 id="124-smart-shuffle">1.2.4. smart Shuffle</h3>
+<p><img alt="" src="/attach/images/2019-11-28-17-14-10.png" /></p>
+<h2 id="13">1.3. 编程实践的注意事项</h2>
+<p>用户在编写spark应用程序的时候应当尽可能考虑shuffle相关的优化，提升spark应用程序的性能。下面简单列举几点关于spark shuffle调优的参考。</p>
+<ol>
+<li>尽量减少shuffle次数</li>
+</ol>
+<div class="hlcode"><pre><span class="c1">// 两次shuffle</span>
+<span class="n">rdd</span><span class="o">.</span><span class="n">map</span><span class="o">(...).</span><span class="n">repartition</span><span class="o">(</span><span class="mi">1000</span><span class="o">).</span><span class="n">reduceByKey</span><span class="o">(</span><span class="k">_</span> <span class="o">+</span> <span class="k">_</span><span class="o">,</span> <span class="mi">3000</span><span class="o">)</span>
+
+<span class="c1">// 一次shuffle</span>
+<span class="n">rdd</span><span class="o">.</span><span class="n">map</span><span class="o">(...).</span><span class="n">repartition</span><span class="o">(</span><span class="mi">3000</span><span class="o">).</span><span class="n">reduceByKey</span><span class="o">(</span><span class="k">_</span> <span class="o">+</span> <span class="k">_</span><span class="o">)</span>
+</pre></div>
+
+
+<ol>
+<li>必要时主动 shuffle，通常用于改变并行度，提高后续分布式运行速度</li>
+</ol>
+<div class="hlcode"><pre><span class="n">rdd</span><span class="o">.</span><span class="n">repartiton</span><span class="o">(</span><span class="n">largerNumPartition</span><span class="o">).</span><span class="n">map</span><span class="o">(...)...</span>
+</pre></div>
+
+
+<ol>
+<li>使用 treeReduce &amp; treeAggregate 替换 reduce &amp; aggregate。</li>
+</ol>
+<p>数据量较大时， <code>reduce</code> &amp; <code>aggregate</code> 一次性聚合，shuffle量太大，而 <code>treeReduce</code> &amp; <code>treeAggregate</code> 是分批聚合，更为保险。</p>
+<h1 id="2">2. 参考资料</h1>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>The Internals of Apache Spark--RDD shuffling<br />
+ https://jaceklaskowski.gitbooks.io/mastering-apache-spark/spark-rdd-shuffle.html&#160;<a class="footnote-backref" href="#fnref:1" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:2">
+<p>https://spark.apache.org/docs/latest/tuning.html&#160;<a class="footnote-backref" href="#fnref:2" rev="footnote" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

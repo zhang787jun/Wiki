@@ -1,0 +1,163 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>图采样 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Algorithm">Algorithm</a>&nbsp;»&nbsp;<a href="/Wiki/#-04-图学习">04-图学习</a>&nbsp;»&nbsp;<a href="/Wiki/#-02_图机器学习">02_图机器学习</a>&nbsp;»&nbsp;图采样</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">图采样</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 图采样</a><ul>
+<li><a href="#11">1.1. 遍历</a></li>
+<li><a href="#12">1.2. 邻域</a><ul>
+<li><a href="#121-graphsage">1.2.1. GraphSAGE</a><ul>
+<li><a href="#1211">1.2.1.1. 特点</a></li>
+</ul>
+</li>
+<li><a href="#122-pingsage">1.2.2. PingSAGE</a></li>
+</ul>
+</li>
+<li><a href="#13">1.3. 负采样</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 邻居聚合</a><ul>
+<li><a href="#21">2.1. 评估聚合表达能力的</a></li>
+<li><a href="#22">2.2. 常见</a><ul>
+<li><a href="#221-mean">2.2.1. Mean</a></li>
+<li><a href="#222-max">2.2.2. Max</a></li>
+<li><a href="#223-sum">2.2.3. Sum</a></li>
+</ul>
+</li>
+<li><a href="#23-gin">2.3. GIN</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="1">1. 图采样</h1>
+<p>图采样是子图采样，不是随机采样</p>
+<p>通过对现有 GNN 模型的调研，我们抽象出三种不同的采样器，即遍历、邻域、负采样。<br />
+1. 遍历（TRAVERSE）：用于从整个分区图中，采样一批顶点或边。<br />
+2. 邻域（NEIGHBORHOOD）：将生成顶点的上下文。该顶点的上下文可以是一个或多个 hop 邻居，用于对该顶点进行编码。<br />
+3. 负采样（NEGATIV）：用于生成负样本以加速训练过程的收敛。</p>
+<h2 id="11">1.1. 遍历</h2>
+<h2 id="12">1.2. 邻域</h2>
+<h3 id="121-graphsage">1.2.1. GraphSAGE</h3>
+<p>SAGE（SAmple&amp; aggreGatE）<br />
+参考资料：http://snap.stanford.edu/graphsage/<br />
+基本步骤：<br />
+1. 邻居采样<br />
+    1阶采样、2阶采样、...<br />
+    由顶向外<br />
+2. 邻居聚会<br />
+   由外向内，消息传递<br />
+3. 节点预测</p>
+<h4 id="1211">1.2.1.1. 特点</h4>
+<p><strong>优点</strong><br />
+1. 减少计算量<br />
+2. 允许泛化到其他关系</p>
+<h3 id="122-pingsage">1.2.2. PingSAGE</h3>
+<p>采样时只能选取真实的邻居节点吗<br />
+通过多次随机游走，按游走经过的频率选取邻居</p>
+<h2 id="13">1.3. 负采样</h2>
+<p>负采样就是给定源节点，返回和它不相连的目标节点。负采样同时支持本地和全局负采样，对于一个batch的样本要采样其负样本时，可以按照一定的概率分布选择一个server，然后在该server上采样。如果选择本地负采样，则只在本机进行负采样。目前built-in的负采样算子包括以下几种：<br />
+• random：随机采样和给定源节点不相连的目的节点。<br />
+• in_degree：按照目的节点的入度分布，返回与源节点不相连的目的节点。</p>
+<p>按照入度分布的in_degree负采样实现上采用AliasMethod[5]，会在首次采样前提前构建好Alias Table，因此采样是常数时间复杂度。此外负采样我们默认是严格负采样，但是出于性能和极端情形的考虑，我们支持用户端设置一个阈值来控制严格程度。负采样可能对算法效果也会产生很大影响，因此负采样算子如何和图划分结合，如何高效负采样，以及按何种分布负采样都是值得探索和研究的地方。</p>
+<h1 id="2">2. 邻居聚合</h1>
+<h2 id="21">2.1. 评估聚合表达能力的</h2>
+<p>评估聚合表达能力的指标单射(一对一映射)</p>
+<h2 id="22">2.2. 常见</h2>
+<h3 id="221-mean">2.2.1. Mean</h3>
+<h3 id="222-max">2.2.2. Max</h3>
+<h3 id="223-sum">2.2.3. Sum</h3>
+<h2 id="23-gin">2.3. GIN</h2>
+<p>基于单射的Graph Isomorphism Net (GIN)模型</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

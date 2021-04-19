@@ -34,14 +34,24 @@
 <div id="title">[网络组件]Istio--微服务管理框架service mesh</div>
 <div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#istio">Istio 是什么</a></li>
 <li><a href="#_1">安装</a></li>
 </ul>
 </div>
+<h1 id="istio">Istio 是什么</h1>
+<p>https://istio.io/docs/concepts/what-is-istio/</p>
+<p>官方对 Istio 的介绍浓缩成了一句话：<br />
+An open <strong>platform</strong> to connect, secure, control and observe services.</p>
+<p>连接、安全加固、控制和观察 <strong>服务</strong>的开放<strong>平台</strong>。</p>
+<p>中间的四个动词就是 Istio 的主要功能，官方也各有一句话的说明。这里再阐释一下：<br />
+连接（Connect）：智能控制服务之间的调用流量，能够实现灰度升级、AB 测试和红黑部署等功能<br />
+安全加固（Secure）：自动为服务之间的调用提供认证、授权和加密。<br />
+控制（Control）：应用用户定义的 policy，保证资源在消费者中公平分配。<br />
+观察（Observe）：查看服务运行期间的各种数据，比如日志、监控和 tracing，了解服务的运行情况。</p>
 <h1 id="_1">安装</h1>
-<div class="hlcode"><pre><span class="n">wget</span> <span class="n">https</span><span class="o">:</span><span class="c1">//github.com/ksonnet/ksonnet/releases/download/v0.13.0/ks_0.13.0_linux_amd64.tar.gz</span>
-<span class="n">tar</span> <span class="o">-</span><span class="n">vxf</span> <span class="n">ks_0</span><span class="mf">.13.0</span><span class="n">_linux_amd64</span><span class="p">.</span><span class="n">tar</span><span class="p">.</span><span class="n">gz</span>
-<span class="n">cd</span> <span class="o">-</span><span class="n">vxf</span> <span class="n">ks_0</span><span class="mf">.13.0</span><span class="n">_linux_amd64</span>
-<span class="n">sudo</span> <span class="n">cp</span> <span class="n">ks</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">bin</span>
+<div class="hlcode"><pre><span class="n">curl</span> <span class="o">-</span><span class="n">L</span> <span class="n">https</span><span class="o">:</span><span class="c1">//git.io/getLatestIstio | sh -</span>
+<span class="n">export</span> <span class="n">PATH</span><span class="o">=</span><span class="err">$</span><span class="n">PWD</span><span class="o">/</span><span class="n">bin</span><span class="o">:</span><span class="err">$</span><span class="n">PATH</span>
+<span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="n">install</span><span class="o">/</span><span class="n">kubernetes</span><span class="o">/</span><span class="n">istio</span><span class="p">.</span><span class="n">yaml</span>
 </pre></div>
 </div>
 <div id="renote">

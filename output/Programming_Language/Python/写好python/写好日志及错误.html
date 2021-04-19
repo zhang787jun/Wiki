@@ -38,6 +38,10 @@
 <li><a href="#11">1.1. 开发建议</a></li>
 </ul>
 </li>
+<li><a href="#-loguru">优雅的工具--loguru</a><ul>
+<li><a href="#_1">安装</a></li>
+</ul>
+</li>
 <li><a href="#loguru">loguru</a></li>
 <li><a href="#2-logging">2. 日志工具--标准库logging</a><ul>
 <li><a href="#21">2.1. 输出日志的格式化</a></li>
@@ -56,6 +60,12 @@
 <li><strong>依据环境配置log等级</strong><br />
     在开发、测试、线上环境中使用不通的 logging 等级</li>
 </ol>
+<h1 id="-loguru">优雅的工具--loguru</h1>
+<h2 id="_1">安装</h2>
+<div class="hlcode"><pre><span class="n">pip</span> <span class="n">install</span> <span class="n">loguru</span>
+</pre></div>
+
+
 <h1 id="loguru">loguru</h1>
 <div class="hlcode"><pre><span class="kn">from</span> <span class="nn">loguru</span> <span class="kn">import</span> <span class="n">logger</span>
 <span class="n">logger</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>

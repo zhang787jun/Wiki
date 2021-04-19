@@ -43,12 +43,26 @@
 </ul>
 </li>
 <li><a href="#14">1.4. 模型评估</a></li>
-<li><a href="#15">1.5. 模型保存</a></li>
-<li><a href="#16">1.6. 加载模型</a></li>
-<li><a href="#17">1.7. 预测</a></li>
-<li><a href="#18">1.8. 绘图</a></li>
-<li><a href="#19-gpu">1.9. GPU 加速</a></li>
-<li><a href="#110">1.10. 特征重要性</a></li>
+<li><a href="#15">1.5. 模型保存与加载</a><ul>
+<li><a href="#151">1.5.1. 保存</a></li>
+<li><a href="#152">1.5.2. 加载模型</a></li>
+</ul>
+</li>
+<li><a href="#16">1.6. 预测</a><ul>
+<li><a href="#161">1.6.1. 获取叶子节点</a></li>
+</ul>
+</li>
+<li><a href="#17">1.7. 树结构</a><ul>
+<li><a href="#171">1.7.1. 结构化描述</a></li>
+<li><a href="#172">1.7.2. 树结构可视化</a></li>
+</ul>
+</li>
+<li><a href="#18-gpu">1.8. GPU 加速</a></li>
+<li><a href="#19">1.9. 特征重要性</a><ul>
+<li><a href="#191">1.9.1. 量化指标</a></li>
+<li><a href="#192">1.9.2. 可视化</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -132,7 +146,8 @@
 </pre></div>
 
 
-<h2 id="15">1.5. 模型保存</h2>
+<h2 id="15">1.5. 模型保存与加载</h2>
+<h3 id="151">1.5.1. 保存</h3>
 <p>训练之后，您可以保存模型并将其转储出去。</p>
 <div class="hlcode"><pre><span class="n">bst</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="s">&#39;0001.model&#39;</span><span class="p">)</span>
 </pre></div>
@@ -146,14 +161,14 @@
 </pre></div>
 
 
-<h2 id="16">1.6. 加载模型</h2>
+<h3 id="152">1.5.2. 加载模型</h3>
 <p>当您保存模型后, 您可以使用如下方式在任何时候加载模型文件</p>
 <div class="hlcode"><pre><span class="n">bst</span> <span class="o">=</span> <span class="n">xgb</span><span class="o">.</span><span class="n">Booster</span><span class="p">({</span><span class="s">&#39;nthread&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">})</span> <span class="c">#init model</span>
 <span class="n">bst</span><span class="o">.</span><span class="n">load_model</span><span class="p">(</span><span class="s">&quot;model.bin&quot;</span><span class="p">)</span> <span class="c"># load data</span>
 </pre></div>
 
 
-<h2 id="17">1.7. 预测</h2>
+<h2 id="16">1.6. 预测</h2>
 <div class="hlcode"><pre><span class="n">ypred</span> <span class="o">=</span> <span class="n">bst</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">dtest</span><span class="p">)</span>
 
 <span class="nb">type</span><span class="p">(</span><span class="n">ypred</span><span class="p">)</span>
@@ -162,8 +177,28 @@
 </pre></div>
 
 
-<h2 id="18">1.8. 绘图</h2>
-<p>xgb 的 plotting（绘图）模块可以绘制出 importance（重要性）以及输出的 tree（树）.<br />
+<h3 id="161">1.6.1. 获取叶子节点</h3>
+<div class="hlcode"><pre><span class="c">#(叶节点索引)</span>
+<span class="n">train_leaf_preds</span> <span class="o">=</span> <span class="n">bst</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">dtrain</span><span class="p">,</span> <span class="n">pred_leaf</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="nb">type</span><span class="p">(</span><span class="n">train_leaf_preds</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">numpy</span><span class="o">.</span><span class="n">array</span>
+<span class="n">train_leaf_preds</span><span class="o">.</span><span class="n">shape</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">n</span> <span class="n">x</span> <span class="n">m</span><span class="p">(</span><span class="n">sample</span> <span class="n">x</span> <span class="n">trees</span><span class="p">)</span>
+
+<span class="err">会输出每个样本在每个子树的哪个叶子上。它是一个的矩阵。每个子树的叶节点都是从</span><span class="mi">1</span> <span class="err">开始编号的。</span>
+</pre></div>
+
+
+<h2 id="17">1.7. 树结构</h2>
+<h3 id="171">1.7.1. 结构化描述</h3>
+<div class="hlcode"><pre><span class="n">bst_df</span><span class="o">=</span><span class="n">bst</span><span class="o">.</span><span class="n">trees_to_dataframe</span><span class="p">()</span>
+</pre></div>
+
+
+<h3 id="172">1.7.2. 树结构可视化</h3>
+<p>xgb 的 plotting（绘图）模块可以绘制出importance（重要性）以及输出的 tree（树）.<br />
 前提：<br />
 1. matplotlib<br />
 2. graphviz</p>
@@ -179,29 +214,26 @@
 </pre></div>
 
 
-<h2 id="19-gpu">1.9. GPU 加速</h2>
+<h2 id="18-gpu">1.8. GPU 加速</h2>
 <p>xgboost的GPU 加速只支持 英伟达 显卡的CUDA 上，且只有在 P100 之后的显卡才效率的有显著提高。对Pascal架构之前的显卡会使得计算变得更慢。</p>
 <p>参考 ：https://xgboost.readthedocs.io/en/latest/gpu/index.html</p>
 <p><strong>NOTE</strong><br />
 Pascal架构作为 Maxwell 架构的升级版，2016 发布第一款产品 Tesla P100 (GP100) </p>
-<h2 id="110">1.10. 特征重要性</h2>
-<p>评价特征重要性的指标：</p>
-<ol>
-<li><code>weight</code><ul>
-<li>在这个树集合模型中，用该特征进行决策树分割的总次数</li>
-<li>the number of times a feature is used to split the data across all trees.</li>
-</ul>
-</li>
-<li><code>gain</code> </li>
-<li>用该特征进行决策树分割 基尼系数（或其他指标）的评价增加</li>
-<li>the average gain of the feature when it is used in trees</li>
-<li><code>cover</code> </li>
-<li>the average coverage of the feature when it is used in trees</li>
-<li><code>total_gain</code> </li>
-<li>the total gain across all splits the feature is used in.</li>
-<li><code>total_cover</code> </li>
-<li>the total coverage across all splits the feature is used in.</li>
-</ol>
+<h2 id="19">1.9. 特征重要性</h2>
+<h3 id="191">1.9.1. 量化指标</h3>
+<p>评价特征重要性的指标：<br />
+1. <code>weight</code><br />
+    - 在这个树集合模型中，用该特征进行决策树分割的总次数<br />
+    - the number of times a feature is used to split the data across all trees.<br />
+2. <code>gain</code> <br />
+   - 用该特征进行决策树分割 基尼系数（或其他指标）的评价增加<br />
+   - the average gain of the feature when it is used in trees<br />
+3. <code>cover</code> <br />
+   - the average coverage of the feature when it is used in trees<br />
+4. <code>total_gain</code> <br />
+   - the total gain across all splits the feature is used in.<br />
+5. <code>total_cover</code> <br />
+   - the total coverage across all splits the feature is used in.</p>
 <div class="hlcode"><pre><span class="n">score_dict</span><span class="o">=</span><span class="n">booster</span><span class="o">.</span><span class="n">get_score</span><span class="p">(</span><span class="n">fmap</span><span class="o">=</span><span class="s">&#39;&#39;</span><span class="p">,</span> <span class="n">importance_type</span><span class="o">=</span><span class="s">&#39;weight&#39;</span><span class="p">)</span>
 <span class="n">score_dict</span>
 <span class="o">&gt;&gt;&gt;</span>
@@ -217,6 +249,14 @@ Pascal架构作为 Maxwell 架构的升级版，2016 发布第一款产品 Tesla
 <span class="n">score_dict</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">booster</span><span class="p">()</span><span class="o">.</span><span class="n">get_score</span><span class="p">(</span><span class="n">importance_type</span><span class="o">=</span><span class="s">&#39;weight&#39;</span><span class="p">)</span>
 <span class="n">score_dict</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">get_booster</span><span class="p">()</span><span class="o">.</span><span class="n">get_score</span><span class="p">(</span><span class="n">importance_type</span><span class="o">=</span><span class="s">&quot;gain&quot;</span><span class="p">)</span>
 <span class="n">score_dict</span><span class="o">=</span><span class="n">regr</span><span class="o">.</span><span class="n">get_booster</span><span class="p">()</span><span class="o">.</span><span class="n">get_score</span><span class="p">(</span><span class="n">importance_type</span><span class="o">=</span><span class="s">&quot;gain&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="192">1.9.2. 可视化</h3>
+<p>当您使用 IPython时, 你可以使用 to_graphviz 函数, 它可以将 target tree（目标树） 转换成 graphviz 实例. graphviz 实例会自动的在 IPython 上呈现.</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">xgboost</span> <span class="kn">as</span> <span class="nn">xgb</span>
+
+<span class="n">xgb</span><span class="o">.</span><span class="n">plot_importance</span><span class="p">(</span><span class="n">bst</span><span class="p">)</span>
 </pre></div>
 </div>
 <div id="renote">

@@ -34,58 +34,58 @@
 <div id="title">k8s 网络基础</div>
 <div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
-<li><a href="#2-kubernetes-2">2. Kubernetes 的网络[^2]</a><ul>
-<li><a href="#21-network-routing-in-linux">2.1. Network routing in Linux</a></li>
-<li><a href="#22-understanding-network-requirements">2.2. Understanding network requirements</a></li>
-<li><a href="#23-exploring-the-endpoints">2.3. Exploring the Endpoints</a><ul>
-<li><a href="#231-balancing-in-cluster-traffic">2.3.1. Balancing in-cluster traffic</a></li>
-<li><a href="#232-routing-traffic-with-kube-proxy">2.3.2. Routing traffic with kube-proxy</a></li>
-<li><a href="#233-cri-cni-csi-interfaces-for-the-kubelet">2.3.3. CRI, CNI, CSI: interfaces for the kubelet</a></li>
-<li><a href="#234-choosing-between-latency-and-load-balancing">2.3.4. Choosing between latency and load balancing</a></li>
-<li><a href="#235-pros-and-cons-of-the-4-types-of-services">2.3.5. Pros and cons of the 4 types of Services</a></li>
-<li><a href="#236-discovering-services">2.3.6. Discovering Services</a></li>
-<li><a href="#237-routing-traffic-with-an-ingress-controller">2.3.7. Routing traffic with an Ingress controller</a></li>
-<li><a href="#238-end-to-end-traffic-journey">2.3.8. End-to-end traffic journey</a></li>
+<li><a href="#1-kubernetes-2">1. Kubernetes 的网络[^2]</a><ul>
+<li><a href="#11-network-routing-in-linux">1.1. Network routing in Linux</a></li>
+<li><a href="#12-understanding-network-requirements">1.2. Understanding network requirements</a></li>
+<li><a href="#13-exploring-the-endpoints">1.3. Exploring the Endpoints</a><ul>
+<li><a href="#131-balancing-in-cluster-traffic">1.3.1. Balancing in-cluster traffic</a></li>
+<li><a href="#132-routing-traffic-with-kube-proxy">1.3.2. Routing traffic with kube-proxy</a></li>
+<li><a href="#133-cri-cni-csi-interfaces-for-the-kubelet">1.3.3. CRI, CNI, CSI: interfaces for the kubelet</a></li>
+<li><a href="#134-choosing-between-latency-and-load-balancing">1.3.4. Choosing between latency and load balancing</a></li>
+<li><a href="#135-pros-and-cons-of-the-4-types-of-services">1.3.5. Pros and cons of the 4 types of Services</a></li>
+<li><a href="#136-discovering-services">1.3.6. Discovering Services</a></li>
+<li><a href="#137-routing-traffic-with-an-ingress-controller">1.3.7. Routing traffic with an Ingress controller</a></li>
+<li><a href="#138-end-to-end-traffic-journey">1.3.8. End-to-end traffic journey</a></li>
 </ul>
 </li>
-<li><a href="#24">2.4. 添加网络插件</a><ul>
-<li><a href="#241-cni-bridge">2.4.1. CNI bridge</a></li>
-<li><a href="#242-flannel">2.4.2. flannel</a></li>
-<li><a href="#243-weave">2.4.3. weave</a></li>
-<li><a href="#244-calico">2.4.4. calico</a></li>
+<li><a href="#14">1.4. 添加网络插件</a><ul>
+<li><a href="#141-cni-bridge">1.4.1. CNI bridge</a></li>
+<li><a href="#142-flannel">1.4.2. flannel</a></li>
+<li><a href="#143-weave">1.4.3. weave</a></li>
+<li><a href="#144-calico">1.4.4. calico</a></li>
 </ul>
 </li>
 </ul>
 </li>
 </ul>
 </div>
-<h1 id="2-kubernetes-2">2. Kubernetes 的网络[^2]</h1>
+<h1 id="1-kubernetes-2">1. Kubernetes 的网络[^2]</h1>
 <p>参考资料</p>
 <ol>
 <li><a href="https://sookocheff.com/post/kubernetes/understanding-kubernetes-networking-model/">A Guide to the Kubernetes Networking Model</a></li>
 <li>sd[^2]</li>
 </ol>
-<h2 id="21-network-routing-in-linux">2.1. Network routing in Linux</h2>
+<h2 id="11-network-routing-in-linux">1.1. Network routing in Linux</h2>
 <p><img alt="" src="../../../../attach/images/2019-12-18-11-27-23.png" />!</p>
-<h2 id="22-understanding-network-requirements">2.2. Understanding network requirements</h2>
-<h2 id="23-exploring-the-endpoints">2.3. Exploring the Endpoints</h2>
-<h3 id="231-balancing-in-cluster-traffic">2.3.1. Balancing in-cluster traffic</h3>
-<h3 id="232-routing-traffic-with-kube-proxy">2.3.2. Routing traffic with <code>kube-proxy</code></h3>
-<h3 id="233-cri-cni-csi-interfaces-for-the-kubelet">2.3.3. CRI, CNI, CSI: interfaces for the kubelet</h3>
+<h2 id="12-understanding-network-requirements">1.2. Understanding network requirements</h2>
+<h2 id="13-exploring-the-endpoints">1.3. Exploring the Endpoints</h2>
+<h3 id="131-balancing-in-cluster-traffic">1.3.1. Balancing in-cluster traffic</h3>
+<h3 id="132-routing-traffic-with-kube-proxy">1.3.2. Routing traffic with <code>kube-proxy</code></h3>
+<h3 id="133-cri-cni-csi-interfaces-for-the-kubelet">1.3.3. CRI, CNI, CSI: interfaces for the kubelet</h3>
 <p>kubelet 的接口</p>
-<h3 id="234-choosing-between-latency-and-load-balancing">2.3.4. Choosing between latency and load balancing</h3>
-<h3 id="235-pros-and-cons-of-the-4-types-of-services">2.3.5. Pros and cons of the 4 types of Services</h3>
-<h3 id="236-discovering-services">2.3.6. Discovering Services</h3>
+<h3 id="134-choosing-between-latency-and-load-balancing">1.3.4. Choosing between latency and load balancing</h3>
+<h3 id="135-pros-and-cons-of-the-4-types-of-services">1.3.5. Pros and cons of the 4 types of Services</h3>
+<h3 id="136-discovering-services">1.3.6. Discovering Services</h3>
 <p>发现服务 </p>
-<h3 id="237-routing-traffic-with-an-ingress-controller">2.3.7. Routing traffic with an <code>Ingress</code> controller</h3>
+<h3 id="137-routing-traffic-with-an-ingress-controller">1.3.7. Routing traffic with an <code>Ingress</code> controller</h3>
 <p>带有Ingress控制器的远程通讯</p>
-<h3 id="238-end-to-end-traffic-journey">2.3.8. End-to-end traffic journey</h3>
+<h3 id="138-end-to-end-traffic-journey">1.3.8. End-to-end traffic journey</h3>
 <p>端对端的通讯日志</p>
-<h2 id="24">2.4. 添加网络插件</h2>
+<h2 id="14">1.4. 添加网络插件</h2>
 <p>上面安装成功后如果通过查询kube-system下Pod的运行情况，会放下和网络相关的Pod都处于Pending的状态，这是因为缺少相关的网络插件，而网络插件有很多个（以下任选一个），可以选择自己需要的。<br />
 安装参考： https://kubernetes.feisky.xyz/bu-shu-pei-zhi/cluster/kubeadm#pei-zhi-network-plugin</p>
 <p>CNI(container network interface)</p>
-<h3 id="241-cni-bridge">2.4.1. CNI bridge</h3>
+<h3 id="141-cni-bridge">1.4.1. CNI bridge</h3>
 <p>kubenet：这是一个基于CNI bridge的网络插件（在bridge插件的基础上扩展了port mapping和traffic shaping），是目前推荐的默认插件</p>
 <p>CNI：CNI网络插件，需要用户将网络配置放到<code>/etc/cni/net.d</code>目录中，并将CNI插件的二进制文件放入/opt/cni/bin</p>
 <div class="hlcode"><pre>mkdir <span class="o">-</span>p <span class="o">/</span>etc<span class="o">/</span>cni<span class="o">/</span>net.d
@@ -115,14 +115,14 @@ EOF
 </pre></div>
 
 
-<h3 id="242-flannel">2.4.2. flannel</h3>
+<h3 id="142-flannel">1.4.2. flannel</h3>
 <p>Flannel是CoreOS团队针对Kubernetes设计的一个网络规划服务，简单来说，它的功能是让集群中的不同节点主机创建的Docker容器都具有全集群唯一的虚拟IP地址。 ... 并使这些容器之间能够之间通过IP地址相互找到，也就是相互ping通。</p>
 <p>需要在kubeadm init 时设置 --pod-network-cidr=10.244.0.0/16 </p>
 <div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="o">:</span><span class="c1">//raw.githubusercontent.com/coreos/flannel/v0.10.0/Documentation/kube-flannel.yml</span>
 </pre></div>
 
 
-<h3 id="243-weave">2.4.3. weave</h3>
+<h3 id="143-weave">1.4.3. weave</h3>
 <p>Weave Net是一个多主机容器网络方案，支持去中心化的控制平面，各个host上的wRouter间通过建立Full Mesh的TCP链接，并通过Gossip来同步控制信息。这种方式省去了集中式的K/V Store，能够在一定程度上减低部署的复杂性，Weave将其称为“data centric”，而非RAFT或者Paxos的“algorithm centric”。</p>
 <p>数据平面上，Weave通过UDP封装实现L2 Overlay，封装支持两种模式，一种是运行在user space的sleeve mode，另一种是运行在kernal space的 fastpathmode。Sleeve mode通过pcap设备在Linux bridge上截获数据包并由wRouter完成UDP封装，支持对L2 traffic进行加密，还支持Partial Connection，但是性能损失明显。</p>
 <p>Fastpath mode即通过OVS的odp封装VxLAN并完成转发，wRouter不直接参与转发，而是通过下发odp 流表的方式控制转发，这种方式可以明显地提升吞吐量，但是不支持加密等高级功能。</p>
@@ -131,7 +131,7 @@ EOF
 </pre></div>
 
 
-<h3 id="244-calico">2.4.4. calico</h3>
+<h3 id="144-calico">1.4.4. calico</h3>
 <p>需要 kubeadm init 时设置 --pod-network-cidr=192.168.0.0/16</p>
 <div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="o">:</span><span class="c1">//docs.projectcalico.org/v3.1/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml</span>
 <span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="n">https</span><span class="o">:</span><span class="c1">//docs.projectcalico.org/v3.1/getting-started/kubernetes/installati</span>

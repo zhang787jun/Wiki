@@ -1,0 +1,383 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Spark 内存管理机制与策略 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Distributed_System">Distributed_System</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-分布式计算系统">02-分布式计算系统</a>&nbsp;»&nbsp;<a href="/Wiki/#-Spark">Spark</a>&nbsp;»&nbsp;<a href="/Wiki/#-理论">理论</a>&nbsp;»&nbsp;<a href="/Wiki/#-02_内存管理">02_内存管理</a>&nbsp;»&nbsp;Spark 内存管理机制与策略</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Spark 内存管理机制与策略</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-spark">1. Spark内存管理的基础概念</a><ul>
+<li><a href="#11">1.1. 堆内存和堆外内存</a></li>
+<li><a href="#12">1.2. 序列化</a><ul>
+<li><a href="#121-java">1.2.1. Java 序列化机制</a></li>
+<li><a href="#122-kryo">1.2.2. 使用Kryo序列化</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#2">2. 内存分配</a><ul>
+<li><a href="#21-spark">2.1. Spark 内存分配</a><ul>
+<li><a href="#211">2.1.1. 静态内存管理器</a></li>
+<li><a href="#212">2.1.2. 统一内存管理器</a></li>
+<li><a href="#213">2.1.3. 共享内存区域</a></li>
+<li><a href="#214">2.1.4. 堆上模型</a></li>
+<li><a href="#215">2.1.5. 堆外模型</a></li>
+<li><a href="#216">2.1.6. 动态占用机制</a></li>
+</ul>
+</li>
+<li><a href="#22-pyspark">2.2. PySpark 内存</a></li>
+<li><a href="#23">2.3. 总内存</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 确定内存消耗</a></li>
+<li><a href="#4">4. 优化内存使用</a><ul>
+<li><a href="#41">4.1. 优化变量对象</a></li>
+<li><a href="#42-io-">4.2. 优化IO--持久化</a></li>
+<li><a href="#43">4.3. 优化垃圾收集</a></li>
+</ul>
+</li>
+<li><a href="#_1">其他注意事项</a><ul>
+<li><a href="#_2">并行度</a></li>
+<li><a href="#_3">减少任务的内存使用</a></li>
+<li><a href="#_4">广播大变量</a></li>
+<li><a href="#_5">数据局部性</a></li>
+<li><a href="#55">5.5. 总结</a></li>
+</ul>
+</li>
+<li><a href="#6">6. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1-spark">1. Spark内存管理的基础概念</h1>
+<p>作为基于内存的分布式计算引擎，Spark的<strong>内存管理模块</strong>在整个系统中扮演着非常重要的角色。</p>
+<p>而Spark 的内存管理是一套复杂的机制。</p>
+<p>了解Spark内存管理的基础知识可帮助您开发Spark应用程序并执行性能调整。</p>
+<p>通常，Spark应用程序包括两个主要JVM进程<code>Driver</code>和<code>Executor</code>。 <br />
+1. <code>Driver</code> 驱动程序是主要的控制过程，负责创建上下文context，提交作业 sumbit jobs，将作业转换为任务以及协调执行程序之间的任务执行。Driver的内存管理相对简单，并且一般的JVM程序之间的差异不大。</p>
+<ol>
+<li><code>Executor</code> 执行器主要负责执行特定的计算任务，并将结果返回给驱动程序。用于洗牌，联接，排序和聚合中的计算的内存</li>
+</ol>
+<div class="hlcode"><pre><span class="o">--</span><span class="n">Spark</span>
+    <span class="o">|</span><span class="n">__Driver</span>
+    <span class="o">|</span><span class="n">__Executor</span>
+</pre></div>
+
+
+<h2 id="11">1.1. 堆内存和堆外内存</h2>
+<p>执行程序（Executor）充当JVM进程，其内存管理基于JVM。因此，JVM内存管理包括两种方法：</p>
+<ol>
+<li><strong>堆上内存管理</strong>：</li>
+<li>对象在JVM堆上分配，并由GC绑定。</li>
+<li><strong>堆外内存管理</strong>：</li>
+<li>对象通过序列化在JVM之外的内存中分配，由应用程序管理，并且不受GC绑定。这种内存管理方法可以避免频繁的GC，但是缺点是您必须编写内存分配和内存释放的逻辑。</li>
+</ol>
+<p>通常，对象的读写速度为：<br />
+$$ 堆上&gt;堆外&gt;磁盘 $$</p>
+<h2 id="12">1.2. 序列化</h2>
+<p>序列化在任何分布式应用程序的性能中都起着重要作用。</p>
+<p>将对象序列化为慢速格式或占用大量字节的格式将大大减慢计算速度。<strong>通常，这是您应该优化Spark应用程序的第一件事</strong>。Spark旨在在便利性（允许您在操作中使用任何Java类型）和性能之间取得平衡。它提供了两个序列化库：</p>
+<p>序列化会生效的几个地方：<br />
+1. 算子函数中使用到的外部变量（影响网络传输的性能，集群中内存的占用和消耗）<br />
+2. 持久化RDD时<br />
+3. shuffle（网络传输的性能）</p>
+<h3 id="121-java">1.2.1. Java 序列化机制</h3>
+<p>默认情况下，Spark内部是使用Java的序列化机制，<code>ObjectOutputStream/ObjectInputStream</code>对象输入输出流机制，来进行序列化。<br />
+- 优点：处理起来比较<strong>方便</strong>，只是在算子里面使用的变量，必须是实现Serializable接口的。<br />
+- 缺点：默认的序列化机制的效率不高，序列化的速度比较<strong>慢</strong>；序列化以后的数据，占用的内存空间相对还是比较大。</p>
+<h3 id="122-kryo">1.2.2. 使用Kryo序列化</h3>
+<p>Kryo序列化机制，<br />
+- 优点：<br />
+  - 1. 比默认的Java序列化机制，速度要快，<br />
+  - 2. 序列化后的数据要更小，大概是Java序列化机制的1/10。 Kryo序列化机制，一旦启用以后，会生效的几个地方：</p>
+<p>使用Kryo序列化步骤：</p>
+<div class="hlcode"><pre><span class="n">SparkConf</span><span class="o">.</span><span class="na">set</span><span class="o">(</span><span class="s">&quot;spark.serializer&quot;</span><span class="o">,</span> <span class="s">&quot;org.apache.spark.serializer.KryoSerializer&quot;</span><span class="o">)</span>
+<span class="c1">// 注册你使用到的，需要通过Kryo序列化的自定义类。</span>
+<span class="n">SparkConf</span><span class="o">.</span><span class="na">registerKryoClasses</span><span class="o">(</span><span class="k">new</span> <span class="n">Class</span><span class="o">[]{</span><span class="n">CategorySoryKey</span><span class="o">.</span><span class="na">class</span><span class="o">})</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="c"># 设置集群</span>
+<span class="n">conf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.serializer&quot;</span><span class="p">,</span> <span class="s">&quot;org.apache.spark.serializer.KryoSerializer&quot;</span><span class="p">)</span>
+
+<span class="c"># 查看集群属性</span>
+<span class="n">sc</span><span class="o">.</span><span class="n">getConf</span><span class="p">()</span><span class="o">.</span><span class="n">getAll</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="p">[(</span><span class="s">&#39;spark.serializer&#39;</span><span class="p">,</span> <span class="s">&#39;org.apache.spark.serializer.KryoSerializer&#39;</span><span class="p">),</span>
+ <span class="p">(</span><span class="s">&#39;spark.driver.port&#39;</span><span class="p">,</span> <span class="s">&#39;44235&#39;</span><span class="p">),</span>
+ <span class="p">(</span><span class="s">&#39;spark.driver.host&#39;</span><span class="p">,</span> <span class="s">&#39;7a2bd6fb6c71&#39;</span><span class="p">),</span>
+ <span class="p">(</span><span class="s">&#39;spark.rdd.compress&#39;</span><span class="p">,</span> <span class="s">&#39;True&#39;</span><span class="p">),</span>
+ <span class="p">(</span><span class="s">&#39;spark.serializer.objectStreamReset&#39;</span><span class="p">,</span> <span class="s">&#39;100&#39;</span><span class="p">),</span>
+ <span class="p">(</span><span class="s">&#39;spark.master&#39;</span><span class="p">,</span> <span class="s">&#39;local[*]&#39;</span><span class="p">),</span>
+ <span class="p">(</span><span class="s">&#39;spark.executor.id&#39;</span><span class="p">,</span> <span class="s">&#39;driver&#39;</span><span class="p">),</span>
+ <span class="p">(</span><span class="s">&#39;spark.submit.deployMode&#39;</span><span class="p">,</span> <span class="s">&#39;client&#39;</span><span class="p">),</span>
+ <span class="p">(</span><span class="s">&#39;spark.app.name&#39;</span><span class="p">,</span> <span class="s">&#39;PySpark App&#39;</span><span class="p">),</span>
+ <span class="p">(</span><span class="s">&#39;spark.ui.showConsoleProgress&#39;</span><span class="p">,</span> <span class="s">&#39;true&#39;</span><span class="p">),</span>
+ <span class="p">(</span><span class="s">&#39;spark.app.id&#39;</span><span class="p">,</span> <span class="s">&#39;local-1618216089070&#39;</span><span class="p">)]</span>
+</pre></div>
+
+
+<h1 id="2">2. 内存分配</h1>
+<h2 id="21-spark">2.1. Spark 内存分配</h2>
+<p>在Spark中，支持两种内存管理模式：<br />
+1. <strong>静态内存管理器</strong><br />
+2. <strong>统一内存管理器</strong></p>
+<p>Spark提供了一个统一的接口<code>MemoryManager</code>来管理存储内存和执行内存。同一执行器中的任务调用该接口以申请或释放内存。在实现MemoryManager时，默认情况下会在Spark 1.6之前使用StaticMemory管理，而默认方法已在Spark 1.6之后更改为UnifiedMemoryManager。在Spark 1.6+中，可以通过<code>spark.memory.useLegacyMode</code>参数启用静态内存管理。</p>
+<h3 id="211">2.1.1. 静态内存管理器</h3>
+<p>在静态内存管理器机制下，存储内存，执行内存和其他内存的大小在Spark应用程序运行期间是固定的，但是用户可以在应用程序启动之前对其进行配置。尽管已逐渐取消了这种分配方法，但出于兼容性原因，Spark仍然保留。</p>
+<p>这里主要讨论静态内存管理器的弊端：静态内存管理器机制实现起来比较简单，但是如果用户不熟悉Spark的存储机制，或者不根据特定的数据大小进行相应的配置在执行计算任务时，很容易造成其中一个存储内存和执行内存剩余大量空间，而另一个则首先被填充，因此必须删除或删除旧内容以用于新内容。</p>
+<p><img alt="" src="/attach/images/2019-11-28-19-35-15.png" /></p>
+<p>在Spark 1.6+中，可以通过<code>spark.memory.useLegacyMode</code>参数启用静态内存管理。</p>
+<h3 id="212">2.1.2. 统一内存管理器</h3>
+<p>Spark 1.6之后引入了统一内存管理器机制。统一内存管理器和静态内存管理器之间的区别在于，</p>
+<p>存储内存和执行内存<strong>共享</strong>一个<strong>内存区域</strong>，并且两者都可以占据彼此的空闲区域。</p>
+<h3 id="213">2.1.3. 共享内存区域</h3>
+<p>在Spark中，执行和存储共享一个统一的区域（M）。<br />
+1. 当不使用执行内存时，存储可以获取所有可用内存；<br />
+2. 当不使用存储内存时，执行可以获取所有可用内存。<br />
+3. 如果有必要，执行可能会驱逐存储（只有在总存储内存使用率下降到某个阈值（R）以下时，才可以执行该操作）</p>
+<p><strong>优缺点</strong></p>
+<p>这种设计确保了几种理想的性能。<br />
+1. 不使用缓存的应用程序可以将整个空间用于执行，从而避免了不必要的磁盘溢出。<br />
+2. 确实使用缓存的应用程序可以保留最小的存储空间（R），以免其数据块被逐出<br />
+3. 这种方法可为各种工作负载提供合理的即用即用性能，而<strong>无需用户了解如何在内部划分内存</strong>。</p>
+<h3 id="214">2.1.4. 堆上模型</h3>
+<p>默认情况下，Spark仅使用堆上内存。 当Spark应用程序启动时，堆内存的大小由 <code>–executor-memory</code> 或  <code>spark.executor.memory</code>参数配置 。在Executor中运行的并发任务共享JVM的堆上内存。</p>
+<p>执行程序中的堆上内存区域可以大致分为以下四个块：</p>
+<ol>
+<li><strong>存储内存</strong> ：主要用于存储Spark缓存数据，如RDD缓存，Broadcast变量，Unroll数据等。</li>
+<li>
+<p><strong>执行内存</strong> ：主要用于在Shuffle，Join，Sort，Aggregation等计算过程中存储临时数据。</p>
+</li>
+<li>
+<p><strong>用户内存</strong> ：它主要用于存储RDD转换操作所需的数据，例如RDD依赖项的信息。</p>
+</li>
+<li><strong>保留的内存</strong>：内存是为系统保留的，用于存储Spark的内部对象。<br />
+内存分配如下所示：<br />
+<img alt="" src="/attach/images/2019-11-28-19-23-46.png" /></li>
+</ol>
+<h3 id="215">2.1.5. 堆外模型</h3>
+<p>Spark 1.6开始引入堆外内存（Off-heap）。默认情况下，堆外内存是禁用的，但是我们可以通过<code>spark.memory.offHeap.enabled</code> 参数启用它，并通过<code>spark.memory.offHeap.size</code> 参数设置内存大小  。与堆上内存相比，堆外内存的模型相对简单，仅包括存储内存和执行内存，其分布如下图所示：<br />
+<img alt="" src="/attach/images/2019-11-28-19-15-35.png" /></p>
+<p>如果启用了堆外内存，则执行器中将同时有<strong>堆上内存</strong>和<strong>堆外内存</strong>。此时，执行器中的执行内存是堆内部的执行内存与堆外部的执行内存之和。存储内存也是如此。下图显示了Spark堆内部和外部的堆上和堆外内存。<br />
+-   <code>spark.memory.storageFraction</code>将的大小表示<code>R</code>为的一部分<code>M</code>（默认为0.5）。 <code>R</code>是<code>M</code>其中的缓存块不受执行影响而退出的存储空间。<br />
+<img alt="" src="/attach/images/2019-11-28-19-16-16.png" /></p>
+<p><img alt="" src="https://miro.medium.com/max/875/1*dh9it_gMQai4Zj8NbD3-fA.png" /></p>
+<h3 id="216">2.1.6. 动态占用机制</h3>
+<p>提交程序后，将根据该<code>spark.memory.storageFraction</code> 参数设置存储存储区和执行存储区。<br />
+当程序运行时，如果双方的空间不足（存储空间不足以放置一个完整的块），它将根据LRU存储到磁盘；如果其中一个空间不足，而另一个空间可用，则它将借用另一个空间。</p>
+<p><img alt="" src="/attach/images/2019-11-28-19-36-00.png" /></p>
+<p>存储占用对方的内存，然后将占用的部分转移到硬盘上，然后"<strong>返还</strong>"借来的空间。<br />
+执行占用了对方的内存，在当前实现中无法“返回”借用的空间。因为由Shuffle进程生成的文件将在以后使用，并且以后不必再使用Cache中的数据，所以返回内存可能会导致严重的性能下降。</p>
+<h2 id="22-pyspark">2.2. PySpark 内存</h2>
+<p><code>spark.python.worker.memory</code> limits the memory in JVM for Python objects, <br />
+<code>spark.executor.pyspark.memory</code> limits the actual memory of the Python process</p>
+<p><code>spark.executor.pyspark.memory</code><br />
+<img alt="" src="https://miro.medium.com/max/501/1*mzfRwPRAiTwi8OdCCSSUQw.png" /></p>
+<h2 id="23">2.3. 总内存</h2>
+<p><img alt="" src="https://miro.medium.com/max/875/1*8yviZQXq9rXgBoup8W-kHA.png" /><br />
+Total Memory Request to YARN</p>
+<h1 id="3">3. 确定内存消耗</h1>
+<p><strong>方案一</strong><br />
+确定数据集所需的内存消耗量的最佳方法是<br />
+1. 创建一个RDD，将其放入缓存中，<br />
+2. 然后查看Web UI中的"Storage"页面。该页面将告诉您RDD占用了多少内存。</p>
+<p><strong>方案二</strong></p>
+<p>使用<code>SizeEstimator.estimate</code>方法估算特定对象的内存消耗。这对于尝试使用不同的数据布局以减少内存使用量以及确定广播变量将在每个执行程序堆上占用的空间量很有用。</p>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">pyspark.serializers</span> <span class="kn">import</span> <span class="n">PickleSerializer</span><span class="p">,</span> <span class="n">AutoBatchedSerializer</span>
+<span class="k">def</span> <span class="nf">_to_java_object_rdd</span><span class="p">(</span><span class="n">rdd</span><span class="p">):</span>  
+    <span class="sd">&quot;&quot;&quot; Return a JavaRDD of Object by unpickling</span>
+<span class="sd">    It will convert each Python object into Java object by Pyrolite, whenever the</span>
+<span class="sd">    RDD is serialized in batch or not.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">rdd</span> <span class="o">=</span> <span class="n">rdd</span><span class="o">.</span><span class="n">_reserialize</span><span class="p">(</span><span class="n">AutoBatchedSerializer</span><span class="p">(</span><span class="n">PickleSerializer</span><span class="p">()))</span>
+    <span class="k">return</span> <span class="n">rdd</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">_jvm</span><span class="o">.</span><span class="n">org</span><span class="o">.</span><span class="n">apache</span><span class="o">.</span><span class="n">spark</span><span class="o">.</span><span class="n">mllib</span><span class="o">.</span><span class="n">api</span><span class="o">.</span><span class="n">python</span><span class="o">.</span><span class="n">SerDe</span><span class="o">.</span><span class="n">pythonToJava</span><span class="p">(</span><span class="n">rdd</span><span class="o">.</span><span class="n">_jrdd</span><span class="p">,</span> <span class="bp">True</span><span class="p">)</span>
+
+<span class="n">JavaObj</span> <span class="o">=</span> <span class="n">_to_java_object_rdd</span><span class="p">(</span><span class="n">df</span><span class="o">.</span><span class="n">rdd</span><span class="p">)</span>
+
+<span class="n">nbytes</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">_jvm</span><span class="o">.</span><span class="n">org</span><span class="o">.</span><span class="n">apache</span><span class="o">.</span><span class="n">spark</span><span class="o">.</span><span class="n">util</span><span class="o">.</span><span class="n">SizeEstimator</span><span class="o">.</span><span class="n">estimate</span><span class="p">(</span><span class="n">JavaObj</span><span class="p">)</span>
+<span class="k">print</span> <span class="p">(</span><span class="n">nbytes</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="mi">3615112</span>
+</pre></div>
+
+
+<h1 id="4">4. 优化内存使用</h1>
+<p>有三个方面的考虑在调整内存使用：<br />
+1. 优化变量对象的存储消耗（你可能希望你的整个数据集，以适应在内存中），<br />
+2. 优化访问这些对象的成本开销 <br />
+3. 优化垃圾回收的开销</p>
+<p>默认情况下，Java对象的访问速度很快，但是与其字段中的"原始"数据相比，它们很容易消耗2-5倍的空间。这是由于以下几个原因：</p>
+<ol>
+<li>对象头。每个不同的Java对象都有一个"对象头"，它大约16个字节，并包含诸如指向其类的指针之类的信息。对于其中数据很少的对象（例如一个<code>Int</code>字段），该对象可能大于数据。</li>
+<li>字符串。Java <code>String</code>相对于原始字符串数据有大约40个字节的开销（因为它们将其存储在<code>Char</code>s 数组中并保留诸如长度之类的额外数据），并且由于UTF-16的内部用法，因此将每个字符存储为<em>两个</em>字节<code>String</code>编码。因此，一个10个字符的字符串可以轻松消耗60个字节。</li>
+<li>链式结构数据结构。 常见的收集类（例如<code>HashMap</code>和<code>LinkedList</code>）使用链接的数据结构，其中每个条目（例如<code>Map.Entry</code>）都有一个"包装"对象。该对象不仅具有标题，而且还具有指向列表中下一个对象的指针（通常每个指针8个字节）。</li>
+<li>基本类型的集合通常将它们存储为"盒装"对象，例如<code>java.lang.Integer</code>。</li>
+</ol>
+<h2 id="41">4.1. 优化变量对象</h2>
+<p>减少内存消耗的第一种方法是避免使用Java功能，这些功能会增加开销，例如基于指针的数据结构和包装对象。做这件事有很多种方法：</p>
+<ol>
+<li>将数据结构设计为更友好的 对象数组和原始类型，而不是标准Java或Scala集合类（例如<code>HashMap</code>）。该<a href="http://fastutil.di.unimi.it/">fastutil</a> 库提供方便的集合类基本类型是与Java标准库兼容。</li>
+<li>尽可能避免使用带有许多小对象和指针的嵌套结构。</li>
+<li>考虑使用数字ID或枚举对象代替键的字符串。</li>
+<li>如果您的RAM少于32 GB，则设置JVM标志<code>-XX:+UseCompressedOops</code>以使指针为四个字节而不是八个字节。您可以在中添加这些选项 <a href="https://spark.apache.org/docs/latest/configuration.html#environment-variables"><code>spark-env.sh</code></a>。</li>
+</ol>
+<h2 id="42-io-">4.2. 优化IO--持久化</h2>
+<p>当您的对象仍然太大而无法进行优化存储时，减少内存使用的一种更简单的方法是持久化。</p>
+<p>使用<a href="https://spark.apache.org/docs/latest/rdd-programming-guide.html#rdd-persistence">RDD持久性API中</a>的序列化StorageLevels （例如）以<em>序列化</em>形式存储它们。然后，Spark将每个RDD分区存储为一个大字节数组。由于必须动态地反序列化每个对象，因此以串行形式存储数据的唯一缺点是访问时间较慢。</p>
+<p>如果您想以序列化形式缓存数据，我们强烈建议<a href="https://spark.apache.org/docs/latest/tuning.html#data-serialization">使用Kryo</a>，因为它导致的大小比Java序列化（当然也比原始Java对象）小。</p>
+<h2 id="43">4.3. 优化垃圾收集</h2>
+<p>参考资料 https://spark.apache.org/docs/latest/tuning.html#garbage-collection-tuning</p>
+<p>如果您在程序存储的RDD方面有较大的"搅动"，则JVM垃圾回收可能会成为问题。（在只读取RDD一次然后对其执行许多操作的程序中，这通常不是问题。）当Java需要逐出旧对象为新对象腾出空间时，它将需要遍历所有Java对象并查找未使用的。这里要记住的要点是，<em>垃圾回收的成本与Java对象的数量成正比</em>，因此使用具有较少对象的数据结构（例如<code>Int</code>s而不是a 的数组<code>LinkedList</code>）可以大大降低此成本。一种更好的方法是如上所述以序列化形式持久化对象：现在将只有<em>一个</em>每个RDD分区的对象（字节数组）。在尝试其他技术之前，首先尝试使用GC解决问题的方法是使用<a href="https://spark.apache.org/docs/latest/tuning.html#serialized-rdd-storage">序列化缓存</a>。</p>
+<p>由于任务的工作内存（运行任务所需的空间量）与节点上缓存的RDD之间的干扰，GC也会成为问题。我们将讨论如何控制分配给RDD缓存的空间以减轻这种情况。</p>
+<p><strong>衡量GC的影响</strong></p>
+<p>GC调整的第一步是收集有关垃圾收集发生频率和花费GC时间的统计信息。这可以通过添加<code>-verbose:gc -XX:+PrintGCDetails -XX:+PrintGCTimeStamps</code>Java选项来完成。（有关将Java选项传递给Spark作业的信息，请参阅<a href="https://spark.apache.org/docs/latest/configuration.html#Dynamically-Loading-Spark-Properties">配置指南</a>。）下次运行Spark作业时，每次发生垃圾收集时，您都会在工作日志中看到打印的消息。请注意，这些日志将位于群集的工作节点上（<code>stdout</code>位于其工作目录中的文件中），<em>而不是</em>驱动程序上。</p>
+<p><strong>高级GC调整</strong></p>
+<p>为了进一步调整垃圾回收，我们首先需要了解有关JVM中内存管理的一些基本信息：</p>
+<ul>
+<li>
+<p>Java Heap空间分为Young和Old两个区域。年轻一代用于保存寿命短的对象，而老一代则用于寿命更长的对象。</p>
+</li>
+<li>
+<p>年轻一代又分为三个区域[Eden，Survivor1，Survivor2]。</p>
+</li>
+<li>
+<p>垃圾收集过程的简化描述：当Eden已满时，将在Eden上运行次要GC，并将来自Eden和Survivor1的活动对象复制到Survivor2。幸存者区域被交换。如果对象足够旧或Survivor2已满，则将其移到"旧"。最后，当Old接近满时，将调用完整的GC。</p>
+</li>
+</ul>
+<p>在Spark中进行GC调整的目标是确保在旧一代中仅存储长寿命的RDD，并确保新世代具有足够的大小以存储短寿命的对象。这将有助于避免完整的GC收集任务执行期间创建的临时对象。可能有用的一些步骤是：</p>
+<ul>
+<li>
+<p>通过收集GC统计信息检查是否有太多垃圾回收。如果在任务完成之前多次调用一个完整的GC，则意味着没有足够的内存来执行任务。</p>
+</li>
+<li>
+<p>如果次要集合太多，但主要GC却不多，则为Eden分配更多的内存将有所帮助。您可以将Eden的大小设置为每个任务将需要多少内存的过高估计。如果确定Eden的大小为<code>E</code>，则可以使用选项设置Young一代的大小<code>-Xmn=4/3*E</code>。（按4/3比例放大也是为了考虑幸存者区域使用的空间。）</p>
+</li>
+<li>
+<p>在打印的GC统计信息中，如果OldGen即将满，请通过降低来减少用于缓存的内存量<code>spark.memory.fraction</code>；与减慢任务执行速度相比，缓存较少的对象更好。或者，考虑减小Young代的大小。<code>-Xmn</code>如果您如上所述进行设置，则意味着降低。如果不是，请尝试更改JVM <code>NewRatio</code>参数的值。许多JVM将此默认值设置为2，这意味着旧代占据了堆的2/3。它应该足够大，以使该分数超过<code>spark.memory.fraction</code>。</p>
+</li>
+<li>
+<p>使用尝试G1GC垃圾收集器<code>-XX:+UseG1GC</code>。在垃圾收集成为瓶颈的某些情况下，它可以提高性能。需要注意的是大执行人堆大小，可能重要的是增加了<a href="http://www.oracle.com/technetwork/articles/java/g1gc-1984535.html">G1区域大小</a> 与<code>-XX:G1HeapRegionSize</code></p>
+</li>
+<li>
+<p>例如，如果您的任务是从HDFS读取数据，则可以使用从HDFS读取的数据块的大小来估算任务使用的内存量。注意，解压缩块的大小通常是块大小的2或3倍。因此，如果我们希望拥有3或4个任务的工作空间，并且HDFS块大小为128 MB，则我们可以将Eden的大小估计为<code>4*3*128MB</code>。</p>
+</li>
+<li>
+<p>使用新设置监视垃圾回收所花费的频率和时间如何变化。</p>
+</li>
+</ul>
+<p>我们的经验表明，GC调整的效果取决于您的应用程序和可用内存量。有<a href="https://docs.oracle.com/javase/8/docs/technotes/guides/vm/gctuning/index.html">更多的微调选项</a>描述联机，但在较高的水平，管理GC如何充分频繁发生可以帮助减少开销。</p>
+<p>可以通过<code>spark.executor.extraJavaOptions</code>在作业的配置中设置来指定执行程序的GC调整标志。</p>
+<h1 id="_1">其他注意事项<a href="https://spark.apache.org/docs/latest/tuning.html#other-considerations"></a></h1>
+<h2 id="_2">并行度<a href="https://spark.apache.org/docs/latest/tuning.html#level-of-parallelism"></a></h2>
+<p>除非您为每个操作设置足够高的并行度，否则群集将无法充分利用。Spark根据文件的大小自动设置要在每个文件上运行的"映射"任务的数量（尽管您可以通过可选的参数来控制它<code>SparkContext.textFile</code>，等等），并且对于分布式"减少"操作（例如<code>groupByKey</code>和）<code>reduceByKey</code>，它使用最大的父文件RDD的分区数。您可以将并行性级别作为第二个参数传递（请参阅<a href="https://spark.apache.org/docs/latest/api/scala/index.html#org.apache.spark.rdd.PairRDDFunctions"><code>spark.PairRDDFunctions</code></a>文档），或将config属性设置<code>spark.default.parallelism</code>为更改默认值。通常，我们建议集群中每个CPU内核执行2-3个任务。</p>
+<h2 id="_3">减少任务的内存使用<a href="https://spark.apache.org/docs/latest/tuning.html#memory-usage-of-reduce-tasks"></a></h2>
+<p>有时，您会收到OutOfMemoryError的原因不是因为您的RDD不能容纳在内存中，而是因为您的一项任务（例如中的reduce任务之一）的工作集<code>groupByKey</code>太大。斯巴克的整理操作（<code>sortByKey</code>，<code>groupByKey</code>，<code>reduceByKey</code>，<code>join</code>，等）建立每个任务中的哈希表来进行分组，而这往往是大的。此处最简单的解决方法是 <em>提高并行度</em>，以使每个任务的输入集更小。Spark可以高效地支持短至200 ms的任务，因为它可以在多个任务中重用一个执行器JVM，并且任务启动成本低，因此您可以安全地将并行级别提高到集群中核心的数量以上。</p>
+<h2 id="_4">广播大变量<a href="https://spark.apache.org/docs/latest/tuning.html#broadcasting-large-variables"></a></h2>
+<p>使用中 可用的<a href="https://spark.apache.org/docs/latest/rdd-programming-guide.html#broadcast-variables">广播功能</a><code>SparkContext</code>可以极大地减少每个序列化任务的大小，以及在群集上启动作业的成本。如果您的任务使用驱动程序中的任何大对象（例如，静态查找表），请考虑将其转换为广播变量。Spark在主服务器上打印每个任务的序列化大小，因此您可以查看它来确定任务是否太大；通常，大约20 KB以上的任务可能值得优化。</p>
+<h2 id="_5">数据局部性<a href="https://spark.apache.org/docs/latest/tuning.html#data-locality"></a></h2>
+<p>数据局部性可能会对Spark作业的性能产生重大影响。如果数据和对其进行操作的代码在一起，则计算速度往往会很快。但是，如果代码和数据是分开的，那么一个必须移到另一个。通常，从一个地方到另一个地方传送序列化代码要比块数据更快，因为代码大小比数据小得多。Spark围绕此数据本地性一般原则构建调度。</p>
+<p>数据局部性是数据与处理它的代码之间的接近程度。根据数据的当前位置，可分为多个级别。从最远到最远的顺序：</p>
+<ul>
+<li><code>PROCESS_LOCAL</code>数据与正在运行的代码位于同一JVM中。这是最好的位置</li>
+<li><code>NODE_LOCAL</code>数据在同一节点上。示例可能在同一节点上的HDFS中，或者在同一节点上的另一执行程序中。这比<code>PROCESS_LOCAL</code>由于数据必须在进程之间传输而要慢一些</li>
+<li><code>NO_PREF</code> 可以从任何地方快速访问数据，并且不受位置限制</li>
+<li><code>RACK_LOCAL</code>数据位于同一服务器机架上。数据位于同一机架上的其他服务器上，因此通常需要通过单个交换机通过网络发送</li>
+<li><code>ANY</code> 数据在网络上的其他位置，而不是在同一机架中</li>
+</ul>
+<p>Spark倾向于在最佳位置级别安排所有任务，但这并不总是可能的。在任何空闲执行器上没有未处理数据的情况下，Spark会切换到较低的本地级别。有两种选择：a）等待忙碌的CPU释放以在同一服务器上的数据上启动任务，或b）立即在需要将数据移动到更远的地方启动新任务。</p>
+<p>Spark通常要做的是稍等一下，以期释放繁忙的CPU。一旦超时到期，它将开始将数据从很远的地方移到空闲的CPU中。每个级别之间的回退等待超时可以单独配置，也可以一起配置在一个参数中。有关详细信息，请参见<a href="https://spark.apache.org/docs/latest/configuration.html#scheduling">配置页面</a><code>spark.locality</code>上的参数。如果您的任务很长并且位置不佳，则应该增加这些设置，但是默认设置通常效果很好。<a href="https://spark.apache.org/docs/latest/configuration.html#scheduling"></a></p>
+<h2 id="55">5.5. 总结</h2>
+<p>这是一个简短的指南，指出了在调整Spark应用程序时应了解的主要问题-最重要的是数据序列化和内存调整。</p>
+<blockquote>
+<p>对于大多数程序，切换到<strong>Kryo序列化</strong>并以序列化形式保留数据将解决大多数常见的性能问题。</p>
+</blockquote>
+<h1 id="6">6. 参考资料</h1>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

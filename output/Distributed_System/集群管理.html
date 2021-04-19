@@ -35,16 +35,22 @@
 <div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
 <li><a href="#_1">集群管理概述</a></li>
+<li><a href="#_2">规划集群</a></li>
+<li><a href="#_3">管理集群</a></li>
+<li><a href="#_4">集群安全</a></li>
+<li><a href="#_5">可选集群服务</a></li>
 </ul>
 </div>
 <h1 id="_1">集群管理概述</h1>
 <p>集群管理概述面向任何创建和管理 Kubernetes 集群的读者人群。 我们假设你对用户指南中的概念大概了解。</p>
-<p>规划集群<br />
-管理集群<br />
-集群安全<br />
-可选集群服务<br />
-规划集群<br />
-查阅 安装 中的指导，获取如何规划、建立以及配置 Kubernetes 集群的示例。本文所列的文章称为发行版 。</p>
+<ol>
+<li>规划集群</li>
+<li>管理集群</li>
+<li>集群安全</li>
+<li>可选集群服务</li>
+</ol>
+<h1 id="_2">规划集群</h1>
+<p>查阅 安装 中的指导，获取如何规划、建立以及配置 Kubernetes 集群的示例。本文所列的文章称为发行版 。</p>
 <p>在选择一个指南前，有一些因素需要考虑：</p>
 <p>你是打算在你的电脑上尝试 Kubernetes，还是要构建一个高可用的多节点集群？请选择最适合你需求的发行版。<br />
 如果你正在设计一个高可用集群，请了解在多个 zones 中配置集群。<br />
@@ -55,12 +61,12 @@
 你只想运行一个集群，还是打算活动开发 Kubernetes 项目代码？如果是后者，请选择一个活动开发的发行版。某些发行版只提供二进制发布版，但提供更多的选择。<br />
 让你自己熟悉运行一个集群所需的组件 。<br />
 请注意：不是所有的发行版都被积极维护着。请选择测试过最近版本的 Kubernetes 的发行版。</p>
-<p>管理集群<br />
-管理集群叙述了和集群生命周期相关的几个主题：创建一个新集群、升级集群的 master 和 worker 节点、执行节点维护（例如内核升级）以及升级活动集群的 Kubernetes API 版本。</p>
+<h1 id="_3">管理集群</h1>
+<p>管理集群叙述了和集群生命周期相关的几个主题：创建一个新集群、升级集群的 master 和 worker 节点、执行节点维护（例如内核升级）以及升级活动集群的 Kubernetes API 版本。</p>
 <p>学习如何 管理节点.</p>
 <p>学习如何设定和管理集群共享的 资源配额 。</p>
-<p>集群安全<br />
-Certificates 描述了使用不同的工具链生成证书的步骤。</p>
+<h1 id="_4">集群安全</h1>
+<p>Certificates 描述了使用不同的工具链生成证书的步骤。</p>
 <p>Kubernetes 容器环境 描述了 Kubernetes 节点上由 Kubelet 管理的容器的环境。</p>
 <p>控制到 Kubernetes API 的访问描述了如何为用户和 service accounts 建立权限许可。</p>
 <p>用户认证阐述了 Kubernetes 中的认证功能，包括许多认证选项。</p>
@@ -71,9 +77,9 @@ Certificates 描述了使用不同的工具链生成证书的步骤。</p>
 <p>保护 kubelet<br />
 Master 节点通信<br />
 TLS 引导<br />
-Kubelet 认证/授权<br />
-可选集群服务<br />
-DNS 与 SkyDNS 集成描述了如何将一个 DNS 名解析到一个 Kubernetes service。</p>
+Kubelet 认证/授权</p>
+<h1 id="_5">可选集群服务</h1>
+<p>DNS 与 SkyDNS 集成描述了如何将一个 DNS 名解析到一个 Kubernetes service。</p>
 <p>记录和监控集群活动阐述了 Kubernetes 的日志如何工作以及怎样实现。</p>
 </div>
 <div id="renote">

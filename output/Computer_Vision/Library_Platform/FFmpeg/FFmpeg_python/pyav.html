@@ -34,18 +34,22 @@
 <div id="title">02_pyav--FFmpeg的python实现</div>
 <div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
-<li><a href="#_1">实践</a><ul>
-<li><a href="#_2">关键帧提取</a></li>
+<li><a href="#pyav">PyAV库使用介绍</a></li>
+<li><a href="#_1">安装</a></li>
+<li><a href="#_2">使用示例</a><ul>
+<li><a href="#_3">抽取所有帧</a></li>
+</ul>
+</li>
+<li><a href="#_4">实践</a><ul>
+<li><a href="#_5">关键帧提取</a></li>
 </ul>
 </li>
 </ul>
 </div>
 <p>官网 https://pyav.org/docs/stable/</p>
-<p>PyAV库使用介绍<br />
-PyAV<br />
-Posted by Shaozi on March 26, 2020<br />
-目前使用最广泛的视频编解码库为FFmepg，虽然该库有Python的封装ffmpeg-python，但是该封装功能简单，只能替代在python中调用命令行工具罢了。PyAV同样是FFmpeg封装，不过功能更为强大，能够灵活的编解码视频和音频，并且支持Python常用的数据格式（如numpy）。由于PyAV在ffmpeg的基础上进行开发，所以并不会提升编解码的效率。但是能够方便Python的开发者对视频或者音频数据进行处理。在模型的训练测试中能够发挥很好的作用。</p>
-<p>安装</p>
+<h1 id="pyav">PyAV库使用介绍</h1>
+<p>目前使用最广泛的视频编解码库为FFmepg，虽然该库有Python的封装ffmpeg-python，但是该封装功能简单，只能替代在python中调用命令行工具罢了。PyAV同样是FFmpeg封装，不过功能更为强大，能够灵活的编解码视频和音频，并且支持Python常用的数据格式（如numpy）。由于PyAV在ffmpeg的基础上进行开发，所以并不会提升编解码的效率。但是能够方便Python的开发者对视频或者音频数据进行处理。在模型的训练测试中能够发挥很好的作用。</p>
+<h1 id="_1">安装</h1>
 <div class="hlcode"><pre><span class="cp"># 通过conda-forge，该方法会同时安装需要的ffmpeg库，比较方便</span>
 <span class="n">conda</span> <span class="n">install</span> <span class="n">av</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span>
 </pre></div>
@@ -66,11 +70,11 @@ Posted by Shaozi on March 26, 2020<br />
 <span class="p">.</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">build</span><span class="o">-</span><span class="n">deps</span>
 <span class="cp">## Build PyAV.</span>
 <span class="n">make</span>
-<span class="err">使用示例</span>
 </pre></div>
 
 
-<p>抽取所有帧</p>
+<h1 id="_2">使用示例</h1>
+<h3 id="_3">抽取所有帧</h3>
 <div class="hlcode"><pre><span class="n">import</span> <span class="n">av</span>
 
 <span class="n">container</span> <span class="o">=</span> <span class="n">av</span><span class="p">.</span><span class="n">open</span><span class="p">(</span><span class="n">path_to_video</span><span class="p">)</span>
@@ -173,8 +177,18 @@ Posted by Shaozi on March 26, 2020<br />
 
 
 <p>以上代码示例基本满足通常使用需求，更多内容可以参考文档和git主页</p>
-<h1 id="_1">实践</h1>
-<h2 id="_2">关键帧提取</h2>
+<div class="hlcode"><pre><span class="n">video</span> <span class="o">=</span> <span class="n">av</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s">&#39;rtmp://10.106.18.31/live/test&#39;</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">packet</span> <span class="ow">in</span> <span class="n">video</span><span class="o">.</span><span class="n">demux</span><span class="p">():</span>
+    <span class="k">print</span> <span class="p">(</span><span class="n">acket</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">packet</span><span class="o">.</span><span class="n">decode</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">packet</span><span class="o">.</span><span class="n">stream</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s">&#39;video&#39;</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&quot;frame = &quot;</span><span class="p">,</span> <span class="n">frame</span><span class="p">)</span>
+</pre></div>
+
+
+<h1 id="_4">实践</h1>
+<h2 id="_5">关键帧提取</h2>
 <div class="hlcode"><pre><span class="kn">import</span> <span class="nn">av</span>
 <span class="kn">import</span> <span class="nn">av.datasets</span>
 

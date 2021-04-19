@@ -34,17 +34,29 @@
 <div id="title">多分类问题求解思路</div>
 <div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
-<li><a href="#_1">引言</a></li>
-<li><a href="#1">定义[1]</a></li>
-<li><a href="#_2">任务分解</a></li>
-<li><a href="#4-calibration1">4. 阈值校准(Calibration)[1]</a></li>
+<li><a href="#1">1. 引言</a></li>
+<li><a href="#2-1">2. 定义[1]</a></li>
+<li><a href="#3">3. 任务分解</a></li>
+<li><a href="#4-calibration1">4. 阈值校准(Calibration)[1]</a><ul>
+<li><a href="#401">4.0.1. 排序指标</a></li>
+</ul>
+</li>
 </ul>
 </div>
-<h1 id="_1">引言</h1>
+<p>其实A Review on Multi-Label Learning Algorithms也并不长，只有19页，而且还介绍得比较全面。Multi-Label 和传统的分类问题的区别主要在于多Label下，输出空间呈现指数级增长。那么目前对于Multi-Label的这类特性，学界一般是集中在更好的分析Label之间的相关性，就可以避免这种指数增长。主要的Strategy大致可以分为三类：</p>
+<ol>
+<li><code>First-Order Strategy</code>: 考虑的是label之间相互独立，那么就可以把Multi-label问题转换为普通的分类问题。如果一个Label有多类的话，那么就用传统的<code>One vs All(OvA)</code>来解决。</li>
+<li><code>Second-Order Strategy</code>: 这一类是考虑Label之间的两两相关性，结果会导致计算复杂度有显著的增加。</li>
+<li><code>High-Order Strategy</code>: 这个就是考虑多Label之间的相关性，计算复杂度会更高。目前有的一些分类算法：</li>
+<li>Binary Relevance，如名字所写，这是一个First-Order Strategy；</li>
+<li>Classifier Chains，把原问题分解成有先后顺序的一系列Binary Classification，然后前边的Binary Classification会对后边的产生影响；</li>
+<li>Calibrated label ranking，这个有点像Multi-Classification中One vs One的策略，就是通过两两对比，然后进行投票决定分类效果。题主还是最开始提到的那篇论文吧，写得蛮全面的。</li>
+</ol>
+<h1 id="1">1. 引言</h1>
 <p>真实世界中的分类任务有时候是多标签分类任务。本文系统总结了多标签分类学习，从它的定义和性质开始，到多标签学习的基本思想和经典算法，最后重点介绍了基于神经网络的多标签学习。</p>
-<h1 id="1">定义[1]</h1>
+<h1 id="2-1">2. 定义[1]</h1>
 <p>多标签学习(MLL)研究的是一个样本由一个样例和一个集合的标签组成。假设 [公式] 表示 [公式] 样本空间， [公式] 表示标签空间。多标签学习的任务是从训练集 [公式] 学习一个函数 [公式] 。对于每个多标签样本 [公式] ， [公式]是一个 [公式] 维特征向量， [公式] 是标签集合。对于一个没见过的样本 [公式] ，多标签分类器 [公式] 预测 [公式] 作为该样本的标签集合。</p>
-<h1 id="_2">任务分解</h1>
+<h1 id="3">3. 任务分解</h1>
 <p>MLL包括两个主要任务：<br />
 1. 多标签分类(MLC)<br />
 2. 标签排序(LR)。</p>
@@ -115,8 +127,8 @@ Average Precision: [公式] 平均精确度衡量了相关标签排在一个特�
 <p>宏观平均在标签上假设权重相等，微观平均在样例上假设权重相等。有：</p>
 <p>[公式]</p>
 <p>[公式]</p>
-<p>6.2.2 排序指标<br />
-宏观平均AUC:</p>
+<h3 id="401">4.0.1. 排序指标</h3>
+<p>宏观平均AUC:</p>
 <p>[公式]</p>
 <p>这里 [公式] 。</p>
 <p>微观平均AUC：</p>
