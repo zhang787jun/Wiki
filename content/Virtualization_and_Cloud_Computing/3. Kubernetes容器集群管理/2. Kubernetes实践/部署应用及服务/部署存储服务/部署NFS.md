@@ -7,13 +7,15 @@ date: 2099-06-02 00:00
 [TOC]
 # 1. NFS前言
 
-网络文件系统，英文Network File System(NFS)，是由SUN公司研制的UNIX表示层协议(presentation layer protocol)，能使使用者访问网络上别处的文件就像在使用自己的计算机一样。
+网络文件系统（Network File System，NFS），是由SUN公司研制的UNIX表示层协议(presentation layer protocol)，能使使用者访问网络上别处的文件就像在使用自己的计算机一样。
 
 
 Kubernetes集群中NFS类型的存储没有内置 Provisioner。但是您可以在集群中为NFS配置外部Provisioner。
 
 `Nfs-client-provisioner`是一个开源的NFS 外部Provisioner，利用NFS Server为Kubernetes集群提供持久化存储，并且支持动态创建PV。但是nfs-client-provisioner本身不提供NFS，需要现有的NFS服务器提供存储。
+## Nfs-client
 
+## Nfs-client
 
 # 2. 部署说明
 `nfs-client-provisioner`在集群中以**deployment**的方式运行, **副本数为1**，以外部Provisioner在集群中运行；
@@ -196,18 +198,90 @@ roleRef:
 
 ## 3.3. 处理存储问题
 
- 
+### 创建 nfs-client-provisioner
+
+需要提前明确的几个参数：
+
+1. RBAC文件的namespace
+2. NFS Server IP
+3. NFS挂载卷
+
+
+需要定义的几个参数
+
+1. `PROVISIONER_NAME`
+
+**方案1** 
+```shell
+helm repo add apphub https://apphub.aliyuncs.com
+
+helm install nfs-client-provisioner \
+  --set storageClass.name=nfs-client \
+  --set storageClass.defaultClass=true \
+  --set nfs.server=192.168.92.56 \
+  --set nfs.path=/ \
+  apphub/nfs-client-provisioner
+```
+
+**方案2**
+
+```shell
+cat << EOF >nfs-client-provisioner.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nfs-client-provisioner
+  labels:
+    app: nfs-client-provisioner
+  # replace with namespace where provisioner is deployed
+  namespace: default   #与RBAC文件中的namespace保持一致
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nfs-client-provisioner
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app: nfs-client-provisioner
+  template:
+    metadata:
+      labels:
+        app: nfs-client-provisioner
+    spec:
+      serviceAccountName: nfs-client-provisioner
+      containers:
+        - name: nfs-client-provisioner
+          image: quay.io/external_storage/nfs-client-provisioner:latest
+          volumeMounts:
+            - name: nfs-client-root
+              mountPath: /persistentvolumes
+          env:
+            - name: PROVISIONER_NAME
+              value: qgg-nfs-storage  #provisioner名称,请确保该名称与 nfs-StorageClass.yaml文件中的provisioner名称保持一致
+            - name: NFS_SERVER
+              value: 172.16.155.227   #NFS Server IP地址
+            - name: NFS_PATH  
+              value: /data/volumes    #NFS挂载卷
+      volumes:
+        - name: nfs-client-root
+          nfs:
+            server: 172.16.155.227  #NFS Server IP地址
+            path: /data/volumes     #NFS 挂载卷
+```
+
 
 ### 3.3.1. 创建StorageClass
 ```shell
-cat << EOF > my_StorageClass.yaml
+cat << EOF > nfs-StorageClass.yaml
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
   name: kubeflow-nfs-storage
 provisioner: kubeflow/nfs
 EOF
-kubectl create -f my_StorageClass.yaml
+kubectl create -f nfs-StorageClass.yaml
 
 # 验证
 kubectl get StorageClass
