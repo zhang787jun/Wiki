@@ -10,7 +10,6 @@ date: 2099-06-02 00:00
 
 ## 1.1. PySpark Shell 
 
-### 验证与使用
 
 PySpark提供了PySpark Shell ，它将Python API链接到spark核心并初始化Spark上下文。
 ```shell
@@ -166,10 +165,18 @@ https://blog.csdn.net/wyqwilliam/article/details/84678867
 # 3. 实践
 
 
+```python
+Stop the current Spark Session
 
-## 连接 
+spark.sparkContext.stop()
+Create a Spark Session
 
-Master URLs
+spark = SparkSession.builder.config(conf=conf).getOrCreate()
+```
+
+## 3.1. 连接 
+
+**Master URLs**
 传递给 Spark 的 master URL 可以使用下列格式中的一种 :
 
 Master URL| Meaning
@@ -184,36 +191,41 @@ spark://HOST1:PORT1,HOST2:PORT2|连接至给定的 Spark standalone cluster with
 mesos://HOST:PORT|连接至给定的 Mesos 集群. 该 port（端口）必须有一个作为您的配置来使用，默认是 5050。或者，对于使用了 ZooKeeper 的 Mesos cluster 来说，使用 mesos://zk://.... 。使用 --deploy-mode cluster, 来提交，该 HOST:PORT 应该被配置以连接到 MesosClusterDispatcher.
 yarn|连接至一个 YARN cluster in client or cluster mode 取决于 --deploy-mode. 的值在 client 或者 cluster 模式中。该 cluster 的位置将根据 HADOOP_CONF_DIR 或者 YARN_CONF_DIR 变量来找到。
 
-
-## 查看信息
+## 3.2. 查看信息
 
 ```python
 myconf=sc._conf
 myconf.getAll()
 ```
-## 3.1. shell
+
+### 3.2.1. 节点数量
 
 
-SparkContext示例 - PySpark Shell
-现在你已经对SparkContext有了足够的了解，让我们在PySpark shell上运行一个简单的例子。 在此示例中，我们将计算README.md文件中带有字符“a”或“b”的行README.md 。 那么，让我们说一个文件中有5行，3行有'a'字符，那么输出将是→ Line with a: 3 。 字符'b'也是如此。
+```python
+spark = SparkSession.builder.master("local[*]").getOrCreate()
+sc = spark._jsc.sc() 
+n_workers = len(set([executor.host() for executor in sc.statusTracker().getExecutorInfos()]))
+print(n_workers)
+```
+## 3.3. shell
 
-Note - 我们不会在以下示例中创建任何SparkContext对象，因为默认情况下，当PySpark shell启动时，Spark会自动创建名为sc的SparkContext对象。 如果您尝试创建另一个SparkContext对象，您将收到以下错误 - "ValueError: Cannot run multiple SparkContexts at once".
-```shell
-PySpark Shell
- logFile = "file:///home/hadoop/spark-2.1.0-bin-hadoop2.7/README.md"
- logData = sc.textFile(logFile).cache()
- numAs = logData.filter(lambda s: 'a' in s).count()
- numBs = logData.filter(lambda s: 'b' in s).count()
- print "Lines with a: %i, lines with b: %i" % (numAs, numBs)
+默认情况下，当PySpark shell启动时，Spark会自动创建名为sc的SparkContext对象。
+
+```python
+logFile = "file:///home/hadoop/spark-2.1.0-bin-hadoop2.7/README.md"
+logData = sc.textFile(logFile).cache()
+numAs = logData.filter(lambda s: 'a' in s).count()
+numBs = logData.filter(lambda s: 'b' in s).count()
+print "Lines with a: %i, lines with b: %i" % (numAs, numBs)
+>>>
 Lines with a: 62, lines with b: 30
-
 ```
 
-## 3.2. python
+## 3.4. python
 
-### 3.2.1. 连接集群--创建 SparkContext
+### 3.4.1. 连接集群--创建 SparkContext
 
-#### 3.2.1.1. spark on  standalone
+#### 3.4.1.1. spark on  standalone
 
 
 ```python
@@ -224,7 +236,7 @@ sc = SparkContext("local", "first app")
 
 
 
-#### 3.2.1.2. spark on k8s
+#### 3.4.1.2. spark on k8s
 
 ```python
 import os

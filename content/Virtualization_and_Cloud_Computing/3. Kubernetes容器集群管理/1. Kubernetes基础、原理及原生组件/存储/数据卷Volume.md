@@ -1,32 +1,87 @@
 ---
-title: "PVC"
+title: "卷Volume"
 layout: page
 date: 2099-06-02 00:00
 ---
 
 [TOC]
 
-# 1. 概念
+# 1. 卷概述
 
+## 1.1. 为什么要由数据卷
+
+Kubernetes Volume（数据卷）主要解决了如下两方面问题：
+
+**数据持久性**：通常情况下，容器运行起来之后，写入到其文件系统的文件暂时性的。当容器崩溃后，kubelet 将会重启该容器，此时原容器运行后写入的文件将丢失，因为容器将重新从镜像创建。
+**数据共享**：同一个 Pod（容器组）中运行的容器之间，经常会存在共享文件/文件夹的需求
+
+```shell
+Volume= 数据持久+数据共享的解决方案（存储资源）
+```
+
+## 1.2. Kubernetes支持的卷类型
+
+Kubernetes 支持 20 种存储卷类型（可参考 Types of Persistent Volumes (opens new window)），如下所示：
+
+### 1.2.1. 非持久性存储
+emptyDir
+HostPath (只在单节点集群上用做测试目的)
+### 1.2.2. 网络连接性存储
+SAN：iSCSI、ScaleIO Volumes、FC (Fibre Channel)
+NFS：nfs，cfs
+### 1.2.3. 分布式存储
+Glusterfs
+RBD (Ceph Block Device)
+CephFS
+Portworx Volumes
+Quobyte Volumes
+### 1.2.4. 云端存储
+GCEPersistentDisk
+AWSElasticBlockStore
+AzureFile
+AzureDisk
+Cinder (OpenStack block storage)
+VsphereVolume
+StorageOS
+### 1.2.5. 自定义存储
+FlexVolume
+
+
+## 1.3. 数据卷的操作
+### 1.3.1. 挂载
+
+挂载是指将定义在 Pod 中的数据卷关联到容器
+
+### 1.3.2. PVC声明与管理
+
+
+
+
+# 2. PV
+
+
+```dot
+digraph{
+  PVC声明->PV资源[label="申请"]
+}
+
+```
 
 用于存储和检索数据的传统卷作为 Azure 存储支持的 Kubernetes 资源创建。 你可以手动创建这些数据卷并直接分配给 Pod，也可以让 Kubernetes 自动创建它们。 这些数据卷可以使用 Azure 磁盘或 Azure 文件：
 Azure 磁盘 可用于创建 Kubernetes DataDisk 资源。 Azure 磁盘可以使用由高性能 SSD 支持的 Azure 高级存储，也可以使用由普通 HDD 支持 Azure 标准存储。 对于大部分生产和开发工作负荷，请使用高级存储。 Azure 磁盘以 ReadWriteOnce 的形式装载，因此仅可用于单个 Pod。 对于可同时由多个 Pod 访问的存储卷，请使用 Azure 文件存储。
 Azure 文件 可用于将 Azure 存储帐户支持的 SMB 3.0 共享装载到 Pod。 借助 Azure 文件,可跨多个节点和 Pod 共享数据。 文件可以使用由常规 HDD 支持的 Azure 标准存储，也可以使用由高性能 SSD 支持的Azure 高级存储。
 
-## PV
+## 2.1. 什么是PV
 
-什么是PV
-PV全称叫做Persistent Volume，持久化存储卷。它是用来描述或者说用来定义一个存储卷的，这个通常都是有运维或者数据存储工程师来定义。比如下面我们定义一个NFS类型的PV：
-## PVC
+PV全称叫做Persistent Volume，持久化存储卷,是一类存储资源。它是用来描述或者说用来定义一个存储卷的，这个通常都是有运维或者数据存储工程师来定义。
+## 2.2. PVC
 `PVC` 的全称是：`Persistent Volume Claim`（持久化卷声明），PVC 是用户存储的一种声明。
 
 PVC 和 Pod 比较类似，Pod 消耗的是节点，PVC 消耗的是 PV 资源，Pod 可以请求 CPU 和内存，而 PVC 可以请求特定的存储空间和访问模式。对于真正使用存储的用户不需要关心底层的存储实现细节，只需要直接使用 PVC 即可。
-## StorageClass
 
+# 3. 使用
 
-PV是运维人员来创建的，开发操作PVC，可是大规模集群中可能会有很多PV，如果这些PV都需要运维手动来处理这也是一件很繁琐的事情，所以就有了动态供给概念，也就是Dynamic Provisioning。而我们上面的创建的PV都是静态供给方式，也就是Static Provisioning。而动态供给的关键就是StorageClass，它的作用就是创建PV模板
-# 2. 使用
-## 2.1. 准备工作--安装nfs
+## 3.1. 准备工作--安装nfs
 在使用 PVC 之前，我们还得把**所有节点**上的 nfs 客户端给安装上，比如我们这里：
 
 安装命令如下：
@@ -40,7 +95,7 @@ sudo apt update
 sudo apt install nfs-kernel-server
 ```
 
-## 2.2. 新建 PVC
+## 3.2. 新建 PVC
 同样的，我们来新建一个数据卷声明，来请求 1Gi 的存储容量，访问模式也是 ReadWriteOnce，YAML 文件如下：
 ```yml
 #(pvc-nfs.yaml)
@@ -191,6 +246,5 @@ service "nfs-pvc" configured
 $ ls /data/k8s/
 index.html  nginxpvc-test
 $ ls /data/k8s/nginxpvc-test/
-
 
 ```
