@@ -1,5 +1,5 @@
 ---
-title: "Tensorflow 基本操作"
+title: "Tensorflow_在RNN实践中的几点理解"
 date: 2019-06-17 00:00
 ---
 # 关于RNN的几点理解

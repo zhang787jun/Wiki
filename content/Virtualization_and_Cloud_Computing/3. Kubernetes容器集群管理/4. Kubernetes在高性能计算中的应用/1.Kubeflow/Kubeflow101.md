@@ -59,5 +59,3 @@ List of Kubeflow components available
 
 # 2. 参考资料 
 
-1.[阿里云Kubeflow 1.0 上线： 体验生产级的机器学习平台
-](https://developer.aliyun.com/article/758776)

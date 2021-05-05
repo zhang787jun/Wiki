@@ -155,7 +155,7 @@ np.add(a, 1, out=a)    # 0.008843
 
 numpy 不支持GPU, pytoch 可以作为 GPU 版本的 NumPy 替代品。
 
-# 用好numpy
+# 2. 用好numpy
 在计算方面，实际上有三个概念使NumPy具有强大的功能：
 
 1. 向量化
@@ -163,7 +163,7 @@ numpy 不支持GPU, pytoch 可以作为 GPU 版本的 NumPy 替代品。
 3. 索引编制
 
 参考： https://realpython.com/numpy-array-programming/
-# 2. 更小的numpy
+# 3. 更小的numpy
 主要针对内存
 
 ```python
@@ -193,7 +193,7 @@ numpy 不支持GPU, pytoch 可以作为 GPU 版本的 NumPy 替代品。
 numpy 默认浮点为float64
 
 
-# 3. 测试
+# 4. 测试
 
 ```python
 # 测试用例1--SVD 奇异值分解
@@ -216,7 +216,7 @@ time cost 0:00:13.737275 # windows conda numpy
 time cost 0:00:20.864863 # colab Linux numpy
 ```
 
-# 连续内存
+# 5. 连续内存
 
 np.ascontiguousarray
 ascontiguousarray函数将一个内存不连续存储的数组转换为内存连续存储的数组，使得运行速度更快。
@@ -318,7 +318,7 @@ array([[ 0,  1,  2,  3],
 Numpy文档
 
 
-# 4. 参考资料
+# 6. 参考资料
 
 [^1]: How To Make Your Pandas Loop 71803 Times Faster https://towardsdatascience.com/how-to-make-your-pandas-loop-71-803-times-faster-805030df4f06
 

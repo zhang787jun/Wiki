@@ -1,13 +1,29 @@
 ---
-title: "更快的Tensorflow"
+title: "为了更快的Tensorflow"
 date: 2019-06-12 00:00
 render: True 
 tag: Tensorflow,框架,AI,
 ---
 
+# 最关键--理解算法
+
+# 最好--好的硬件
+
+```python
+
+import tensorflow as tf
+tf.test.is_gpu_available()
+tf.test.is_built_with_cuda()
+
+```
+
 # 测试
 
 ```python
+
+import tensorflow as tf
+tf.test.is_gpu_available()
+tf.test.is_built_with_cuda()
 
 
 import numpy as np

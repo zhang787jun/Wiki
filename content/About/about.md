@@ -14,6 +14,23 @@ Hello, 大家好！
 
 但纵使这里有这样那样的不足，还是很高兴有缘与您见面，欢迎指导、交流。
 
+
+![image](https://img.shields.io/badge/图学习-PyG-blue.svg)
+![image](https://img.shields.io/badge/NLP-Tensorflow-orange.svg)
+![image](https://img.shields.io/badge/推荐-Tensorflow,Xgboost-orange.svg)
+![image](https://img.shields.io/badge/推荐-Tensorflow-orange.svg)
+![image](https://img.shields.io/badge/时序-Tensorflow-orange.svg)
+![image](https://img.shields.io/badge/CV-Pytorch,OpenCV,Gst-blue.svg)
+![image](https://img.shields.io/badge/时序,IOT-TensorFlow,sklearn-orange.svg)
+
+
+**体会**
+
+优秀的写作是为了看的人更好的理解，要关注阅读者需要的输入什么，不是满足写作人的内容输出
+
+很遗憾，相比于blog及专栏，这个wiki还真是更面向自我的一个空间。
+
+
 # 技术实现
 
 整个Wiki基于 [Simiki](http://simiki.org/) 实现

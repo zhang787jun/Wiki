@@ -129,7 +129,7 @@ kubectl create -f StorageClass.yaml
 ```
 
 
-## 3.2. 查看
+## 3.2. 查看SC 信息
 
 
 ```shell
@@ -140,7 +140,7 @@ NAME                             PROVISIONER    AGE
 kubeflow-nfs-storage (default)   kubeflow/nfs   5d8h
 ```
 
-## 3.3. 默认配置
+## 3.3. 修改SV配置
 
 ```shell
 # 通过kubectl patch 打补丁的方式修改meta data 
@@ -151,9 +151,27 @@ kubectl patch storageclass managed-nfs-storage -p '{"metadata": {"annotations":{
 kubectl patch storageclass alicloud-disk-ssd -p '{"metadata": {"annotations":{"storageclass.kubernetes.io/is-default-class":"false"}}}'
 ```
 
+## 通过SC 创建PVC
+```shell
+# 创建PVC
+cat << EOF >test-claim.yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mytomcat-pvc
+spec:
+  storageClassName:  kubeflow-nfs-storage
+  accessModes:
+    - ReadWriteMany
+  resources: 
+    requests:
+      storage: 500Mi
+EOF
+kubectl apply -f test-claim.yaml
+``` 
 
 # 4. 实例
-## 配置 nfs 
+
 
 
 ## 4.1. Azure

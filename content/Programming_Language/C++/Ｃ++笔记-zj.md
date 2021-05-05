@@ -4,9 +4,9 @@ layout: page
 date: 2099-06-02 00:00
 ---
 [TOC]
-# c++笔记
 
-## C++简介
+
+# C++简介
 ## 安装C++
 ### 1. 文本编辑器
 ### 2. 编译器
@@ -38,12 +38,16 @@ g++ helloworld.cpp
 
 由于命令行中未指定可执行程序的文件名，编译器采用默认的 a.out。程序可以这样来运行：
 
+```shell
 $ ./a.out
 hello, world
+```
 更普遍的做法是通过 -o 选项指定可执行程序的文件名。下面的命令将产生名为 helloworld 的可执行文件：
 
+```shell
 $ g++ helloworld.cpp -o helloworld
 
+```
 在命令行中输入程序名可使之运行：
 
 $ ./helloworld
@@ -91,6 +95,8 @@ int main(int argc,char *argv[])
 ```c++
 g++ hellospeak.cpp speak.cpp -o hellospeak
 ```
+
+
 PS：这里说一下为什么在命令中没有提到 speak.h 这个文件，原因是在 speak.cpp 中包含有 #include"speak.h" 这句代码，它的意思是搜索系统头文件目录之前将先在当前目录中搜索文件 speak.h,而 speak.h 正在该目录中，不用再在命令中指定了。
 
 源文件生成对象文件

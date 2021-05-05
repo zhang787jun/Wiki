@@ -15,7 +15,3 @@ OpenCL™ (Open Computing Language) is an open, royalty-free standard for cross-
 
 CUDA是一个基于Nvidia GPU的并行计算的架构。CUDA最主要的包含两个方面：一个是ISA指令集架构；第二硬件计算引擎；实际上是硬件和指令集。 也就是说我们可以把CUDA看做是与X86或者cell类似的架构，但是是基于是GPU，而不是传统的CPU。
 
-作者：Boy Holy
-链接：https://www.zhihu.com/question/19780484/answer/33008684
-来源：知乎
-著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
