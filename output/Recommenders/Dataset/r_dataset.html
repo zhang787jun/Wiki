@@ -1,0 +1,217 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>推荐系统数据集 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Recommenders">Recommenders</a>&nbsp;»&nbsp;<a href="/Wiki/#-Dataset">Dataset</a>&nbsp;»&nbsp;推荐系统数据集</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">推荐系统数据集</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#_1">数据来源</a><ul>
+<li><a href="#_2">利用用户行为数据</a><ul>
+<li><a href="#_3">用户行为简介</a></li>
+</ul>
+</li>
+<li><a href="#_4">利用用户标签数据</a></li>
+</ul>
+</li>
+<li><a href="#_5">利用社交网络数据</a><ul>
+<li><a href="#_6">获取社交网络数据的途径</a><ul>
+<li><a href="#_7">电子邮件</a></li>
+<li><a href="#_8">用户注册信息</a></li>
+<li><a href="#_9">用户的位置数据</a></li>
+<li><a href="#_10">论坛和讨论组</a></li>
+<li><a href="#_11">即时聊天工具</a></li>
+<li><a href="#_12">社交网站</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="_1">数据来源</h1>
+<h2 id="_2">利用用户行为数据</h2>
+<blockquote>
+<p><strong>Interaction data</strong> is the most basic indication of users’ preferences and interests. </p>
+<p>Yet, interaction data is usually extremely sparse and can be noisy at times</p>
+</blockquote>
+<h3 id="_3">用户行为简介</h3>
+<blockquote>
+<p>There are two types of feedbacks: <strong>implicit feedback</strong> and<strong>explicit feedback</strong>. </p>
+</blockquote>
+<p>用户行为在个性化推荐系统中一般分两种——显性反馈行为（explicit feedback）和隐性反馈行为（implicit feedback）。</p>
+<p>显性反馈行为包括用户明确表示对物品喜好的行为。主要方式就是评分和喜欢/不喜欢。<br />
+隐性反馈行为指的是那些不能明确反应用户喜好的行为。最具有代表性的隐性反馈行为就是点击、页面浏览、行为。</p>
+<p>按照反馈的方向分，又可以分为<strong>正反馈</strong>和<strong>负反馈</strong>。</p>
+<ol>
+<li>正反馈:指用户的行为倾向于指用户喜欢该物品。</li>
+<li>负反馈:指用户的行为倾向于指用户不喜欢该物品。</li>
+</ol>
+<p>互联网中的用户行为有很多种，比如浏览网页、购买商品、评论、评分等。要用一个统一的方式表示所有这些行为是比较困难的。表2-3给出了一种表示方式，它将一个用户行为表示为6部分，即产生行为的用户和行为的对象、行为的种类、产生行为的上下文、行为的内容和权重。</p>
+<p>1.2 用户行为分析：用户活跃度和物品流行度的分布</p>
+<p>用户行为数据满足一种称为Power Law的分布，这个分布在互联网领域也称长尾分布。长尾分布在双对数曲线上呈直线。</p>
+<p>令fu(k)为对k个物品产生过行为的用户数，令fi(k)为被k个用户产生过行为的物品数。那么，fu(k)和fi(k)都满足长尾分布。</p>
+<h2 id="_4">利用用户标签数据</h2>
+<blockquote>
+<p>To address this issue, we can integrate side information such as features of items, profiles of users, and even in which context that the interaction occurred into the recommendation model.</p>
+</blockquote>
+<p>Utilizing these features are helpful in making recommendations in that these features can be an effective predictor of users interests especially when interaction data is lacking. (冷启动)</p>
+<p>目前流行的推荐系统基本上通过3种方式联系用户兴趣和物品。</p>
+<p>1）是利用用户喜欢过的物品，给用户推荐与他喜欢过的物品相似的物品，这就是前面提到的基于物品的算法。<br />
+2）是利用和用户兴趣相似的其他用户，给用户推荐那些和他们兴趣爱好相似的其他用户喜欢的物品，这是前面提到的基于用户的算法。<br />
+3）是通过一些特征（feature）联系用户和物品，给用户推荐那些具有用户喜欢的特征的物品。这里的特征有不同的表现方式，比如可以表现为物品的属性集合（比如对于图书，属性集合包括作者、出版社、主题和关键词等），也可以表现为隐语义向量（latent factor vector），这可以通过前面提出的隐语义模型习得到。本章将讨论一种重要的特征表现方式——标签。<br />
+标签系统的最大优势在于可以发挥群体的智能，获得对物品内容信息比较准确的关键词描述，而准确的内容信息是提升个性化推荐系统性能的重要资源。</p>
+<p>2.2.1 用户为什么进行标注</p>
+<p>两个维度。</p>
+<p>社会维度：有些用户标注是给内容上传者使用的（便于上传者组织自己的信息），而有些用户标注是给广大用户使用的（便于帮助其他用户找到信息）。</p>
+<p>功能维度：有些标注用于更好地组织内容，方便用户将来的查找，而另一些标注用于传达某种信息，比如照片的拍摄时间和地点等。</p>
+<p>2.2.2 用户如何打标签</p>
+<p>标签流行度的分布。我们定义的一个标签被一个用户使用在一个物品上，它的流行度就加一。标签的流行度分布也呈现非常典型的长尾分布，它的双对数曲线几乎是一条直线。</p>
+<p>2.2.3 用户打什么样的标签</p>
+<p>我们希望用户打的标签是能够准确描述物品内容属性的关键词。</p>
+<p>但用户大多打如下类型标签：</p>
+<p>表明物品是什么  比如是一只鸟，就会有“鸟”这个词的标签；是豆瓣的首页，就有一个标签叫“豆瓣”；是乔布斯的首页，就会有个标签叫“乔布斯”。<br />
+表明物品的种类  比如在Delicious的书签中，表示一个网页类别的标签包括 article（文章）、blog（博客）、 book（图书）等。<br />
+表明谁拥有物品  比如很多博客的标签中会包括博客的作者等信息。<br />
+表达用户的观点  比如用户认为网页很有趣，就会打上标签funny（有趣），认为很无聊，就会打上标签boring（无聊）。<br />
+用户相关的标签  比如 my favorite（我最喜欢的）、my comment（我的评论）等。<br />
+用户的任务      比如 to read（即将阅读）、job search（找工作）等。<br />
+3 利用上下文信息<br />
+上下文信息包括用户访问推荐系统的时间、地点、心情等</p>
+<p>3.1 时间上下文信息</p>
+<p>3.1.1 时间效应简介</p>
+<p>时间信息对用户兴趣的影响表现在以下几个方面。</p>
+<p>用户兴趣是变化的<br />
+物品也是有生命周期的 <br />
+季节、节日效应<br />
+3.1.2 系统时间特性的分析</p>
+<p>在给定时间信息后，推荐系统从一个静态系统变成了一个时变的系统，而用户行为数据也变成了时间序列。研究一个时变系统，需要首先研究这个系统的时间特性。通过研究时变的用户行为数据集来研究不同类型网站的时间特性。包含时间信息的用户行为数据集由一系列三元组构成，其中每个三元组(u,i,t)代表了用户u在时刻t对物品i产生过行为。在给定数据集后，统计如下信息研究系统的时间特性。</p>
+<p>数据集每天独立用户数的增长情况<br />
+系统的物品变化情况<br />
+用户访问情况<br />
+3.1.3 物品的生存周期和系统的时效性</p>
+<p>可以用如下指标度量网站中物品的生命周期：物品平均在线天数。如果一个物品在某天被至少一个用户产生过行为，就定义该物品在这一天在线，物品的平均在线天数和物品的流行度应该成正比。</p>
+<p>相隔T天系统物品流行度向量的平均相似度。取系统中相邻T天的两天，分别计算这两天的物品流行度，从而得到两个流行度向量。然后，计算这两个向量的余弦相似度，如果相似度大，说明系统的物品在相隔T天的时间内没有发生大的变化，从而说明系统的时效性不强，物品的平均在线时间较长。</p>
+<p>3.1.4 推荐系统的实时性</p>
+<p>用户的显性反馈行为都会导致推荐列表的变化。</p>
+<p>实现推荐系统的实时性除了对用户行为的存取有实时性要求，还要求推荐算法本身具有实时</p>
+<p>性，而推荐算法本身的实时性意味着：</p>
+<p>1）实时推荐系统不能每天都给所有用户离线计算推荐结果，然后在线展示昨天计算出来的结果。所以，<br />
+要求在每个用户访问推荐系统时，都根据用户这个时间点前的行为实时计算推荐列表。<br />
+2）推荐算法需要平衡考虑用户的近期行为和长期行为，即要让推荐列表反应出用户近期行为所体现的兴趣<br />
+变化，又不能让推荐列表完全受用户近期行为的影响，要保证推荐列表对用户兴趣预测的延续性。</p>
+<p>3.1.5 推荐算法的时间多样性</p>
+<p>推荐系统每天推荐结果的变化程度被定义为推荐系统的时间多样性。</p>
+<p>提高推荐结果的时间多样性需要分两步解决：</p>
+<p>1）需要保证推荐系统能够在用户有了新的行为后及时调整推荐结果，使推荐结果满足用户最近的兴趣；</p>
+<p>解决方式：这步也可分成两种情况进行分析。第一是从推荐系统的实时性角度分析。有些推荐系统会每天离线生成针对所有用户的推荐结果，然后在线直接将这些结果展示给用户。这种类型的系统显然无法做到在用户有了新行为后及时调整推荐结果。第二，即使是实时推荐系统，由于使用的算法不同，也具有不同的时间多样性。</p>
+<p>2）需要保证推荐系统在用户没有新的行为时也能够经常变化一下结果，具有一定的时间多样性。</p>
+<p>解决方式：</p>
+<p>1）在生成推荐结果时加入一定的随机性。<br />
+2）记录用户每天看到的推荐结果，然后在每天给用户进行推荐时，对他前几天看到过很多次的推荐结果<br />
+进行适当地降权。<br />
+3）每天给用户使用不同的推荐算法，在每天用户访问推荐系统时随机挑选一种算法给他进行推荐。</p>
+<h1 id="_5">利用社交网络数据</h1>
+<h2 id="_6">获取社交网络数据的途径</h2>
+<h3 id="_7">电子邮件</h3>
+<p>我们可以通过分析用户的联系人列表了解用户的好友信息，而且可以进一步通过研究两个用户之间的邮件往来频繁程度度量两个用户的熟悉程度。如果我们获得了用户的邮箱，也可以通过邮箱后缀得到一定的社交关系信息。</p>
+<h3 id="_8">用户注册信息</h3>
+<p>有些网站需要用户在注册时填写一些诸如公司、学校等信息</p>
+<h3 id="_9">用户的位置数据</h3>
+<p>在网页上最容易拿到的用户位置信息就是IP地址。对于手机等移动设备，我们可以拿到更详细的GPS数据。</p>
+<h3 id="_10">论坛和讨论组</h3>
+<p>如果两个用户同时加入了很多不同的小组，我们可以认为这两个用户很可能互相了解或者具有相似的兴趣。如果两个用户在讨论组中曾经就某一个帖子共同进行过讨论，那就更加说明他们之间的熟悉程度或兴趣相似度很高。</p>
+<h3 id="_11">即时聊天工具</h3>
+<p>联系人列表和分组信息，我们就可以知道用户的社交网络关系，而通过统计用户之间聊天的频繁程度，可以度量出用户之间的熟悉程度。</p>
+<h3 id="_12">社交网站</h3>
+<p>个性化推荐系统可以利用社交网站公开的用户社交网络和行为数据，辅助用户更好地完成信息过滤的任务，更好地找到和自己兴趣相似的好友，更快地找到自己感兴趣的内容。</p>
+<p>以Facebook为代表的自己在现实社会中认识的人的社交网络称社交图谱（social graph），而以Twitter为代表的出于对对方言论的兴趣而建立好友关系的社交网络称为兴趣图谱（interest graph）</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

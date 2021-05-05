@@ -1,0 +1,889 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>[版本管理] Git常用指令 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Program_Management">Program_Management</a>&nbsp;»&nbsp;<a href="/Wiki/#-数字化产品生产管理">数字化产品生产管理</a>&nbsp;»&nbsp;<a href="/Wiki/#-代码管理">代码管理</a>&nbsp;»&nbsp;<a href="/Wiki/#-02_版本控制工具与服务">02_版本控制工具与服务</a>&nbsp;»&nbsp;<a href="/Wiki/#-git">git</a>&nbsp;»&nbsp;[版本管理] Git常用指令</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">[版本管理] Git常用指令</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-git">1. Git常用指令</a><ul>
+<li><a href="#11">1.1. 新建、初始化代码库</a></li>
+<li><a href="#12">1.2. 仓库内文件管理</a><ul>
+<li><a href="#121">1.2.1. 增加/删除文件到暂存区</a></li>
+<li><a href="#122">1.2.2. 忽略文件</a></li>
+<li><a href="#123">1.2.3. 代码格式</a></li>
+<li><a href="#124">1.2.4. 代码提交</a></li>
+</ul>
+</li>
+<li><a href="#13">1.3. 分支管理</a><ul>
+<li><a href="#131">1.3.1. 查看分支</a></li>
+<li><a href="#132">1.3.2. 创建分支</a></li>
+<li><a href="#133">1.3.3. 切换分支</a></li>
+<li><a href="#134">1.3.4. 合并分支</a><ul>
+<li><a href="#1341-git-merge">1.3.4.1. git merge 合并</a><ul>
+<li><a href="#13411">1.3.4.1.1. 合并中的冲突管理</a><ul>
+<li><a href="#134111">1.3.4.1.1.1. 冲突的产生</a></li>
+<li><a href="#134112">1.3.4.1.1.2. 冲突的类型</a></li>
+<li><a href="#134113">1.3.4.1.1.3. 冲突的解决</a></li>
+</ul>
+</li>
+<li><a href="#13412-fast-forward">1.3.4.1.2. 没有差异的文件执行合并--fast forward</a></li>
+</ul>
+</li>
+<li><a href="#1342-git-rebase">1.3.4.2. git rebase 变基</a></li>
+</ul>
+</li>
+<li><a href="#135">1.3.5. 文件覆盖</a></li>
+<li><a href="#136">1.3.6. 删除分支</a></li>
+</ul>
+</li>
+<li><a href="#14">1.4. 信息查看</a></li>
+<li><a href="#15">1.5. 远程仓库管理</a><ul>
+<li><a href="#151">1.5.1. 设置远程分支</a></li>
+<li><a href="#152">1.5.2. 查看远程仓库</a></li>
+<li><a href="#153">1.5.3. 删除远程分支</a></li>
+<li><a href="#154">1.5.4. 同步远程分支</a></li>
+</ul>
+</li>
+<li><a href="#16">1.6. 打标签</a></li>
+<li><a href="#17">1.7. 标签推送问题</a></li>
+<li><a href="#18">1.8. 版本退回</a></li>
+<li><a href="#19">1.9. 第三方模块管理</a><ul>
+<li><a href="#191-git-submodule">1.9.1. git submodule</a></li>
+<li><a href="#192-git-subtree">1.9.2. git subtree</a></li>
+</ul>
+</li>
+<li><a href="#110">1.10. 储藏</a></li>
+<li><a href="#111">1.11. 设置代理</a></li>
+<li><a href="#112-git">1.12. Git 维护</a><ul>
+<li><a href="#1121">1.12.1. 压缩仓库中的历史信息</a></li>
+<li><a href="#1122">1.12.2. 压缩提交记录</a><ul>
+<li><a href="#11221-git-reset">1.12.2.1. git reset</a></li>
+<li><a href="#11222-git-commit-amend">1.12.2.2. git commit --amend</a></li>
+<li><a href="#11223-git-rebase">1.12.2.3. git rebase</a></li>
+</ul>
+</li>
+<li><a href="#1123-commit-log">1.12.3. 清空分支的commit log记录</a></li>
+<li><a href="#1124">1.12.4. 保持可靠性</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<p>参考资料：</p>
+<ol>
+<li><a href="https://git-scm.com/book/zh/v2">Scott Chacon, Ben Straub - Pro Git-Apress (2014) (官方书籍中文版)</a></li>
+<li><a href="https://learngitbranching.js.org/">Learn Git Branching(官方动手实践平台)</a></li>
+</ol>
+<h1 id="1-git">1. Git常用指令</h1>
+<p><img alt="" src="./attach/images/git/Git_V2.16.2.png" /></p>
+<h2 id="11">1.1. 新建、初始化代码库</h2>
+<div class="hlcode"><pre><span class="cp"># 在当前目录新建一个Git代码库</span>
+<span class="n">git</span> <span class="n">init</span>
+
+<span class="cp"># 新建一个目录，将其初始化为Git代码库</span>
+<span class="n">git</span> <span class="n">init</span> <span class="p">[</span><span class="n">project</span><span class="o">-</span><span class="n">name</span><span class="p">]</span>
+
+<span class="cp"># 下载一个项目和它的整个代码历史</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="p">[</span><span class="n">url</span><span class="p">]</span>
+<span class="cp"># url example： https:</span><span class="c1">//github.com/zhang787jun/tmp.git</span>
+</pre></div>
+
+
+<h2 id="12">1.2. 仓库内文件管理</h2>
+<h3 id="121">1.2.1. 增加/删除文件到暂存区</h3>
+<div class="hlcode"><pre><span class="cp"># 添加指定文件到暂存区</span>
+<span class="n">git</span> <span class="n">add</span> <span class="p">[</span><span class="n">file1</span><span class="p">]</span> <span class="p">[</span><span class="n">file2</span><span class="p">]</span> <span class="p">...</span>
+
+<span class="cp"># 添加指定目录到暂存区，包括子目录</span>
+<span class="n">git</span> <span class="n">add</span> <span class="p">[</span><span class="n">dir</span><span class="p">]</span>
+
+<span class="cp"># 添加当前目录的所有文件到暂存区</span>
+<span class="n">git</span> <span class="n">add</span> <span class="p">.</span>
+
+<span class="cp"># 添加每个变化前，都会要求确认</span>
+<span class="cp"># 对于同一个文件的多处变化，可以实现分次提交</span>
+<span class="n">git</span> <span class="n">add</span> <span class="o">-</span><span class="n">p</span>
+
+<span class="cp"># 删除工作区文件，并且将这次删除放入暂存区</span>
+<span class="n">git</span> <span class="n">rm</span> <span class="p">[</span><span class="n">file1</span><span class="p">]</span> <span class="p">[</span><span class="n">file2</span><span class="p">]</span> <span class="p">...</span>
+
+<span class="cp"># 停止追踪指定文件，但该文件会保留在工作区</span>
+<span class="n">git</span> <span class="n">rm</span> <span class="o">--</span><span class="n">cached</span> <span class="p">[</span><span class="n">file</span><span class="p">]</span>
+
+<span class="cp"># 改名文件，并且将这个改名放入暂存区</span>
+<span class="n">git</span> <span class="n">mv</span> <span class="p">[</span><span class="n">file</span><span class="o">-</span><span class="n">original</span><span class="p">]</span> <span class="p">[</span><span class="n">file</span><span class="o">-</span><span class="n">renamed</span><span class="p">]</span>
+</pre></div>
+
+
+<h3 id="122">1.2.2. 忽略文件</h3>
+<p>在仓库内添加<code>.gitignore</code> 文件</p>
+<div class="hlcode"><pre><span class="n">vim</span> <span class="p">.</span><span class="n">gitignore</span>
+</pre></div>
+
+
+<p><code>.gitignore</code> 文件语法：</p>
+<div class="hlcode"><pre><span class="cp"># 忽略 以sh结尾的文件</span>
+<span class="o">*</span><span class="p">.</span><span class="n">sh</span>
+<span class="cp">#以txt结尾的文件不能忽略</span>
+<span class="o">!*</span><span class="p">.</span><span class="n">txt</span>
+<span class="cp">#setting 文件下的所有文件忽略</span>
+<span class="p">.</span><span class="n">setting</span><span class="o">/</span>
+<span class="cp">#a文件夹下的所有txt文件忽略</span>
+<span class="o">/</span><span class="n">a</span><span class="o">/*</span><span class="p">.</span><span class="n">txt</span>
+</pre></div>
+
+
+<p>在线配置<code>.gitignore</code>文件: https://www.gitignore.io/</p>
+<div class="hlcode"><pre><span class="cp"># 常见的忽略文件内容</span>
+<span class="cp"># windows bat</span>
+<span class="o">*</span><span class="p">.</span><span class="n">bat</span>
+<span class="cp"># VScode </span>
+<span class="p">.</span><span class="n">vscode</span><span class="o">/</span>
+<span class="cp"># docker </span>
+<span class="p">.</span><span class="n">devcontainer</span><span class="o">/</span>
+<span class="cp"># Byte-compiled / optimized / DLL files</span>
+<span class="n">__pycache__</span><span class="o">/</span>
+<span class="o">*</span><span class="p">.</span><span class="n">py</span><span class="p">[</span><span class="n">cod</span><span class="p">]</span>
+<span class="o">*</span><span class="err">$</span><span class="n">py</span><span class="p">.</span><span class="n">class</span>
+
+<span class="cp"># C extensions</span>
+<span class="o">*</span><span class="p">.</span><span class="n">so</span>
+
+<span class="cp"># Distribution / packaging</span>
+<span class="p">.</span><span class="n">Python</span>
+<span class="n">build</span><span class="o">/</span>
+<span class="n">develop</span><span class="o">-</span><span class="n">eggs</span><span class="o">/</span>
+<span class="n">dist</span><span class="o">/</span>
+<span class="n">downloads</span><span class="o">/</span>
+<span class="n">eggs</span><span class="o">/</span>
+<span class="p">.</span><span class="n">eggs</span><span class="o">/</span>
+<span class="n">lib</span><span class="o">/</span>
+<span class="n">lib64</span><span class="o">/</span>
+<span class="n">parts</span><span class="o">/</span>
+<span class="n">sdist</span><span class="o">/</span>
+<span class="n">var</span><span class="o">/</span>
+<span class="n">wheels</span><span class="o">/</span>
+<span class="n">pip</span><span class="o">-</span><span class="n">wheel</span><span class="o">-</span><span class="n">metadata</span><span class="o">/</span>
+<span class="n">share</span><span class="o">/</span><span class="n">python</span><span class="o">-</span><span class="n">wheels</span><span class="o">/</span>
+<span class="o">*</span><span class="p">.</span><span class="n">egg</span><span class="o">-</span><span class="n">info</span><span class="o">/</span>
+<span class="p">.</span><span class="n">installed</span><span class="p">.</span><span class="n">cfg</span>
+<span class="o">*</span><span class="p">.</span><span class="n">egg</span>
+<span class="n">MANIFEST</span>
+
+<span class="cp"># PyInstaller</span>
+<span class="cp">#  Usually these files are written by a python script from a template</span>
+<span class="cp">#  before PyInstaller builds the exe, so as to inject date/other infos into it.</span>
+<span class="o">*</span><span class="p">.</span><span class="n">manifest</span>
+<span class="o">*</span><span class="p">.</span><span class="n">spec</span>
+
+<span class="cp"># Installer logs</span>
+<span class="n">pip</span><span class="o">-</span><span class="n">log</span><span class="p">.</span><span class="n">txt</span>
+<span class="n">pip</span><span class="o">-</span><span class="n">delete</span><span class="o">-</span><span class="n">this</span><span class="o">-</span><span class="n">directory</span><span class="p">.</span><span class="n">txt</span>
+
+<span class="cp"># Unit test / coverage reports</span>
+<span class="n">htmlcov</span><span class="o">/</span>
+<span class="p">.</span><span class="n">tox</span><span class="o">/</span>
+<span class="p">.</span><span class="n">nox</span><span class="o">/</span>
+<span class="p">.</span><span class="n">coverage</span>
+<span class="p">.</span><span class="n">coverage</span><span class="p">.</span><span class="o">*</span>
+<span class="p">.</span><span class="n">cache</span>
+<span class="n">nosetests</span><span class="p">.</span><span class="n">xml</span>
+<span class="n">coverage</span><span class="p">.</span><span class="n">xml</span>
+<span class="o">*</span><span class="p">.</span><span class="n">cover</span>
+<span class="p">.</span><span class="n">hypothesis</span><span class="o">/</span>
+<span class="p">.</span><span class="n">pytest_cache</span><span class="o">/</span>
+
+<span class="cp"># Translations</span>
+<span class="o">*</span><span class="p">.</span><span class="n">mo</span>
+<span class="o">*</span><span class="p">.</span><span class="n">pot</span>
+
+<span class="cp"># Django stuff:</span>
+<span class="o">*</span><span class="p">.</span><span class="n">log</span>
+<span class="n">local_settings</span><span class="p">.</span><span class="n">py</span>
+<span class="n">db</span><span class="p">.</span><span class="n">sqlite3</span>
+
+<span class="cp"># Flask stuff:</span>
+<span class="n">instance</span><span class="o">/</span>
+<span class="p">.</span><span class="n">webassets</span><span class="o">-</span><span class="n">cache</span>
+
+<span class="cp"># Scrapy stuff:</span>
+<span class="p">.</span><span class="n">scrapy</span>
+
+<span class="cp"># Sphinx documentation</span>
+<span class="n">docs</span><span class="o">/</span><span class="n">_build</span><span class="o">/</span>
+
+<span class="cp"># PyBuilder</span>
+<span class="n">target</span><span class="o">/</span>
+
+<span class="cp"># Jupyter Notebook</span>
+<span class="p">.</span><span class="n">ipynb_checkpoints</span>
+
+<span class="cp"># IPython</span>
+<span class="n">profile_default</span><span class="o">/</span>
+<span class="n">ipython_config</span><span class="p">.</span><span class="n">py</span>
+
+<span class="cp"># pyenv</span>
+<span class="p">.</span><span class="n">python</span><span class="o">-</span><span class="n">version</span>
+
+<span class="cp"># pipenv</span>
+<span class="cp">#   According to pypa/pipenv#598, it is recommended to include Pipfile.lock in version control.</span>
+<span class="cp">#   However, in case of collaboration, if having platform-specific dependencies or dependencies</span>
+<span class="cp">#   having no cross-platform support, pipenv may install dependencies that don’t work, or not</span>
+<span class="cp">#   install all needed dependencies.</span>
+<span class="cp">#Pipfile.lock</span>
+
+<span class="cp"># celery beat schedule file</span>
+<span class="n">celerybeat</span><span class="o">-</span><span class="n">schedule</span>
+
+<span class="cp"># SageMath parsed files</span>
+<span class="o">*</span><span class="p">.</span><span class="n">sage</span><span class="p">.</span><span class="n">py</span>
+
+<span class="cp"># Environments</span>
+<span class="p">.</span><span class="n">env</span>
+<span class="p">.</span><span class="n">venv</span>
+<span class="n">env</span><span class="o">/</span>
+<span class="n">venv</span><span class="o">/</span>
+<span class="n">ENV</span><span class="o">/</span>
+<span class="n">env</span><span class="p">.</span><span class="n">bak</span><span class="o">/</span>
+<span class="n">venv</span><span class="p">.</span><span class="n">bak</span><span class="o">/</span>
+
+<span class="cp"># Spyder project settings</span>
+<span class="p">.</span><span class="n">spyderproject</span>
+<span class="p">.</span><span class="n">spyproject</span>
+
+<span class="cp"># Rope project settings</span>
+<span class="p">.</span><span class="n">ropeproject</span>
+
+<span class="cp"># Intellij project settings</span>
+<span class="p">.</span><span class="n">idea</span>
+
+<span class="cp"># mkdocs documentation</span>
+<span class="o">/</span><span class="n">site</span>
+
+<span class="cp"># mypy</span>
+<span class="p">.</span><span class="n">mypy_cache</span><span class="o">/</span>
+<span class="p">.</span><span class="n">dmypy</span><span class="p">.</span><span class="n">json</span>
+<span class="n">dmypy</span><span class="p">.</span><span class="n">json</span>
+
+<span class="cp"># Pyre type checker</span>
+<span class="p">.</span><span class="n">pyre</span><span class="o">/</span>
+
+<span class="cp"># pb2.py files</span>
+<span class="o">*</span><span class="n">_pb2</span><span class="p">.</span><span class="n">py</span>
+</pre></div>
+
+
+<h3 id="123">1.2.3. 代码格式</h3>
+<p><code>.gitattributes</code>文件</p>
+<div class="hlcode"><pre><span class="cp"># Auto detect text files and perform LF normalization</span>
+<span class="o">*</span> <span class="n">text</span><span class="o">=</span><span class="k">auto</span>
+
+<span class="cp"># Custom for Visual Studio</span>
+<span class="o">*</span><span class="p">.</span><span class="n">cs</span>     <span class="n">diff</span><span class="o">=</span><span class="n">csharp</span>
+
+<span class="cp"># Standard to msysgit</span>
+<span class="o">*</span><span class="p">.</span><span class="n">doc</span>    <span class="n">diff</span><span class="o">=</span><span class="n">astextplain</span>
+<span class="o">*</span><span class="p">.</span><span class="n">DOC</span>    <span class="n">diff</span><span class="o">=</span><span class="n">astextplain</span>
+<span class="o">*</span><span class="p">.</span><span class="n">docx</span> <span class="n">diff</span><span class="o">=</span><span class="n">astextplain</span>
+<span class="o">*</span><span class="p">.</span><span class="n">DOCX</span> <span class="n">diff</span><span class="o">=</span><span class="n">astextplain</span>
+<span class="o">*</span><span class="p">.</span><span class="n">dot</span>  <span class="n">diff</span><span class="o">=</span><span class="n">astextplain</span>
+<span class="o">*</span><span class="p">.</span><span class="n">DOT</span>  <span class="n">diff</span><span class="o">=</span><span class="n">astextplain</span>
+<span class="o">*</span><span class="p">.</span><span class="n">pdf</span>  <span class="n">diff</span><span class="o">=</span><span class="n">astextplain</span>
+<span class="o">*</span><span class="p">.</span><span class="n">PDF</span>    <span class="n">diff</span><span class="o">=</span><span class="n">astextplain</span>
+<span class="o">*</span><span class="p">.</span><span class="n">rtf</span>    <span class="n">diff</span><span class="o">=</span><span class="n">astextplain</span>
+<span class="o">*</span><span class="p">.</span><span class="n">RTF</span>    <span class="n">diff</span><span class="o">=</span><span class="n">astextplain</span>
+</pre></div>
+
+
+<h3 id="124">1.2.4. 代码提交</h3>
+<div class="hlcode"><pre><span class="cp"># 提交暂存区到仓库区</span>
+<span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">m</span> <span class="p">[</span><span class="n">message</span><span class="p">]</span>
+
+<span class="cp"># 提交暂存区的指定文件到仓库区</span>
+<span class="n">git</span> <span class="n">commit</span> <span class="p">[</span><span class="n">file1</span><span class="p">]</span> <span class="p">[</span><span class="n">file2</span><span class="p">]</span> <span class="p">...</span> <span class="o">-</span><span class="n">m</span> <span class="p">[</span><span class="n">message</span><span class="p">]</span>
+
+<span class="cp"># 提交工作区自上次commit之后的变化，直接到仓库区</span>
+<span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">a</span>
+
+<span class="cp"># 提交时显示所有diff信息</span>
+<span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">v</span>
+
+<span class="cp"># 使用一次新的commit，替代上一次提交</span>
+<span class="cp"># 如果代码没有任何新变化，则用来改写上一次commit的提交信息</span>
+<span class="n">git</span> <span class="n">commit</span> <span class="o">--</span><span class="n">amend</span> <span class="o">-</span><span class="n">m</span> <span class="p">[</span><span class="n">message</span><span class="p">]</span>
+
+<span class="cp"># 重做上一次commit，并包括指定文件的新变化</span>
+<span class="n">git</span> <span class="n">commit</span> <span class="o">--</span><span class="n">amend</span> <span class="p">[</span><span class="n">file1</span><span class="p">]</span> <span class="p">[</span><span class="n">file2</span><span class="p">]</span> <span class="p">...</span>
+</pre></div>
+
+
+<h2 id="13">1.3. 分支管理</h2>
+<h3 id="131">1.3.1. 查看分支</h3>
+<div class="hlcode"><pre><span class="cp"># 列出所有本地分支</span>
+<span class="n">git</span> <span class="n">branch</span>
+
+<span class="cp"># 列出所有远程分支</span>
+<span class="n">git</span> <span class="n">branch</span> <span class="o">-</span><span class="n">r</span>
+
+<span class="cp"># 列出所有本地分支和远程分支</span>
+<span class="n">git</span> <span class="n">branch</span> <span class="o">-</span><span class="n">a</span>
+</pre></div>
+
+
+<h3 id="132">1.3.2. 创建分支</h3>
+<p><strong>创建分支命名规范</strong><br />
+推荐使用如下格式：<code>ownerName/featureName</code>。 这样既便于知道分支覆盖的功能，也便于找到分支的负责人。以后清理分支的时候也很方便。</p>
+<div class="hlcode"><pre><span class="cp"># 新建一个分支，但依然停留在当前分支</span>
+<span class="n">git</span> <span class="n">branch</span> <span class="p">[</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="p">]</span>
+
+<span class="n">git</span> <span class="n">branch</span> <span class="n">zhangjun</span><span class="o">/</span><span class="n">newFeature</span>
+
+<span class="cp"># 新建一个分支，并切换到该分支</span>
+
+<span class="n">git</span> <span class="n">branch</span> <span class="p">[</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="p">]</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span><span class="n">b</span> <span class="p">[</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="p">]</span>
+<span class="cp"># example</span>
+<span class="n">git</span> <span class="n">branch</span> <span class="n">zhangjun</span><span class="o">/</span><span class="n">newFeature</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="n">zhangjun</span><span class="o">/</span><span class="n">newFeature</span>
+
+<span class="cp"># 新建一个分支，指向指定commit</span>
+<span class="n">git</span> <span class="n">branch</span> <span class="p">[</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="p">]</span> <span class="p">[</span><span class="n">commit</span><span class="p">]</span>
+
+<span class="cp"># 创建一个完全独立没有log的分支</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="o">--</span><span class="n">orphan</span>  <span class="p">[</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="p">]</span>
+
+<span class="cp"># 新建一个分支，与指定的远程分支建立追踪关系</span>
+<span class="n">git</span> <span class="n">branch</span> <span class="o">--</span><span class="n">track</span> <span class="p">[</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="p">]</span> <span class="p">[</span><span class="n">remote</span><span class="o">-</span><span class="n">branch</span><span class="p">]</span>
+</pre></div>
+
+
+<h3 id="133">1.3.3. 切换分支</h3>
+<div class="hlcode"><pre><span class="cp"># 切换到指定分支，并更新工作区</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="p">[</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="p">]</span>
+
+<span class="cp"># 切换到上一个分支</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="o">-</span>
+</pre></div>
+
+
+<h3 id="134">1.3.4. 合并分支</h3>
+<p><img src="/attach/images/git/git_rebase.png"></p>
+<p>小结<br />
+1. rebase 操作可以把本地未push的分叉提交历史整理成直线；<br />
+2. rebase的目的是使得我们在查看历史提交的变化时更容易，因为分叉的提交需要三方对比。</p>
+<p>注意： <br />
+1. <strong>不要在master合并代码</strong>。保证master的可用性很重要。 <br />
+2. 确保在正确的分支执行正确的操作。 无论是处理冲突还是更新远端代码，请保有敬畏之心。</p>
+<h4 id="1341-git-merge">1.3.4.1. git merge 合并</h4>
+<div class="hlcode"><pre><span class="err">#</span> <span class="nx">建立追踪关系</span><span class="err">，</span><span class="nx">在现有分支与指定的远程分支之间</span>
+<span class="nx">git</span> <span class="nx">branch</span> <span class="o">--</span><span class="nb">set</span><span class="na">-upstream</span> <span class="err">[</span><span class="nx">branch</span><span class="na">-name</span><span class="cp">]</span> <span class="cp">[</span><span class="nx">remote</span><span class="na">-branch</span><span class="cp">]</span>
+
+# 选择一个commit，合并进当前分支
+git cherry-pick <span class="cp">[</span><span class="nx">commit</span><span class="cp">]</span>
+
+# 将指定分支<span class="cp">[</span><span class="nx">branch</span><span class="na">-name</span><span class="cp">]</span>合并到当前分支
+git merge <span class="cp">[</span><span class="nx">branch</span><span class="na">-name</span><span class="cp">]</span>
+
+git merge <span class="cp">[</span><span class="na">-n</span><span class="cp">]</span> <span class="cp">[</span><span class="o">--</span><span class="nb">stat</span><span class="cp">]</span> <span class="cp">[</span><span class="o">--</span><span class="nx">no</span><span class="na">-commit</span><span class="cp">]</span> <span class="cp">[</span><span class="o">--</span><span class="nx">squash</span><span class="cp">]</span> <span class="cp">[</span><span class="o">--</span><span class="err">[</span><span class="nx">no</span><span class="o">-</span><span class="cp">]</span>edit]
+    <span class="cp">[</span><span class="na">-s</span> <span class="o">&lt;</span><span class="nx">strategy</span><span class="o">&gt;</span><span class="cp">]</span> <span class="cp">[</span><span class="na">-X</span> <span class="o">&lt;</span><span class="nx">strategy</span><span class="na">-option</span><span class="o">&gt;</span><span class="cp">]</span> <span class="cp">[</span><span class="na">-S</span><span class="err">[</span><span class="o">&lt;</span><span class="nx">keyid</span><span class="o">&gt;</span><span class="cp">]</span>]
+    <span class="cp">[</span><span class="o">--</span><span class="err">[</span><span class="nx">no</span><span class="o">-</span><span class="cp">]</span>allow-unrelated-histories]
+    <span class="cp">[</span><span class="o">--</span><span class="err">[</span><span class="nx">no</span><span class="o">-</span><span class="cp">]</span>rerere-autoupdate] <span class="cp">[</span><span class="na">-m</span> <span class="o">&lt;</span><span class="nb">msg</span><span class="o">&gt;</span><span class="cp">]</span> <span class="cp">[</span><span class="o">&lt;</span><span class="nx">commit</span><span class="o">&gt;</span><span class="err">…</span><span class="o">?</span><span class="cp">]</span>
+git merge --abort
+git merge --continue
+</pre></div>
+
+
+<h5 id="13411">1.3.4.1.1. 合并中的冲突管理</h5>
+<h6 id="134111">1.3.4.1.1.1. 冲突的产生</h6>
+<p>很多命令都可能出现冲突，但从根本上来讲，都是merge 和 patch（应用补丁）时产生冲突。而rebase就是重新设置基准，然后应用补丁的过程，所以也会冲突。<br />
+git pull会自动merge，repo sync会自动rebase，所以git pull和repo sync也会产生冲突。当然git rebase就更不用说了。</p>
+<h6 id="134112">1.3.4.1.1.2. 冲突的类型</h6>
+<ol>
+<li>逻辑冲突<br />
+git自动处理（合并/应用补丁）成功，但是逻辑上是有问题的。<br />
+比如另外一个人修改了文件名，但我还使用老的文件名，这种情况下自动处理是能成功的，但实际上是有问题的。<br />
+又比如，函数返回值含义变化，但我还使用老的含义，这种情况自动处理成功，但可能隐藏着重大BUG。这种问题，主要通过自动化测试来保障。所以最好是能够写出比较完备的自动化测试用例。<br />
+这种冲突的解决，就是做一次BUG修正。不是真正解决git报告的冲突。</li>
+<li>内容冲突<br />
+两个用户修改了同一个文件的同一块区域，git会报告内容冲突。我们常见的都是这种，后面的解决办法也主要针对这种冲突。</li>
+</ol>
+<div class="hlcode"><pre><span class="n">git</span> <span class="n">pull</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">Auto</span><span class="o">-</span><span class="n">merging</span> <span class="n">test</span><span class="p">.</span><span class="n">txt</span>
+<span class="n">CONFLICT</span> <span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="o">:</span> <span class="n">Merge</span> <span class="n">conflict</span> <span class="n">in</span> <span class="n">test</span><span class="p">.</span><span class="n">txt</span>
+<span class="n">Automatic</span> <span class="n">merge</span> <span class="n">failed</span><span class="p">;</span> <span class="n">fix</span> <span class="n">conflicts</span> <span class="n">and</span> <span class="n">then</span> <span class="n">commit</span> <span class="n">the</span> <span class="n">result</span><span class="p">.</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="nl">error:</span> <span class="n">project</span> <span class="n">mini</span><span class="o">/</span><span class="n">sample</span>
+<span class="cp">#一般来讲，出现冲突时都会有“CONFLICT”字样：</span>
+</pre></div>
+
+
+<ol>
+<li>树冲突<br />
+文件名修改造成的冲突，称为树冲突。<br />
+比如，A用户把文件改名为a.txt，B用户把同一个文件改名为b.txt，那么B将这两个commit合并时，会产生冲突。</li>
+</ol>
+<div class="hlcode"><pre><span class="n">git</span> <span class="n">status</span>
+<span class="o">&gt;&gt;&gt;</span>
+    <span class="n">added</span> <span class="n">by</span> <span class="n">us</span><span class="o">:</span>    <span class="n">b</span><span class="p">.</span><span class="n">txt</span>
+    <span class="n">both</span> <span class="n">deleted</span><span class="o">:</span>   <span class="n">origin</span><span class="o">-</span><span class="n">name</span><span class="p">.</span><span class="n">txt</span>
+    <span class="n">added</span> <span class="n">by</span> <span class="n">them</span><span class="o">:</span>  <span class="n">a</span><span class="p">.</span><span class="n">txt</span>
+</pre></div>
+
+
+<h6 id="134113">1.3.4.1.1.3. 冲突的解决</h6>
+<ol>
+<li>手动解决冲突，直到把冲突标识符删掉，再执行<code>git commit -am -"xxx"</code></li>
+<li>在git merge 中设置策略</li>
+<li>利用图形界面工具解决冲突</li>
+</ol>
+<hr />
+<ol>
+<li>内容冲突 <br />
+   直接编辑文件</li>
+<li>树冲突<br />
+如果最终确定用b.txt，那么解决办法如下：</li>
+</ol>
+<div class="hlcode"><pre><span class="n">git</span> <span class="n">rm</span> <span class="n">a</span><span class="p">.</span><span class="n">txt</span>
+<span class="n">git</span> <span class="n">rm</span> <span class="n">origin</span><span class="o">-</span><span class="n">name</span><span class="p">.</span><span class="n">txt</span>
+<span class="n">git</span> <span class="n">add</span> <span class="n">b</span><span class="p">.</span><span class="n">txt</span>
+<span class="n">git</span> <span class="n">commit</span>
+<span class="cp">#执行前面两个git rm时，会告警“file-name : needs merge”，可以不必理会。</span>
+</pre></div>
+
+
+<h5 id="13412-fast-forward">1.3.4.1.2. 没有差异的文件执行合并--fast forward</h5>
+<p>如果当前的分支和另一个分支没有内容上的差异，就是说当前分支的每一个提交(commit)都已经存在另一个分支里了，git 就会执行一个“快速向前"(fast forward)操作；git 不创建任何新的提交(commit),只是将当前分支指向合并进来的分支。</p>
+<h4 id="1342-git-rebase">1.3.4.2. git rebase 变基</h4>
+<div class="hlcode"><pre><span class="nx">git</span> <span class="nx">checkout</span> <span class="nx">mywork</span>
+<span class="nx">git</span> <span class="nx">rebase</span> <span class="nx">origin</span>
+
+
+<span class="nx">git</span> <span class="nx">rebase</span> 
+<span class="nx">git</span> <span class="nx">rebase</span> <span class="err">[</span><span class="na">-i</span> <span class="o">|</span> <span class="o">--</span><span class="nx">interactive</span><span class="cp">]</span> <span class="cp">[</span><span class="o">&lt;</span><span class="nx">options</span><span class="o">&gt;</span><span class="cp">]</span> <span class="cp">[</span><span class="o">--</span><span class="nx">exec</span> <span class="o">&lt;</span><span class="nx">cmd</span><span class="o">&gt;</span><span class="cp">]</span> <span class="cp">[</span><span class="o">--</span><span class="nx">onto</span> <span class="o">&lt;</span><span class="nx">newbase</span><span class="o">&gt;</span><span class="cp">]</span>
+    <span class="cp">[</span><span class="o">&lt;</span><span class="nx">upstream</span><span class="o">&gt;</span> <span class="err">[</span><span class="o">&lt;</span><span class="nx">branch</span><span class="o">&gt;</span><span class="cp">]</span>]
+git rebase <span class="cp">[</span><span class="na">-i</span> <span class="o">|</span> <span class="o">--</span><span class="nx">interactive</span><span class="cp">]</span> <span class="cp">[</span><span class="o">&lt;</span><span class="nx">options</span><span class="o">&gt;</span><span class="cp">]</span> <span class="cp">[</span><span class="o">--</span><span class="nx">exec</span> <span class="o">&lt;</span><span class="nx">cmd</span><span class="o">&gt;</span><span class="cp">]</span> <span class="cp">[</span><span class="o">--</span><span class="nx">onto</span> <span class="o">&lt;</span><span class="nx">newbase</span><span class="o">&gt;</span><span class="cp">]</span>
+    --root <span class="cp">[</span><span class="o">&lt;</span><span class="nx">branch</span><span class="o">&gt;</span><span class="cp">]</span>
+git rebase --continue | --skip | --abort | --quit | --edit-todo | --show-current-patch
+</pre></div>
+
+
+<h3 id="135">1.3.5. 文件覆盖</h3>
+<div class="hlcode"><pre><span class="nx">git</span> <span class="nx">checkout</span> <span class="p">(</span><span class="na">-p</span><span class="o">|--</span><span class="nx">patch</span><span class="p">)</span> <span class="err">[</span><span class="o">&lt;</span><span class="nx">tree</span><span class="na">-ish</span><span class="o">&gt;</span><span class="cp">]</span> <span class="cp">[</span><span class="o">--</span><span class="cp">]</span> <span class="cp">[</span><span class="o">&lt;</span><span class="nx">paths</span><span class="o">&gt;</span><span class="err">…​</span><span class="cp">]</span>
+
+git checkout branch_2
+git checkout branch_1 file_1
+
+将工作区的 <span class="nt">&lt;paths&gt;</span> 覆盖成索引指向的内容。
+当可选项<span class="cp">[</span><span class="o">&lt;</span><span class="nx">tree</span> <span class="nx">ish</span><span class="o">&gt;</span><span class="cp">]</span>给出的时候，符合 <span class="nt">&lt;paths&gt;</span>的路径将在索引上和工作区更新
+
+由于上次合并失败，索引可能包含未合并的条目。默认情况下，如果尝试从索引中签出这样的条目，签出操作将失败，并且不会签出任何内容。使用-f将忽略这些未合并的条目。合并的特定方面的内容可以通过使用--ours或--their从索引中签出。使用-m，可以放弃对工作树文件所做的更改，以重新创建原始的冲突合并结果。
+</pre></div>
+
+
+<h3 id="136">1.3.6. 删除分支</h3>
+<div class="hlcode"><pre><span class="err">#</span> <span class="nx">删除分支</span>
+<span class="nx">git</span> <span class="nx">branch</span> <span class="na">-d</span> <span class="err">[</span><span class="nx">branch</span><span class="na">-name</span><span class="cp">]</span>
+git branch -D <span class="cp">[</span><span class="nx">branch</span><span class="na">-name</span><span class="cp">]</span> # 强制删除
+
+# 删除远程分支
+git push origin --delete <span class="cp">[</span><span class="nx">branch</span><span class="na">-name</span><span class="cp">]</span>
+git branch -dr <span class="cp">[</span><span class="nx">remote</span><span class="p">/</span><span class="nx">branch</span><span class="cp">]</span>
+
+#不同分支中的 部分文件的合并
+# 1. 切换到需要合并的分支
+git checkout <span class="cp">[</span><span class="nx">branch</span><span class="na">-name</span><span class="o">-</span><span class="mi">2</span><span class="cp">]</span>
+# 2. checkout修改的文件
+git checkout <span class="cp">[</span><span class="nx">branch</span><span class="na">-name</span><span class="o">-</span><span class="mi">1</span><span class="cp">]</span>  <span class="nt">&lt;dir</span><span class="na">_paths</span><span class="nt">&gt;</span>
+
+# <span class="nt">&lt;paths&gt;</span>: config/,xxx.php
+</pre></div>
+
+
+<h2 id="14">1.4. 信息查看</h2>
+<div class="hlcode"><pre><span class="cp"># 显示有变更的文件</span>
+<span class="n">git</span> <span class="n">status</span>
+
+<span class="cp"># 显示当前分支的版本历史</span>
+<span class="n">git</span> <span class="n">log</span>
+
+<span class="cp"># 显示commit历史，以及每次commit发生变更的文件</span>
+<span class="n">git</span> <span class="n">log</span> <span class="o">--</span><span class="n">stat</span>
+
+<span class="cp"># 搜索提交历史，根据关键词</span>
+<span class="n">git</span> <span class="n">log</span> <span class="o">-</span><span class="n">S</span> <span class="p">[</span><span class="n">keyword</span><span class="p">]</span>
+
+<span class="cp"># 显示某个commit之后的所有变动，每个commit占据一行</span>
+<span class="n">git</span> <span class="n">log</span> <span class="p">[</span><span class="n">tag</span><span class="p">]</span> <span class="n">HEAD</span> <span class="o">--</span><span class="n">pretty</span><span class="o">=</span><span class="n">format</span><span class="o">:%</span><span class="n">s</span>
+
+<span class="cp"># 显示某个commit之后的所有变动，其&quot;提交说明&quot;必须符合搜索条件</span>
+<span class="n">git</span> <span class="n">log</span> <span class="p">[</span><span class="n">tag</span><span class="p">]</span> <span class="n">HEAD</span> <span class="o">--</span><span class="n">grep</span> <span class="n">feature</span>
+
+<span class="cp"># 显示某个文件的版本历史，包括文件改名</span>
+<span class="n">git</span> <span class="n">log</span> <span class="o">--</span><span class="n">follow</span> <span class="p">[</span><span class="n">file</span><span class="p">]</span>
+<span class="n">git</span> <span class="n">whatchanged</span> <span class="p">[</span><span class="n">file</span><span class="p">]</span>
+
+<span class="cp"># 显示指定文件相关的每一次diff</span>
+<span class="n">git</span> <span class="n">log</span> <span class="o">-</span><span class="n">p</span> <span class="p">[</span><span class="n">file</span><span class="p">]</span>
+
+<span class="cp"># 显示过去5次提交</span>
+<span class="n">git</span> <span class="n">log</span> <span class="o">-</span><span class="mi">5</span> <span class="o">--</span><span class="n">pretty</span> <span class="o">--</span><span class="n">oneline</span>
+
+
+<span class="cp">###  优雅的查看log</span>
+<span class="cp">#参考：https:</span><span class="c1">//stackoverflow.com/questions/1057564/pretty-git-branch-graphs</span>
+
+<span class="n">git</span> <span class="n">log</span> <span class="o">--</span><span class="n">all</span> <span class="o">--</span><span class="n">decorate</span> <span class="o">--</span><span class="n">oneline</span> <span class="o">--</span><span class="n">graph</span>
+
+<span class="cp">#可以在git config里面设置 别名 alias</span>
+<span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">global</span> <span class="n">alias</span><span class="p">.</span><span class="n">adog</span> <span class="s">&quot;log --all --decorate --oneline --graph&quot;</span>
+<span class="n">git</span> <span class="n">adog</span> 
+
+<span class="cp"># 显示所有提交过的用户，按提交次数排序</span>
+<span class="n">git</span> <span class="n">shortlog</span> <span class="o">-</span><span class="n">sn</span>
+
+<span class="cp"># 显示指定文件是什么人在什么时间修改过</span>
+<span class="n">git</span> <span class="n">blame</span> <span class="p">[</span><span class="n">file</span><span class="p">]</span>
+
+<span class="cp"># 显示暂存区和工作区的差异</span>
+<span class="n">git</span> <span class="n">diff</span>
+
+<span class="cp"># 显示暂存区和上一个commit的差异</span>
+<span class="n">git</span> <span class="n">diff</span> <span class="o">--</span><span class="n">cached</span> <span class="p">[</span><span class="n">file</span><span class="p">]</span>
+
+<span class="cp"># 显示工作区与当前分支最新commit之间的差异</span>
+<span class="n">git</span> <span class="n">diff</span> <span class="n">HEAD</span>
+
+<span class="cp"># 显示两次提交之间的差异</span>
+<span class="n">git</span> <span class="n">diff</span> <span class="p">[</span><span class="n">first</span><span class="o">-</span><span class="n">branch</span><span class="p">]...[</span><span class="n">second</span><span class="o">-</span><span class="n">branch</span><span class="p">]</span>
+
+<span class="cp"># 显示今天你写了多少行代码</span>
+<span class="n">git</span> <span class="n">diff</span> <span class="o">--</span><span class="n">shortstat</span> <span class="s">&quot;@{0 day ago}&quot;</span>
+
+<span class="cp"># 显示某次提交的元数据和内容变化</span>
+<span class="n">git</span> <span class="n">show</span> <span class="p">[</span><span class="n">commit</span><span class="p">]</span>
+
+<span class="cp"># 显示某次提交发生变化的文件</span>
+<span class="n">git</span> <span class="n">show</span> <span class="o">--</span><span class="n">name</span><span class="o">-</span><span class="n">only</span> <span class="p">[</span><span class="n">commit</span><span class="p">]</span>
+
+<span class="cp"># 显示某次提交时，某个文件的内容</span>
+<span class="n">git</span> <span class="n">show</span> <span class="p">[</span><span class="n">commit</span><span class="p">]</span><span class="o">:</span><span class="p">[</span><span class="n">filename</span><span class="p">]</span>
+
+<span class="cp"># 显示操作记录</span>
+<span class="n">git</span> <span class="n">reflog</span>
+
+<span class="cp">#执行了gitk后会有一个很漂亮的图形的显示项目的历史。</span>
+<span class="n">gitk</span>
+</pre></div>
+
+
+<h2 id="15">1.5. 远程仓库管理</h2>
+<h3 id="151">1.5.1. 设置远程分支</h3>
+<div class="hlcode"><pre><span class="cp"># 增加一个新的远程仓库，并命名</span>
+<span class="n">git</span> <span class="n">remote</span> <span class="n">add</span> <span class="p">[</span><span class="n">remote</span> <span class="n">shortname</span><span class="p">]</span> <span class="p">[</span><span class="n">url</span><span class="p">]</span>
+
+<span class="cp"># [url] 格式</span>
+<span class="cp"># https:</span><span class="c1">//github.com/[user_name]/[Project_name].git</span>
+
+<span class="n">git</span> <span class="n">remote</span> <span class="n">add</span> <span class="n">origin</span> <span class="n">https</span><span class="o">:</span><span class="c1">//github.com/zhang787jun/tmp.git</span>
+</pre></div>
+
+
+<h3 id="152">1.5.2. 查看远程仓库</h3>
+<div class="hlcode"><pre><span class="cp"># 显示所有远程仓库</span>
+<span class="n">git</span> <span class="n">remote</span> <span class="o">-</span><span class="n">v</span>
+
+<span class="cp"># 显示某个远程仓库的信息</span>
+<span class="n">git</span> <span class="n">remote</span> <span class="n">show</span> <span class="p">[</span><span class="n">remote</span> <span class="n">shortname</span><span class="p">]</span>
+</pre></div>
+
+
+<h3 id="153">1.5.3. 删除远程分支</h3>
+<div class="hlcode"><pre><span class="n">git</span> <span class="n">remote</span> <span class="n">rm</span> <span class="p">[</span><span class="n">remote</span> <span class="n">shortname</span><span class="p">]</span>
+</pre></div>
+
+
+<h3 id="154">1.5.4. 同步远程分支</h3>
+<div class="hlcode"><pre><span class="cp"># 下载远程仓库的所有变动</span>
+<span class="n">git</span> <span class="n">fetch</span> <span class="p">[</span><span class="n">remote</span> <span class="n">shortname</span><span class="p">]</span>
+
+<span class="cp"># 下载远程仓库[branch_name] 分支到本地[local branch_name]分支</span>
+<span class="n">git</span> <span class="n">fetch</span> <span class="p">[</span><span class="n">remote</span> <span class="n">shortname</span><span class="p">]</span> <span class="p">[</span><span class="n">remote</span> <span class="n">branch_name</span><span class="p">]</span><span class="o">:</span><span class="p">[</span><span class="n">local</span> <span class="n">branch_name</span><span class="p">]</span>
+<span class="n">git</span> <span class="n">fetch</span> <span class="n">origin</span> <span class="n">master</span><span class="o">:</span><span class="n">master</span>
+
+<span class="cp"># 取回远程仓库的变化，并与本地分支合并</span>
+<span class="cp"># pull=fetch+merge </span>
+<span class="n">git</span> <span class="n">pull</span> <span class="p">[</span><span class="n">remote</span> <span class="n">shortname</span><span class="p">]</span> <span class="p">[</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="p">]</span>
+
+<span class="cp"># 上传本地指定分支到远程仓库</span>
+<span class="n">git</span> <span class="n">push</span> <span class="p">[</span><span class="n">remote</span> <span class="n">shortname</span><span class="p">]</span> <span class="p">[</span><span class="n">remote</span><span class="o">-</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="p">]</span>
+
+<span class="n">git</span> <span class="n">push</span> <span class="p">[</span><span class="n">remote</span> <span class="n">shortname</span><span class="p">]</span> <span class="p">[</span><span class="n">local</span><span class="o">-</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="p">]</span><span class="o">:</span><span class="p">[</span><span class="n">remote</span><span class="o">-</span><span class="n">branch</span><span class="o">-</span><span class="n">name</span><span class="p">]</span>
+<span class="cp"># 强行推送当前分支到远程仓库，即使有冲突</span>
+<span class="n">git</span> <span class="n">push</span> <span class="p">[</span><span class="n">remote</span> <span class="n">shortname</span><span class="p">]</span> <span class="o">--</span><span class="n">force</span>
+
+<span class="cp"># 推送所有分支到远程仓库</span>
+<span class="n">git</span> <span class="n">push</span> <span class="p">[</span><span class="n">remote</span> <span class="n">shortname</span><span class="p">]</span> <span class="o">--</span><span class="n">all</span>
+</pre></div>
+
+
+<h2 id="16">1.6. 打标签</h2>
+<div class="hlcode"><pre><span class="cp"># 创建标签</span>
+<span class="n">git</span> <span class="n">tag</span> <span class="o">-</span><span class="n">a</span> <span class="n">v1</span><span class="mf">.4</span> <span class="o">-</span><span class="n">m</span> <span class="s">&quot;my version 1.4&quot;</span>
+<span class="cp"># 列出所有标签</span>
+<span class="n">git</span> <span class="n">tag</span>  
+</pre></div>
+
+
+<h2 id="17">1.7. 标签推送问题</h2>
+<p>默认情况下，git push并不会把tag标签传送到远端服务器上，只有通过显式命令才能分享标签到远端仓库。</p>
+<div class="hlcode"><pre><span class="mf">1.</span><span class="n">push</span><span class="err">单个</span><span class="n">tag</span><span class="err">，命令格式为：</span><span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="p">[</span><span class="n">tagname</span><span class="p">]</span>
+<span class="err">例如：</span>
+<span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="n">v1</span><span class="mf">.0</span> <span class="err">#将本地</span><span class="n">v1</span><span class="mf">.0</span><span class="err">的</span><span class="n">tag</span><span class="err">推送到远端服务器</span>
+<span class="mf">2.</span><span class="n">push</span><span class="err">所有</span><span class="n">tag</span><span class="err">，命令格式为：</span><span class="n">git</span> <span class="n">push</span> <span class="p">[</span><span class="n">origin</span><span class="p">]</span> <span class="o">--</span><span class="n">tags</span>
+<span class="err">例如：</span>
+<span class="n">git</span> <span class="n">push</span> <span class="o">--</span><span class="n">tags</span>
+<span class="err">或</span>
+<span class="n">git</span> <span class="n">push</span> <span class="n">origin</span> <span class="o">--</span><span class="n">tags</span>
+</pre></div>
+
+
+<h2 id="18">1.8. 版本退回</h2>
+<div class="hlcode"><pre><span class="cp">#HEAD指向的版本就是当前版本，因此，Git允许我们在版本的历史之间穿梭，使用命令</span>
+<span class="n">git</span> <span class="n">reset</span> <span class="o">--</span><span class="n">hard</span> <span class="n">commit_id</span>
+<span class="cp">#穿梭前，用git log可以查看提交历史，以便确定要回退到哪个版本。</span>
+<span class="n">git</span> <span class="n">log</span>
+
+<span class="cp"># 要重返未来，用git reflog查看命令历史，以便确定要回到未来的哪个版本。</span>
+<span class="n">git</span> <span class="n">reflog</span>
+
+<span class="cp"># 恢复暂存区的指定文件到工作区</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="p">[</span><span class="n">file</span><span class="p">]</span>
+
+<span class="cp"># 恢复某个commit的指定文件到暂存区和工作区</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="p">[</span><span class="n">commit</span><span class="p">]</span> <span class="p">[</span><span class="n">file</span><span class="p">]</span>
+
+<span class="cp"># 恢复暂存区的所有文件到工作区</span>
+<span class="n">git</span> <span class="n">checkout</span> <span class="p">.</span>
+
+<span class="cp"># 重置暂存区的指定文件，与上一次commit保持一致，但工作区不变</span>
+<span class="n">git</span> <span class="n">reset</span> <span class="p">[</span><span class="n">file</span><span class="p">]</span>
+
+<span class="cp"># 重置暂存区与工作区，与上一次commit保持一致</span>
+<span class="n">git</span> <span class="n">reset</span> <span class="o">--</span><span class="n">hard</span>
+
+<span class="cp"># 重置当前分支的指针为指定commit，同时重置暂存区，但工作区不变</span>
+<span class="n">git</span> <span class="n">reset</span> <span class="p">[</span><span class="n">commit</span><span class="p">]</span>
+
+<span class="cp"># 重置当前分支的HEAD为指定commit，同时重置暂存区和工作区，与指定commit一致</span>
+<span class="n">git</span> <span class="n">reset</span> <span class="o">--</span><span class="n">hard</span> <span class="p">[</span><span class="n">commit</span><span class="p">]</span>
+
+<span class="cp"># 重置当前HEAD为指定commit，但保持暂存区和工作区不变</span>
+<span class="n">git</span> <span class="n">reset</span> <span class="o">--</span><span class="n">keep</span> <span class="p">[</span><span class="n">commit</span><span class="p">]</span>
+
+<span class="cp"># 新建一个commit，用来撤销指定commit</span>
+<span class="cp"># 后者的所有变化都将被前者抵消，并且应用到当前分支</span>
+<span class="n">git</span> <span class="n">revert</span> <span class="p">[</span><span class="n">commit</span><span class="p">]</span>
+
+<span class="cp"># 暂时将未提交的变化移除，稍后再移入</span>
+<span class="n">git</span> <span class="n">stash</span>
+<span class="n">git</span> <span class="n">stash</span> <span class="n">pop</span>
+</pre></div>
+
+
+<h2 id="19">1.9. 第三方模块管理</h2>
+<p><code>git submodule</code>,<code>git subtree</code>这两个命令通常用来管理公用的第三方模块。比如一些通用的底层逻辑、中间件、还有一些可能会频繁变化的通用业务组件。 当然，两者还是有区别的。 </p>
+<h3 id="191-git-submodule">1.9.1. git submodule</h3>
+<p><code>git submodule</code> 主要用来管理一些单向更新的公共模块或底层逻辑。</p>
+<h3 id="192-git-subtree">1.9.2. git subtree</h3>
+<p><code>git subtree</code> 对于部分需要双向更新的可复用逻辑来说，特别适合管理。比如一些需要复用的业务组件代码。在我之前的实践中，我也曾用subtree来管理构建系统逻辑。</p>
+<h2 id="110">1.10. 储藏</h2>
+<p>当你正在做一项复杂的工作时, 发现了一个和当前工作不相关但是又很讨厌的bug. 你这时想先修复bug再做手头的工作, 那么就可以用 git stash 来保存当前的工作状态, 等你修复完bug后,执行'反储藏'(unstash)操作就可以回到之前的工作里.</p>
+<div class="hlcode"><pre><span class="n">git</span> <span class="n">stash</span> <span class="s">&quot;work in progress for foo feature&quot;</span>
+</pre></div>
+
+
+<p>上面这条命令会保存你的本地修改到储藏(stash)中, 然后将你的工作目录和索引里的内容全部重置, 回到你当前所在分支的上次提交时的状态.</p>
+<p>好了, 你现在就可以开始你的修复工作了.</p>
+<div class="hlcode"><pre><span class="err">·······</span>
+<span class="n">git</span> <span class="n">commit</span> <span class="o">-</span><span class="n">a</span> <span class="o">-</span><span class="n">m</span> <span class="s">&quot;blorpl: typofix&quot;</span>
+</pre></div>
+
+
+<p>当你修复完bug后, 你可以用git stash apply来回复到以前的工作状态.</p>
+<div class="hlcode"><pre><span class="n">git</span> <span class="n">stash</span> <span class="n">apply</span> <span class="o">&lt;</span><span class="n">stash</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<p>储藏队列<br />
+你也可多次使用'git stash'命令,　每执行一次就会把针对当前修改的‘储藏’(stash)添加到储藏队列中. 用'git stash list'命令可以查看你保存的'储藏'(stashes):</p>
+<div class="hlcode"><pre><span class="n">git</span> <span class="n">stash</span> <span class="n">list</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">stash</span><span class="err">@</span><span class="p">{</span><span class="mi">0</span><span class="p">}</span><span class="o">:</span> <span class="n">WIP</span> <span class="n">on</span> <span class="n">book</span><span class="o">:</span> <span class="mi">51</span><span class="n">bea1d</span><span class="p">...</span> <span class="n">fixed</span> <span class="n">images</span>
+<span class="n">stash</span><span class="err">@</span><span class="p">{</span><span class="mi">1</span><span class="p">}</span><span class="o">:</span> <span class="n">WIP</span> <span class="n">on</span> <span class="n">master</span><span class="o">:</span> <span class="mi">9705</span><span class="n">ae6</span><span class="p">...</span> <span class="n">changed</span> <span class="n">the</span> <span class="n">browse</span> <span class="n">code</span> <span class="n">to</span> <span class="n">the</span> <span class="n">official</span> <span class="n">repo</span>
+<span class="cp"># 可以用类似&#39;git stash apply stash@{1}&#39;的命令来使用在队列中的任意一个&#39;储藏&#39;(stashes)</span>
+<span class="n">git</span> <span class="n">stash</span> <span class="n">apply</span> <span class="n">stash</span><span class="err">@</span><span class="p">{</span><span class="mi">1</span><span class="p">}</span>
+<span class="cp">#则是用来清空这个队列</span>
+<span class="n">git</span> <span class="n">stash</span> <span class="n">clear</span>
+</pre></div>
+
+
+<h2 id="111">1.11. 设置代理</h2>
+<div class="hlcode"><pre><span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">global</span> <span class="n">https</span><span class="p">.</span><span class="n">proxy</span> <span class="n">http</span><span class="o">:</span><span class="c1">//127.0.0.1:1080</span>
+<span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">global</span> <span class="n">http</span><span class="p">.</span><span class="n">proxy</span> <span class="n">http</span><span class="o">:</span><span class="c1">//127.0.0.1:1080</span>
+<span class="cp"># 禁用代理</span>
+<span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">global</span>  <span class="o">--</span><span class="n">unset</span> <span class="n">http</span><span class="p">.</span><span class="n">proxy</span>
+<span class="n">git</span> <span class="n">config</span> <span class="o">--</span><span class="n">global</span>  <span class="o">--</span><span class="n">unset</span> <span class="n">https</span><span class="p">.</span><span class="n">proxy</span>
+</pre></div>
+
+
+<h2 id="112-git">1.12. Git 维护</h2>
+<h3 id="1121">1.12.1. 压缩仓库中的历史信息</h3>
+<p>在大的仓库中, git靠压缩历史信息来节约磁盘和内存空间。压缩操作并不是自动进行的, 你需要手动执行 <code>git gc</code>，压缩操作比较耗时, 你运行git gc命令最好是在你没有其它工作的时候.</p>
+<div class="hlcode"><pre><span class="n">git</span> <span class="n">gc</span>
+</pre></div>
+
+
+<h3 id="1122">1.12.2. 压缩提交记录</h3>
+<p>我们在开发中的时候尽量保持一个较高频率的代码提交，这样可以避免不小心代码丢失。但是真正合并代码的时候，我们并不希望有太多冗余的提交记录，而且 rebase 合并代码的时候，会把每个 commit 都处理一下，有时候会造成冗余的工作。 所以，压缩日志之后不经能让 commit 记录非常整洁，同时也便于使用 rebase 合并代码。</p>
+<p>那么，如何压缩commit记录呢？</p>
+<h4 id="11221-git-reset">1.12.2.1. git reset</h4>
+<ol>
+<li>使用 <code>git log</code> 找到起始 commitID  <init_commitID></li>
+<li><code>git reset &lt;init_commitID&gt;</code>，切记不要用 --hard 参数 </li>
+<li>重新 <code>git add . --all</code>+<code>git commit -m "newlog2"</code>,此时本地仓库的该分支就两条log：[initlog,newlog2]</li>
+<li><code>git push -f origin branchName</code>，因为会有冲突，所以需要强制覆盖远端分支，请务必谨慎。 合并到 master 中，然后更新远端 master。</li>
+</ol>
+<h4 id="11222-git-commit-amend">1.12.2.2. git commit --amend</h4>
+<p>[不推荐]<br />
+git commit --amend：追加 commit 到上一个 commit 上。</p>
+<h4 id="11223-git-rebase">1.12.2.3. git rebase</h4>
+<p>[不推荐]</p>
+<p>git rebase -i：通过交互式的 rebase，提供对分支 commit 的控制，从而可以清理混乱的历史。</p>
+<h3 id="1123-commit-log">1.12.3. 清空分支的commit log记录</h3>
+<div class="hlcode"><pre><span class="err">#</span> <span class="nx">创建新的分支</span>
+<span class="nx">git</span> <span class="nx">checkout</span> <span class="o">--</span><span class="nx">orphan</span>  <span class="nx">new_branch</span>
+
+<span class="err">#</span><span class="nx">添加所有文件变化至暂存空间</span>
+<span class="nx">git</span> <span class="nb">add</span> <span class="na">-A</span>
+
+<span class="err">#</span><span class="nx">提交并添加提交记录</span>
+<span class="nx">git</span> <span class="nx">commit</span> <span class="na">-am</span> <span class="s2">&quot;commit message&quot;</span>
+<span class="err">#</span><span class="nx">删除master分支</span>
+<span class="nx">git</span> <span class="nx">branch</span> <span class="na">-D</span> <span class="o">&lt;</span><span class="nx">master</span><span class="na">-name</span><span class="o">&gt;</span>
+
+<span class="err">#</span><span class="nx">重新命名当前独立分支为</span> <span class="nx">master</span>
+<span class="nx">git</span> <span class="nx">branch</span> <span class="na">-m</span> <span class="o">&lt;</span><span class="nx">master</span><span class="o">&gt;</span>
+
+<span class="err">#</span><span class="nx">推送到远端分支</span>
+<span class="nx">git</span> <span class="nb">push</span> <span class="na">-f</span> <span class="nx">origin</span> <span class="o">&lt;</span><span class="nx">master</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<h3 id="1124">1.12.4. 保持可靠性</h3>
+<p>git fsck 运行一些仓库的一致性检查, 如果有任何问题就会报告. 这项操作也有点耗时, 通常报的警告就是“悬空对象"(dangling objects).</p>
+<div class="hlcode"><pre><span class="n">git</span> <span class="n">fsck</span>
+<span class="n">dangling</span> <span class="n">commit</span> <span class="mi">7281251</span><span class="n">ddd2a61e38657c827739c57015671a6b3</span>
+<span class="n">dangling</span> <span class="n">commit</span> <span class="mi">2706</span><span class="n">a059f258c6b245f298dc4ff2ccd30ec21a63</span>
+<span class="n">dangling</span> <span class="n">commit</span> <span class="mi">13472</span><span class="n">b7c4b80851a1bc551779171dcb03655e9b5</span>
+<span class="n">dangling</span> <span class="n">blob</span> <span class="mf">218761f</span><span class="mi">9</span><span class="n">d90712d37a9c5e36f406f92202db07eb</span>
+<span class="n">dangling</span> <span class="n">commit</span> <span class="n">bf093535a34a4d35731aa2bd90fe6b176302f14f</span>
+<span class="n">dangling</span> <span class="n">commit</span> <span class="mf">8e4</span><span class="n">bec7f2ddaa268bef999853c25755452100f8e</span>
+<span class="n">dangling</span> <span class="n">tree</span> <span class="n">d50bb86186bf27b681d25af89d3b5b68382e4085</span>
+<span class="n">dangling</span> <span class="n">tree</span> <span class="n">b24c2473f1fd3d91352a624795be026d64c8841f</span>
+</pre></div>
+
+
+<p>“悬空对象"(dangling objects)并不是问题, 最坏的情况只是它们多占了一些磁盘空间. 有时候它们是找回丢失的工作的最后一丝希望.</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

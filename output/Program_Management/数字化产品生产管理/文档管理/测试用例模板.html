@@ -1,0 +1,301 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>测试用例模板 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Program_Management">Program_Management</a>&nbsp;»&nbsp;<a href="/Wiki/#-数字化产品生产管理">数字化产品生产管理</a>&nbsp;»&nbsp;<a href="/Wiki/#-文档管理">文档管理</a>&nbsp;»&nbsp;测试用例模板</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">测试用例模板</div>
+<div id="content">
+  <p>模板中说明性的描述可以删除，如果某个方面不需要测试，把描述部分设置成N/A；完成测试用例并且评审后，在用例管理系统中把测试用例细化和完善。下面举个示意性的例子，不是完整的测试用例。 需求简述：美团开店宝的商家入驻功能，需要商家自己注册用户名、上传营业执照、确定商铺的地理位置等。 测试用例如下：</p>
+<p><strong>商家入驻测试用例</strong></p>
+<h1 id="1">1. 基本信息</h1>
+<h2 id="11">1.1 新功能简介</h2>
+<p>商家在美团开店宝App自助完成商家注册、信息上传等功能。</p>
+<h2 id="12">1.2 参考资料</h2>
+<p>PRD：对应的网址。 UI图：对应的网址。</p>
+<h2 id="13">1.3 相关联系人</h2>
+<p>PM：Tony (tony@test.com) <br />
+UI：Amy (amy@test.com) <br />
+RD：Peter (peter@test.com) <br />
+QA：Tom12 (tom12@test.com)</p>
+<h1 id="2">2. 测试方法</h1>
+<h2 id="21">2.1 验收测试用例</h2>
+<table>
+<thead>
+<tr>
+<th>测试用例名</th>
+<th>测试步骤</th>
+<th>检查点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>商家入驻</td>
+<td>1. 商家注册账号</td>
+<td>检查商家可以新注册账号成功</td>
+</tr>
+<tr>
+<td>商家入驻</td>
+<td>2. 商家拍照或上传资质</td>
+<td>商家可以拍照并成功上传</td>
+</tr>
+<tr>
+<td>商家入驻</td>
+<td>3. 商家确定店铺位置</td>
+<td>商家可以上传店铺的地理坐标</td>
+</tr>
+</tbody>
+</table>
+<h2 id="22">2.2 测试条件</h2>
+<p>列出新功能的用户使用场景，按照业务流程和逻辑分支来组织用户使用场景。 先主要后次要，先正常后异常，主要的设置为P1，次要的设置为P2，执行过一次后不需要经常执行的设置为P3。</p>
+<table>
+<thead>
+<tr>
+<th>用例分类</th>
+<th>用例名称</th>
+<th>优先级</th>
+<th>测试条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>新商家入驻</td>
+<td>新商家入驻</td>
+<td>P1</td>
+<td>新商家自助注册，上传资质认证，经营地址等信息</td>
+</tr>
+<tr>
+<td>商家入驻状态</td>
+<td>P2</td>
+<td>商家提交申请，审批前后，商家的状态</td>
+<td></td>
+</tr>
+<tr>
+<td>商家入驻流程中断</td>
+<td>P3</td>
+<td>入驻流程的前进、后退、退出等，入驻可以顺利完成</td>
+<td></td>
+</tr>
+<tr>
+<td>商家入驻UI检查</td>
+<td>P3</td>
+<td>入驻页面的兼容性、用户名、密码、信息填写页面的UI检查（参考控件检查点模板）</td>
+<td></td>
+</tr>
+<tr>
+<td>老商家入驻</td>
+<td>老商家登录</td>
+<td>P1</td>
+<td>老商家可以直接登录，不受入驻流程影响</td>
+</tr>
+<tr>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+<td>…</td>
+</tr>
+</tbody>
+</table>
+<h2 id="23">2.3 关联功能测试</h2>
+<table>
+<thead>
+<tr>
+<th>模块名称</th>
+<th>是否有影响</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>摄像头</td>
+<td>YES</td>
+<td>上传营业执照，店面照片需要摄像头拍照，确保有权限启动和上传照片</td>
+</tr>
+<tr>
+<td>GPS</td>
+<td>YES</td>
+<td>商家上传店铺地理坐标时需要自动GPS定位</td>
+</tr>
+</tbody>
+</table>
+<h2 id="24">2.4 兼容测试</h2>
+<p>列出测试产品支持的平台和系统的版本等。</p>
+<table>
+<thead>
+<tr>
+<th>平台</th>
+<th>支持的设备类型</th>
+<th>支持的平台版本</th>
+<th>分辨率</th>
+<th>备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>iOS</td>
+<td>iPhone 5，5S，6， 6+</td>
+<td>iOS 7， 8，9(beta)</td>
+<td>960x640，1136x640，1920x1080</td>
+<td>注意测试iOS 9的兼容性</td>
+</tr>
+<tr>
+<td>Android</td>
+<td>Android 手机 和Pad</td>
+<td>Android 4.x， 5.x</td>
+<td>800x480， 720x1280，960x540，1920x1080， 2560x1536</td>
+<td>注意Pad的测试</td>
+</tr>
+</tbody>
+</table>
+<h2 id="25">2.5 升级和数据迁移</h2>
+<p>列出版本升级测试的路径和数据检查点。</p>
+<table>
+<thead>
+<tr>
+<th>升级路径</th>
+<th>检查点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>V4.1-&gt;V4.2</td>
+<td>升级后，老用户的登录状态会被保留，不需要重新登录</td>
+</tr>
+</tbody>
+</table>
+<h2 id="26-l10ni18n">2.6 L10N/I18N测试</h2>
+<p>N/A</p>
+<h2 id="27">2.7 性能测试</h2>
+<p>N/A</p>
+<h2 id="28">2.8 压力测试</h2>
+<p>N/A（使用原商家的接口，不需要做压力测试）。</p>
+<h2 id="29">2.9 持久性测试</h2>
+<p>N/A</p>
+<h2 id="210">2.10 安全性测试</h2>
+<p>使用Charles等工具检查创建账号时上传的密码是否为明文。</p>
+<h2 id="211">2.11 自动化测试：</h2>
+<p>新商家注册账号，上传认证信息的流程可以实现自动化。</p>
+<h1 id="3">3. 测试的需求</h1>
+<h2 id="31">3.1 测试数据</h2>
+<p>审批和驳回新商家入驻申请的审批部门的账号。<br />
+不同审批阶段（刚注册，已提交认证资质，已提交审批）和状态（已提交，驳回，审批通过）的商家账号，用于检查不同审批状态的界面显示。</p>
+<h2 id="32">3.2 测试设备</h2>
+<p>小米平板 7.9寸 2048x1536（商家反馈UI适配不好）。</p>
+<h2 id="33">3.3 测试软件</h2>
+<p>N/A</p>
+<h2 id="34">3.4 外包服务</h2>
+<p>N/A</p>
+<h1 id="4">4. 其他</h1>
+<h2 id="41">4.1 测试范围和潜在风险 （比如法律风险、对接第三方的风险）</h2>
+<p>商家入驻的审批环节不在测试范围内。<br />
+商家入驻信息（身份证、营业执照等）的存储位置和安全不在本测试范围内 ，由数据中心来保证。</p>
+<h2 id="42">4.2 时间估计</h2>
+<table>
+<thead>
+<tr>
+<th align="left">测试用例数</th>
+<th align="left">平均执行时间</th>
+<th align="left">平台数量</th>
+<th align="left">测试执行时间（人小时）</th>
+<th align="left">估时（人日）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">30</td>
+<td align="left">10min</td>
+<td align="left">4</td>
+<td align="left">30x10x4/60=20</td>
+<td align="left">4</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

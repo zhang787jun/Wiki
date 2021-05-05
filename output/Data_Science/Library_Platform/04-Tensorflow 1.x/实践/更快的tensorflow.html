@@ -6,7 +6,7 @@
     <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
     <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
-    <title>更快的Tensorflow - Jun's personal knowledge wiki</title>
+    <title>为了更快的Tensorflow - Jun's personal knowledge wiki</title>
     <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
     <meta name="description" content="A wiki website" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -28,13 +28,26 @@
     <div id="container">
         
 <div id="header">
-  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-04-Tensorflow 1.x">04-Tensorflow 1.x</a>&nbsp;»&nbsp;<a href="/Wiki/#-实践">实践</a>&nbsp;»&nbsp;更快的Tensorflow</div>
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-04-Tensorflow 1.x">04-Tensorflow 1.x</a>&nbsp;»&nbsp;<a href="/Wiki/#-实践">实践</a>&nbsp;»&nbsp;为了更快的Tensorflow</div>
 </div>
 <div class="clearfix"></div>
-<div id="title">更快的Tensorflow</div>
+<div id="title">为了更快的Tensorflow</div>
 <div id="content">
-  <h1 id="_1">测试</h1>
-<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+  <h1 id="-">最关键--理解算法</h1>
+<h1 id="-_1">最好--好的硬件</h1>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">is_gpu_available</span><span class="p">()</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">is_built_with_cuda</span><span class="p">()</span>
+</pre></div>
+
+
+<h1 id="_1">测试</h1>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">is_gpu_available</span><span class="p">()</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">is_built_with_cuda</span><span class="p">()</span>
+
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
 <span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
 

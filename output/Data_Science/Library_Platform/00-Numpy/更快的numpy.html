@@ -42,11 +42,11 @@
 <li><a href="#15-gpu">1.5. GPU</a></li>
 </ul>
 </li>
-<li><a href="#numpy">用好numpy</a></li>
-<li><a href="#2-numpy">2. 更小的numpy</a></li>
-<li><a href="#3">3. 测试</a></li>
-<li><a href="#_1">连续内存</a></li>
-<li><a href="#4">4. 参考资料</a></li>
+<li><a href="#2-numpy">2. 用好numpy</a></li>
+<li><a href="#3-numpy">3. 更小的numpy</a></li>
+<li><a href="#4">4. 测试</a></li>
+<li><a href="#5">5. 连续内存</a></li>
+<li><a href="#6">6. 参考资料</a></li>
 </ul>
 </div>
 <p>如何使用numpy，使得其在计算时更快？ </p>
@@ -181,7 +181,7 @@
 <p>带有 out 的 numpy 功能都在这里:<code>Universal functions</code>(https://docs.scipy.org/doc/numpy/reference/ufuncs.html#available-ufuncs). 所以只要是已经存在了一个 placeholder (比如 a), 我们就没有必要去再创建一个, 用 out 方便又有效.</p>
 <h2 id="15-gpu">1.5. GPU</h2>
 <p>numpy 不支持GPU, pytoch 可以作为 GPU 版本的 NumPy 替代品。</p>
-<h1 id="numpy">用好numpy</h1>
+<h1 id="2-numpy">2. 用好numpy</h1>
 <p>在计算方面，实际上有三个概念使NumPy具有强大的功能：</p>
 <ol>
 <li>向量化</li>
@@ -189,7 +189,7 @@
 <li>索引编制</li>
 </ol>
 <p>参考： https://realpython.com/numpy-array-programming/</p>
-<h1 id="2-numpy">2. 更小的numpy</h1>
+<h1 id="3-numpy">3. 更小的numpy</h1>
 <p>主要针对内存</p>
 <div class="hlcode"><pre> <span class="o">&lt;</span><span class="nb">type</span> <span class="s">&#39;int&#39;</span><span class="o">&gt;</span> <span class="n">size</span> <span class="ow">is</span> <span class="mi">12</span>
  <span class="o">&lt;</span><span class="nb">type</span> <span class="s">&#39;bool&#39;</span><span class="o">&gt;</span> <span class="n">size</span> <span class="ow">is</span> <span class="mi">12</span>
@@ -216,7 +216,7 @@
 
 
 <p>numpy 默认浮点为float64</p>
-<h1 id="3">3. 测试</h1>
+<h1 id="4">4. 测试</h1>
 <div class="hlcode"><pre><span class="c"># 测试用例1--SVD 奇异值分解</span>
 <span class="kn">import</span> <span class="nn">datetime</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
@@ -238,7 +238,7 @@
 </pre></div>
 
 
-<h1 id="_1">连续内存</h1>
+<h1 id="5">5. 连续内存</h1>
 <p>np.ascontiguousarray<br />
 ascontiguousarray函数将一个内存不连续存储的数组转换为内存连续存储的数组，使得运行速度更快。</p>
 <p>C order vs Fortran order<br />
@@ -323,7 +323,7 @@ Numpy文档</p>
 </blockquote>
 </blockquote>
 </blockquote>
-<h1 id="4">4. 参考资料</h1>
+<h1 id="6">6. 参考资料</h1>
 <div class="footnote">
 <hr />
 <ol>

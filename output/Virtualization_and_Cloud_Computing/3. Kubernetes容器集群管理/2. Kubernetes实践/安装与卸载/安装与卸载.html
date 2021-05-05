@@ -546,9 +546,6 @@ sudo swapoff -a
 # 关闭防火墙
 sudo ufw disable
 
-
-
-
 export MASTER_IP=10.0.77.98
 # 替换 apiserver.demo 为 您想要的 dnsName
 export APISERVER_NAME=apiserver.demo
@@ -588,15 +585,19 @@ kube-router 开启 ipinip：roles/kube-router/defaults/main.yml</p>
 </li>
 <li>
 <p>负载均衡<br />
-一般云厂商会限制使用keepalived+haproxy自建负载均衡，你可以根据云厂商文档使用云负载均衡（内网）四层TCP负载模式；</p>
+一般云厂商会限制使用keepalived+haproxy自建负载均衡，你可以根据云厂商文档使用云负载均衡（内网）四层TCP负载模式；<br />
+kubeasz 2x 版本已无需依赖外部负载均衡实现apiserver的高可用，详见 2x架构<br />
+kubeasz 1x 及以前版本需要负载均衡实现apiserver高可用，详见 1x架构</p>
 </li>
-</ol>
-<p>kubeasz 2x 版本已无需依赖外部负载均衡实现apiserver的高可用，详见 2x架构<br />
-kubeasz 1x 及以前版本需要负载均衡实现apiserver高可用，详见 1x架构<br />
-时间同步<br />
+<li>
+<p>时间同步<br />
 一般云厂商提供的虚机都已默认安装时间同步服务，无需自行安装。</p>
+</li>
+<li>
 <p>访问 APISERVER<br />
 在公有云上安装完集群后，需要在公网访问集群 apiserver，而我们在安装前可能没有规划公网IP或者公网域名；而 apiserver 肯定需要 https 方式访问，在证书创建时需要加入公网ip/域名；可以参考这里修改 APISERVER（MASTER）证书</p>
+</li>
+</ol>
 <p>在公有云上部署多主高可用集群<br />
 处理好以上讨论的常见问题后，在公有云上使用 kubeasz 安装集群与自有环境没有差异。</p>
 <p>使用 kubeasz 2x 版本安装单节点、单主多节点、多主多节点 k8s 集群，云上云下的预期安装体验完全一致</p>

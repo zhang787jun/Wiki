@@ -1,0 +1,159 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>TensorFlow 1.X--分布式训练 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-04-Tensorflow 1.x">04-Tensorflow 1.x</a>&nbsp;»&nbsp;<a href="/Wiki/#-实践">实践</a>&nbsp;»&nbsp;TensorFlow 1.X--分布式训练</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">TensorFlow 1.X--分布式训练</div>
+<div id="content">
+  <p>TensorFlow 1.X 版本的分布式<br />
+最原始的分布式TensorFlow</p>
+<p>Parameter Server的配置数量也非常复杂，不同的网络环境，模型大小都会对效率有影响<strong>，所以现在官方好像也不怎么推荐这种做法了</strong>。最原始的分布式TensorFlow编程是基于Low-level API来实现，下面我们通过举例来理解最原始的分布式TensorFlow编程步骤。我们在一台机器上启动三个Server(2个worker，1个ps)来模拟分布式多机环境，开启三个Python解释器(分别对应2个worker和1个ps)，执行如下python语句，定义一个Cluster：</p>
+<p>import tensorflow as tf</p>
+<p>cluster = tf.train.ClusterSpec({<br />
+  "worker": [<br />
+      "localhost:2222",<br />
+      "localhost:2223"<br />
+  ],<br />
+  "ps": [<br />
+      "localhost:2224"<br />
+  ]})<br />
+在第一个worker解释器内执行如下语句启动Server：<br />
+server = tf.train.Server(cluster, job_name="worker", task_index=0)<br />
+在第二个worker解释器内执行如下语句启动Server：</p>
+<p>server = tf.train.Server(cluster, job_name="worker", task_index=1)<br />
+在ps解释器内执行如下语句启动Server:<br />
+server = tf.train.Server(cluster, job_name="ps", task_index=0)<br />
+至此，我们已经启动了一个TensorFlow Cluster，它由两个worker节点和一个ps节点组成，每个节点上都有Master Service和Worker Service，其中worker节点上的Worker Service将负责梯度运算，ps节点上的Worker Service将负责参数更新，三个Master Service将仅有一个会在需要时被用到，负责子图划分与Task派发。</p>
+<p>上图所示，假设存在两个任务：</p>
+<p>/job:ps/task:0: 负责模型参数的存储和更新<br />
+/job:worker/task:0: 负责模型的训练或推理<br />
+有了Cluster，我们就可以编写Client，构建计算图，并提交到这个Cluster上执行。使用分布式TensorFlow时，最常采用的分布式训练策略是数据并行，数据并行就是在很多设备上放置相同的模型，在TensorFlow中称之为Replicated training，主要表现为两种模式：图内复制(in-graph replication)和图间复制(between-graph replication)。不同的运行模式，Client的表现形式不一样。</p>
+<p>Client<br />
+可以把它看成是TensorFlow前端，它支持多语言的编程环境(Python/C++/Go/Java等)，方便用户构造各种复杂的计算图。Client通过Session连接TensorFlow后端，并启动计算图的执行。Client基于TensorFlow的编程接口，构造计算图。此时，TensorFlow并未执行任何计算。直至建立Session会话，并以Session为桥梁，建立Client与后端运行时的通道，将Protobuf格式的GraphDef发送至Distributed Master。也就是说，当Client对OP结果进行求值时，将触发Distributed Master的计算图的执行过程</p>
+<p>Master<br />
+Master根据要计算的操作(Op)，从计算图中反向遍历，找到其所依赖的最小子图，然后将该子图再次分裂为多个子图片段，以便在不同的进程和设备上运行这些子图片段，最后将这些子图片段派发给Worker执行。</p>
+<p>Worker<br />
+Worker按照计算子图中节点之间的依赖关系，根据当前的可用的硬件环境(GPU/CPU/TPU)，调用Op的Kernel实现完成运算。对于每个任务，都将存在相应的Worker Service，它主要负责如下3个方面的职责：1 处理来自Master的请求；2 调度OP的Kernel实现，执行本地子图；3 协同任务之间的数据通信。</p>
+<p>在分布式TensorFlow中，参与分布式系统的所有节点或者设备统称为一个Cluster，一个Cluster中包含很多Server，每个Server去执行一项Task，Server和Task是一一对应的。</p>
+<p>所以，Cluster可以看成是Server的集合，也可以看成是Task的集合，TensorFlow为各个Task又增加了一个抽象层，将一系列相似的Task集合称为一个Job。</p>
+<p>一组Task集合(即Job)有若干个Server(host和port标识)，每个Server上会绑定两个Service，就是前面提到的Master Service和Worker Service，Client通过Session连接集群中的任意一个Server的Master Service提交计算图，Master Service负责划分子图并派发Task给Worker Service，Worker Service则负责运算派发过来的Task完成子图的运算。</p>
+<p>为什么要分成Cluster Job和Task</p>
+<p>首先,我们介绍一下Task:Task就是主机上的一个进程,在大多数情况下,一个机器上只运行一个Task.</p>
+<p>为什么Job是Task的集合呢? 在分布式深度学习框架中,我们一般把Job划分为Parameter和Worker,Parameter Job是管理参数的存储和更新工作.Worker Job是来运行ops.如果参数的数量太大,一台机器处理不了,这就要需要多个Tasks.</p>
+<p>Cluster 是 Jobs 的集合: Cluster(集群),就是我们用的集群系统了</p>
+<p>参数服务器</p>
+<p>当计算模型越来越大，模型的参数越来越多，多到模型参数的更新，一台机器的性能都不够时，我们需要将参数分开到不同的机器去存储和更新。参数服务器可以是多台机器组成的集群，类似于分布式的存储结构。主要用来解决参数存储和更新的性能问题。</p>
+<p>对于PS架构，Parameter Server的Task集合为ps(即job类型为ps)，而执行梯度计算的Task集合为worker(即job类型为worker)，Low-level 分布式编程模型</p>
+<p>High-level 分布式编程模型</p>
+<p>TensorFlow提供Estimator和Dataset高阶API，简化模型构建以及数据输入，用户通过Estimator和Dataset高阶API编写TensorFlow应用，不用了解TensorFlow内部实现细节，只需关注模型本身即可。</p>
+<p>Estimator代表一个完整的模型，它提供方法用于模型的训练、评估、预测及导出</p>
+<p>Estimator具备如下优势：</p>
+<p>基于Estimator编写的代码，可运行在单机和分布式环境中，不用区别对待<br />
+简化了模型开发者之间共享部署，它提供了标准的模型导出功能，可以将训练好的模型直接用于TensorFlow-Serving等在线服务<br />
+提供全套的分布式训练生命周期管理，自动初始化变量、处理异常、创建检查点文件并从故障中恢复、以及保存TensorBoard 的摘要等<br />
+提供了一系列开箱即用的常见Estimator，例如DNNClassifier，LinearClassifier等<br />
+使用Estimator编写应用时，需将数据输入从模型中分离出来。数据输入可以通过 Dataset API 构建数据 pipeline，类似Spark RDD或DataFrame，可以轻松处理大规模数据、不同的数据格式以及复杂的转换等。具体关于Estimator的使用可以参考TensorFlow官方文档，讲的特别详细。</p>
+<p>使用Estimator编写完应用后，可以直接单机上运行，如果需要将其部署到分布式环境运行，则需要在每个节点执行代码前设置集群的TF_CONFIG环境变量(实际应用时通常借助资源调度平台自动完成，如K8S，不需要修改TensorFlow应用程序代码)：</p>
+<p>TF_CONFIG='{<br />
+    "cluster": {<br />
+        "chief": ["host0:2222"],<br />
+        "worker": ["host1:2222", "host2:2222", "host3:2222"],<br />
+        "ps": ["host4:2222", "host5:2222"]<br />
+    },<br />
+    "task": {"type": "chief", "index": 0}<br />
+}'<br />
+TF_CONFIG环境变量是一个json字符串，指定集群规格cluster以及节点自身的角色task，cluster包括chief、worker、ps节点，chief节点其实是一个特殊的worker节点，而且只能有一个节点，表示分布式TensorFlow Master Service所在的节点。</p>
+<p>通过以上描述可以看到，使用高阶API编写分布式TensorFlow应用已经很方便了，然而因为PS架构的缘故，我们实际部署时，需要规划使用多少个ps，多少个worker，那么调试过程中，需要反复调整ps和worker的数量。当模型规模较大时，在分布式训练过程中，ps可能成为网络瓶颈，因为所有worker都需要从ps处更新/获取参数，如果ps节点网络被打满，那么worker节点可能就会堵塞等待，以至于其计算能力就发挥不出来。所以后面TensorFlow引入All-Reduce架构解决这类问题。</p>
+<p>————————————————<br />
+版权声明：本文为CSDN博主「积极向上的墨鱼仔」的原创文章，遵循CC 4.0 BY-SA版权协议，转载请附上原文出处链接及本声明。<br />
+原文链接：https://blog.csdn.net/zwqjoy/article/details/89552866</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

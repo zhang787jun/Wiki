@@ -1,0 +1,502 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>pyspark 101 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Distributed_System">Distributed_System</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-分布式计算系统">02-分布式计算系统</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-Spark">02-Spark</a>&nbsp;»&nbsp;<a href="/Wiki/#-2-实践">2-实践</a>&nbsp;»&nbsp;<a href="/Wiki/#-PySpark">PySpark</a>&nbsp;»&nbsp;pyspark 101</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">pyspark 101</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 概况</a><ul>
+<li><a href="#11-pyspark-shell">1.1. PySpark Shell</a></li>
+<li><a href="#12-python">1.2. python 程序</a></li>
+</ul>
+</li>
+<li><a href="#2-spark-core">2. Spark Core 基本用法</a><ul>
+<li><a href="#201-rdds">2.0.1. 创建RDDs</a></li>
+<li><a href="#202-transformations">2.0.2. 应用transformations</a></li>
+<li><a href="#203-actions">2.0.3. 实现 actions</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 实践</a><ul>
+<li><a href="#31">3.1. 连接</a></li>
+<li><a href="#32">3.2. 查看信息</a><ul>
+<li><a href="#321">3.2.1. 节点数量</a></li>
+</ul>
+</li>
+<li><a href="#33-shell">3.3. shell</a></li>
+<li><a href="#34-python">3.4. python</a><ul>
+<li><a href="#341-sparkcontext">3.4.1. 连接集群--创建 SparkContext</a><ul>
+<li><a href="#3411-spark-on-standalone">3.4.1.1. spark on  standalone</a></li>
+<li><a href="#3412-spark-on-k8s">3.4.1.2. spark on k8s</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4">4. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1">1. 概况</h1>
+<h2 id="11-pyspark-shell">1.1. PySpark Shell</h2>
+<p>PySpark提供了PySpark Shell ，它将Python API链接到spark核心并初始化Spark上下文。</p>
+<div class="hlcode"><pre><span class="n">cd</span> <span class="err">$</span><span class="n">SPARK_HOME</span>
+<span class="p">.</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">pyspark</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">Welcome</span> <span class="n">to</span>
+      <span class="n">____</span>              <span class="n">__</span>
+     <span class="o">/</span> <span class="n">__</span><span class="o">/</span><span class="n">__</span>  <span class="n">___</span> <span class="n">_____</span><span class="o">/</span> <span class="o">/</span><span class="n">__</span>
+    <span class="n">_</span><span class="err">\</span> <span class="err">\</span><span class="o">/</span> <span class="n">_</span> <span class="err">\</span><span class="o">/</span> <span class="n">_</span> <span class="err">`</span><span class="o">/</span> <span class="n">__</span><span class="o">/</span>  <span class="err">&#39;</span><span class="n">_</span><span class="o">/</span>
+   <span class="o">/</span><span class="n">__</span> <span class="o">/</span> <span class="p">.</span><span class="n">__</span><span class="o">/</span><span class="err">\</span><span class="n">_</span><span class="p">,</span><span class="n">_</span><span class="o">/</span><span class="n">_</span><span class="o">/</span> <span class="o">/</span><span class="n">_</span><span class="o">/</span><span class="err">\</span><span class="n">_</span><span class="err">\</span>   <span class="n">version</span> <span class="mf">1.5.2</span>
+      <span class="o">/</span><span class="n">_</span><span class="o">/</span>
+
+<span class="n">Using</span> <span class="n">Python</span> <span class="n">version</span> <span class="mf">2.7.9</span> <span class="p">(</span><span class="k">default</span><span class="p">,</span> <span class="n">Mar</span>  <span class="mi">1</span> <span class="mi">2015</span> <span class="mi">12</span><span class="o">:</span><span class="mi">57</span><span class="o">:</span><span class="mi">24</span><span class="p">)</span>
+<span class="n">SparkContext</span> <span class="n">available</span> <span class="n">as</span> <span class="n">sc</span><span class="p">,</span> <span class="n">HiveContext</span> <span class="n">available</span> <span class="n">as</span> <span class="n">sqlContext</span><span class="p">.</span>
+</pre></div>
+
+
+<p>注意最后一行 <code>SparkContext available as **sc**, HiveContext available as **sqlContext**</code>.</p>
+<p>PySpark提供了PySpark Shell ，它将Python API链接到spark核心并初始化Spark上下文。</p>
+<h2 id="12-python">1.2. python 程序</h2>
+<h1 id="2-spark-core">2. Spark Core 基本用法</h1>
+<p>Programming in Spark <br />
+1. 创建RDD,Create RDDs <br />
+2. 应用转换, Apply transformations<br />
+3. 执行，Perform actions </p>
+<p>RDD，全称为 Resilient Distributed Datasets，是一个容错的、并行的数据结构，可以让用户显式地将数据存储到磁盘和内存中，并能控制数据的分区。</p>
+<p>RDD 是不可变Java虚拟机（JVM）对象的分布式集合。我们使用python时候，尤其要注意，python数据是存储在JVM对象中的 </p>
+<h3 id="201-rdds">2.0.1. 创建RDDs</h3>
+<div class="hlcode"><pre><span class="c"># 1.SparkContext 类</span>
+<span class="k">class</span> <span class="nc">pyspark</span><span class="o">.</span><span class="n">SparkContext</span> <span class="p">(</span>
+   <span class="n">master</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+   <span class="n">appName</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+   <span class="n">sparkHome</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+   <span class="n">pyFiles</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+   <span class="n">environment</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+   <span class="n">batchSize</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+   <span class="n">serializer</span> <span class="o">=</span> <span class="n">PickleSerializer</span><span class="p">(),</span>
+   <span class="n">conf</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+   <span class="n">gateway</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+   <span class="n">jsc</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
+   <span class="n">profiler_cls</span> <span class="o">=</span> <span class="o">&lt;</span><span class="k">class</span> <span class="err">&#39;</span><span class="nc">pyspark</span><span class="o">.</span><span class="n">profiler</span><span class="o">.</span><span class="n">BasicProfiler</span><span class="s">&#39;&gt;</span>
+<span class="p">)</span>
+
+<span class="c"># 以下是SparkContext的参数。</span>
+<span class="c">#     Master - 它是连接到的集群的URL。</span>
+<span class="c">#     appName - 您的工作名称。</span>
+<span class="c">#     sparkHome - Spark安装目录。</span>
+<span class="c">#     pyFiles - 要发送到集群并添加到PYTHONPATH的.zip或.py文件。</span>
+<span class="c">#     environment - 工作节点环境变量。</span>
+<span class="c">#     batchSize - 表示为单个Java对象的Python对象的数量。 设置1以禁用批处理，设置0以根据对象大小自动选择批处理大小，或设置为-1以使用无限批处理大小。</span>
+<span class="c">#     serializer - RDD序列化器。</span>
+<span class="c">#     Conf - L {SparkConf}的一个对象，用于设置所有Spark属性。</span>
+<span class="c">#     gateway - 使用现有网关和JVM，否则初始化新JVM。</span>
+<span class="c">#     JSC - JavaSparkContext实例。</span>
+<span class="c">#     profiler_cls - 用于进行性能分析的一类自定义Profiler（默认为pyspark.profiler.BasicProfiler）。</span>
+
+
+<span class="c"># 2.SparkContext 类</span>
+<span class="k">class</span> <span class="nc">pyspark</span><span class="o">.</span><span class="n">RDD</span> <span class="p">(</span>
+   <span class="n">jrdd</span><span class="p">,</span>
+   <span class="n">ctx</span><span class="p">,</span>
+   <span class="n">jrdd_deserializer</span> <span class="o">=</span> <span class="n">AutoBatchedSerializer</span><span class="p">(</span><span class="n">PickleSerializer</span><span class="p">())</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">pyspark</span> <span class="kn">import</span> <span class="n">SparkContext</span>
+
+<span class="n">sc</span> <span class="o">=</span> <span class="n">SparkContext</span><span class="p">(</span><span class="s">&quot;local&quot;</span><span class="p">,</span> <span class="s">&quot;count app&quot;</span><span class="p">)</span>
+
+<span class="c"># 1 从内存中读取并行集合</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">parallelize</span><span class="p">(</span>
+    <span class="p">[(</span><span class="s">&#39;Amber&#39;</span><span class="p">,</span> <span class="mi">22</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;Alfred&#39;</span><span class="p">,</span> <span class="mi">23</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;Skye&#39;</span><span class="p">,</span><span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;Albert&#39;</span><span class="p">,</span> <span class="mi">12</span><span class="p">),</span> 
+     <span class="p">(</span><span class="s">&#39;Amber&#39;</span><span class="p">,</span> <span class="mi">9</span><span class="p">)])</span>
+
+<span class="c"># 2 从硬盘中读取</span>
+<span class="c"># 本地文件系统，HDFS，Cassandra，HBase，Amazon S3等。 Spark 支持文本文件(text files)，SequenceFiles 和其他 Hadoop InputFormat。</span>
+<span class="n">data_from_file</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">textFile</span><span class="p">(</span><span class="s">&#39;/Users/drabast/Documents/PySpark_Data/VS14MORT.txt.gz&#39;</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+<span class="c">## 4： Parallelize  range output  into 4 partitions </span>
+</pre></div>
+
+
+<h3 id="202-transformations">2.0.2. 应用transformations</h3>
+<table>
+<thead>
+<tr>
+<th align="left">ransformation</th>
+<th align="left">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">map(func)</td>
+<td align="left">返回一个新的分布式数据集，将数据源的每一个元素传递给函数 func 映射组成。</td>
+</tr>
+<tr>
+<td align="left">filter(func)</td>
+<td align="left">返回一个新的数据集，从数据源中选中一些元素通过函数 func 返回 true。</td>
+</tr>
+<tr>
+<td align="left">flatMap(func)</td>
+<td align="left">类似于 map，但是每个输入项能被映射成多个输出项(所以 func 必须返回一个 Seq，而不是单个 item)。</td>
+</tr>
+<tr>
+<td align="left">mapPartitions(func)</td>
+<td align="left">类似于 map，但是分别运行在 RDD 的每个分区上，所以 func 的类型必须是 Iterator<T> =&gt; Iterator<U> 当运行在类型为 T 的 RDD 上。</td>
+</tr>
+<tr>
+<td align="left">mapPartitionsWithIndex(func)</td>
+<td align="left">类似于 mapPartitions，但是 func 需要提供一个 integer 值描述索引(index)，所以 func 的类型必须是 (Int, Iterator) =&gt; Iterator 当运行在类型为 T 的 RDD 上。</td>
+</tr>
+<tr>
+<td align="left">sample(withReplacement, fraction, seed)</td>
+<td align="left">对数据进行采样。</td>
+</tr>
+<tr>
+<td align="left">union(otherDataset)</td>
+<td align="left">Return a new dataset that contains the union of the elements in the source dataset and the argument.</td>
+</tr>
+<tr>
+<td align="left">intersection(otherDataset)</td>
+<td align="left">Return a new RDD that contains the intersection of elements in the source dataset and the argument.</td>
+</tr>
+<tr>
+<td align="left">distinct([numTasks]))</td>
+<td align="left">Return a new dataset that contains the distinct elements of the source dataset.</td>
+</tr>
+<tr>
+<td align="left">groupByKey([numTasks])</td>
+<td align="left">When called on a dataset of (K, V) pairs, returns a dataset of (K, Iterable) pairs. Note: If you are grouping in order to perform an aggregation (such as a sum or average) over each key, using reduceByKey or combineByKey will yield much better performance. Note: By default, the level of parallelism in the output depends on the number of partitions of the parent RDD. You can pass an optional numTasks argument to set a different number of tasks.</td>
+</tr>
+<tr>
+<td align="left">reduceByKey(func, [numTasks])</td>
+<td align="left">When called on a dataset of (K, V) pairs, returns a dataset of (K, V) pairs where the values for each key are aggregated using the given reduce function func, which must be of type (V,V) =&gt; V. Like in groupByKey, the number of reduce tasks is configurable through an optional second argument.</td>
+</tr>
+<tr>
+<td align="left">aggregateByKey(zeroValue)(seqOp, combOp, [numTasks])</td>
+<td align="left">When called on a dataset of (K, V) pairs, returns a dataset of (K, U) pairs where the values for each key are aggregated using the given combine functions and a neutral "zero" value. Allows an aggregated value type that is different than the input value type, while avoiding unnecessary allocations. Like in groupByKey, the number of reduce tasks is configurable through an optional second argument.</td>
+</tr>
+<tr>
+<td align="left">sortByKey([ascending], [numTasks])</td>
+<td align="left">When called on a dataset of (K, V) pairs where K implements Ordered, returns a dataset of (K, V) pairs sorted by keys in ascending or descending order, as specified in the boolean ascending argument.</td>
+</tr>
+<tr>
+<td align="left">join(otherDataset, [numTasks])</td>
+<td align="left">When called on datasets of type (K, V) and (K, W), returns a dataset of (K, (V, W)) pairs with all pairs of elements for each key. Outer joins are also supported through leftOuterJoin and rightOuterJoin.</td>
+</tr>
+<tr>
+<td align="left">cogroup(otherDataset, [numTasks])</td>
+<td align="left">When called on datasets of type (K, V) and (K, W), returns a dataset of (K, Iterable, Iterable) tuples. This operation is also called groupWith.</td>
+</tr>
+<tr>
+<td align="left">cartesian(otherDataset)</td>
+<td align="left">When called on datasets of types T and U, returns a dataset of (T, U) pairs (all pairs of elements).</td>
+</tr>
+<tr>
+<td align="left">pipe(command, [envVars])</td>
+<td align="left">Pipe each partition of the RDD through a shell command, e.g. a Perl or bash script. RDD elements are written to the process's stdin and lines output to its stdout are returned as an RDD of strings.</td>
+</tr>
+<tr>
+<td align="left">coalesce(numPartitions)</td>
+<td align="left">Decrease the number of partitions in the RDD to numPartitions. Useful for running operations more efficiently after filtering down a large dataset.</td>
+</tr>
+<tr>
+<td align="left">repartition(numPartitions)</td>
+<td align="left">Reshuffle the data in the RDD randomly to create either more or fewer partitions and balance it across them. This always shuffles all data over the network.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="203-actions">2.0.3. 实现 actions</h3>
+<table>
+<thead>
+<tr>
+<th align="left">Action</th>
+<th align="left">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">reduce(func)</td>
+<td align="left">Aggregate the elements of the dataset using a function func (which takes two arguments and returns one). The function should be commutative and associative so that it can be computed correctly in parallel.</td>
+</tr>
+<tr>
+<td align="left">collect()</td>
+<td align="left">Return all the elements of the dataset as an array at the driver program. This is usually useful after a filter or other operation that returns a sufficiently small subset of the data.</td>
+</tr>
+<tr>
+<td align="left">count()</td>
+<td align="left">Return the number of elements in the dataset.</td>
+</tr>
+<tr>
+<td align="left">first()</td>
+<td align="left">Return the first element of the dataset (similar to take(1)).</td>
+</tr>
+<tr>
+<td align="left">take(n)</td>
+<td align="left">Return an array with the first n elements of the dataset. Note that this is currently not executed in parallel. Instead, the driver program computes all the elements.</td>
+</tr>
+<tr>
+<td align="left">takeSample(withReplacement, num, [seed])</td>
+<td align="left">Return an array with a random sample of num elements of the dataset, with or without replacement, optionally pre-specifying a random number generator seed.</td>
+</tr>
+<tr>
+<td align="left">takeOrdered(n, [ordering])</td>
+<td align="left">Return the first n elements of the RDD using either their natural order or a custom comparator.</td>
+</tr>
+<tr>
+<td align="left">saveAsTextFile(path)</td>
+<td align="left">Write the elements of the dataset as a text file (or set of text files) in a given directory in the local filesystem, HDFS or any other Hadoop-supported file system. Spark will call toString on each element to convert it to a line of text in the file.</td>
+</tr>
+<tr>
+<td align="left">saveAsSequenceFile(path) (Java and Scala)</td>
+<td align="left">Write the elements of the dataset as a Hadoop SequenceFile in a given path in the local filesystem, HDFS or any other Hadoop-supported file system. This is available on RDDs of key-value pairs that either implement Hadoop's Writable interface. In Scala, it is also available on types that are implicitly convertible to Writable (Spark includes conversions for basic types like Int, Double, String, etc).</td>
+</tr>
+<tr>
+<td align="left">saveAsObjectFile(path) (Java and Scala)</td>
+<td align="left">Write the elements of the dataset in a simple format using Java serialization, which can then be loaded using SparkContext.objectFile().</td>
+</tr>
+<tr>
+<td align="left">countByKey()</td>
+<td align="left">Only available on RDDs of type (K, V). Returns a hashmap of (K, Int) pairs with the count of each key.</td>
+</tr>
+<tr>
+<td align="left">foreach(func)</td>
+<td align="left">Run a function func on each element of the dataset. This is usually done for side effects such as updating an accumulator variable (see below) or interacting with external storage systems.</td>
+</tr>
+</tbody>
+</table>
+<p>Some Common Actions <br />
+ Action Usage collect() Copy all elements to the driver take(n) Copy first n elements reduce(func) Aggregate elements with func (takes 2 elements, returns 1) saveAsTextFile(filename)  Save to local file or HDFS </p>
+<p><img src=https://pic2.zhimg.com/80/v2-149271b4ceab4c4ba7b1712b014d8a60_hd.jpg></p>
+<p>Spark的三种模式的详细运行过程（基于standalone与基于yarn）</p>
+<p>Spark部署在单台机器上面时，可以使用本地模式（Local）运行；当部署在分布式集群上面的时候，可以根据自己的情况选择Standalone模式（Spark自带的模式）、YARN-Client模式或者YARN-Cluster模式、Spark on Mesos模式。 </p>
+<p>https://blog.csdn.net/wyqwilliam/article/details/84678867</p>
+<h1 id="3">3. 实践</h1>
+<div class="hlcode"><pre><span class="n">Stop</span> <span class="n">the</span> <span class="n">current</span> <span class="n">Spark</span> <span class="n">Session</span>
+
+<span class="n">spark</span><span class="o">.</span><span class="n">sparkContext</span><span class="o">.</span><span class="n">stop</span><span class="p">()</span>
+<span class="n">Create</span> <span class="n">a</span> <span class="n">Spark</span> <span class="n">Session</span>
+
+<span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">conf</span><span class="o">=</span><span class="n">conf</span><span class="p">)</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+</pre></div>
+
+
+<h2 id="31">3.1. 连接</h2>
+<p><strong>Master URLs</strong><br />
+传递给 Spark 的 master URL 可以使用下列格式中的一种 :</p>
+<table>
+<thead>
+<tr>
+<th>Master URL</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>local</td>
+<td>使用一个线程本地运行 Spark（即，没有并行性）。</td>
+</tr>
+<tr>
+<td>local[K]</td>
+<td>使用 K 个 worker 线程本地运行 Spark（理想情况下，设置这个值的数量为您机器的 core 数量）。</td>
+</tr>
+<tr>
+<td>local[K,F]</td>
+<td>使用 K 个 worker 线程本地运行 Spark并允许最多失败 F次 (查阅 spark.task.maxFailures 以获取对该变量的解释)</td>
+</tr>
+<tr>
+<td>local[*]</td>
+<td>使用更多的 worker 线程作为逻辑的 core 在您的机器上来本地的运行 Spark。</td>
+</tr>
+<tr>
+<td>local[*,F]</td>
+<td>使用更多的 worker 线程作为逻辑的 core 在您的机器上来本地的运行 Spark并允许最多失败 F次。</td>
+</tr>
+<tr>
+<td>spark://HOST:PORT</td>
+<td>连接至给定的 Spark standalone cluster master. master。该 port（端口）必须有一个作为您的 master 配置来使用，默认是 7077。</td>
+</tr>
+<tr>
+<td>spark://HOST1:PORT1,HOST2:PORT2</td>
+<td>连接至给定的 Spark standalone cluster with standby masters with Zookeeper. 该列表必须包含由zookeeper设置的高可用集群中的所有master主机。该 port（端口）必须有一个作为您的 master 配置来使用，默认是 7077。</td>
+</tr>
+<tr>
+<td>mesos://HOST:PORT</td>
+<td>连接至给定的 Mesos 集群. 该 port（端口）必须有一个作为您的配置来使用，默认是 5050。或者，对于使用了 ZooKeeper 的 Mesos cluster 来说，使用 mesos://zk://.... 。使用 --deploy-mode cluster, 来提交，该 HOST:PORT 应该被配置以连接到 MesosClusterDispatcher.</td>
+</tr>
+<tr>
+<td>yarn</td>
+<td>连接至一个 YARN cluster in client or cluster mode 取决于 --deploy-mode. 的值在 client 或者 cluster 模式中。该 cluster 的位置将根据 HADOOP_CONF_DIR 或者 YARN_CONF_DIR 变量来找到。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="32">3.2. 查看信息</h2>
+<div class="hlcode"><pre><span class="n">myconf</span><span class="o">=</span><span class="n">sc</span><span class="o">.</span><span class="n">_conf</span>
+<span class="n">myconf</span><span class="o">.</span><span class="n">getAll</span><span class="p">()</span>
+</pre></div>
+
+
+<h3 id="321">3.2.1. 节点数量</h3>
+<div class="hlcode"><pre><span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">master</span><span class="p">(</span><span class="s">&quot;local[*]&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">_jsc</span><span class="o">.</span><span class="n">sc</span><span class="p">()</span> 
+<span class="n">n_workers</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">([</span><span class="n">executor</span><span class="o">.</span><span class="n">host</span><span class="p">()</span> <span class="k">for</span> <span class="n">executor</span> <span class="ow">in</span> <span class="n">sc</span><span class="o">.</span><span class="n">statusTracker</span><span class="p">()</span><span class="o">.</span><span class="n">getExecutorInfos</span><span class="p">()]))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">n_workers</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="33-shell">3.3. shell</h2>
+<p>默认情况下，当PySpark shell启动时，Spark会自动创建名为sc的SparkContext对象。</p>
+<div class="hlcode"><pre><span class="n">logFile</span> <span class="o">=</span> <span class="s">&quot;file:///home/hadoop/spark-2.1.0-bin-hadoop2.7/README.md&quot;</span>
+<span class="n">logData</span> <span class="o">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">textFile</span><span class="p">(</span><span class="n">logFile</span><span class="p">)</span><span class="o">.</span><span class="n">cache</span><span class="p">()</span>
+<span class="n">numAs</span> <span class="o">=</span> <span class="n">logData</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="s">&#39;a&#39;</span> <span class="ow">in</span> <span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="n">numBs</span> <span class="o">=</span> <span class="n">logData</span><span class="o">.</span><span class="n">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="s">&#39;b&#39;</span> <span class="ow">in</span> <span class="n">s</span><span class="p">)</span><span class="o">.</span><span class="n">count</span><span class="p">()</span>
+<span class="k">print</span> <span class="s">&quot;Lines with a: </span><span class="si">%i</span><span class="s">, lines with b: </span><span class="si">%i</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">numAs</span><span class="p">,</span> <span class="n">numBs</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">Lines</span> <span class="k">with</span> <span class="n">a</span><span class="p">:</span> <span class="mi">62</span><span class="p">,</span> <span class="n">lines</span> <span class="k">with</span> <span class="n">b</span><span class="p">:</span> <span class="mi">30</span>
+</pre></div>
+
+
+<h2 id="34-python">3.4. python</h2>
+<h3 id="341-sparkcontext">3.4.1. 连接集群--创建 SparkContext</h3>
+<h4 id="3411-spark-on-standalone">3.4.1.1. spark on  standalone</h4>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">pyspark</span> <span class="kn">import</span> <span class="n">SparkContext</span>
+
+<span class="n">sc</span> <span class="o">=</span> <span class="n">SparkContext</span><span class="p">(</span><span class="s">&quot;local&quot;</span><span class="p">,</span> <span class="s">&quot;first app&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<h4 id="3412-spark-on-k8s">3.4.1.2. spark on k8s</h4>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pyspark</span> <span class="kn">import</span> <span class="n">SparkContext</span><span class="p">,</span> <span class="n">SparkConf</span>
+<span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="kn">import</span> <span class="n">SparkSession</span>
+<span class="c"># Create Spark config for our Kubernetes based cluster manager</span>
+<span class="n">sparkConf</span> <span class="o">=</span> <span class="n">SparkConf</span><span class="p">()</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">setMaster</span><span class="p">(</span><span class="s">&quot;k8s://https://kubernetes.default.svc.cluster.local:443&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">setAppName</span><span class="p">(</span><span class="s">&quot;spark&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.kubernetes.container.image&quot;</span><span class="p">,</span> <span class="s">&quot;pidocker-docker-registry.default.svc.cluster.local:5000/my-spark-py:v2.4.4&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.kubernetes.namespace&quot;</span><span class="p">,</span> <span class="s">&quot;spark&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.executor.instances&quot;</span><span class="p">,</span> <span class="s">&quot;7&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.executor.cores&quot;</span><span class="p">,</span> <span class="s">&quot;2&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.driver.memory&quot;</span><span class="p">,</span> <span class="s">&quot;512m&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.executor.memory&quot;</span><span class="p">,</span> <span class="s">&quot;512m&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.kubernetes.pyspark.pythonVersion&quot;</span><span class="p">,</span> <span class="s">&quot;3&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.kubernetes.authenticate.driver.serviceAccountName&quot;</span><span class="p">,</span> <span class="s">&quot;spark&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.kubernetes.authenticate.serviceAccountName&quot;</span><span class="p">,</span> <span class="s">&quot;spark&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.driver.port&quot;</span><span class="p">,</span> <span class="s">&quot;29413&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.driver.host&quot;</span><span class="p">,</span> <span class="s">&quot;my-notebook-deployment.spark.svc.cluster.local&quot;</span><span class="p">)</span>
+<span class="c"># Initialize our Spark cluster, this will actually</span>
+<span class="c"># generate the worker nodes.</span>
+<span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">conf</span><span class="o">=</span><span class="n">sparkConf</span><span class="p">)</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sparkContext</span>
+</pre></div>
+
+
+<p>说明：</p>
+<ol>
+<li><code>setMaster</code>: 设置Spark 集群的 master url， 告诉 sparkContext ，集群是由  Kubernetes (k8s)管理的，通过发现kube-api  server服务 来请求资源<br />
+<code>k8s://https://&lt;k8s-apiserver-host&gt;:&lt;k8s-apiserver-port&gt; \</code></li>
+</ol>
+<p><k8s-apiserver-host> 通过 <code>kubectl cluster-info</code>确定</p>
+<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">cluster</span><span class="o">-</span><span class="n">info</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">Kubernetes</span> <span class="n">master</span> <span class="n">is</span> <span class="n">running</span> <span class="n">at</span> <span class="n">https</span><span class="o">:</span><span class="c1">//10.0.77.98:6443</span>
+<span class="n">KubeDNS</span> <span class="n">is</span> <span class="n">running</span> <span class="n">at</span> <span class="n">https</span><span class="o">:</span><span class="c1">//10.0.77.98:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy</span>
+<span class="n">Metrics</span><span class="o">-</span><span class="n">server</span> <span class="n">is</span> <span class="n">running</span> <span class="n">at</span> <span class="n">https</span><span class="o">:</span><span class="c1">//10.0.77.98:6443/api/v1/namespaces/kube-system/services/https:metrics-server:/proxy</span>
+</pre></div>
+
+
+<p><code>k8s://https://kubernetes.default.svc.cluster.local:443</code></p>
+<h1 id="4">4. 参考资料</h1>
+<p>https://iowiki.com/pyspark/pyspark_sparkcontext.html</p>
+<p>https://doc.codingdict.com/spark/4/</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

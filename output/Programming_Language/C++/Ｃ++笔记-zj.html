@@ -34,9 +34,8 @@
 <div id="title">c++笔记</div>
 <div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
-<li><a href="#c">c++笔记</a><ul>
-<li><a href="#c_1">C++简介</a></li>
-<li><a href="#c_2">安装C++</a><ul>
+<li><a href="#c">C++简介</a><ul>
+<li><a href="#c_1">安装C++</a><ul>
 <li><a href="#1">1. 文本编辑器</a></li>
 <li><a href="#2">2. 编译器</a><ul>
 <li><a href="#_1">关于程序的编译和链接</a></li>
@@ -52,8 +51,8 @@
 <li><a href="#include-sayh_2">include "say.h"</a><ul>
 <li><a href="#makefile">Makefile</a></li>
 <li><a href="#vscode-c">VScode 配置C++编译器</a></li>
-<li><a href="#c_3">第一个C++程序</a></li>
-<li><a href="#c_4">C++基础</a><ul>
+<li><a href="#c_2">第一个C++程序</a></li>
+<li><a href="#c_3">C++基础</a><ul>
 <li><a href="#1_1">1. 数据（变量+）</a><ul>
 <li><a href="#0">0. 基本的内置数据类型</a></li>
 <li><a href="#1_2">1. 字符串</a></li>
@@ -108,9 +107,8 @@
 </li>
 </ul>
 </div>
-<h1 id="c">c++笔记</h1>
-<h2 id="c_1">C++简介</h2>
-<h2 id="c_2">安装C++</h2>
+<h1 id="c">C++简介</h1>
+<h2 id="c_1">安装C++</h2>
 <h3 id="1">1. 文本编辑器</h3>
 <h3 id="2">2. 编译器</h3>
 <h4 id="_1">关于程序的编译和链接</h4>
@@ -135,10 +133,16 @@
 
 <p>编译器 g++ 通过检查命令行中指定的文件的后缀名可识别其为 C++ 源代码文件。编译器默认的动作：编译源代码文件生成对象文件(object file)，链接对象文件和 libstdc++ 库中的函数得到可执行程序, 然后删除对象文件。</p>
 <p>由于命令行中未指定可执行程序的文件名，编译器采用默认的 a.out。程序可以这样来运行：</p>
-<p>$ ./a.out<br />
-hello, world<br />
-更普遍的做法是通过 -o 选项指定可执行程序的文件名。下面的命令将产生名为 helloworld 的可执行文件：</p>
-<p>$ g++ helloworld.cpp -o helloworld</p>
+<div class="hlcode"><pre><span class="err">$</span> <span class="p">.</span><span class="o">/</span><span class="n">a</span><span class="p">.</span><span class="n">out</span>
+<span class="n">hello</span><span class="p">,</span> <span class="n">world</span>
+</pre></div>
+
+
+<p>更普遍的做法是通过 -o 选项指定可执行程序的文件名。下面的命令将产生名为 helloworld 的可执行文件：</p>
+<div class="hlcode"><pre><span class="err">$</span> <span class="n">g</span><span class="o">++</span> <span class="n">helloworld</span><span class="p">.</span><span class="n">cpp</span> <span class="o">-</span><span class="n">o</span> <span class="n">helloworld</span>
+</pre></div>
+
+
 <p>在命令行中输入程序名可使之运行：</p>
 <p>$ ./helloworld<br />
 hello, world<br />
@@ -269,8 +273,8 @@ Local instance of Say<br />
 https://wiki.ubuntu.org.cn/%E8%B7%9F%E6%88%91%E4%B8%80%E8%B5%B7%E5%86%99Makefile</p>
 <h4 id="vscode-c">VScode 配置C++编译器</h4>
 <p>https://www.zhihu.com/question/30315894</p>
-<h2 id="c_3">第一个C++程序</h2>
-<h2 id="c_4">C++基础</h2>
+<h2 id="c_2">第一个C++程序</h2>
+<h2 id="c_3">C++基础</h2>
 <h3 id="1_1">1. 数据（变量+）</h3>
 <h4 id="0">0. 基本的内置数据类型</h4>
 <p>C++ 为程序员提供了种类丰富的内置数据类型和用户自定义的数据类型。下表列出了七种基本的 C++ 数据类型：</p>
