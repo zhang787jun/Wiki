@@ -57,6 +57,7 @@
 <li><a href="#31-conda">3.1. Conda</a><ul>
 <li><a href="#311">3.1.1. 基本使用</a></li>
 <li><a href="#312">3.1.2. 加速</a></li>
+<li><a href="#_1">环境迁移</a></li>
 </ul>
 </li>
 <li><a href="#32-pip-pypi">3.2. pip--pypi</a><ul>
@@ -71,8 +72,6 @@
 <li><a href="#33-whl">3.3. 第三方whl 文件库</a></li>
 </ul>
 </li>
-<li><a href="#4">4. 按部署环境配置应用的行为</a></li>
-<li><a href="#5">5. 根据环境配置日志级别</a></li>
 </ul>
 </div>
 <h1 id="1-python">1. Python解释器种类与选择</h1>
@@ -252,6 +251,50 @@ CPython是使用最广的Python解释器。</p>
 </pre></div>
 
 
+<h3 id="_1">环境迁移</h3>
+<p>conda-forge:</p>
+<div class="hlcode"><pre><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">conda</span><span class="o">-</span><span class="n">pack</span>
+
+<span class="cp"># or</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">conda</span><span class="o">-</span><span class="n">pack</span>
+</pre></div>
+
+
+<p>打包一个环境：</p>
+<div class="hlcode"><pre><span class="cp"># Pack environment my_env into my_env.tar.gz</span>
+<span class="n">conda</span> <span class="n">pack</span> <span class="o">-</span><span class="n">n</span> <span class="n">my_env</span>
+
+<span class="cp"># Pack environment my_env into out_name.tar.gz</span>
+<span class="n">conda</span> <span class="n">pack</span> <span class="o">-</span><span class="n">n</span> <span class="n">my_env</span> <span class="o">-</span><span class="n">o</span> <span class="n">out_name</span><span class="p">.</span><span class="n">tar</span><span class="p">.</span><span class="n">gz</span>
+
+<span class="cp"># Pack environment located at an explicit path into my_env.tar.gz</span>
+<span class="n">conda</span> <span class="n">pack</span> <span class="o">-</span><span class="n">p</span> <span class="o">/</span><span class="n">explicit</span><span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">my_env</span>
+</pre></div>
+
+
+<p>重现环境：</p>
+<div class="hlcode"><pre><span class="cp"># Unpack environment into directory `my_env`</span>
+<span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="n">my_env</span>
+<span class="n">tar</span> <span class="o">-</span><span class="n">xzf</span> <span class="n">my_env</span><span class="p">.</span><span class="n">tar</span><span class="p">.</span><span class="n">gz</span> <span class="o">-</span><span class="n">C</span> <span class="n">my_env</span>
+
+<span class="cp"># Use Python without activating or fixing the prefixes. Most Python</span>
+<span class="cp"># libraries will work fine, but things that require prefix cleanups</span>
+<span class="cp"># will fail.</span>
+<span class="p">.</span><span class="o">/</span><span class="n">my_env</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">python</span>
+
+<span class="cp"># Activate the environment. This adds `my_env/bin` to your path</span>
+<span class="n">source</span> <span class="n">my_env</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">activate</span>
+
+<span class="cp"># Run Python from in the environment</span>
+<span class="p">(</span><span class="n">my_env</span><span class="p">)</span> <span class="err">$</span> <span class="n">python</span>
+
+<span class="cp"># Cleanup prefixes from in the active environment.</span>
+<span class="cp"># Note that this command can also be run without activating the environment</span>
+<span class="cp"># as long as some version of Python is already installed on the machine.</span>
+<span class="p">(</span><span class="n">my_env</span><span class="p">)</span> <span class="err">$</span> <span class="n">conda</span><span class="o">-</span><span class="n">unpack</span>
+</pre></div>
+
+
 <h2 id="32-pip-pypi">3.2. pip--pypi</h2>
 <p>pip is the package installer for Python<br />
 pip 是python的包安装器</p>
@@ -315,47 +358,6 @@ pip 是python的包安装器</p>
 <p>Unofficial Windows Binaries for Python Extension Packages<br />
 by Christoph Gohlke, Laboratory for Fluorescence Dynamics, University of California, Irvine.</p>
 <p><a href="https://www.lfd.uci.edu/~gohlke/pythonlibs/">https://www.lfd.uci.edu/~gohlke/pythonlibs/</a> </p>
-<h1 id="4">4. 按部署环境配置应用的行为</h1>
-<p>应用在不同的环境（开发、测试、生产）中应该允许加载不同的配置，配置不同的行为。</p>
-<p>当前应用处于什么环境，可以通过环境变量来配置，应用初始化时最先检测当前处于什么环境，之后的初始化流程就可以依据环境配置来加载配置，定制应用行为。</p>
-<div class="hlcode"><pre><span class="c"># conf/__init__.py</span>
-<span class="k">class</span> <span class="nc">AppConfig</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="n">app_env</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s">&#39;APP_ENV&#39;</span><span class="p">,</span> <span class="s">&#39;development&#39;</span><span class="p">)</span>
-    <span class="n">is_prod</span> <span class="o">=</span> <span class="n">app_env</span> <span class="o">==</span> <span class="s">&#39;production&#39;</span>
-    <span class="n">is_dev</span> <span class="o">=</span> <span class="n">app_env</span> <span class="o">==</span> <span class="s">&#39;development&#39;</span>
-    <span class="n">is_testing</span> <span class="o">=</span> <span class="n">app_env</span> <span class="o">==</span> <span class="s">&#39;testing&#39;</span>
-
-    <span class="c"># 其余应用配置项</span>
-    <span class="o">...</span>
-
-<span class="n">conf</span> <span class="o">=</span> <span class="n">AppConfig</span><span class="p">()</span>
-
-
-<span class="k">def</span> <span class="nf">_load_config_by_env</span><span class="p">(</span><span class="n">env</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
-    <span class="sd">&#39;&#39;&#39;</span>
-<span class="sd">    不同环境加载不同的配置文件</span>
-<span class="sd">    配置目录结构：</span>
-<span class="sd">    conf/</span>
-<span class="sd">        __init__.py</span>
-<span class="sd">        development.py</span>
-<span class="sd">        production.py</span>
-<span class="sd">        testing.py</span>
-<span class="sd">    &#39;&#39;&#39;</span>
-    <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s">&#39;conf.{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">env</span><span class="p">))</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s">&#39;Config&#39;</span><span class="p">):</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&#39;Not find {} config&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">env</span><span class="p">))</span>
-        <span class="k">return</span>
-    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s">&#39;Config&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;__&#39;</span><span class="p">):</span>
-            <span class="k">continue</span>
-        <span class="n">conf</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
-</pre></div>
-
-
-<h1 id="5">5. 根据环境配置日志级别</h1>
-<div class="hlcode"><pre><span class="n">log_level</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span> <span class="k">if</span> <span class="n">conf</span><span class="o">.</span><span class="n">is_prod</span> <span class="k">else</span> <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span>
-<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="n">consts</span><span class="o">.</span><span class="n">LOG_FORMAT</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">log_level</span><span class="p">)</span>
-</pre></div>
 </div>
 <div id="renote">
   <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>

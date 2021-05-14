@@ -68,7 +68,38 @@ print ("更新字典 dict : ", dict)
 >>>
 更新字典 dict :  {'Name': 'Runoob', 'Age': 7, 'Sex': 'female'}
 ```
-# 3. with 上下文管理器
+# 3. set 集合 
+
+基于hash表构建的，
+
+
+总数 50000 （5万）： List 检索 5W次 耗时 23秒， HashSet 检索 5W次 耗时 0.01秒。
+
+总数 5000   （5千）： List 检索 5K次 耗时 0.16秒， HashSet 检索 5K次 耗时 0.001秒。
+
+总数 500     （5百）： List 检索 500次 耗时 0.004秒， HashSet 检索 500次 耗时 0.000秒。
+
+总数 50                    ： List 检索 50次  耗时 0.002秒， HashSet 检索 500次 耗时 0.000秒。
+
+ 
+
+ 
+
+集合查找元素，
+
+当总数超过 10 时，       HashSet<T>  的检索性能 就会比 List<T> 快。
+
+当总数超过 1000 时，   List<T> 的检索性能 会 急速下降。
+
+当总数超过 10000 时， List<T> 将会以 秒 为单位 的损失性能。
+
+换言之：
+
+> 无论怎样的数据量， HashSet<T> 的检索速度 都要比 List<T> 快。（不存在那种： 多少数据量以下，List 有优势，多少数据量以上，HashSet 有优势）
+
+> Hastable 的查找性能 == HashSet 的查找性能，用不了 HashSet 可以用 Hashtable 替换
+
+# 4. with 上下文管理器
 ```python 
 with 上下文管理器对象：
     　语句体
@@ -83,7 +114,7 @@ __exit__
 　　当with遇到上下文管理器对象，就会在执行语句体之前，先执行上下文管理器对象的`__enter__`方法，然后再执行语句体，执行完语句体后，最后执行`__exit__`方法
 
 
-# 4. 高阶函数
+# 5. 高阶函数
 
 什么是**高阶函数**？（不是高级函数）
 把函数名当做参数传给另外一个函数，在另外一个函数中通过参数调用执行
@@ -106,343 +137,12 @@ if __name__ == '__main__':
     result = func_z(func_x, func_y)
     print(result)
 ``` 
-### 4.1. map
+### 5.0.1. map
 
-### 4.2. sorted
+### 5.0.2. sorted
 
 
-# 5. 修饰器@ [^1]
-
-**函数就是用来写core 函数的**--路飞
-
-### 5.1. 基本定性
-
-装饰器本质上是一个高级Python函数，通过给别的函数添加@标识的形式实现对函数的装饰，这个函数的特殊之处在于它的返回值也是一个函数
-
-**优势：**
-1. 可以让其他函数在不需要做任何代码变动的前提下增加额外功能
-
-**应用场景：**
-
-经常用于有切面需求的场景，例如: 
-1. 插入日志
-2. 性能测试
-3. 事务处理
-4. 缓存
-5. 权限校验等场景
-
-有了装饰器，我们就可以抽离出大量与函数功能本身无关的雷同代码并继续重用。
-
-### 5.2. 详解
-
-#### 5.2.1. 简单修饰器
-
-**3个关键函数**
-
-关于 decorator, 基本上一共有三个函数:
-1. decorator: 修饰器/修饰函数
-2. orifunc: 原函数/被修饰函数
-3. wrapper: 新函数/取代函数/闭包函数
-
-
-简单的可以标识为:
-
-```python
-def decorator(orifunc):
-    # do something here (register...)
-    def wrapper(*args, **kwargs):
-        # do something before (preprocess)
-        result = orifunc()
-        # do something after (postprocess)
-        return result
-    return wrapper
-```
-它们的关系是:
-```python
-wrapper = decorator(orifunc)
-```
-上述表示等同于
-```python
-@decorator
-def orifunc(*args, **kwargs):
-    # do something...
-```
-
-**执行顺序**
-
-```python
-def Timer(func):
-    def newFunc(*args, **args2):
-        t1 = datetime.datetime.now()
-        print ("[1]")
-        result = func(*args, **args2)
-        t2=datetime.datetime.now()
-        print ("[3]")
-        cost_time=t2-t1
-        print (" This function【{}】cost time:{} \n".format(func.__name__,cost_time))
-        return result
-    return newFunc
-
-@Timer
-def Pi(N):
-    #N=10**7
-    N=int(N)
-    data= np.random.uniform(-1,1,size=(N,2))
-    inside=(np.sqrt((data**2).sum(axis=1))<1).sum()
-    pi=4*inside/N
-    print ("[2] pi is %.5f"%pi)
-
->>> 
-"[1]"
-"[2]  pi is 3.1415"
-"[3]"
-"This function Pi cost time:{}"
-```
-
-
-
-
-
-
-#### 5.2.2. 内置修饰器
-修饰器可以自定义，同时，python中也有自定义的几个修饰器
-内置的装饰器有三个，分别是staticmethod、classmethod和property，作用分别是把类中定义的实例方法变成静态方法、类方法和类属性。
-
-使用频率也非常低。
-##### 5.2.2.1. @staticmethod
-
-##### 5.2.2.2. @classmethod--类方法
-
-##### 5.2.2.3. @property--属性
-
-
-在绑定类属性时，如果我们直接把属性暴露出去，虽然写起来很简单，但是，没办法检查参数，导致可以把成绩随便改：
-```python
-s = Student()
-s.score = 9999 # 成绩不能大于100 ，参数值不合理 
-```
-这显然不合逻辑。**为了限制score的范围**，可以通过一个set_score()方法来设置成绩，再通过一个get_score()来获取成绩，这样，在set_score()方法里，就可以检查参数：
-```
-class Student(object):
-    def get_score(self):
-         return self._score
-
-    def set_score(self, value):
-        if not isinstance(value, int):
-            raise ValueError('score must be an integer!')
-        if value < 0 or value > 100:
-            raise ValueError('score must between 0 ~ 100!')
-        self._score = value
-```
-
-还记得装饰器（decorator）可以给函数动态加上功能吗？对于类的方法，装饰器一样起作用。Python内置的@property装饰器就是负责把一个方法变成属性调用的：
-```python
-class Student(object):
-    @property
-    def score(self):
-        return self._score
-
-    @score.setter
-    def score(self, value):
-        if not isinstance(value, int):
-            raise ValueError('score must be an integer!')
-        if value < 0 or value > 100:
-            raise ValueError('score must between 0 ~ 100!')
-        self._score = value
-```
-@property的实现比较复杂，我们先考察如何使用。把一个getter方法变成属性，只需要加上@property就可以了，此时，@property本身又创建了另一个装饰器@score.setter，负责把一个setter方法变成属性赋值，于是，我们就拥有一个可控的属性操作：
-
-
-还可以定义只读属性，只定义getter方法，不定义setter方法就是一个只读属性：
-```python
-class Student(object):
-
-    @property
-    def birth(self):
-        return self._birth
-
-    @birth.setter
-    def birth(self, value):
-        self._birth = value
-
-    @property
-    def age(self):
-        return 2015 - self._birth
-```
-上面的birth是可读写属性，而age就是一个只读属性，因为age可以根据birth和当前时间计算出来
-
-### 5.3. 进阶修饰器
-#### 5.3.1. 原函数有参数传入
-python 中函数的参数分为
-1.必选参数
-2.默认参数
-3.可变参数 *args  仅仅在参数前面加了一个*号。
-4.关键字参数 **kw
-
-###### 5.3.1.1. 原函数有确定参数输入
-```python
-# 非语法糖
-def use_logging(func):
-    def wrapper(name):
-        logging.warn("%s is running" % func.__name__)
-        return func(name)   # 把 orifunc 当做参数传递进来时，执行func()就相当于执行 orifunc()
-    return wrapper
-
-def orifunc(name):
-    print("i am {}".format(name))
-# 因为装饰器 use_logging(foo) 返回的时函数对象 wrapper，这条语句相当于  orifunc = wrapper
-# orifunc()就相当于执行 wrapper()
->>> orifunc = use_logging(orifunc) 
->>> orifunc("me")
-
-
-# 语法糖
-def use_logging(func):
-    def wrapper(name):
-        logging.warn("%s is running" % func.__name__)
-        return func(name)
-    return wrapper
-
-@use_logging
-def orifunc(name):
-    print("i am {}".format(name))
-
->>> orifunc("me")
-```
-###### 5.3.1.2. 原函数可变参数输入
-
-```python
-#------[2] 参数列表输入
-
-
-def foo(name):
-    print("i am %s" % name)
-
-def wrapper(*args):
-        logging.warn("%s is running" % func.__name__)
-        return func(*args)
-    return wrapper
-
-```
-###### 5.3.1.3. 原函数字典参数输入
-
-```python
-def foo(name, age=None, height=None):
-    print("I am %s, age %s, height %s" % (name, age, height))
-
-def wrapper(*args, **kwargs):
-        # args是一个数组，kwargs一个字典
-        logging.warn("%s is running" % func.__name__)
-        return func(*args, **kwargs)
-    return wrapper
-
-```
-
-
-#### 5.3.2. 装饰器有参数传入
-有多种方式让装饰器接受可选参数。根据你是想使用位置参数、关键字参数还是两者皆是，需要使用稍微不同的模式。如下我将展示一种接受一个可选关键字参数的方式：
-1.定义3层闭包
-2.Layer 1 最外层形参用来接收装饰器参数
-3.Layer 2 第二层用来接受被修饰的原函数
-4.Layer 3 第三层用来传递原函数的参数
-
-```python
-def nominally_decorator(*args,**kw):       
-    # Layer 1  *args,**kw 为nominally_decorator的参数
-    def core_decorator(orifunc):           
-        # Layer 2 第二层用来接受被修饰的原函数
-        def wrapper(*arguments_for_orifunc, **kwargs_for_orifunc): 
-            # Layer 3 Layer 3 第三层用来传递原函数的参数
-            
-            # do something before (preprocess)
-            result = orifunc(*arguments_for_orifunc, **kwargs_for_orifunc)
-            # do something after (postprocess)
-            
-            return result
-        return wrapper
-    return core_decorator
-```
-
-
-```python
-from inspect import signature
-from functools import wraps
-
-def typeassert(*ty_args, **ty_kwargs):
-    def decorate(func):
-        # If in optimized mode, disable type checking 关闭类型检测模式
-        if not __debug__:
-            return func
-        # 通过signature方法，获取函数形参：name, age, height
-        sig = signature(func)
-        bound_types = sig.bind_partial(*ty_args, **ty_kwargs).arguments
-
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            bound_values = sig.bind(*args, **kwargs)
-            # Enforce type assertions across supplied arguments
-            for name, value in bound_values.arguments.items():
-                if name in bound_types:
-                    if not isinstance(value, bound_types[name]):
-                        raise TypeError(
-                            'Argument {} must be {}'.format(name, bound_types[name])
-                            )
-            return func(*args, **kwargs)
-        return wrapper
-    return decorate
-```
-
-
-
-### 5.4. 装饰器顺序
-
-一个函数还可以同时定义多个装饰器，比如：
-```python
-@a
-@b
-@c
-def f ():
-    pass
-```
-它的执行顺序是从里到外，最先调用最里层的装饰器，最后调用最外层的装饰器，它等效于
-```
-f = a(b(c(f)))
-```
-### 5.5. 装饰器类
-
-不仅装饰器可以装饰一个类，并且装饰器也可以是一个类！对于装饰器的唯一要求就是它的返回值必须可调用(callable)。这意味着装饰器必须实现 __call__ 魔术方法，当你调用一个对象时，会隐式调用这个方法。函数当然是隐式设置这个方法的。我们重新将 identity_decorator 创建为一个类来看看它是如何工作的。
-
-类装饰器
-接下来我们用面对对象的方法实现装饰器的功能，你应该有python面对对象编程的基础，这里面会用到魔法方法。
-```python 
-class Decrator(object):
-
-    def __init__(self,fn):
-        print("初始化函数",fn.__name__)
-        self._func = fn
-
-    def __call__(self,*args):
-        print("打印的内容",*args)
-        return self._func(*args)
-
-@Decrator
-def sum(x,y):
-    print(sum)
-    return x+y
-
-print(sum(3,3))
->>>
-执行结果
-
-初始化函数 sum
-打印的内容 3 3
-<__main__.Decrator object at 0x0000024986FF7198>
-```
-
-解析：函数sum定义前加上@Decorator，相当于实例化类对象`Decorator(sum)`，同时初始化实例属性self._func=sum函数;接下来实例对象后加上()，会调用实例对象的__call__方法，打印出内容和参数，然后返回实例属性即sum函数并执行函数计算x+y。
-
-
-# 6. Class 类
+# 7. Class 类
 
 ```python
 obj = 12 
@@ -487,7 +187,7 @@ __new__函数直接上可以返回别的类的实例。如上面例子中的retu
 ```
 
 
-# 7. 魔方方法
+# 8. 魔方方法
 
 什么是Python魔法方法?
 魔法方法就如同它的名字一样神奇，总能在你需要的时候为你提供某种方法来让你的想法实现。魔法方法是指Python内部已经包含的，被双下划线所包围的方法，这些方法在进行特定的操作时会自动被调用，它们是Python面向对象下智慧的结晶。初学者掌握Python的魔法方法也就变得尤为重要了。
@@ -583,7 +283,7 @@ __contains__(self, item)定义当使用成员测试运算符（in 或 not in）�
 ```
 
 
-# 8. collections 集合
+# 9. collections 集合
 
 collections是Python内建的一个集合模块，提供了许多有用的集合类。
 

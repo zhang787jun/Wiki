@@ -1,0 +1,226 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>车牌识别技术概述 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Computer_Vision">Computer_Vision</a>&nbsp;»&nbsp;<a href="/Wiki/#-Algorithm_Theory">Algorithm_Theory</a>&nbsp;»&nbsp;<a href="/Wiki/#-03-场景">03-场景</a>&nbsp;»&nbsp;<a href="/Wiki/#-车牌识别">车牌识别</a>&nbsp;»&nbsp;车牌识别技术概述</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">车牌识别技术概述</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 简介</a></li>
+<li><a href="#2">2. 发展历史</a></li>
+<li><a href="#3">3. 基本步骤</a></li>
+<li><a href="#4">4. 车牌定位</a><ul>
+<li><a href="#41">4.1. 传统方法</a><ul>
+<li><a href="#411">4.1.1. 基于边缘（推荐）</a></li>
+</ul>
+</li>
+<li><a href="#42">4.2. 基于深度学习</a><ul>
+<li><a href="#wpod-net">Wpod NET</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#5">5. 字符识别</a><ul>
+<li><a href="#51">5.1. 字符分割</a></li>
+<li><a href="#52">5.2. 整车识别</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="1">1. 简介</h1>
+<p>车牌识别(Vehicle License Plate Recognition，VLPR) 是从一张或一系列数字图片中自动定位车牌区域并提取车牌信息的图像识别技术。</p>
+<p>生活中应用的自动车牌检测系统往往包括三个部分：<br />
+1. 车辆检测<br />
+2. 图像采集<br />
+3. 车牌识别</p>
+<p>车牌识别以数字图像处理、模式识别、计算机视觉等技术为基础，是现代智能交通系统的重要组成部分，广泛应用于日常生活中，如停车场收费管理，车辆出入管理，自动放行，交通流量 控制指标测量，车辆定位，汽车防盗，高速公路超速自动化监管、闯红灯电子警察、 公路收费站等。</p>
+<h1 id="2">2. 发展历史</h1>
+<p>车牌识别的概念最早在 1976 年由英国的公安科学发展处（Police Scientific Development Branch）提出，它的第一个实验室原型诞生于 1979 年，同年，第一相关行业生产标准在英国沃金厄姆颁发。车牌识别早期的试验系统部署在英国最长 的编号公路 A1 公路和达特福德隧道，然而由于硬件设备价格昂贵和处理器计算能 力有限，直到上世纪 90 年代 VLPR 才开始快速发展，许多复杂的算法得以应用， 程序处理的对象也由黑白图片、灰度图片转变为彩色图片和视频，车牌识别率和识 别速度均得到显著提高。 </p>
+<h1 id="3">3. 基本步骤</h1>
+<p>车牌识别的问题一般分为：<br />
+1. 车牌定位（Plate Detection）<br />
+2. 字符识别（Chars Recognition）</p>
+<p>车牌定位（Plate Detection）+字符分割+字符识别（Chars Recognition）<br />
+<img alt="" src="/attach/images/2020-08-28-15-46-34.png" /></p>
+<h1 id="4">4. 车牌定位</h1>
+<p>Plate Detection是物体检测过程，</p>
+<h2 id="41">4.1. 传统方法</h2>
+<p><img alt="" src="/attach/images/2020-08-28-15-47-39.png" /></p>
+<h3 id="411">4.1.1. 基于边缘（推荐）</h3>
+<p>基本步骤：<br />
+1. 在对车牌进行定位前，先将汽车图像通过灰度变换<br />
+2. 直方图均衡化等增强预处理，再经二值化，<br />
+3. 最后利用边缘检测算子对图像进行边缘检测。</p>
+<p>检测到边缘后在进行区域膨胀，腐蚀去无关的小物件，这时图像会呈现出多个连通的判断区域，最后找出所有连通域中最可能是车牌的那一个便可</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="k">def</span> <span class="nf">detect</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+    <span class="c"># 1. 变成灰度图</span>
+    <span class="n">gray</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cvtColor</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">COLOR_BGR2GRAY</span><span class="p">)</span>
+    <span class="c"># 2. 高斯滤波 </span>
+    <span class="n">blurred</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">GaussianBlur</span><span class="p">(</span><span class="n">gray</span><span class="p">,</span> <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">BORDER_DEFAULT</span><span class="p">)</span>
+    <span class="c"># cv2.imshow(&#39;blurred&#39;, blurred)</span>
+
+    <span class="c"># 3. 开运算</span>
+    <span class="n">kernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">23</span><span class="p">,</span> <span class="mi">23</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="n">opened</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">morphologyEx</span><span class="p">(</span><span class="n">blurred</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">MORPH_OPEN</span><span class="p">,</span> <span class="n">kernel</span><span class="p">)</span>  
+    <span class="c"># cv2.imshow(&#39;opened&#39;,opened)</span>
+
+    <span class="c"># 4. 线性混合</span>
+    <span class="n">opened</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">addWeighted</span><span class="p">(</span><span class="n">blurred</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">opened</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="c"># cv2.imshow(&#39;opened&#39;, opened)</span>
+
+    <span class="c"># 5. 阈值分割</span>
+    <span class="n">ret</span><span class="p">,</span> <span class="n">thresh</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">threshold</span><span class="p">(</span><span class="n">opened</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">THRESH_BINARY</span> <span class="o">+</span> <span class="n">cv2</span><span class="o">.</span><span class="n">THRESH_OTSU</span><span class="p">)</span>
+
+    <span class="c"># 6. Canny边缘检测</span>
+    <span class="n">edge</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">Canny</span><span class="p">(</span><span class="n">thresh</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>  <span class="c"># 找到图像边缘</span>
+    <span class="c">#cv2.imshow(&#39;canny&#39;,edge)</span>
+
+    <span class="c"># 7. 使用开运算和闭运算让图像边缘连成一个整体</span>
+    <span class="n">kernel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="n">edge1</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">morphologyEx</span><span class="p">(</span><span class="n">edge</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">MORPH_CLOSE</span><span class="p">,</span> <span class="n">kernel</span><span class="p">)</span>
+    <span class="n">edge2</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">morphologyEx</span><span class="p">(</span><span class="n">edge1</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">MORPH_OPEN</span><span class="p">,</span> <span class="n">kernel</span><span class="p">)</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="s">&#39;edge&#39;</span><span class="p">,</span><span class="n">edge2</span><span class="p">)</span>
+
+    <span class="c"># 查找图像边缘整体形成的矩形区域，可能有很多，车牌就在其中一个矩形区域中</span>
+    <span class="n">contours</span><span class="p">,</span> <span class="n">hierarchy</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">findContours</span><span class="p">(</span><span class="n">edge2</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">RETR_TREE</span><span class="p">,</span> <span class="n">cv2</span><span class="o">.</span><span class="n">CHAIN_APPROX_SIMPLE</span><span class="p">)</span>
+    <span class="n">temp_contours</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">contour</span> <span class="ow">in</span> <span class="n">contours</span><span class="p">:</span>
+        <span class="c"># 计算图像轮廓的面积</span>
+        <span class="k">if</span> <span class="n">cv2</span><span class="o">.</span><span class="n">contourArea</span><span class="p">(</span><span class="n">contour</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">2000</span><span class="p">:</span>
+            <span class="n">temp_contours</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">contour</span><span class="p">)</span>
+    <span class="n">car_plates</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">temp_contour</span> <span class="ow">in</span> <span class="n">temp_contours</span><span class="p">:</span>
+        <span class="n">rect_tupple</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">minAreaRect</span><span class="p">(</span><span class="n">temp_contour</span><span class="p">)</span>
+        <span class="n">rect_width</span><span class="p">,</span> <span class="n">rect_height</span> <span class="o">=</span> <span class="n">rect_tupple</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">rect_width</span> <span class="o">&lt;</span> <span class="n">rect_height</span><span class="p">:</span>
+            <span class="n">rect_width</span><span class="p">,</span> <span class="n">rect_height</span> <span class="o">=</span> <span class="n">rect_height</span><span class="p">,</span> <span class="n">rect_width</span>
+        <span class="n">aspect_ratio</span> <span class="o">=</span> <span class="n">rect_width</span> <span class="o">/</span> <span class="n">rect_height</span>
+        <span class="c"># 车牌正常情况下宽高比在2 - 5.5之间</span>
+        <span class="k">if</span> <span class="n">aspect_ratio</span> <span class="o">&gt;</span> <span class="mi">2</span> <span class="ow">and</span> <span class="n">aspect_ratio</span> <span class="o">&lt;</span> <span class="mf">5.5</span><span class="p">:</span>
+            <span class="n">car_plates</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp_contour</span><span class="p">)</span>
+            <span class="n">rect_vertices</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">boxPoints</span><span class="p">(</span><span class="n">rect_tupple</span><span class="p">)</span>
+            <span class="n">rect_vertices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int0</span><span class="p">(</span><span class="n">rect_vertices</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">car_plates</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">car_plate</span> <span class="ow">in</span> <span class="n">car_plates</span><span class="p">:</span>
+            <span class="n">row_min</span><span class="p">,</span> <span class="n">col_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">car_plate</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">row_max</span><span class="p">,</span> <span class="n">col_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">car_plate</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">,</span> <span class="p">:],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">(</span><span class="n">row_min</span><span class="p">,</span> <span class="n">col_min</span><span class="p">),</span> <span class="p">(</span><span class="n">row_max</span><span class="p">,</span> <span class="n">col_max</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="n">card</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><span class="n">col_min</span><span class="p">:</span><span class="n">col_max</span><span class="p">,</span> <span class="n">row_min</span><span class="p">:</span><span class="n">row_max</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="n">cv2</span><span class="o">.</span><span class="n">ims</span>
+            <span class="n">how</span><span class="p">(</span><span class="s">&quot;img&quot;</span><span class="p">,</span> <span class="n">image</span><span class="p">)</span>
+        <span class="n">cv2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="s">&quot;card_img.jpg&quot;</span><span class="p">,</span> <span class="n">card</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="s">&#39;Image/5.jpg&#39;</span><span class="p">)</span>
+    <span class="n">detect</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">waitKey</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">cv2</span><span class="o">.</span><span class="n">destroyAllWindows</span><span class="p">()</span>
+</pre></div>
+
+
+<h2 id="42">4.2. 基于深度学习</h2>
+<h3 id="wpod-net">Wpod NET</h3>
+<p>车牌本质上是附加在车上的矩形平面物体。为了充分的利用车牌的形状优势，本文提出了一种 扭曲平面检测网络（Warped Planar Object Detection Network., WPOD NET）。该网络可以学习识别不同扭曲程度的车牌，并学习回归仿射变换的系数，将就扭曲的车牌unwarps成正面视图下的矩形形状。WOPD的检测流程如下图所示。</p>
+<p>经过WPOD网络之后是一个8通道的特征图（图片中显示的是6通道，应该是8）</p>
+<p>在特征图上提取扭曲的车牌，首先会设置固定大小的单元（m, n）</p>
+<p>如果该单元的目标概率大于给定的阈值（threshold），那么部分回归参数用于构建放射变换矩阵，将虚拟正方形区域转换成车牌的区域</p>
+<p>该网络的结构总共21层卷积，其中14层是内部残差块（ResBlock）；所有的卷积核大小均为固定大小的3<em>3；除了识别块（Detection）以外，其他的激励函数全部是ReLu；包含有4个2</em>2大小的max pooling，stride=2，这样可以使得输入的维度减少了16倍（2<em>2</em>4）；最后在识别模块有两个并行的卷积层</p>
+<p>具体结构如下图（fig4）所示，左侧是网络的整体结构，右侧是ResBlock和Detection块的结构。</p>
+<p>车牌识别1：License Plate Detection and Recognition in Unconstrained Scenarios阅读笔记</p>
+<p>https://www.cnblogs.com/greentomlee/p/10863363.html</p>
+<h1 id="5">5. 字符识别</h1>
+<h2 id="51">5.1. 字符分割</h2>
+<h2 id="52">5.2. 整车识别</h2>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

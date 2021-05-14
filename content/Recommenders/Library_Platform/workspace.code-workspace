@@ -5,6 +5,12 @@
 		},
 		{
 			"path": "../../../../.qlib"
+		},
+		{
+			"path": "../../../../qlib"
+		},
+		{
+			"path": "../../../../Temporal_Relational_Stock_Ranking"
 		}
 	],
 	"settings": {}

@@ -36,41 +36,16 @@
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
 <li><a href="#1-python">1. python 实现经典数据结构</a></li>
 <li><a href="#2-dict">2. dict 字典</a></li>
-<li><a href="#3-with">3. with 上下文管理器</a></li>
-<li><a href="#4">4. 高阶函数</a><ul>
-<li><a href="#41-map">4.1. map</a></li>
-<li><a href="#42-sorted">4.2. sorted</a></li>
+<li><a href="#3-set">3. set 集合</a></li>
+<li><a href="#4-with">4. with 上下文管理器</a></li>
+<li><a href="#5">5. 高阶函数</a><ul>
+<li><a href="#501-map">5.0.1. map</a></li>
+<li><a href="#502-sorted">5.0.2. sorted</a></li>
 </ul>
 </li>
-<li><a href="#5-1">5. 修饰器@ 1</a><ul>
-<li><a href="#51">5.1. 基本定性</a></li>
-<li><a href="#52">5.2. 详解</a><ul>
-<li><a href="#521">5.2.1. 简单修饰器</a></li>
-<li><a href="#522">5.2.2. 内置修饰器</a><ul>
-<li><a href="#5221-staticmethod">5.2.2.1. @staticmethod</a></li>
-<li><a href="#5222-classmethod-">5.2.2.2. @classmethod--类方法</a></li>
-<li><a href="#5223-property-">5.2.2.3. @property--属性</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li><a href="#53">5.3. 进阶修饰器</a><ul>
-<li><a href="#531">5.3.1. 原函数有参数传入</a><ul>
-<li><a href="#5311">5.3.1.1. 原函数有确定参数输入</a></li>
-<li><a href="#5312">5.3.1.2. 原函数可变参数输入</a></li>
-<li><a href="#5313">5.3.1.3. 原函数字典参数输入</a></li>
-</ul>
-</li>
-<li><a href="#532">5.3.2. 装饰器有参数传入</a></li>
-</ul>
-</li>
-<li><a href="#54">5.4. 装饰器顺序</a></li>
-<li><a href="#55">5.5. 装饰器类</a></li>
-</ul>
-</li>
-<li><a href="#6-class">6. Class 类</a></li>
-<li><a href="#7">7. 魔方方法</a></li>
-<li><a href="#8-collections">8. collections 集合</a></li>
+<li><a href="#7-class">7. Class 类</a></li>
+<li><a href="#8">8. 魔方方法</a></li>
+<li><a href="#9-collections">9. collections 集合</a></li>
 <li><a href="#10-abc">10. abc</a></li>
 <li><a href="#11">11. 参考资料</a></li>
 </ul>
@@ -124,7 +99,22 @@
 </pre></div>
 
 
-<h1 id="3-with">3. with 上下文管理器</h1>
+<h1 id="3-set">3. set 集合</h1>
+<p>基于hash表构建的，</p>
+<p>总数 50000 （5万）： List 检索 5W次 耗时 23秒， HashSet 检索 5W次 耗时 0.01秒。</p>
+<p>总数 5000   （5千）： List 检索 5K次 耗时 0.16秒， HashSet 检索 5K次 耗时 0.001秒。</p>
+<p>总数 500     （5百）： List 检索 500次 耗时 0.004秒， HashSet 检索 500次 耗时 0.000秒。</p>
+<p>总数 50                    ： List 检索 50次  耗时 0.002秒， HashSet 检索 500次 耗时 0.000秒。</p>
+<p>集合查找元素，</p>
+<p>当总数超过 10 时，       HashSet<T>  的检索性能 就会比 List<T> 快。</p>
+<p>当总数超过 1000 时，   List<T> 的检索性能 会 急速下降。</p>
+<p>当总数超过 10000 时， List<T> 将会以 秒 为单位 的损失性能。</p>
+<p>换言之：</p>
+<blockquote>
+<p>无论怎样的数据量， HashSet<T> 的检索速度 都要比 List<T> 快。（不存在那种： 多少数据量以下，List 有优势，多少数据量以上，HashSet 有优势）</p>
+<p>Hastable 的查找性能 == HashSet 的查找性能，用不了 HashSet 可以用 Hashtable 替换</p>
+</blockquote>
+<h1 id="4-with">4. with 上下文管理器</h1>
 <div class="hlcode"><pre><span class="k">with</span> <span class="err">上下文管理器对象：</span>
     　<span class="err">语句体</span>
 
@@ -138,7 +128,7 @@
 
 
 <p>当with遇到上下文管理器对象，就会在执行语句体之前，先执行上下文管理器对象的<code>__enter__</code>方法，然后再执行语句体，执行完语句体后，最后执行<code>__exit__</code>方法</p>
-<h1 id="4">4. 高阶函数</h1>
+<h1 id="5">5. 高阶函数</h1>
 <p>什么是<strong>高阶函数</strong>？（不是高级函数）<br />
 把函数名当做参数传给另外一个函数，在另外一个函数中通过参数调用执行</p>
 <div class="hlcode"><pre><span class="c">#!/usr/bin/python3</span>
@@ -160,306 +150,9 @@
 </pre></div>
 
 
-<h3 id="41-map">4.1. map</h3>
-<h3 id="42-sorted">4.2. sorted</h3>
-<h1 id="5-1">5. 修饰器@ <sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup></h1>
-<p><strong>函数就是用来写core 函数的</strong>--路飞</p>
-<h3 id="51">5.1. 基本定性</h3>
-<p>装饰器本质上是一个高级Python函数，通过给别的函数添加@标识的形式实现对函数的装饰，这个函数的特殊之处在于它的返回值也是一个函数</p>
-<p><strong>优势：</strong><br />
-1. 可以让其他函数在不需要做任何代码变动的前提下增加额外功能</p>
-<p><strong>应用场景：</strong></p>
-<p>经常用于有切面需求的场景，例如: <br />
-1. 插入日志<br />
-2. 性能测试<br />
-3. 事务处理<br />
-4. 缓存<br />
-5. 权限校验等场景</p>
-<p>有了装饰器，我们就可以抽离出大量与函数功能本身无关的雷同代码并继续重用。</p>
-<h3 id="52">5.2. 详解</h3>
-<h4 id="521">5.2.1. 简单修饰器</h4>
-<p><strong>3个关键函数</strong></p>
-<p>关于 decorator, 基本上一共有三个函数:<br />
-1. decorator: 修饰器/修饰函数<br />
-2. orifunc: 原函数/被修饰函数<br />
-3. wrapper: 新函数/取代函数/闭包函数</p>
-<p>简单的可以标识为:</p>
-<div class="hlcode"><pre><span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="n">orifunc</span><span class="p">):</span>
-    <span class="c"># do something here (register...)</span>
-    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="c"># do something before (preprocess)</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">orifunc</span><span class="p">()</span>
-        <span class="c"># do something after (postprocess)</span>
-        <span class="k">return</span> <span class="n">result</span>
-    <span class="k">return</span> <span class="n">wrapper</span>
-</pre></div>
-
-
-<p>它们的关系是:</p>
-<div class="hlcode"><pre><span class="n">wrapper</span> <span class="o">=</span> <span class="n">decorator</span><span class="p">(</span><span class="n">orifunc</span><span class="p">)</span>
-</pre></div>
-
-
-<p>上述表示等同于</p>
-<div class="hlcode"><pre><span class="nd">@decorator</span>
-<span class="k">def</span> <span class="nf">orifunc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="c"># do something...</span>
-</pre></div>
-
-
-<p><strong>执行顺序</strong></p>
-<div class="hlcode"><pre><span class="k">def</span> <span class="nf">Timer</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">newFunc</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">args2</span><span class="p">):</span>
-        <span class="n">t1</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
-        <span class="k">print</span> <span class="p">(</span><span class="s">&quot;[1]&quot;</span><span class="p">)</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">args2</span><span class="p">)</span>
-        <span class="n">t2</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
-        <span class="k">print</span> <span class="p">(</span><span class="s">&quot;[3]&quot;</span><span class="p">)</span>
-        <span class="n">cost_time</span><span class="o">=</span><span class="n">t2</span><span class="o">-</span><span class="n">t1</span>
-        <span class="k">print</span> <span class="p">(</span><span class="s">&quot; This function【{}】cost time:{} </span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span><span class="n">cost_time</span><span class="p">))</span>
-        <span class="k">return</span> <span class="n">result</span>
-    <span class="k">return</span> <span class="n">newFunc</span>
-
-<span class="nd">@Timer</span>
-<span class="k">def</span> <span class="nf">Pi</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
-    <span class="c">#N=10**7</span>
-    <span class="n">N</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
-    <span class="n">data</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
-    <span class="n">inside</span><span class="o">=</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">((</span><span class="n">data</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span><span class="o">&lt;</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
-    <span class="n">pi</span><span class="o">=</span><span class="mi">4</span><span class="o">*</span><span class="n">inside</span><span class="o">/</span><span class="n">N</span>
-    <span class="k">print</span> <span class="p">(</span><span class="s">&quot;[2] pi is </span><span class="si">%.5f</span><span class="s">&quot;</span><span class="o">%</span><span class="n">pi</span><span class="p">)</span>
-
-<span class="o">&gt;&gt;&gt;</span> 
-<span class="s">&quot;[1]&quot;</span>
-<span class="s">&quot;[2]  pi is 3.1415&quot;</span>
-<span class="s">&quot;[3]&quot;</span>
-<span class="s">&quot;This function Pi cost time:{}&quot;</span>
-</pre></div>
-
-
-<h4 id="522">5.2.2. 内置修饰器</h4>
-<p>修饰器可以自定义，同时，python中也有自定义的几个修饰器<br />
-内置的装饰器有三个，分别是staticmethod、classmethod和property，作用分别是把类中定义的实例方法变成静态方法、类方法和类属性。</p>
-<p>使用频率也非常低。</p>
-<h5 id="5221-staticmethod">5.2.2.1. @staticmethod</h5>
-<h5 id="5222-classmethod-">5.2.2.2. @classmethod--类方法</h5>
-<h5 id="5223-property-">5.2.2.3. @property--属性</h5>
-<p>在绑定类属性时，如果我们直接把属性暴露出去，虽然写起来很简单，但是，没办法检查参数，导致可以把成绩随便改：</p>
-<div class="hlcode"><pre><span class="n">s</span> <span class="o">=</span> <span class="n">Student</span><span class="p">()</span>
-<span class="n">s</span><span class="o">.</span><span class="n">score</span> <span class="o">=</span> <span class="mi">9999</span> <span class="c"># 成绩不能大于100 ，参数值不合理 </span>
-</pre></div>
-
-
-<p>这显然不合逻辑。<strong>为了限制score的范围</strong>，可以通过一个set_score()方法来设置成绩，再通过一个get_score()来获取成绩，这样，在set_score()方法里，就可以检查参数：</p>
-<div class="hlcode"><pre><span class="n">class</span> <span class="n">Student</span><span class="p">(</span><span class="n">object</span><span class="p">)</span><span class="o">:</span>
-    <span class="n">def</span> <span class="n">get_score</span><span class="p">(</span><span class="n">self</span><span class="p">)</span><span class="o">:</span>
-         <span class="k">return</span> <span class="n">self</span><span class="p">.</span><span class="n">_score</span>
-
-    <span class="n">def</span> <span class="n">set_score</span><span class="p">(</span><span class="n">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span><span class="o">:</span>
-        <span class="k">if</span> <span class="n">not</span> <span class="n">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="kt">int</span><span class="p">)</span><span class="o">:</span>
-            <span class="n">raise</span> <span class="n">ValueError</span><span class="p">(</span><span class="err">&#39;</span><span class="n">score</span> <span class="n">must</span> <span class="n">be</span> <span class="n">an</span> <span class="n">integer</span><span class="o">!</span><span class="err">&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="n">or</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="o">:</span>
-            <span class="n">raise</span> <span class="n">ValueError</span><span class="p">(</span><span class="err">&#39;</span><span class="n">score</span> <span class="n">must</span> <span class="n">between</span> <span class="mi">0</span> <span class="o">~</span> <span class="mi">100</span><span class="o">!</span><span class="err">&#39;</span><span class="p">)</span>
-        <span class="n">self</span><span class="p">.</span><span class="n">_score</span> <span class="o">=</span> <span class="n">value</span>
-</pre></div>
-
-
-<p>还记得装饰器（decorator）可以给函数动态加上功能吗？对于类的方法，装饰器一样起作用。Python内置的@property装饰器就是负责把一个方法变成属性调用的：</p>
-<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Student</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_score</span>
-
-    <span class="nd">@score.setter</span>
-    <span class="k">def</span> <span class="nf">score</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;score must be an integer!&#39;</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;score must between 0 ~ 100!&#39;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_score</span> <span class="o">=</span> <span class="n">value</span>
-</pre></div>
-
-
-<p>@property的实现比较复杂，我们先考察如何使用。把一个getter方法变成属性，只需要加上@property就可以了，此时，@property本身又创建了另一个装饰器@score.setter，负责把一个setter方法变成属性赋值，于是，我们就拥有一个可控的属性操作：</p>
-<p>还可以定义只读属性，只定义getter方法，不定义setter方法就是一个只读属性：</p>
-<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Student</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">birth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_birth</span>
-
-    <span class="nd">@birth.setter</span>
-    <span class="k">def</span> <span class="nf">birth</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_birth</span> <span class="o">=</span> <span class="n">value</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">age</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="mi">2015</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_birth</span>
-</pre></div>
-
-
-<p>上面的birth是可读写属性，而age就是一个只读属性，因为age可以根据birth和当前时间计算出来</p>
-<h3 id="53">5.3. 进阶修饰器</h3>
-<h4 id="531">5.3.1. 原函数有参数传入</h4>
-<p>python 中函数的参数分为<br />
-1.必选参数<br />
-2.默认参数<br />
-3.可变参数 <em>args  仅仅在参数前面加了一个</em>号。<br />
-4.关键字参数 **kw</p>
-<h6 id="5311">5.3.1.1. 原函数有确定参数输入</h6>
-<div class="hlcode"><pre><span class="c"># 非语法糖</span>
-<span class="k">def</span> <span class="nf">use_logging</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is running&quot;</span> <span class="o">%</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>   <span class="c"># 把 orifunc 当做参数传递进来时，执行func()就相当于执行 orifunc()</span>
-    <span class="k">return</span> <span class="n">wrapper</span>
-
-<span class="k">def</span> <span class="nf">orifunc</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;i am {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
-<span class="c"># 因为装饰器 use_logging(foo) 返回的时函数对象 wrapper，这条语句相当于  orifunc = wrapper</span>
-<span class="c"># orifunc()就相当于执行 wrapper()</span>
-<span class="o">&gt;&gt;&gt;</span> <span class="n">orifunc</span> <span class="o">=</span> <span class="n">use_logging</span><span class="p">(</span><span class="n">orifunc</span><span class="p">)</span> 
-<span class="o">&gt;&gt;&gt;</span> <span class="n">orifunc</span><span class="p">(</span><span class="s">&quot;me&quot;</span><span class="p">)</span>
-
-
-<span class="c"># 语法糖</span>
-<span class="k">def</span> <span class="nf">use_logging</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is running&quot;</span> <span class="o">%</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">wrapper</span>
-
-<span class="nd">@use_logging</span>
-<span class="k">def</span> <span class="nf">orifunc</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;i am {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">))</span>
-
-<span class="o">&gt;&gt;&gt;</span> <span class="n">orifunc</span><span class="p">(</span><span class="s">&quot;me&quot;</span><span class="p">)</span>
-</pre></div>
-
-
-<h6 id="5312">5.3.1.2. 原函数可变参数输入</h6>
-<div class="hlcode"><pre><span class="c">#------[2] 参数列表输入</span>
-
-
-<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;i am </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="n">name</span><span class="p">)</span>
-
-<span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is running&quot;</span> <span class="o">%</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">wrapper</span>
-</pre></div>
-
-
-<h6 id="5313">5.3.1.3. 原函数字典参数输入</h6>
-<div class="hlcode"><pre><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">age</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">height</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="k">print</span><span class="p">(</span><span class="s">&quot;I am </span><span class="si">%s</span><span class="s">, age </span><span class="si">%s</span><span class="s">, height </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">age</span><span class="p">,</span> <span class="n">height</span><span class="p">))</span>
-
-<span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="c"># args是一个数组，kwargs一个字典</span>
-        <span class="n">logging</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;</span><span class="si">%s</span><span class="s"> is running&quot;</span> <span class="o">%</span> <span class="n">func</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">wrapper</span>
-</pre></div>
-
-
-<h4 id="532">5.3.2. 装饰器有参数传入</h4>
-<p>有多种方式让装饰器接受可选参数。根据你是想使用位置参数、关键字参数还是两者皆是，需要使用稍微不同的模式。如下我将展示一种接受一个可选关键字参数的方式：<br />
-1.定义3层闭包<br />
-2.Layer 1 最外层形参用来接收装饰器参数<br />
-3.Layer 2 第二层用来接受被修饰的原函数<br />
-4.Layer 3 第三层用来传递原函数的参数</p>
-<div class="hlcode"><pre><span class="k">def</span> <span class="nf">nominally_decorator</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span><span class="o">**</span><span class="n">kw</span><span class="p">):</span>       
-    <span class="c"># Layer 1  *args,**kw 为nominally_decorator的参数</span>
-    <span class="k">def</span> <span class="nf">core_decorator</span><span class="p">(</span><span class="n">orifunc</span><span class="p">):</span>           
-        <span class="c"># Layer 2 第二层用来接受被修饰的原函数</span>
-        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">arguments_for_orifunc</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs_for_orifunc</span><span class="p">):</span> 
-            <span class="c"># Layer 3 Layer 3 第三层用来传递原函数的参数</span>
-
-            <span class="c"># do something before (preprocess)</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="n">orifunc</span><span class="p">(</span><span class="o">*</span><span class="n">arguments_for_orifunc</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs_for_orifunc</span><span class="p">)</span>
-            <span class="c"># do something after (postprocess)</span>
-
-            <span class="k">return</span> <span class="n">result</span>
-        <span class="k">return</span> <span class="n">wrapper</span>
-    <span class="k">return</span> <span class="n">core_decorator</span>
-</pre></div>
-
-
-<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">inspect</span> <span class="kn">import</span> <span class="n">signature</span>
-<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">wraps</span>
-
-<span class="k">def</span> <span class="nf">typeassert</span><span class="p">(</span><span class="o">*</span><span class="n">ty_args</span><span class="p">,</span> <span class="o">**</span><span class="n">ty_kwargs</span><span class="p">):</span>
-    <span class="k">def</span> <span class="nf">decorate</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
-        <span class="c"># If in optimized mode, disable type checking 关闭类型检测模式</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="n">__debug__</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">func</span>
-        <span class="c"># 通过signature方法，获取函数形参：name, age, height</span>
-        <span class="n">sig</span> <span class="o">=</span> <span class="n">signature</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-        <span class="n">bound_types</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">bind_partial</span><span class="p">(</span><span class="o">*</span><span class="n">ty_args</span><span class="p">,</span> <span class="o">**</span><span class="n">ty_kwargs</span><span class="p">)</span><span class="o">.</span><span class="n">arguments</span>
-
-        <span class="nd">@wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
-        <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-            <span class="n">bound_values</span> <span class="o">=</span> <span class="n">sig</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-            <span class="c"># Enforce type assertions across supplied arguments</span>
-            <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">bound_values</span><span class="o">.</span><span class="n">arguments</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-                <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">bound_types</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">bound_types</span><span class="p">[</span><span class="n">name</span><span class="p">]):</span>
-                        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                            <span class="s">&#39;Argument {} must be {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">bound_types</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
-                            <span class="p">)</span>
-            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">wrapper</span>
-    <span class="k">return</span> <span class="n">decorate</span>
-</pre></div>
-
-
-<h3 id="54">5.4. 装饰器顺序</h3>
-<p>一个函数还可以同时定义多个装饰器，比如：</p>
-<div class="hlcode"><pre><span class="nd">@a</span>
-<span class="nd">@b</span>
-<span class="nd">@c</span>
-<span class="k">def</span> <span class="nf">f</span> <span class="p">():</span>
-    <span class="k">pass</span>
-</pre></div>
-
-
-<p>它的执行顺序是从里到外，最先调用最里层的装饰器，最后调用最外层的装饰器，它等效于</p>
-<div class="hlcode"><pre><span class="n">f</span> <span class="o">=</span> <span class="n">a</span><span class="p">(</span><span class="n">b</span><span class="p">(</span><span class="n">c</span><span class="p">(</span><span class="n">f</span><span class="p">)))</span>
-</pre></div>
-
-
-<h3 id="55">5.5. 装饰器类</h3>
-<p>不仅装饰器可以装饰一个类，并且装饰器也可以是一个类！对于装饰器的唯一要求就是它的返回值必须可调用(callable)。这意味着装饰器必须实现 <strong>call</strong> 魔术方法，当你调用一个对象时，会隐式调用这个方法。函数当然是隐式设置这个方法的。我们重新将 identity_decorator 创建为一个类来看看它是如何工作的。</p>
-<p>类装饰器<br />
-接下来我们用面对对象的方法实现装饰器的功能，你应该有python面对对象编程的基础，这里面会用到魔法方法。</p>
-<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Decrator</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">fn</span><span class="p">):</span>
-        <span class="k">print</span><span class="p">(</span><span class="s">&quot;初始化函数&quot;</span><span class="p">,</span><span class="n">fn</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_func</span> <span class="o">=</span> <span class="n">fn</span>
-
-    <span class="k">def</span> <span class="nf">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
-        <span class="k">print</span><span class="p">(</span><span class="s">&quot;打印的内容&quot;</span><span class="p">,</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
-
-<span class="nd">@Decrator</span>
-<span class="k">def</span> <span class="nf">sum</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
-    <span class="k">print</span><span class="p">(</span><span class="nb">sum</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">x</span><span class="o">+</span><span class="n">y</span>
-
-<span class="k">print</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span><span class="mi">3</span><span class="p">))</span>
-<span class="o">&gt;&gt;&gt;</span>
-<span class="err">执行结果</span>
-
-<span class="err">初始化函数</span> <span class="nb">sum</span>
-<span class="err">打印的内容</span> <span class="mi">3</span> <span class="mi">3</span>
-<span class="o">&lt;</span><span class="n">__main__</span><span class="o">.</span><span class="n">Decrator</span> <span class="nb">object</span> <span class="n">at</span> <span class="mh">0x0000024986FF7198</span><span class="o">&gt;</span>
-</pre></div>
-
-
-<p>解析：函数sum定义前加上@Decorator，相当于实例化类对象<code>Decorator(sum)</code>，同时初始化实例属性self._func=sum函数;接下来实例对象后加上()，会调用实例对象的__call__方法，打印出内容和参数，然后返回实例属性即sum函数并执行函数计算x+y。</p>
-<h1 id="6-class">6. Class 类</h1>
+<h3 id="501-map">5.0.1. map</h3>
+<h3 id="502-sorted">5.0.2. sorted</h3>
+<h1 id="7-class">7. Class 类</h1>
 <div class="hlcode"><pre><span class="n">obj</span> <span class="o">=</span> <span class="mi">12</span> 
 <span class="c"># obj can be an object from any class, even object.__new__(object)</span>
 
@@ -502,7 +195,7 @@
 </pre></div>
 
 
-<h1 id="7">7. 魔方方法</h1>
+<h1 id="8">8. 魔方方法</h1>
 <p>什么是Python魔法方法?<br />
 魔法方法就如同它的名字一样神奇，总能在你需要的时候为你提供某种方法来让你的想法实现。魔法方法是指Python内部已经包含的，被双下划线所包围的方法，这些方法在进行特定的操作时会自动被调用，它们是Python面向对象下智慧的结晶。初学者掌握Python的魔法方法也就变得尤为重要了。</p>
 <p>为什么要使用Python魔法方法?</p>
@@ -593,7 +286,7 @@
 </pre></div>
 
 
-<h1 id="8-collections">8. collections 集合</h1>
+<h1 id="9-collections">9. collections 集合</h1>
 <p>collections是Python内建的一个集合模块，提供了许多有用的集合类。</p>
 <p>OrderedDict 也是 dict 的子类，其最大特征是，它可以“维护”添加 key-value 对的顺序。简单来说，就是先添加的 key-value 对排在前面，后添加的 key-value 对排在后面。</p>
 <div class="hlcode"><pre><span class="n">namedtuple</span>

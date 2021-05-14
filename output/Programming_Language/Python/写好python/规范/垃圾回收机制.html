@@ -1,0 +1,272 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Python 垃圾回收机制 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Programming_Language">Programming_Language</a>&nbsp;»&nbsp;<a href="/Wiki/#-Python">Python</a>&nbsp;»&nbsp;<a href="/Wiki/#-写好python">写好python</a>&nbsp;»&nbsp;<a href="/Wiki/#-规范">规范</a>&nbsp;»&nbsp;Python 垃圾回收机制</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Python 垃圾回收机制</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-python">1. python 垃圾回收机制</a><ul>
+<li><a href="#11">1.1. 一切皆对象</a><ul>
+<li><a href="#111-1">1.1.1. 1 计数机制</a><ul>
+<li><a href="#1111-1">1.1.1.1. 1 计数机制核心</a></li>
+<li><a href="#1112-2-1">1.1.1.2. 2 导致引用计数+1的情况</a></li>
+<li><a href="#1113-3-1">1.1.1.3. 3 导致引用计数-1的情况</a></li>
+</ul>
+</li>
+<li><a href="#112">1.1.2. 分代回收</a></li>
+<li><a href="#113">1.1.3. 标记清除</a></li>
+</ul>
+</li>
+<li><a href="#12-gc">1.2. 使用gc模块进行垃圾回收</a><ul>
+<li><a href="#121">1.2.1. 垃圾检测</a><ul>
+<li><a href="#1211-1-gc">1.2.1.1. 1 gc模块监控的范围</a></li>
+<li><a href="#1212-2">1.2.1.2. 2 垃圾检测</a></li>
+</ul>
+</li>
+<li><a href="#122">1.2.2. 垃圾回收</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="1-python">1. python 垃圾回收机制</h1>
+<p>参考 https://zhuanlan.zhihu.com/p/62282961<br />
+https://docs.python.org/zh-cn/3.8/library/gc.html</p>
+<p>垃圾回收机制指的是内存管理机制<br />
+<em> C++/C 中用户自主为变量申请固定长度内存（或申请动态内存）,delete 变量销毁占用内存，该设计为大量内存泄露，悬空指针等bug埋下隐患<br />
+</em> 高级语言如java,c#等，都采用了垃圾收集机制</p>
+<h2 id="11">1.1. 一切皆对象</h2>
+<p>python里每一个东西都是对象，它们的核心就是一个结构体：PyObject</p>
+<div class="hlcode"><pre><span class="n">a</span><span class="o">=</span><span class="s">&quot;sting_1&quot;</span>
+<span class="n">b</span><span class="o">=</span><span class="s">&quot;sting_1&quot;</span>
+<span class="k">print</span> <span class="p">(</span><span class="s">&quot;a id is {}</span><span class="se">\n</span><span class="s">b id is {}</span><span class="se">\n</span><span class="s">&#39;sting_1&#39; id is {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">id</span><span class="p">(</span><span class="n">a</span><span class="p">),</span><span class="nb">id</span><span class="p">(</span><span class="n">b</span><span class="p">),</span><span class="nb">id</span><span class="p">(</span><span class="s">&quot;sting_1&quot;</span><span class="p">)))</span>
+
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">a</span> <span class="nb">id</span> <span class="ow">is</span> <span class="mi">1546431601832</span>
+<span class="n">b</span> <span class="nb">id</span> <span class="ow">is</span> <span class="mi">1546431601832</span>
+<span class="s">&#39;sting_1&#39;</span> <span class="nb">id</span> <span class="ow">is</span> <span class="mi">1546431601832</span>
+
+<span class="n">a</span> <span class="ow">is</span> <span class="n">b</span> 
+<span class="o">&gt;&gt;&gt;</span> <span class="bp">True</span>
+<span class="n">a</span> <span class="ow">is</span> <span class="s">&quot;string_1&quot;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="bp">True</span>
+<span class="n">a</span><span class="o">==</span><span class="n">b</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="bp">True</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">getrefcount</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="mi">3</span>
+</pre></div>
+
+
+<p>python采用的是引用<strong>计数机制</strong>为主，<strong>标记-清除</strong>和<strong>分代收集</strong>（隔代回收）两种机制为辅的策略。</p>
+<h3 id="111-1">1.1.1. 1 计数机制</h3>
+<h4 id="1111-1">1.1.1.1. 1 计数机制核心</h4>
+<p>一旦对象的引用计数为0，该对象立即被回收，对象占用的内存空间将被释放</p>
+<table>
+<thead>
+<tr>
+<th align="left">优点</th>
+<th align="left">缺点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">简单</td>
+<td align="left">维护引用计数消耗资源</td>
+</tr>
+<tr>
+<td align="left">实时性：一旦没有引用，内存就直接释放了，不用像其他机制得等到特定时机。实时性还带来一个好处：处理回收内存的时间分摊到了平时。</td>
+<td align="left">循环引用</td>
+</tr>
+</tbody>
+</table>
+<h4 id="1112-2-1">1.1.1.2. 2 导致引用计数+1的情况</h4>
+<ol>
+<li>对象被创建，例如a=23</li>
+<li>对象被引用，例如b=a</li>
+<li>对象被作为参数，传入到一个函数中，例如func(a)</li>
+<li>对象作为一个元素，存储在容器中，例如list1=[a,a]</li>
+</ol>
+<h4 id="1113-3-1">1.1.1.3. 3 导致引用计数-1的情况</h4>
+<ol>
+<li>对象的别名被显式销毁，例如<code>del a</code></li>
+<li>对象的别名被赋予新的对象，例如 <code>a=24</code></li>
+<li>一个对象离开它的作用域，例如f函数执行完毕时，func函数中的局部变量（全局变量不会）</li>
+<li>对象所在的容器被销毁，或从容器中删除对象</li>
+</ol>
+<p><strong>循环引用导致内存泄露</strong></p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">f2</span><span class="p">():</span>
+    <span class="sd">&#39;&#39;&#39;循环引用&#39;&#39;&#39;</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">c1</span><span class="o">=</span><span class="n">A</span><span class="p">()</span> <span class="c"># 创建id: 0001 counts:1</span>
+        <span class="n">c2</span><span class="o">=</span><span class="n">A</span><span class="p">()</span> <span class="c">#  创建id: 0002 counts:1</span>
+        <span class="n">c1</span><span class="o">.</span><span class="n">t</span><span class="o">=</span><span class="n">c2</span> <span class="c"># id: 0002 counts:2</span>
+        <span class="n">c2</span><span class="o">.</span><span class="n">t</span><span class="o">=</span><span class="n">c1</span> <span class="c"># id: 0001 counts:2</span>
+        <span class="k">del</span> <span class="n">c1</span> <span class="c"># id: 0001 counts:1</span>
+        <span class="k">del</span> <span class="n">c2</span> <span class="c"># id: 0002 counts:1</span>
+</pre></div>
+
+
+<p>创建了c1，c2后，这两个对象的引用计数都是1，执行c1.t=c2和c2.t=c1后，引用计数变成2.<br />
+在del c1后，内存c1的对象的引用计数变为1，由于不是为0，所以c1的对象不会被销毁,同理，在del c2后也是一样的。<br />
+虽然它们两个的对象都是可以被销毁的，但是由于循环引用，导致垃圾回收器都不会回收它们，所以就会导致内存泄露。</p>
+<h3 id="112">1.1.2. 分代回收</h3>
+<p>分代回收是一种以空间换时间的操作方式，Python将内存根据对象的存活时间划分为不同的集合，每个集合称为一个代，Python将内存分为了3“代”，分别为：<br />
+1. 年轻代（第0代）<br />
+2. 中年代（第1代）<br />
+3. 老年代（第2代）</p>
+<p>他们对应的是3个链表，它们的垃圾收集频率随着对象存活时间的增大而减小。</p>
+<p>新创建的对象都会分配在年轻代，年轻代链表的总数达到上限时，Python垃圾收集机制就会被触发，把那些可以被回收的对象回收掉，而那些不会回收的对象就会被移到中年代去，依此类推，老年代中的对象是存活时间最久的对象，甚至是存活于整个系统的生命周期内。<br />
+同时，分代回收是建立在标记清除技术基础之上。分代回收同样作为Python的辅助垃圾收集技术处理那些容器对象</p>
+<h3 id="113">1.1.3. 标记清除</h3>
+<p>标记清除（Mark—Sweep）』算法是一种基于追踪回收（tracing GC）技术实现的垃圾回收算法。它分为两个阶段：第一阶段是标记阶段，GC会把所有的『活动对象』打上标记，第二阶段是把那些没有标记的对象『非活动对象』进行回收。那么GC又是如何判断哪些是活动对象哪些是非活动对象的呢？</p>
+<p><img src=https://pic1.zhimg.com/80/v2-543bb871b0eb79e4b6b9186ac1588e34_hd.jpg></p>
+<p>对象之间通过引用（指针）连在一起，构成一个有向图，对象构成这个有向图的节点，而引用关系构成这个有向图的边。从根对象（root object）出发，沿着有向边遍历对象，可达的（reachable）对象标记为活动对象，不可达的对象就是要被清除的非活动对象。根对象就是全局变量、调用栈、寄存器。 mark-sweepg 在上图中，我们把小黑圈视为全局变量，也就是把它作为root object，从小黑圈出发，对象1可直达，那么它将被标记，对象2、3可间接到达也会被标记，而4和5不可达，那么1、2、3就是活动对象，4和5是非活动对象会被GC回收。</p>
+<p>标记清除算法作为Python的辅助垃圾收集技术主要处理的是一些容器对象，比如list、dict、tuple，instance等，因为对于字符串、数值对象是不可能造成循环引用问题。Python使用一个双向链表将这些容器对象组织起来。不过，这种简单粗暴的标记清除算法也有明显的缺点：清除非活动的对象前它必须顺序扫描整个堆内存，哪怕只剩下小部分活动对象也要扫描所有对象</p>
+<h2 id="12-gc">1.2. 使用gc模块进行垃圾回收</h2>
+<p>gc模块的一个主要功能就是解决循环引用的问题。<br />
+使用gc模块的垃圾回收机制的主要作用就是发现并处理不可达的垃圾对象。</p>
+<div class="hlcode"><pre><span class="n">gc</span><span class="err">模块的垃圾回收机制</span><span class="o">=</span><span class="err">垃圾检测</span><span class="o">+</span><span class="err">垃圾回收</span>
+</pre></div>
+
+
+<h3 id="121">1.2.1. 垃圾检测</h3>
+<h4 id="1211-1-gc">1.2.1.1. 1 gc模块监控的范围</h4>
+<div class="hlcode"><pre><span class="n">is_tracked</span><span class="o">=</span><span class="n">gc</span><span class="o">.</span><span class="n">is_tracked</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span><span class="nb">type</span><span class="p">(</span><span class="n">is_tracked</span><span class="p">)</span>
+<span class="nb">bool</span>
+<span class="c">#当对象正在被垃圾回收器监控时返回 True ，否则返回 False 。</span>
+</pre></div>
+
+
+<p>一般来说，原子类的实例不会被监控，而<strong>非原子类（如容器、用户自定义的对象）会被监控</strong>。然而，会有一些特定类型的优化以便减少垃圾回收器在简单实例（如只含有原子性的键和值的字典）上的消耗。</p>
+<h4 id="1212-2">1.2.1.2. 2 垃圾检测</h4>
+<p>垃圾检测就是检测不可达对象(unreachable object)，参考 3.标记清除</p>
+<p>注意：<br />
+如果循环引用中，两个对象都定义了__del__方法，gc模块不会销毁这些不可达对象，因为gc模块不知道应该先调用哪个对象的__del__方法，所以为了安全起见，gc模块会把对象放到gc.garbage中，但是不会销毁对象。</p>
+<h3 id="122">1.2.2. 垃圾回收</h3>
+<p>有三种情况会触发垃圾回收：</p>
+<ol>
+<li>调用gc.collect()</li>
+<li>当gc模块的计数器达到阈值的时候。</li>
+<li>程序退出的时候。</li>
+</ol>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">gc</span>
+<span class="k">if</span> <span class="n">gc</span><span class="o">.</span><span class="n">is_enable</span><span class="p">()</span><span class="o">==</span><span class="bp">False</span><span class="p">:</span>
+    <span class="n">gc</span><span class="o">.</span><span class="n">enable</span><span class="p">()</span>
+
+<span class="n">num_of_unreachable_objects</span><span class="o">=</span><span class="n">gc</span><span class="o">.</span><span class="n">collect</span><span class="p">(</span><span class="n">generation</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="c"># generation=0 检查第1代的对象</span>
+<span class="c"># generation=1 检查1、2代的对象</span>
+<span class="c"># generation=2 检查1、2、3代的对象</span>
+<span class="c"># 返回unreachable objects 对象的数量</span>
+
+<span class="nb">type</span><span class="p">(</span><span class="n">num_of_unreachable_objects</span><span class="p">)</span> 
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">int</span> 
+
+<span class="c"># 当前自动执行垃圾回收的计数器  current collection counts </span>
+<span class="n">counts_tuple</span><span class="o">=</span><span class="n">gc</span><span class="o">.</span><span class="n">get_count</span><span class="p">()</span>
+<span class="nb">type</span><span class="p">(</span><span class="n">counts_tuple</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="nb">tuple</span> 
+<span class="mi">1</span><span class="n">_nums</span><span class="p">,</span><span class="mi">2</span><span class="n">_nums</span><span class="p">,</span><span class="mi">3</span><span class="n">_nums</span><span class="o">=</span><span class="n">gc</span><span class="o">.</span><span class="n">get_count</span><span class="p">()</span>
+<span class="c"># 1_nums 1代的垃圾对象的数目</span>
+<span class="c"># 2_nums 2代的垃圾对象的数目</span>
+<span class="c"># 3_nums 3代的垃圾对象的数目</span>
+
+<span class="c">#自动回收阈值</span>
+<span class="n">gc</span><span class="o">.</span><span class="n">set_threshold</span><span class="p">(</span><span class="n">threshold0</span><span class="p">[,</span> <span class="n">threshold1</span><span class="p">[,</span> <span class="n">threshold2</span><span class="p">])</span>
+</pre></div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

@@ -188,7 +188,51 @@ Windows 用户无法直接创建名为 `.condarc` 的文件，可先执行以下
 conda config --set show_channel_urls yes
 ```
 
+### 环境迁移
 
+
+conda-forge:
+
+```shell
+conda install -c conda-forge conda-pack
+
+# or
+pip install conda-pack
+```
+打包一个环境：
+```shell
+# Pack environment my_env into my_env.tar.gz
+conda pack -n my_env
+
+# Pack environment my_env into out_name.tar.gz
+conda pack -n my_env -o out_name.tar.gz
+
+# Pack environment located at an explicit path into my_env.tar.gz
+conda pack -p /explicit/path/to/my_env
+```
+重现环境：
+```shell
+
+# Unpack environment into directory `my_env`
+mkdir -p my_env
+tar -xzf my_env.tar.gz -C my_env
+
+# Use Python without activating or fixing the prefixes. Most Python
+# libraries will work fine, but things that require prefix cleanups
+# will fail.
+./my_env/bin/python
+
+# Activate the environment. This adds `my_env/bin` to your path
+source my_env/bin/activate
+
+# Run Python from in the environment
+(my_env) $ python
+
+# Cleanup prefixes from in the active environment.
+# Note that this command can also be run without activating the environment
+# as long as some version of Python is already installed on the machine.
+(my_env) $ conda-unpack
+```
 
 ## 3.2. pip--pypi
 
@@ -254,49 +298,6 @@ by Christoph Gohlke, Laboratory for Fluorescence Dynamics, University of Cali
 
 <https://www.lfd.uci.edu/~gohlke/pythonlibs/> 
 
-# 4. 按部署环境配置应用的行为
-应用在不同的环境（开发、测试、生产）中应该允许加载不同的配置，配置不同的行为。
-
-当前应用处于什么环境，可以通过环境变量来配置，应用初始化时最先检测当前处于什么环境，之后的初始化流程就可以依据环境配置来加载配置，定制应用行为。
-```python
-# conf/__init__.py
-class AppConfig(object):
-    app_env = os.getenv('APP_ENV', 'development')
-    is_prod = app_env == 'production'
-    is_dev = app_env == 'development'
-    is_testing = app_env == 'testing'
-
-    # 其余应用配置项
-    ...
-
-conf = AppConfig()
-
-
-def _load_config_by_env(env: str):
-    '''
-    不同环境加载不同的配置文件
-    配置目录结构：
-    conf/
-        __init__.py
-        development.py
-        production.py
-        testing.py
-    '''
-    module = importlib.import_module('conf.{}'.format(env))
-    if not hasattr(module, 'Config'):
-        logging.warning('Not find {} config'.format(env))
-        return
-    for name, value in getattr(module, 'Config').__dict__.items():
-        if name.startswith('__'):
-            continue
-        conf.__dict__[name] = value
-```
-# 5. 根据环境配置日志级别
-```python
-log_level = logging.INFO if conf.is_prod else logging.DEBUG
-logging.basicConfig(format=consts.LOG_FORMAT, level=log_level)
-
-```
 
 
 

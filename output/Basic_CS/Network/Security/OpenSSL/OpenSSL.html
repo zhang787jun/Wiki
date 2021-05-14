@@ -6,7 +6,7 @@
     <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
     <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
     <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
-    <title>02-OpenSSL - Jun's personal knowledge wiki</title>
+    <title>02-OpenSSL基础 - Jun's personal knowledge wiki</title>
     <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
     <meta name="description" content="A wiki website" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -28,32 +28,33 @@
     <div id="container">
         
 <div id="header">
-  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Basic_CS">Basic_CS</a>&nbsp;»&nbsp;<a href="/Wiki/#-Network">Network</a>&nbsp;»&nbsp;<a href="/Wiki/#-Security">Security</a>&nbsp;»&nbsp;<a href="/Wiki/#-OpenSSL">OpenSSL</a>&nbsp;»&nbsp;02-OpenSSL</div>
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Basic_CS">Basic_CS</a>&nbsp;»&nbsp;<a href="/Wiki/#-Network">Network</a>&nbsp;»&nbsp;<a href="/Wiki/#-Security">Security</a>&nbsp;»&nbsp;<a href="/Wiki/#-OpenSSL">OpenSSL</a>&nbsp;»&nbsp;02-OpenSSL基础</div>
 </div>
 <div class="clearfix"></div>
-<div id="title">02-OpenSSL</div>
+<div id="title">02-OpenSSL基础</div>
 <div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
-<li><a href="#ssl">SSL 协议</a></li>
-<li><a href="#openssl">什么是 OpenSSL</a><ul>
-<li><a href="#openssl_1">OpenSSL的组成</a></li>
+<li><a href="#1-ssl">1. SSL 协议</a></li>
+<li><a href="#2-openssl">2. 什么是 OpenSSL</a><ul>
+<li><a href="#21-openssl">2.1. OpenSSL的组成</a></li>
 </ul>
 </li>
 </ul>
 </div>
-<h1 id="ssl">SSL 协议</h1>
+<h1 id="1-ssl">1. SSL 协议</h1>
 <p>Secure Sockets Layer (SSL) protocol</p>
-<h1 id="openssl">什么是 OpenSSL</h1>
+<h1 id="2-openssl">2. 什么是 OpenSSL</h1>
 <blockquote>
 <p><a href="https://github.com/openssl/openssl">OpenSSL</a> is a robust, commercial-grade, full-featured Open Source <strong>Toolkit</strong> for the Transport Layer Security (TLS) protocol formerly known as the Secure Sockets Layer (SSL) protocol.‘</p>
 </blockquote>
 <p>OpenSSL 是实现SSL协议的开源工具包</p>
-<h2 id="openssl_1">OpenSSL的组成</h2>
+<h2 id="21-openssl">2.1. OpenSSL的组成</h2>
 <div class="hlcode"><pre><span class="n">digraph</span> <span class="p">{</span>
     <span class="n">subgraph</span>  <span class="n">cluster_3</span><span class="p">{</span>
         <span class="n">label</span><span class="o">=</span><span class="s">&quot;OpenSSL&quot;</span>
         <span class="s">&quot;SSLeay library&quot;</span><span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">]</span>
     <span class="p">}</span>
+    <span class="s">&quot;SSLeay library&quot;</span><span class="o">-&gt;</span><span class="n">SSL</span><span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;实现了&quot;</span><span class="p">]</span>
 
 <span class="p">}</span>
 </pre></div>

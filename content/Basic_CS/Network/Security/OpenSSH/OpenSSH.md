@@ -23,7 +23,6 @@ digraph {
     }
     
     }
-
 }
 ```
 
@@ -43,7 +42,23 @@ SSH 基于客户端-服务器体系结构，用户在其中工作的系统是客
 7. `ssh-add.exe`，将私钥添加到服务器允许的列表中
 8. `ssh-keyscan.exe`，帮助从许多主机收集公用 SSH 主机密钥
 
-## 1.2. ssh和ssl的联系和区别
+
+## 1.2. SSH协议
+
+SSH是一种网络协议
+
+Secure Shell（安全外壳协议，简称SSH）是一种加密的网络传输协议，可在不安全的网络中为网络服务提供安全的传输环境[1]。
+
+
+SSH协议框架中最主要的部分是三个协议：
+
+传输层协议（The Transport Layer Protocol）：传输层协议提供服务器认证，数据机密性，信息完整性等的支持。
+用户认证协议（The User Authentication Protocol）：用户认证协议为服务器提供客户端的身份鉴别。
+连接协议（The Connection Protocol）：连接协议将加密的信息隧道复用成若干个逻辑通道，提供给更高层的应用协议使用。
+同时还有为许多高层的网络安全应用协议提供扩展的支持。
+
+各种高层应用协议可以相对地独立于SSH基本体系之外，并依靠这个基本框架，通过连接协议使用SSH的安全机制。
+## 1.3. ssh和ssl的联系和区别
 
 
 
@@ -51,9 +66,10 @@ ssh：Secure Shell，安全Shell，是一个软件，处于应用层旨在取代
 
 ssl：Secure Sockets Layer，安全套接字层，是一个协议，处于传输层之上应用层之下用于协商密钥；对应的开源实现库是openssl。
 
-简写	全称	译名	身份	所处层	目的	加密算法	开源实现
-ssh	Secure Shell	安全shell	应用	应用层	取代telnet	RSA	openssh
-ssl	Secure Sockets Layer	安全套接字层	协议	传输层之上应用层之下	协商密钥	协商得到对称密钥	openssl
+简写|全称|译名|身份|所处层|目的|加密算法|开源实现
+--|--|--|--|--|--|--|--|
+ssh|Secure Shell|安全shell|应用|应用层|取代telnet|RSA|openssh
+ssl|Secure Sockets Layer|安全套接字层|协议|传输层之上应用层之下|协商密钥|协商得到对称密钥|openssl
 
 # 2. 安装
 ## 2.1. Linux
