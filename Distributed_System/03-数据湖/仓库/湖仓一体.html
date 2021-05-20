@@ -1,0 +1,152 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>湖仓一体 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Distributed_System">Distributed_System</a>&nbsp;»&nbsp;<a href="/Wiki/#-03-数据湖">03-数据湖</a>&nbsp;»&nbsp;<a href="/Wiki/#-仓库">仓库</a>&nbsp;»&nbsp;湖仓一体</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">湖仓一体</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 背景</a></li>
+<li><a href="#2-lakehouse">2. 什么是LakeHouse?</a></li>
+<li><a href="#3">3. 早期示例</a></li>
+<li><a href="#data-lakehouse">Data lakehouse解决了什么问题</a></li>
+<li><a href="#data-lakehouse_1">Data Lakehouse存在的问题</a></li>
+<li><a href="#biai">从BI到AI</a></li>
+<li><a href="#_1">参考资料</a></li>
+</ul>
+</div>
+<p>Data Lakehouse（湖仓一体）是数据管理领域中的一种新架构范例，结合了Data Warehouse和Data Lakes的最佳特性。数据分析师和数据科学家可以在同一个数据存储中对数据进行操作，同时它也能为公司进行数据治理带来更多的便利性。</p>
+<h1 id="1">1. 背景</h1>
+<p>在Databricks的过去几年中，我们看到了一种新的数据管理范式，该范式出现在许多客户和案例中：LakeHouse。在这篇文章中，我们将描述这种新范式及其相对于先前方案的优势。</p>
+<p>数据仓库技术自1980诞生以来一直在发展，其在决策支持和商业智能应用方面拥有悠久的历史，而MPP体系结构使得系统能够处理更大数据量。但是，虽然数据仓库非常适合结构化数据，但许多现代企业必须处理非结构化数据、半结构化数据以及具有多样性，高速度和高容量的数据。数据仓库不适用于许多此类场景，并且也不是最具成本效益的。 </p>
+<p>随着公司开始从许多不同源收集大量数据，架构师开始构想一个单一的系统来容纳不同分析产品和工作负载的数据。大约十年前，公司开始构建数据湖：各种格式原始数据的存储库。数据湖虽然适合存储数据，但缺少一些关键功能：不支持事务、无法提高数据质量、缺乏一致性/隔离性，导致几乎不可能混合处理追加（append）和读取，批处理和流处理作业。由于这些原因，数据湖之前的许多承诺尚未实现，在许多情况下还会失去数据仓库的许多好处。</p>
+<p>公司对灵活、高性能系统的需求并未减少，如需要用于各种数据应用程序的系统，包括SQL分析、实时监控、数据科学和机器学习。人工智能的最新进展大部分是用于处理非结构化数据（文本，图像，视频，音频）的更好模型，但是这些恰恰是数据仓库未针对其优化的数据类型。一种常见的方法是使用多个系统-一个数据湖，几个数据仓库以及其他专用系统，例如流，时间序列，图形和图像数据库。拥有大量系统会带来复杂性，更重要的是会带来延迟，因为数据专业人员始终需要在不同系统之间移动或复制数据。</p>
+<h1 id="2-lakehouse">2. 什么是LakeHouse?</h1>
+<p>解决数据湖限制的新系统开始出现，LakeHouse是一种结合了数据湖和数据仓库优势的新范式。LakeHouse使用新的系统设计：直接在用于数据湖的低成本存储上实现与数据仓库中类似的数据结构和数据管理功能。如果你现在需要重新设计数据仓库，鉴于现在存储（以对象存储的形式）廉价且高可靠，不妨可以使用LakeHouse。</p>
+<p>数据仓库：数仓这样的一种数据存储架构，它主要存储的是以关系型数据库组织起来的结构化数据。数据通过转换、整合以及清理，并导入到目标表中。在数仓中，数据存储的结构与其定义的schema是强匹配的。<br />
+数据湖：数据湖这样的一种数据存储结构，它可以存储任何类型的数据，包括像图片、文档这样的非结构化数据。数据湖通常更大，其存储成本也更为廉价。存储其中的数据不需要满足特定的schema，数据湖也不会尝试去将特定的schema施行其上。相反的是，数据的拥有者通常会在读取数据的时候解析schema（schema-on-read），当处理相应的数据时，将转换施加其上。<br />
+   当初许多的公司往往同时会搭建数仓、数据湖这两种存储架构，一个大的数仓和多个小的数据湖。这样，数据在这两种存储中就会有肯定的冗余。</p>
+<p>Data Lakehouse的出现试图去交融数仓和数据湖这两者之间的差别，通过将数仓构建在数据湖上，使得存储变得更为便宜和弹性，同时lakehouse能够有效地提升数据质量，减小数据冗余。在lakehouse的构建中，ETL起了非常重要的作用，它能够将未经规整的数据湖层数据转换成数仓层结构化的数据。Data Lakehouse概念是由Databricks在此文[1]中提出的，在提出概念的同时，也列出了如下一些特性：</p>
+<p>事务支持：Lakehouse可以处理多条不同的数据管道。这意味着它可以在不破坏数据完整性的前提下支持并发的读写事务。<br />
+模式执行和治理（Schema enforcement and governance）：LakeHouse应该有一种可以支持模式执行和演进、支持DW模式的范式（如star/snowflake-schemas）。该系统应该能够推理数据完整性，并具有健壮的治理和审计机制。<br />
+Schemas：数仓会在所有存储其上的数据上施加Schema，而数据湖则不会。Lakehouse的架构可以根据应用的需求为绝大多数的数据施加schema，使其标准化。<br />
+BI支持：LakeHouse可以直接在源数据上使用BI工具。这样可以提高数据新鲜度，减少等待时间，降低必须同时在数据湖和数据仓库中操作两个数据副本的成本<br />
+存储与计算分离：这意味着存储和计算使用单独的集群，因此这些系统能够支持更多用户并发和更大数据量。一些现代数据仓库也具有此属性。<br />
+报表以及分析应用的支持：报表和分析应用都可以使用这一存储架构。Lakehouse里面所保存的数据经过了清理和整合的过程，它可以用来加速分析。同时相比于数仓，它能够保存更多的数据，数据的时效性也会更高，能显著提升报表的质量。<br />
+数据类型扩展：数仓仅可以支持结构化数据，而Lakehouse的结构可以支持更多不同类型的数据，包括文件、视频、音频和系统日志。<br />
+端到端的流式支持：Lakehouse可以支持流式分析，从而能够满足实时报表的需求，实时报表在现在越来越多的企业中重要性在逐渐提高。<br />
+开放性：Lakehouse在其构建中通常会使Iceberg，Hudi，Delta Lake等组件，首先这些组件是开源开放的，其次这些组件采用了Parquet，ORC这样开放兼容的存储格式作为下层的数据存储格式，因此不同的引擎，不同的语言都可以在Lakehouse上进行操作<br />
+Lakehouse的概念最早是由Databricks所提出的，而其他的类似的产品有Azure Synapse Analytics。Lakehouse技术仍然在发展中，因此上面所述的这些特性也会被不断的修订和改进。</p>
+<h1 id="3">3. 早期示例</h1>
+<p>Databricks平台具有LakeHouse的特性。微软的Azure Synapse Analytics服务与Azure Databricks集成，可实现类似LakeHouse模式，其他托管服务（例如BigQuery和Redshift Spectrum）具有上面列出的一些LakeHouse功能特性，但它们是主要针对BI和其他SQL应用。企业若想构建系统，可参考适合于构建LakeHouse的开源组件（Delta Lake，Apache Iceberg，Apache Hudi）。</p>
+<p>将数据湖和数据仓库合并至一个系统意味着数据团队可以更快地迁移，因为他们无需访问多个系统便可使用数据。在早期的LakeHouse中，SQL与BI工具的集成通常足以满足大多数企业数据仓库的需求。虽然可以使用物化视图和存储过程，但用户可能需要采用其他机制，这些机制与传统数据仓库中的机制不同。后者对于“lift and shift scenarios”尤为重要，“lift and shift scenarios”要求系统所具有的语义与旧的商业数据仓库的语义几乎相同。</p>
+<p>LakeHouse对其他类型数据应用的支持又如何呢？LakeHouse的用户可以使用各种标准工具（Spark，Python，R，机器学习库）来处理如数据科学和机器学习等非BI工作负载。数据探索和加工是许多分析和数据科学应用程序的标准。Delta Lake可以让用户逐步改进LakeHouse的数据质量，直到可以使用为止。 尽管分布式文件系统可以用于存储层，但对象存储在LakeHouse中更为常见。对象存储提供低成本、高可用的存储，在大规模并发读取方面表现出色，这是现代数据仓库的基本要求。</p>
+<h1 id="data-lakehouse">Data lakehouse解决了什么问题</h1>
+<p>这些年来，在许多的公司里，数仓和数据湖一直并存且各自发展着，也没有遇到过太过严重的问题。但是仍有一些领域有值得进步的空间，比如：</p>
+<p>数据重复性：如果一个组织同时维护了一个数据湖和多个数仓，这无疑会带来数据冗余。在最好的情况下，这仅仅只会带来数据处理的不高效，但是在最差的情况下，它会导致数据不一致的情况出现。Data Lakehouse统一了一切，它去除了数据的重复性，真正做到了Single Version of Truth。<br />
+高存储成本：数仓和数据湖都是为了降低数据存储的成本。数仓往往是通过降低冗余，以及整合异构的数据源来做到降低成本。而数据湖则往往使用大数据文件系统（譬如Hadoop HDFS）和Spark在廉价的硬件上存储计算数据。而最为廉价的方式是结合这些技术来降低成本，这就是现在Lakehouse架构的目标。<br />
+报表和分析应用之间的差异：报表分析师们通常倾向于使用整合后的数据，比如数仓或是数据集市。而数据科学家则更倾向于同数据湖打交道，使用各种分析技术来处理未经加工的数据。在一个组织内，往往这两个团队之间没有太多的交集，但实际上他们之间的工作又有一定的重复和矛盾。而当使用Data Lakehouse后，两个团队可以在同一数据架构上进行工作，避免不必要的重复。<br />
+数据停滞（Data stagnation）：在数据湖中，数据停滞是一个最为严重的问题，如果数据一直无人治理，那将很快变为数据沼泽。我们往往轻易的将数据丢入湖中，但缺乏有效的治理，长此以往，数据的时效性变得越来越难追溯。Lakehouse的引入，对于海量数据进行catalog，能够更有效地帮助提升分析数据的时效性。<br />
+潜在不兼容性带来的风险：数据分析仍是一门兴起的技术，新的工具和技术每年仍在不停地出现中。一些技术可能只和数据湖兼容，而另一些则又可能只和数仓兼容。Lakehouse灵活的架构意味着公司可以为未来做两方面的准备。</p>
+<h1 id="data-lakehouse_1">Data Lakehouse存在的问题</h1>
+<p>现有的Lakehouse架构仍存在着一些问题，其中最为显著的是：</p>
+<p>大一统的架构：Lakehouse大一统的架构有许多的优点，但也会引入一些问题。通常，大一统的架构缺乏灵活性，难于维护，同时难以满足所有用户的需求，架构师通常更倾向于使用多模的架构，为不同的场景定制不同的范式。<br />
+并非现有架构上本质的改进：现在对于Lakehouse是否真的能够带来额外的价值仍存在疑问。同时，也有不同的意见 - 将现有的数仓、数据湖结构与合适的工具结合 - 是否会带来类似的效率呢？<br />
+技术尚未成熟：Lakehouse技术当前尚未成熟，在达到上文所提的能力之前仍有较长的路要走。</p>
+<h1 id="biai">从BI到AI</h1>
+<p>LakeHouse是一种新的数据管理范式，从根本上简化了企业数据基础架构，并且有望在机器学习已渗透到每个行业的时代加速创新。过去公司产品或决策中涉及的大多数数据都是来自操作系统的结构化数据，而如今，许多产品都以计算机视觉和语音模型、文本挖掘等形式集成了AI。而为什么要使用LakeHouse而不是数据湖来进行AI？是因为LakeHouse可以提供数据版本控制、治理、安全性和ACID属性，即使对于非结构化数据也是如此。</p>
+<p>当前LakeHouse降低了成本，但它们的性能仍然落后于专门的系统（如数据仓库），但这些系统需要数年的投入和实际部署。同时用户可能会偏爱某些工具（BI tools, IDEs, notebooks），因此LakeHouse也需要改善其UX以及与流行工具的连接器，以便更具吸引力。随着技术的不断成熟和发展，这些问题将得到解决。随着时间推移，LakeHouse将缩小这些差距，同时保留服务各种数据应用的更简单、更具成本效益和更强大的能力的核心属性。</p>
+<h1 id="_1">参考资料</h1>
+<p>https://databricks.com/blog/2020/01/30/what-is-a-data-lakehouse.html<br />
+https://www.jdon.com/54723<br />
+https://blog.csdn.net/wypblog/article/details/110297960</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

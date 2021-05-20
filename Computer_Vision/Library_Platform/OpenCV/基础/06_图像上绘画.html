@@ -1,0 +1,183 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>06_OpenCV--图像上绘画 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Computer_Vision">Computer_Vision</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-OpenCV">OpenCV</a>&nbsp;»&nbsp;<a href="/Wiki/#-基础">基础</a>&nbsp;»&nbsp;06_OpenCV--图像上绘画</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">06_OpenCV--图像上绘画</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 画图</a><ul>
+<li><a href="#11">1.1. 画线</a></li>
+<li><a href="#12">1.2. 画矩形</a></li>
+<li><a href="#13">1.3. 画圆</a></li>
+<li><a href="#14">1.4. 画椭圆</a></li>
+<li><a href="#15">1.5. 画多边形</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 给图像加文字</a></li>
+<li><a href="#3">3. 鼠标画图</a></li>
+</ul>
+</div>
+<h1 id="1">1. 画图</h1>
+<p>用 OpenCV 画不同的几何图形</p>
+<p>你要学习这些函数：<strong>cv.line(), </strong>cv.circle() , cv.rectangle(), cv.ellipse(), cv.putText() 等。</p>
+<p>Code<br />
+上面的这些函数，你能看到一些相同的参数：</p>
+<p>img：你想画的图片</p>
+<p>color：形状的颜色，如 BGR，它是一个元组，例如：蓝色(255,0,0)。对于灰度图，只需传一个标量值。</p>
+<p>thickness： 线或圆等的厚度。如果传 -1 就是像圆的闭合图形，它将填充形状。<em> 默认 thickness = 1</em></p>
+<p>lineType：线条类型，如 8 连接，抗锯齿线等。默认情况下，它是 8 连接。<strong>cv.LINE_AA</strong> 画出抗锯齿线，非常好看的曲线。</p>
+<h2 id="11">1.1. 画线</h2>
+<p>去画一条线，你需要传递线条的开始和结束的坐标。我们将创建一个黑色图像，并在坐上角到右下角画一条蓝色的线</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">cv2</span> <span class="kn">as</span> <span class="nn">cv</span>
+<span class="c"># 创建一个黑色的图像</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">512</span><span class="p">,</span><span class="mi">512</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+
+<span class="c"># 画一条从点1(0,0)到点2(511,511)的 5px 宽的蓝色对角线</span>
+<span class="n">img</span><span class="o">=</span><span class="n">cv</span><span class="o">.</span><span class="n">line</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">pt1</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="n">pt2</span><span class="p">(</span><span class="mi">511</span><span class="p">,</span><span class="mi">511</span><span class="p">),</span><span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="mi">255</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="n">thickness</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="nb">type</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span>
+</pre></div>
+
+
+<h2 id="12">1.2. 画矩形</h2>
+<p>画一个矩形，你需要矩形的左上角和右下角。这次我们将会在图像的右上角画一个绿色的矩形。</p>
+<div class="hlcode"><pre><span class="n">img</span><span class="o">=</span><span class="n">cv</span><span class="o">.</span><span class="n">rectangle</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">pt1</span><span class="o">=</span><span class="p">(</span><span class="mi">384</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="n">pt2</span><span class="o">=</span><span class="p">(</span><span class="mi">510</span><span class="p">,</span><span class="mi">128</span><span class="p">),</span><span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">255</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span><span class="n">thickness</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c"># pt1 为矩形左上角</span>
+<span class="c"># pt2 为矩形右下角</span>
+</pre></div>
+
+
+<h2 id="13">1.3. 画圆</h2>
+<p>画一个圆，你需要它的圆心和半径。我们将在上面绘制的矩形上画一个内圆。</p>
+<div class="hlcode"><pre><span class="n">cv</span><span class="o">.</span><span class="n">circle</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">center</span><span class="o">=</span><span class="p">(</span><span class="mi">447</span><span class="p">,</span><span class="mi">63</span><span class="p">),</span> <span class="n">radius</span><span class="o">=</span><span class="mi">63</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">255</span><span class="p">),</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c"># center 圆心</span>
+<span class="c"># radius 半径</span>
+</pre></div>
+
+
+<h2 id="14">1.4. 画椭圆</h2>
+<p>画一个椭圆，你需要传好几个参数。一个参数是圆心位置 (x,y)。下个参数是轴的长度 (长轴长度，短轴长度)。角度是椭圆在你逆时针方向的旋转角度。startAngle 和 endAngle 表示从长轴顺时针方向测量的椭圆弧的起点和终点。如整圆就传 0 和 360。更多细节请看 cv.ellipse() 的文档。下面是在这个图像中间画的一个半椭圆例子。</p>
+<p>cv.ellipse(img,(256,256),(100,50),0,0,180,255,-1)</p>
+<h2 id="15">1.5. 画多边形</h2>
+<p>画多边形，首先你需要顶点的做坐标。将这些点组成一个形状为 <code>ROWSx1x2</code> 的数组，ROWS 是顶点数，它应该是 int32 类型。这里我们绘制一个顶点是黄色的小多边形。</p>
+<div class="hlcode"><pre><span class="n">pts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">],[</span><span class="mi">20</span><span class="p">,</span><span class="mi">30</span><span class="p">],[</span><span class="mi">70</span><span class="p">,</span><span class="mi">20</span><span class="p">],[</span><span class="mi">50</span><span class="p">,</span><span class="mi">10</span><span class="p">]],</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+<span class="n">pts</span> <span class="o">=</span> <span class="n">pts</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>
+<span class="n">img</span><span class="o">=</span> <span class="n">cv</span><span class="o">.</span><span class="n">polylines</span><span class="p">(</span><span class="n">img</span><span class="p">,</span><span class="n">pts</span><span class="o">=</span><span class="p">[</span><span class="n">pts</span><span class="p">],</span><span class="n">isClosed</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">255</span><span class="p">,</span><span class="mi">255</span><span class="p">))</span>
+
+
+<span class="n">isClosed</span> <span class="p">:</span><span class="err">是否返回闭合形状</span>
+</pre></div>
+
+
+<p>cv.polylines() 能画很多线条。只需创建你想绘制所有线条的列表，然后将其传给这个函数。所有线条都将单独绘制。绘制一组线条比调用 cv.line() 好很多，快很多。</p>
+<h1 id="2">2. 给图像加文字</h1>
+<p>在图像上加文字，你需要指定以下内容：</p>
+<ol>
+<li>你想写的文字数据<code>text</code></li>
+<li>你想写的位置坐标 <code>pt1</code> (如 左上角开始)。</li>
+<li>字体类型 (支持的字体，查看 cv.putText() 文档)</li>
+<li>常规的如颜色，粗细，线型等。为了更好看，线型使用 lintType = cv.LINE_AA</li>
+</ol>
+<div class="hlcode"><pre><span class="n">img</span><span class="o">=</span><span class="n">cv</span><span class="o">.</span><span class="n">putText</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s">&quot;哈哈哈&quot;</span><span class="p">,</span> <span class="n">org</span><span class="p">,</span> <span class="n">fontFace</span><span class="p">,</span> <span class="n">fontScale</span><span class="p">,</span> <span class="n">color</span><span class="p">)</span>
+
+<span class="n">org</span><span class="p">:</span> <span class="err">文本字符串左上角坐标</span>
+<span class="n">img</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">putText</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="p">(</span><span class="mi">123</span><span class="p">,</span><span class="mi">456</span><span class="p">),</span> <span class="n">font</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">255</span><span class="p">,</span><span class="mi">0</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span>
+</pre></div>
+
+
+<h1 id="3">3. 鼠标画图</h1>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

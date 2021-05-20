@@ -1,0 +1,430 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>1.分类问题 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-Scikit-Learn">02-Scikit-Learn</a>&nbsp;»&nbsp;<a href="/Wiki/#-模块分解笔记">模块分解笔记</a>&nbsp;»&nbsp;1.分类问题</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">1.分类问题</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-lr">1. 逻辑回归LR</a></li>
+<li><a href="#2-svm">2. 基于支持向量机(SVM)的分类</a><ul>
+<li><a href="#21-svc">2.1. SVC</a></li>
+<li><a href="#22-nusvc">2.2. NuSVC</a></li>
+<li><a href="#23-linearsvc">2.3. LinearSVC</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 朴素贝叶斯</a><ul>
+<li><a href="#31">3.1. 高斯朴素贝叶斯</a></li>
+<li><a href="#32">3.2. 伯努利朴素贝叶斯</a></li>
+<li><a href="#33">3.3. 多项式分布贝叶斯</a></li>
+</ul>
+</li>
+<li><a href="#4-kknn">4. k近邻分类器（knn）</a></li>
+<li><a href="#5">5. 决策树分类</a><ul>
+<li><a href="#51">5.1. 单一决策树分类器</a></li>
+<li><a href="#52">5.2. 随机森林分类器</a></li>
+</ul>
+</li>
+<li><a href="#6-lda">6. 线性判别分析 LDA</a></li>
+<li><a href="#7">7. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1-lr">1. 逻辑回归LR</h1>
+<p><img alt="" src="/attach/images/2020-03-21-23-22-38.png" /><br />
+LogisticRegression</p>
+<p>已知：<br />
+$$log\frac{p}{1-p}=\theta^Tx$$</p>
+<p>$$Pp=P(y=1|x) ,即输入x预测为正样本的概率$$</p>
+<p>求：<br />
+$$\theta$$</p>
+<div class="hlcode"><pre><span class="n">sklearn</span><span class="o">.</span><span class="n">linear_model</span><span class="o">.</span><span class="n">LogisticRegression</span><span class="p">(</span><span class="n">penalty</span><span class="o">=</span><span class="err">’</span><span class="n">l2</span><span class="err">’</span><span class="p">,</span> <span class="n">dual</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">fit_intercept</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">intercept_scaling</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">class_weight</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="err">’</span><span class="n">warn</span><span class="err">’</span><span class="p">,</span> <span class="n">max_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">multi_class</span><span class="o">=</span><span class="err">’</span><span class="n">warn</span><span class="err">’</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">warm_start</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">l1_ratio</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>参数解释</strong><br />
+1. penalty [defualt='l2'] <br />
+   - <code>l2</code>: l2 正则化<br />
+   - <code>l1</code>,: l1 正则化<br />
+   - <code>elasticnet</code>: elasticnet<br />
+   - <code>none</code>:<br />
+2. dual [defualt=False] <br />
+   - 对偶<br />
+   - 'sag'求解器，默认值为1000<br />
+3. tol [defualt=0.0001] <br />
+   - 误差项</p>
+<ol>
+<li>C [defualt=1] </li>
+<li>正则强度的倒数</li>
+<li>fit_intercept [defualt=True] </li>
+<li>是否添加截距（偏执）</li>
+<li>add bias </li>
+<li>intercept_scaling [defualt=1] </li>
+<li>当使用 liner 解决方案的时候 且 fit_intercept==True 时有效 </li>
+<li>
+<p>solver [default=’liblinear’]<br />
+    优化算法,可选项 <code>liblinear</code>, <code>newton-cg</code>, <code>lbfgs</code>, <code>sag</code> and <code>saga</code></p>
+<ul>
+<li><code>lbfgs</code> 因其有较好鲁棒性 作为 默认的 求解方法</li>
+<li><code>saga</code> 对于大数据集有更快的表现 </li>
+<li></li>
+<li><code>liblinear</code>,坐标下降法，基于<code>C++ LIBLINEAR</code>使用，不适用多分类模型</li>
+<li>
+<p><code>lbfgs”</code>, <code>“sag”</code> and <code>“newton-cg”</code> 在高维数据上更快。</p>
+</li>
+<li>
+<p><code>sag</code> solver uses <strong>Stochastic Average Gradient descent</strong> .  适用于较大数据集合，其求解速度快。</p>
+</li>
+<li>
+<p><code>saga</code> solver  是 <code>sag</code> 的 变体，唯一支持 penalty="elasticnet" 的求解器。</p>
+</li>
+<li>
+<p><code>lbfgs</code>  <strong>Broyden–Fletcher–Goldfarb–Shanno</strong> 算法（属于quasi-Newton methods），适合小数据集。</p>
+</li>
+<li>
+<p>至于更大的数据集，推荐试试 <code>sklearn.SGDClassifier</code> 分类器使用 log-loss ，这样将更加快速。</p>
+</li>
+<li>max_iter ： [defualt=100] </li>
+<li>求解程序收敛所需的最大迭代次数</li>
+<li>multi_class:</li>
+<li>Setting <code>multi_class</code> to <code>“multinomial”</code> with these solvers learns a true multinomial </li>
+</ul>
+</li>
+</ol>
+<h1 id="2-svm">2. 基于支持向量机(SVM)的分类</h1>
+<p><img alt="" src="/attach/images/2020-03-21-23-05-01.png" /></p>
+<p>scikit-learn SVM算法库封装了<code>libsvm</code>（开源库：<a href="https://www.csie.ntu.edu.tw/~cjlin/libsvm/">官方网站</a>） 和 <code>liblinear</code>的实现，仅仅重写了算法了接口部分。<br />
+其中支持向量机(SVM)对于分类问题有3个分类器：<br />
+1. SVC<br />
+2. NuSVC<br />
+3. LinearSVC</p>
+<blockquote>
+<p>Note<br />
+- LIBSVM and LIBLINEAR are two popular open source machine learning libraries, both developed at the <code>National Taiwan University</code> and both written in <code>C++</code> though with a C API</p>
+</blockquote>
+<h2 id="21-svc">2.1. SVC</h2>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <span class="n">SVC</span>
+<span class="n">scv</span><span class="o">=</span><span class="n">SVC</span><span class="p">(</span>
+    <span class="n">C</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="n">kernel</span><span class="o">=</span><span class="s">&#39;rbf&#39;</span><span class="p">,</span>
+    <span class="n">degree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+    <span class="n">gamma</span><span class="o">=</span><span class="s">&#39;auto_deprecated&#39;</span><span class="p">,</span>
+    <span class="n">coef0</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">shrinking</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">probability</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">tol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+    <span class="n">cache_size</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+    <span class="n">class_weight</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">max_iter</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">decision_function_shape</span><span class="o">=</span><span class="s">&#39;ovr&#39;</span><span class="p">,</span>
+    <span class="n">random_state</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<p><strong>参数说明</strong><br />
+- <code>C</code>[defualt=1.0] 惩罚系数<br />
+    SVM分类模型原型形式和对偶形式中的惩罚系数C，默认为1，一般需要通过交叉验证来选择一个合适的C。一般来说，如果噪音点较多时，C需要小一些。<br />
+- <code>kernel</code>[defualt="rbf"] 核函数<br />
+    核函数有四种内置选择，不同核函数有不同的参数需要调整：<br />
+    1. <code>linear</code>即线性核函数, <br />
+    2. <code>poly</code>即多项式核函数, <br />
+    3. <code>rbf</code>即高斯核函数, <br />
+    4. <code>sigmoid</code>即sigmoid核函数</p>
+<p>如果选择了这些核函数， 对应的核函数参数在后面有单独的参数需要调。<br />
+- <code>degree</code>[defualt=3],<code>ploy</code> 核函数的深度<br />
+    只对<code>ploy</code>核函数有效，对应d。<br />
+    $$K(x,z)=(γ·x·z+r)dK(x,z)=(γ · x · z+r)d$$<br />
+- <code>gamma</code>[defualt='auto'=1/number−features]<br />
+<code>poly</code>多项式核函数中这个参数对应:γ,<br />
+$$K(x,z)=(γx∙z+r)dK(x,z)=(γx∙z+r)d$$<br />
+    高斯核函数中这个参数对应γ:<br />
+$$K(x,z)=exp(γ||x−z||2)K(x,z)=exp(γ||x−z||2)$$<br />
+    sigmoid核函数中这个参数对应γ<br />
+$$K(x,z)=tanh(γx∙z+r)K(x,z)=tanh(γx∙z+r)$$</p>
+<div class="hlcode"><pre><span class="err">默认为&#39;`</span><span class="k">auto</span><span class="err">`&#39;</span><span class="p">,</span><span class="err">即</span><span class="o">=</span><span class="err">`</span><span class="mi">1</span><span class="o">/</span><span class="n">number</span><span class="err">−</span><span class="n">features</span><span class="err">`</span>
+</pre></div>
+
+
+<ul>
+<li>
+<p><code>coef0</code>[defualt=0]<br />
+    多项式核函数中这个参数对应r<br />
+$$K(x,z)=(γx∙z+r)dK(x,z)=(γx∙z+r)d$$</p>
+<p>sigmoid核函数中这个参数对应r<br />
+$$K(x,z)=tanh(γx∙z+r)K(x,z)=tanh(γx∙z+r)$$</p>
+</li>
+<li>
+<p><code>class_weight</code>[defualt="None"]样本权重</p>
+<ol>
+<li><code>balanced</code>，算法会自己计算权重，样本量少的类别所对应的样本权重会高。</li>
+<li><code>None</code>,如果你的样本类别分布没有明显的偏倚，则可以不管这个参数，选择默认的<code>None</code><br />
+指定样本各类别的的权重，主要是为了防止训练集某些类别的样本过多，导致训练的决策过于偏向这些类别。这里可以自己指定各个样本的权重，或者用<code>balanced</code>。</li>
+</ol>
+</li>
+<li>
+<p><code>decision_function_shape</code>[default='ovr'] 分类决策函数类型</p>
+<ol>
+<li>'<code>ovo</code>', 返回original<br />
+one-vs-one ('ovo') decision function of <code>libsvm</code> which has shape<br />
+(n_samples, n_classes * (n_classes - 1) / 2) 通常用于多分类问题，速度慢，一般用ovo</li>
+<li>'<code>ovr</code>', 返回一个one-vs-rest ('ovr') decision function of shape<br />
+(n_samples, n_classes) as all other classifiers。相对简单，但分类效果相对略差，速度快。<br />
+Whether to return a , or the . However, one-vs-one<br />
+('ovo') is always used as multi-class strategy.</li>
+</ol>
+</li>
+<li>
+<p><code>cache_size</code>[defualt=200] 缓存大小<br />
+    LinearSVC计算量不大，因此不需要这个参数在大样本的时候，缓存大小会影响训练速度，因此如果机器内存大，推荐用500MB甚至1000MB。默认是200MB。</p>
+</li>
+</ul>
+<h2 id="22-nusvc">2.2. NuSVC</h2>
+<p>与SVC 一样，使用<code>libsvm</code>进行开发的<br />
+Similar to SVC but uses a parameter to <strong>control the number of support vectors</strong>.<br />
+控制支持向量的数量</p>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="kn">import</span> <span class="n">NuSVC</span>
+
+<span class="n">nusvc</span><span class="o">=</span><span class="n">NuSVC</span><span class="p">(</span>
+    <span class="n">cache_size</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span> 
+    <span class="n">class_weight</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> 
+    <span class="n">coef0</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">decision_function_shape</span><span class="o">=</span><span class="s">&#39;ovr&#39;</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> 
+    <span class="n">gamma</span><span class="o">=</span><span class="s">&#39;auto_deprecated&#39;</span><span class="p">,</span>
+    <span class="n">kernel</span><span class="o">=</span><span class="s">&#39;rbf&#39;</span><span class="p">,</span> 
+    <span class="n">max_iter</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> 
+    <span class="n">nu</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> 
+    <span class="n">probability</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> 
+    <span class="n">random_state</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+    <span class="n">shrinking</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> 
+    <span class="n">tol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>参数说明</strong><br />
+- <code>nu</code> An upper bound on the fraction of training errors and a lower bound of the fraction of support vectors. Should be in the interval (0, 1].</p>
+<h2 id="23-linearsvc">2.3. LinearSVC</h2>
+<p>LinearSVC 是线性分类，也就是不支持各种低维到高维的核函数，仅仅支持线性核函数，对线性不可分的数据不能使用。<br />
+- <code>multi_class</code> 分类决策<br />
+    可以选择 <code>ovr</code> 或者 <code>crammer_singer</code> <code>ovr</code>和SVC和nuSVC中的decision_function_shape对应的<code>ovr</code>类似。'crammer_singer'是一种改良版的'ovr'，说是改良，但是没有比<code>ovr</code>好，一般在应用中都不建议使用。</p>
+<h1 id="3">3. 朴素贝叶斯</h1>
+<p><img alt="" src="/attach/images/2020-03-21-23-24-44.png" /></p>
+<p>朴素贝叶斯是基于贝叶斯定理的一组有监督学习算法，即“简单”地<strong>假设每对特征之间相互独立</strong>。</p>
+<p>另一方面，尽管朴素贝叶斯被认为是一种相当不错的分类器，但却不是好的估计器(estimator)，所以不能太过于重视从 predict_proba 输出的概率。</p>
+<p>朴素贝叶斯一共有三种方法，分别是：<br />
+1. 高斯朴素贝叶斯<br />
+2. 多项式分布贝叶斯<br />
+3. 伯努利朴素贝叶斯</p>
+<ul>
+<li>
+<p>如果样本特征的分布大部分是<code>连续值</code>，使用<strong>高斯朴素贝叶斯GaussianNB</strong>会比较好。</p>
+</li>
+<li>
+<p>如果如果样本特征的分大部分是<code>多元离散值</code>，使用<strong>多项式分布贝叶斯MultinomialNB</strong>比较合适。</p>
+</li>
+<li>
+<p>如果样本特征是<code>二元离散值</code>或者<code>很稀疏的多元离散值</code>，应该使用<strong>伯努利朴素贝叶斯BernoulliNB</strong>。</p>
+</li>
+</ul>
+<h2 id="31">3.1. 高斯朴素贝叶斯</h2>
+<p><img alt="" src="/attach/images/2020-03-23-10-51-03.png" /></p>
+<p>高斯朴素贝叶斯算法是<strong>假设特征的可能性</strong>(即概率)为<code>高斯分布</code>。<br />
+根据样本$D(x_i)$算出均值$\mu$和方差$\sigma$，再求得概率。<br />
+$$P(x_i|y)=\frac{1}{\sqrt{2\pi\sigma^2}}exp{(-\frac{x_i-\mu^2}{2\sigma^2})}$$<br />
+参数 $\sigma_y$ 和 $\mu_y$ 使用最大似然法估计。</p>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">sklearn.naive_bayes</span> <span class="kn">import</span> <span class="n">GaussianNB</span>
+<span class="n">gnb</span> <span class="o">=</span> <span class="n">GaussianNB</span><span class="p">(</span><span class="n">priors</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>参数说明</strong><br />
+<code>priors</code>:先验概率大小，如果没有给定，模型则根据样本数据自己计算（利用极大似然法）。</p>
+<h2 id="32">3.2. 伯努利朴素贝叶斯</h2>
+<p><img alt="" src="/attach/images/2020-03-23-10-53-39.png" /><br />
+<img alt="" src="/attach/images/2020-03-23-10-54-18.png" /></p>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">sklearn</span><span class="o">.</span><span class="n">naive_bayes</span><span class="o">.</span><span class="n">BernoulliNB</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">binarize</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">fit_prior</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">class_prior</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>参数说明</strong><br />
+<code>alpha</code>:平滑因子，与多项式中的alpha一致。</p>
+<p><code>binarize</code>:样本特征二值化的阈值，默认是0。如果不输入，则模型会认为所有特征都已经是二值化形式了；如果输入具体的值，则模型会把大于该值的部分归为一类，小于的归为另一类。</p>
+<p><code>fit_prior</code>:是否去学习类的先验概率，默认是True</p>
+<p><code>class_prior</code>:各个类别的先验概率，如果没有指定，则模型会根据数据自动学习， 每个类别的先验概率相同，等于类标记总个数N分之一。</p>
+<h2 id="33">3.3. 多项式分布贝叶斯</h2>
+<p><img alt="" src="/attach/images/2020-03-23-11-10-20.png" /></p>
+<p>多项式分布（Multinomial Distribution）是二项式分布的推广，二项分布是随机结果值只有<strong>两个(投硬币的结果-正反面--2种)</strong>，多项式分布是指随机结果值有多个(<strong>摇骰子的结果-6种</strong>)。</p>
+<div class="hlcode"><pre><span class="c"># 多项分布朴素贝叶斯</span>
+<span class="kn">from</span> <span class="nn">sklearn</span> <span class="kn">import</span> <span class="n">datasets</span>
+<span class="n">iris</span> <span class="o">=</span> <span class="n">datasets</span><span class="o">.</span><span class="n">load_iris</span><span class="p">()</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.naive_bayes</span> <span class="kn">import</span> <span class="n">MultinomialNB</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">MultinomialNB</span><span class="p">()</span>
+<span class="n">clf</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">iris</span><span class="o">.</span><span class="n">target</span><span class="p">)</span>
+<span class="n">y_pred</span><span class="o">=</span><span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;多项分布朴素贝叶斯，样本总数： </span><span class="si">%d</span><span class="s"> 错误样本数 : </span><span class="si">%d</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">iris</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],(</span><span class="n">iris</span><span class="o">.</span><span class="n">target</span> <span class="o">!=</span> <span class="n">y_pred</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()))</span>
+</pre></div>
+
+
+<h1 id="4-kknn">4. k近邻分类器（knn）</h1>
+<p><img alt="" src="/attach/images/2020-03-21-23-09-54.png" /></p>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">sklearn.neighbors</span> <span class="kn">import</span> <span class="n">KNeighborsClassifier</span>
+
+<span class="n">KNeighborsClassifier</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="s">&#39;uniform&#39;</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s">&#39;auto&#39;</span><span class="p">,</span> <span class="n">leaf_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s">&#39;minkowski&#39;</span><span class="p">,</span> <span class="n">metric_params</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>参数解释</strong><br />
+- <code>n_neighbors</code>:k 近邻 的k <br />
+- <code>weights</code>: 权重<br />
+- <code>algorithm</code>: 如何找到最近的k个邻居--计算的算法 ，可选项为 <code>‘auto’</code>, <code>‘ball_tree’</code>, <code>‘kd_tree’</code>, <code>‘brute’</code></p>
+<div class="hlcode"><pre><span class="o">-</span> <span class="err">`</span><span class="n">ball_tree</span><span class="err">`</span><span class="o">:</span> <span class="err">构建</span> <span class="n">BallTree</span>
+  <span class="o">-</span> <span class="err">通过这种方法构建的树要比</span> <span class="n">KD</span> <span class="err">树消耗更多的时间</span><span class="p">,</span> <span class="err">但是这种数据结构对于高结构化的数据是非常有效的</span><span class="p">,</span> <span class="err">即使在高维度上也是一样</span><span class="p">.</span>
+<span class="o">-</span> <span class="err">`</span><span class="n">kd_tree</span><span class="err">`</span><span class="o">:</span><span class="err">构建</span> <span class="n">KD</span><span class="err">树。</span>
+  <span class="o">-</span> <span class="err">虽然</span> <span class="n">KD</span> <span class="err">树的方法对于低维度</span> <span class="p">(</span><span class="n">D</span> <span class="o">&lt;</span> <span class="mi">20</span><span class="p">)</span> <span class="err">近邻搜索非常快</span><span class="p">,</span> <span class="err">当</span> <span class="n">D</span> <span class="err">增长到很大时</span><span class="p">,</span> <span class="err">效率变低</span><span class="o">:</span> <span class="err">这就是所谓的</span> <span class="err">“维度灾难”</span> <span class="err">的一种体现。</span>
+<span class="o">-</span> <span class="err">`</span><span class="n">brute</span><span class="err">`</span><span class="o">:</span> <span class="err">暴力搜索</span>
+<span class="o">-</span> <span class="err">`</span><span class="k">auto</span><span class="err">`</span> <span class="n">will</span> <span class="n">attempt</span> <span class="n">to</span> <span class="n">decide</span> <span class="n">the</span> <span class="n">most</span> <span class="n">appropriate</span> <span class="n">algorithm</span> <span class="n">based</span> <span class="n">on</span> <span class="n">the</span> <span class="n">values</span> <span class="n">passed</span> <span class="n">to</span> <span class="n">fit</span> <span class="n">method</span><span class="p">.</span>
+</pre></div>
+
+
+<ul>
+<li>
+<p><code>leaf_sizeint</code>, optional (default = 30) 争对KD树和BallTree 树</p>
+</li>
+<li>
+<p><code>metric</code> string or callable, default ‘minkowski’ 明科夫斯基距离 </p>
+</li>
+<li>
+<p><code>pinteger</code>, optional (default = 2) p值 ，明科夫斯基距离的平方</p>
+</li>
+<li>
+<p><code>n_jobs</code>[Defualt=None]:计算使用的线程数量None means 1 ,-1 ==core of cups</p>
+</li>
+</ul>
+<h1 id="5">5. 决策树分类</h1>
+<h2 id="51">5.1. 单一决策树分类器</h2>
+<p><img alt="" src="/attach/images/2020-03-21-23-04-30.png" /><br />
+Decision Tree Classifiers/Random Forests</p>
+<div class="hlcode"><pre><span class="n">sklearn</span><span class="o">.</span><span class="n">tree</span><span class="o">.</span><span class="n">DecisionTreeClassifier</span><span class="p">(</span><span class="n">criterion</span><span class="o">=</span><span class="s">&#39;gini&#39;</span><span class="p">,</span> <span class="n">splitter</span><span class="o">=</span><span class="s">&#39;best&#39;</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">min_samples_split</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">min_weight_fraction_leaf</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">max_features</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">max_leaf_nodes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">min_impurity_decrease</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">min_impurity_split</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">class_weight</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">presort</span><span class="o">=</span><span class="s">&#39;deprecated&#39;</span><span class="p">,</span> <span class="n">ccp_alpha</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>参数说明</strong></p>
+<p><code>criterion</code>:{“gini”, “entropy”}, default=”gini”</p>
+<p><code _best_="“best”," _random_="“random”">splitter</code>, default=”best”</p>
+<h2 id="52">5.2. 随机森林分类器</h2>
+<div class="hlcode"><pre><span class="n">sklearn</span><span class="o">.</span><span class="n">ensemble</span><span class="o">.</span><span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">criterion</span><span class="o">=</span><span class="s">&#39;gini&#39;</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">min_samples_split</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">min_weight_fraction_leaf</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">max_features</span><span class="o">=</span><span class="s">&#39;auto&#39;</span><span class="p">,</span> <span class="n">max_leaf_nodes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">min_impurity_decrease</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">min_impurity_split</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">bootstrap</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">oob_score</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">warm_start</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">class_weight</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ccp_alpha</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">max_samples</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>参数说明</strong> <br />
+<code>n_estimators</code>=100, <br />
+<code>criterion</code>='gini'</p>
+<p>参考资料：<a href="https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html">官方文档</a></p>
+<h1 id="6-lda">6. 线性判别分析 LDA</h1>
+<p><img alt="" src="/attach/images/2020-03-21-23-03-32.png" /></p>
+<p>最大类间间距，最小类内间距</p>
+<div class="hlcode"><pre><span class="n">sklearn</span><span class="o">.</span><span class="n">discriminant_analysis</span><span class="o">.</span><span class="n">LinearDiscriminantAnalysis</span><span class="p">(</span><span class="n">solver</span><span class="o">=</span><span class="s">&#39;svd&#39;</span><span class="p">,</span> <span class="n">shrinkage</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">priors</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n_components</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">store_covariance</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">0.0001</span><span class="p">)[</span><span class="n">source</span><span class="p">]</span>
+</pre></div>
+
+
+<p><strong>参数说明</strong> </p>
+<p><code>solver</code> <br />
+- 默认solver为<code>svd</code>。</p>
+<ul>
+<li><code>svd</code> 奇异值分解，它既能进行分类又能进行降维，不依赖于协方差矩阵的计算。在功能数量众多的情况下，这可能是一个优势。但是，“svd” solver不能用于shrinkage 。</li>
+<li><code>lsqr</code> 最小二乘法 solver 是一种有效的算法，只适用于分类。它支持shrinkage ，支持特征缩放（L2/L1 正则化） </li>
+<li><code>eigen</code> 特征值分解，它可以被用于 classification （分类）以及 transform （转换），可以用fit_transform()方法，可以降维。solver需要计算协方差矩阵，因此它可能不适合具有大量特征的, 支持特征缩放（L2/L1 正则化） </li>
+</ul>
+<h1 id="7">7. 参考资料</h1>
+<p><a href="https://datascience.stackexchange.com/questions/51813/what-are-the-differences-between-svc-nusvc-and-linearsvc">What are the differences between SVC, NuSVC, and LinearSVC?</a></p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

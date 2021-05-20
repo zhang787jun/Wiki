@@ -1,0 +1,469 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>k8s 理论 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Virtualization_and_Cloud_Computing">Virtualization_and_Cloud_Computing</a>&nbsp;»&nbsp;<a href="/Wiki/#-3. Kubernetes容器集群管理">3. Kubernetes容器集群管理</a>&nbsp;»&nbsp;<a href="/Wiki/#-1. Kubernetes基础、原理及原生组件">1. Kubernetes基础、原理及原生组件</a>&nbsp;»&nbsp;k8s 理论</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">k8s 理论</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-kubernetes">1. Kubernetes 的版本号</a><ul>
+<li><a href="#11">1.1. 组件版本号</a><ul>
+<li><a href="#111-api">1.1.1. api 版本号</a></li>
+<li><a href="#112-kubectl">1.1.2. kubectl 版本号</a></li>
+<li><a href="#113-kubelet">1.1.3. kubelet 版本号</a></li>
+<li><a href="#114-kubeadm">1.1.4. kubeadm 版本号</a></li>
+</ul>
+</li>
+<li><a href="#12-kubernetesdocker">1.2. Kubernetes与Docker版本对应</a></li>
+<li><a href="#13">1.3. 实践中如何管理版本</a></li>
+</ul>
+</li>
+<li><a href="#2-kubernetes-objects">2. Kubernetes Objects 对象</a><ul>
+<li><a href="#21-deployment">2.1. Deployment</a></li>
+<li><a href="#22-service">2.2. Service</a></li>
+<li><a href="#23-namespace">2.3. Namespace</a><ul>
+<li><a href="#231-kubernetes-namespace">2.3.1. kubernetes 中的Namespace</a></li>
+</ul>
+</li>
+<li><a href="#24-pod">2.4. pod</a></li>
+</ul>
+</li>
+<li><a href="#4">4. 容器镜像</a><ul>
+<li><a href="#41">4.1. 镜像拉取策略</a></li>
+<li><a href="#42">4.2. 镜像仓库</a></li>
+</ul>
+</li>
+<li><a href="#5">5. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1-kubernetes">1. Kubernetes 的版本号</h1>
+<p>Kubernetes版本表示为<code>x.y.z</code>，其中x是主要版本，y是次要版本，z是补丁版本，遵循语义版本控制术语。</p>
+<p>github 里面的<a href="">kubernetes 项目</a>主要存在3类分支(branch)，分别为</p>
+<div class="hlcode"><pre><span class="mf">1.</span> <span class="n">master</span> 
+<span class="mf">2.</span> <span class="n">release</span><span class="o">-</span><span class="n">X</span><span class="p">.</span><span class="n">Y</span>
+<span class="mf">3.</span> <span class="n">release</span><span class="o">-</span><span class="n">X</span><span class="p">.</span><span class="n">Y</span><span class="p">.</span><span class="n">Z</span>
+</pre></div>
+
+
+<p>master分支上的代码是最新的，每隔2周会生成一个发布版本(release)，由新到旧以此为：</p>
+<p><strong>master</strong>: [alpha--&gt;beta--&gt;Final release]</p>
+<p>这当中存在一些cherry picking的规则，也就是说从一个分支上挑选一些必要pull request应用到另一个分支上。</p>
+<p>我们可以认为X.Y.0为稳定的版本，这个版本号意味着一个<strong>Final release</strong>。一个X.Y.0版本会在X.(Y-1).0版本的3到4个月后出现。</p>
+<p>release-X.Y.Z为经过cherrypick后解决了必须的安全性漏洞、以及影响大量用户的无法解决的问题的补丁版本。</p>
+<p>总体而言，我们一般关心X.Y.0(稳定版本)，和X.Y.Z(补丁版本)的特性。例子:</p>
+<div class="hlcode"><pre><span class="n">v1</span><span class="mf">.14.0</span>
+<span class="o">:</span> <span class="mi">1</span><span class="err">为主要版本</span>
+<span class="o">:</span> <span class="mi">14</span><span class="err">为次要版本</span>
+<span class="o">:</span> <span class="mi">0</span><span class="err">为补丁版本</span>
+</pre></div>
+
+
+<p>每个版本的支持时期<br />
+Kubernetes项目维护最新三个次要版本的发布分支。结合上述一个X.Y.0版本会在X.(Y-1).0版本的3到4个月后出现的描述，也就是说1年前的版本就不再维护，每个次要版本的维护周期为9~12个月，就算有安全漏洞也不会有补丁版本。</p>
+<h2 id="11">1.1. 组件版本号</h2>
+<p>kubernetes在很多场合都会看到版本号，我们先梳理一下有哪些版本号。</p>
+<p><code>XXX --version</code><br />
+每个组件有<code>--version</code>参数，这时输出本组件的版本号。</p>
+<h3 id="111-api">1.1.1. api 版本号</h3>
+<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">api</span><span class="o">-</span><span class="n">versions</span>
+</pre></div>
+
+
+<p><strong>各种apiVersion的含义</strong></p>
+<ul>
+<li>alpha</li>
+<li>该软件可能包含错误。启用一个功能可能会导致bug</li>
+<li>随时可能会丢弃对该功能的支持，恕不另行通知</li>
+<li>beta</li>
+<li>软件经过很好的测试。启用功能被认为是安全的。</li>
+<li>默认情况下功能是开启的</li>
+<li>细节可能会改变，但功能在后续版本不会被删除</li>
+<li>stable</li>
+<li>该版本名称命名方式：vX这里X是一个整数</li>
+<li>稳定版本、放心使用</li>
+<li>将出现在后续发布的软件版本中</li>
+<li>v1</li>
+<li>
+<p>Kubernetes API的稳定版本，包含很多核心对象：pod、service等</p>
+</li>
+<li>
+<p>apps/v1beta2</p>
+</li>
+<li>在kubernetes1.8版本中，新增加了apps/v1beta2的概念，apps/v1beta1同理<br />
+  DaemonSet，Deployment，ReplicaSet 和 StatefulSet的当时版本迁入apps/v1beta2，兼容原有的extensions/v1beta1</li>
+<li>apps/v1</li>
+<li>在kubernetes1.9版本中，引入<code>apps/v1</code>，deployment等资源从 extensions/v1beta1, apps/v1beta1 和 apps/v1beta2迁入apps/v1，原来的v1beta1等被废弃。</li>
+<li>apps/v1代表：包含一些通用的应用层的api组合，如：Deployments, RollingUpdates, and ReplicaSets</li>
+<li>batch/v1*</li>
+<li>代表job相关的api组合在kubernetes1.8版本中，新增了batch/v1beta1，后CronJob 已经迁移到了 batch/v1beta1，然后再迁入batch/v1</li>
+<li>autoscaling/v1</li>
+<li>代表自动扩缩容的api组合，kubernetes1.8版本中引入。这个组合中后续的alpha 和 beta版本将支持基于memory使用量、其他监控指标进行扩缩容</li>
+<li>extensions/v1beta1</li>
+<li>
+<p>deployment等资源在1.6版本时放在这个版本中，后迁入到apps/v1beta2,再到apps/v1中统一管理</p>
+</li>
+<li>
+<p>certificates.k8s.io/v1beta1</p>
+</li>
+<li>
+<p>安全认证相关的api组合</p>
+</li>
+<li>
+<p>authentication.k8s.io/v1</p>
+</li>
+<li>资源鉴权相关的api组合</li>
+</ul>
+<h3 id="112-kubectl">1.1.2. kubectl 版本号</h3>
+<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">version</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">Client</span> <span class="n">Version</span><span class="o">:</span> <span class="n">version</span><span class="p">.</span><span class="n">Info</span><span class="p">{</span><span class="n">Major</span><span class="o">:</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">Minor</span><span class="o">:</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">GitVersion</span><span class="o">:</span><span class="s">&quot;v0.0.0-master+$Format:%h$&quot;</span><span class="p">,</span> <span class="n">GitCommit</span><span class="o">:</span><span class="s">&quot;$Format:%H$&quot;</span><span class="p">,</span> <span class="n">GitTreeState</span><span class="o">:</span><span class="s">&quot;&quot;</span><span class="p">,</span> <span class="n">BuildDate</span><span class="o">:</span><span class="s">&quot;1970-01-01T00:00:00Z&quot;</span><span class="p">,</span> <span class="n">GoVersion</span><span class="o">:</span><span class="s">&quot;go1.12.9&quot;</span><span class="p">,</span> <span class="n">Compiler</span><span class="o">:</span><span class="s">&quot;gc&quot;</span><span class="p">,</span> <span class="n">Platform</span><span class="o">:</span><span class="s">&quot;linux/amd64&quot;</span><span class="p">}</span>
+<span class="n">Server</span> <span class="n">Version</span><span class="o">:</span> <span class="n">version</span><span class="p">.</span><span class="n">Info</span><span class="p">{</span><span class="n">Major</span><span class="o">:</span><span class="s">&quot;1&quot;</span><span class="p">,</span> <span class="n">Minor</span><span class="o">:</span><span class="s">&quot;17+&quot;</span><span class="p">,</span> <span class="n">GitVersion</span><span class="o">:</span><span class="s">&quot;v1.17.0-alpha.3.227+7d13dfe3c34f44-dirty&quot;</span><span class="p">,</span> <span class="n">GitCommit</span><span class="o">:</span><span class="s">&quot;7d13dfe3c34f44ff505afe397c7b05fe6e5414ed&quot;</span><span class="p">,</span> <span class="n">GitTreeState</span><span class="o">:</span><span class="s">&quot;dirty&quot;</span><span class="p">,</span> <span class="n">BuildDate</span><span class="o">:</span><span class="s">&quot;2019-11-18T14:42:24Z&quot;</span><span class="p">,</span> <span class="n">GoVersion</span><span class="o">:</span><span class="s">&quot;go1.12.9&quot;</span><span class="p">,</span> <span class="n">Compiler</span><span class="o">:</span><span class="s">&quot;gc&quot;</span><span class="p">,</span> <span class="n">Platform</span><span class="o">:</span><span class="s">&quot;linux/amd64&quot;</span><span class="p">}</span>
+
+<span class="cp"># Client Version即kubectl的版本号，</span>
+<span class="cp"># Server Version即apiserver的版本号。</span>
+</pre></div>
+
+
+<h3 id="113-kubelet">1.1.3. kubelet 版本号</h3>
+<div class="hlcode"><pre><span class="nx">kubectl</span> <span class="nb">version</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="nx">Client</span> <span class="nb">Version</span><span class="p">:</span> <span class="nx">version.Info</span><span class="p">{</span><span class="nx">Major</span><span class="p">:</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="nx">Minor</span><span class="p">:</span><span class="s2">&quot;17&quot;</span><span class="p">,</span> <span class="nx">GitVersion</span><span class="p">:</span><span class="s2">&quot;v1.17.0&quot;</span><span class="p">,</span> <span class="nx">GitCommit</span><span class="p">:</span><span class="s2">&quot;70132b0f130acc0bed193d9ba59dd186f0e634cf&quot;</span><span class="p">,</span> <span class="nx">GitTreeState</span><span class="p">:</span><span class="s2">&quot;clean&quot;</span><span class="p">,</span> <span class="nx">BuildDate</span><span class="p">:</span><span class="s2">&quot;2019-12-07T21:20:10Z&quot;</span><span class="p">,</span> <span class="nx">GoVersion</span><span class="p">:</span><span class="s2">&quot;go1.13.4&quot;</span><span class="p">,</span> <span class="nx">Compiler</span><span class="p">:</span><span class="s2">&quot;gc&quot;</span><span class="p">,</span> <span class="nx">Platform</span><span class="p">:</span><span class="s2">&quot;linux/amd64&quot;</span><span class="p">}</span>
+<span class="nx">Server</span> <span class="nb">Version</span><span class="p">:</span> <span class="nx">version.Info</span><span class="p">{</span><span class="nx">Major</span><span class="p">:</span><span class="s2">&quot;1&quot;</span><span class="p">,</span> <span class="nx">Minor</span><span class="p">:</span><span class="s2">&quot;17&quot;</span><span class="p">,</span> <span class="nx">GitVersion</span><span class="p">:</span><span class="s2">&quot;v1.17.0&quot;</span><span class="p">,</span> <span class="nx">GitCommit</span><span class="p">:</span><span class="s2">&quot;70132b0f130acc0bed193d9ba59dd186f0e634cf&quot;</span><span class="p">,</span> <span class="nx">GitTreeState</span><span class="p">:</span><span class="s2">&quot;clean&quot;</span><span class="p">,</span> <span class="nx">BuildDate</span><span class="p">:</span><span class="s2">&quot;2019-12-07T21:12:17Z&quot;</span><span class="p">,</span> <span class="nx">GoVersion</span><span class="p">:</span><span class="s2">&quot;go1.13.4&quot;</span><span class="p">,</span> <span class="nx">Compiler</span><span class="p">:</span><span class="s2">&quot;gc&quot;</span><span class="p">,</span> <span class="nx">Platform</span><span class="p">:</span><span class="s2">&quot;linux/amd64&quot;</span><span class="p">}</span>
+
+<span class="nx">kubectl</span> <span class="nb">get</span> <span class="nx">nodes</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="nb">NAME</span>          <span class="nb">STATUS</span>   <span class="nx">ROLES</span>    <span class="nx">AGE</span>   <span class="nb">VERSION</span>
+<span class="mf">10.10.10.15</span>   <span class="nb">Ready</span>    <span class="o">&lt;</span><span class="kc">none</span><span class="o">&gt;</span>   <span class="mi">12</span><span class="nb">d</span>   <span class="nx">v1.17.0</span><span class="na">-alpha.3.227</span><span class="o">+</span><span class="mi">7</span><span class="nx">d13dfe3c34f44</span><span class="na">-dirty</span>
+<span class="mf">10.10.10.16</span>   <span class="nb">Ready</span>    <span class="o">&lt;</span><span class="kc">none</span><span class="o">&gt;</span>   <span class="mi">11</span><span class="nb">d</span>   <span class="nx">v1.17.0</span><span class="na">-alpha.3.227</span><span class="o">+</span><span class="mi">7</span><span class="nx">d13dfe3c34f44</span><span class="na">-dirty</span>
+<span class="err">#</span> <span class="nx">此处的版本号为kubelet的版本号</span><span class="err">。</span>
+</pre></div>
+
+
+<h3 id="114-kubeadm">1.1.4. kubeadm 版本号</h3>
+<div class="hlcode"><pre><span class="n">kubeadm</span> <span class="n">version</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">kubeadm</span> <span class="n">version</span><span class="o">:</span> <span class="o">&amp;</span><span class="n">version</span><span class="p">.</span><span class="n">Info</span><span class="p">{</span><span class="n">Major</span><span class="o">:</span><span class="s">&quot;1&quot;</span><span class="p">,</span> <span class="n">Minor</span><span class="o">:</span><span class="s">&quot;17&quot;</span><span class="p">,</span> <span class="n">GitVersion</span><span class="o">:</span><span class="s">&quot;v1.17.0&quot;</span><span class="p">,</span> <span class="n">GitCommit</span><span class="o">:</span><span class="s">&quot;70132b0f130acc0bed193d9ba59dd186f0e634cf&quot;</span><span class="p">,</span> <span class="n">GitTreeState</span><span class="o">:</span><span class="s">&quot;clean&quot;</span><span class="p">,</span> <span class="n">BuildDate</span><span class="o">:</span><span class="s">&quot;2019-12-07T21:17:50Z&quot;</span><span class="p">,</span> <span class="n">GoVersion</span><span class="o">:</span><span class="s">&quot;go1.13.4&quot;</span><span class="p">,</span> <span class="n">Compiler</span><span class="o">:</span><span class="s">&quot;gc&quot;</span><span class="p">,</span> <span class="n">Platform</span><span class="o">:</span><span class="s">&quot;linux/amd64&quot;</span><span class="p">}</span>
+</pre></div>
+
+
+<h2 id="12-kubernetesdocker">1.2. Kubernetes与Docker版本对应</h2>
+<p>Kubernetes 1.15.2  --&gt;Docker版本1.13.1、17.03、17.06、17.09、18.06、18.09</p>
+<p>Kubernetes 1.15.1  --&gt;Docker版本1.13.1、17.03、17.06、17.09、18.06、18.09</p>
+<p>Kubernetes 1.15.0  --&gt;Docker版本1.13.1、17.03、17.06、17.09、18.06、18.09</p>
+<p>Kubernetes 1.14.5  --&gt;Docker版本1.13.1、17.03、17.06、17.09、18.06、18.09</p>
+<p>Kubernetes 1.14.4  --&gt;Docker版本1.13.1、17.03、17.06、17.09、18.06、18.09</p>
+<p>Kubernetes 1.14.3  --&gt;Docker版本1.13.1、17.03、17.06、17.09、18.06、18.09</p>
+<p>Kubernetes 1.14.2  --&gt;Docker版本1.13.1、17.03、17.06、17.09、18.06、18.09</p>
+<p>Kubernetes 1.14.1  --&gt;Docker版本1.13.1、17.03、17.06、17.09、18.06、18.09</p>
+<p>Kubernetes 1.14.0  --&gt;Docker版本1.13.1、17.03、17.06、17.09、18.06、18.09</p>
+<p>Kubernetes 1.13.5  --&gt;Docker版本1.11.1、1.12.1、1.13.1、17.03、17.06、17.09、18.06</p>
+<p>Kubernetes 1.13.5  --&gt;Docker版本1.11.1、1.12.1、1.13.1、17.03、17.06、17.09、18.06</p>
+<p>Kubernetes 1.13.4  --&gt;Docker版本1.11.1、1.12.1、1.13.1、17.03、17.06、17.09、18.06</p>
+<p>Kubernetes 1.13.3  --&gt;Docker版本1.11.1、1.12.1、1.13.1、17.03、17.06、17.09、18.06</p>
+<p>Kubernetes 1.13.2  --&gt;Docker版本1.11.1、1.12.1、1.13.1、17.03、17.06、17.09、18.06</p>
+<p>Kubernetes 1.13.1  --&gt;Docker版本1.11.1、1.12.1、1.13.1、17.03、17.06、17.09、18.06</p>
+<p>Kubernetes 1.13.0  --&gt;Docker版本1.11.1、1.12.1、1.13.1、17.03、17.06、17.09、18.06</p>
+<p>Kubernetes 1.12.*  --&gt;Docker版本1.11.1、1.12.1、1.13.1、17.03、17.06、17.09、18.06</p>
+<p>Kubernetes 1.11.*  --&gt;Docker版本1.11.2到1.13.1、17.03</p>
+<p>Kubernetes 1.10.*  --&gt;Docker版本1.11.2到1.13.1、17.03</p>
+<h2 id="13">1.3. 实践中如何管理版本</h2>
+<ol>
+<li>在生产环境中是否应该尽量使用新版本？</li>
+</ol>
+<blockquote>
+<p>从结论上来说，是的。原因也是由于上述的发行版都存在这对应的生命周期。<br />
+2. 升级集群最大版本跨度是多少？<br />
+但值得注意的时，升级集群理论上只支持跨度为2个次要版本的操作。</p>
+</blockquote>
+<h1 id="2-kubernetes-objects">2. Kubernetes Objects 对象</h1>
+<p>Kubernetes contains a number of abstractions that represent the state of your system: deployed containerized applications and workloads, their associated network and disk resources, and other information about what your cluster is doing. </p>
+<p>A Kubernetes object is a "<strong>record of intent</strong>" – once you create the object, the Kubernetes system will constantly work to ensure that object exists. By creating an object, you’re telling the Kubernetes system your cluster’s desired state.</p>
+<p>The basic Kubernetes objects include:</p>
+<p><strong>Pod</strong> - the smallest and simplest unit in the Kubernetes object model that you create or deploy. A Pod encapsulates an application container (or multiple containers), storage resources, a unique network IP, and options that govern how the container(s) should run.</p>
+<p>Service - an abstraction which defines a logical set of Pods and a policy by which to access them.<br />
+<strong>Volume</strong> - an abstraction which allows data to be preserved across container restarts and allows data to be shared between different containers.</p>
+<p>Namespace - a way to divide a physical cluster resources into multiple virtual clusters between multiple users.<br />
+<strong>Deployment</strong> - Manages pods and ensures a certain number of them are running. This is typically used to deploy pods that should always be up, such as a web server.</p>
+<p><strong>Job</strong> - A job creates one or more pods and ensures that a specified number of them successfully terminate. In other words, we use Job to run a task that finishes at some point, such as training a model.</p>
+<h2 id="21-deployment">2.1. Deployment</h2>
+<p><code>Deployment</code> 提供了Pods 和 ReplicaSets的更新说明。</p>
+<div class="hlcode"><pre><span class="n">A</span> <span class="n">Deployment</span> <span class="n">provides</span> <span class="n">declarative</span> <span class="n">updates</span> <span class="k">for</span> <span class="n">Pods</span> <span class="n">and</span> <span class="n">ReplicaSets</span><span class="p">.</span>
+</pre></div>
+
+
+<p>Kubernetes提供了一种更加简单的更新RC和Pod的机制，叫做Deployment。通过在Deployment中描述你所期望的集群状态，Deployment Controller会将现在的集群状态在<strong>一个可控的速度下逐步更新成你所期望的集群状态</strong>。</p>
+<p>Deployment主要职责同样是为了<br />
+1. 保证pod的数量和健康，90%的功能与Replication Controller完全一样，可以看做新一代的Replication Controller。</p>
+<p>但是，它又具备了Replication Controller之外的新特性：<br />
+1. Replication Controller全部功能：Deployment继承了上面描述的Replication Controller全部功能。<br />
+2. 事件和状态查看：可以查看Deployment的升级详细进度和状态。<br />
+3. 回滚：当升级pod镜像或者相关参数的时候发现问题，可以使用回滚操作回滚到上一个稳定的版本或者指定的版本。<br />
+4. 版本记录: 每一次对Deployment的操作，都能保存下来，给予后续可能的回滚使用。<br />
+5. 暂停和启动：对于每一次升级，都能够随时暂停和启动。<br />
+6. 多种升级方案：Recreate----删除所有已存在的pod,重新创建新的; RollingUpdate----滚动升级，逐步替换的策略，同时滚动升级时，支持更多的附加参数，例如设置最大不可用pod数量，最小升级间隔时间等等。</p>
+<h2 id="22-service">2.2. Service</h2>
+<p>事实上，Pod（容器组）有自己的生命周期。当 worker node（节点）故障时，节点上运行的 Pod（容器组）也会消失。然后，Deployment 可以通过创建新的 Pod（容器组）来动态地将群集调整回原来的状态，以使应用程序保持运行。</p>
+<p>举个例子，假设有一个图像处理后端程序，具有 3 个运行时副本。这 3 个副本是可以替换的（无状态应用），即使 Pod（容器组）消失并被重新创建，或者副本数由 3 增加到 5，前端系统也无需关注后端副本的变化。由于 Kubernetes 集群中每个 Pod（容器组）都有一个唯一的 IP 地址（即使是同一个 Node 上的不同 Pod），我们需要一种机制，<strong>为前端系统屏蔽后端系统的 Pod（容器组）在销毁、创建过程中所带来的 IP 地址的变化。</strong></p>
+<div class="hlcode"><pre><span class="err">后端</span><span class="n">pod</span><span class="err">可能一直在创建、变化、湮灭，但是要让前端没有感觉</span><span class="n">ip</span><span class="err">变化</span>
+</pre></div>
+
+
+<p>Kubernetes 中的 Service（服务） 提供了这样的一个抽象层，它<strong>1.选择</strong>具备某些特征的 Pod（容器组）并为它们<strong>2.定义</strong>一个访问方式。</p>
+<p>Service（服务）使 Pod（容器组）之间的相互依赖解耦（原本从一个 Pod 中访问另外一个 Pod，需要知道对方的 IP 地址）。一个 Service（服务）选定哪些 Pod（容器组） 通常由 LabelSelector(标签选择器) 来决定。</p>
+<p>在创建Service的时候，通过设置配置文件中的 spec.type 字段的值，可以以不同方式向外部暴露应用程序：</p>
+<p>如果Pods是短暂的，那么重启时IP地址可能会改变，怎么才能从前端容器正确可靠地指向后台容器呢？ 现在，假定有2个后台Pod，并且定义后台Service的名称为‘backend-service’，label选择器为(tier=backend, app=myapp) 的Service会完成如下两件重要的事情：</p>
+<ol>
+<li>会为Service创建一个本地集群的DNS入口，因此前端Pod只需要DNS查找主机名为<code>backend-service</code>，就能够解析出前端应用程序可用的IP地址。</li>
+<li>现在前端已经得到了后台服务的IP地址，但是它应该访问2个后台Pod的哪一个呢？Service在这2个后台Pod之间提供<strong>透明的负载均衡</strong>，会将请求分发给其中的任意一个（如下面的动画所示）。通过每个Node上运行的代理（kube-proxy）完成。</li>
+</ol>
+<p><strong>ClusterIP（默认）</strong><br />
+在群集中的内部IP上公布服务，这种方式的 Service（服务）只在集群内部可以访问到</p>
+<p><strong>NodePort</strong><br />
+使用 NAT 在集群中每个的同一端口上公布服务。这种方式下，可以通过访问集群中任意节点+端口号的方式访问服务 <NodeIP>:<NodePort>。此时 ClusterIP 的访问方式仍然可用。</p>
+<p><strong>LoadBalancer</strong><br />
+在云环境中（需要云供应商可以支持）创建一个集群外部的负载均衡器，并为使用该负载均衡器的 IP 地址作为服务的访问地址。此时 ClusterIP 和 NodePort 的访问方式仍然可用。</p>
+<h2 id="23-namespace">2.3. Namespace</h2>
+<div class="hlcode"><pre><span class="cp"># wiki</span>
+<span class="n">In</span> <span class="n">computing</span><span class="p">,</span> <span class="n">a</span> <span class="n">namespace</span> <span class="n">is</span> <span class="n">a</span> <span class="n">set</span> <span class="n">of</span> <span class="n">symbols</span> <span class="n">that</span> <span class="n">are</span> <span class="n">used</span> <span class="n">to</span> <span class="n">organize</span> <span class="n">objects</span> <span class="n">of</span> <span class="n">various</span> <span class="n">kinds</span><span class="p">,</span> <span class="n">so</span> <span class="n">that</span> <span class="n">these</span> <span class="n">objects</span> <span class="n">may</span> <span class="n">be</span> <span class="n">referred</span> <span class="n">to</span> <span class="n">by</span> <span class="n">name</span><span class="p">.</span> 
+</pre></div>
+
+
+<p>名称空间是一个符合集合，用于组织不同类型的对象，使得这些对象可以通过name被调用。</p>
+<p>名字空间（英语：Namespace），也称<strong>命名空间</strong>、名称空间等，它表示着一个标识符（identifier）的可见范围。一个标识符可在多个名字空间中定义，它在不同名字空间中的含义是互不相干的。这样，在一个新的名字空间中可定义任何标识符，它们不会与任何已有的标识符发生冲突，因为已有的定义都处于其他名字空间中。</p>
+<p>在编程语言中，名字空间是对作用域的一种特殊的抽象，它包含了处于该作用域内的标识符，且本身也用一个标识符来表示，这样便将一系列在逻辑上相关的标识符用一个标识符组织了起来。</p>
+<h3 id="231-kubernetes-namespace">2.3.1. kubernetes 中的Namespace</h3>
+<p>名称空间的用途是，为不同团队的用户（或项目）提供虚拟的集群空间，也可以用来区分开发环境/测试环境、准上线环境/生产环境。</p>
+<p>名称空间 <strong>Namespace</strong> 为名称 <strong>Name</strong>提供了作用域。名称空间内部的同类型对象不能重名，但是跨名称空间可以有同名同类型对象。名称空间不可以嵌套，<strong>任何一个Kubernetes对象只能在一个名称空间中</strong>。</p>
+<p>名称空间可以用来在不同的团队（用户）之间划分集群的资源。<br />
+在Kubernetes将来的版本中，同名称空间下的对象将默认使用相同的访问控制策略。<br />
+当Kubernetes对象之间的差异不大时，无需使用名称空间来区分，例如，同一个软件的不同版本，只需要使用 labels 来区分即可。</p>
+<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">get</span> <span class="n">namespaces</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">NAME</span>              <span class="n">STATUS</span>   <span class="n">AGE</span>
+<span class="k">default</span>           <span class="n">Active</span>   <span class="mi">24</span><span class="n">h</span> <span class="err">#</span> <span class="err">默认生成</span>
+<span class="n">istio</span><span class="o">-</span><span class="n">system</span>      <span class="n">Active</span>   <span class="mi">22</span><span class="n">h</span>
+<span class="n">knative</span><span class="o">-</span><span class="n">serving</span>   <span class="n">Active</span>   <span class="mi">22</span><span class="n">h</span>
+<span class="n">kube</span><span class="o">-</span><span class="n">node</span><span class="o">-</span><span class="n">lease</span>   <span class="n">Active</span>   <span class="mi">24</span><span class="n">h</span>
+<span class="n">kube</span><span class="o">-</span><span class="n">public</span>       <span class="n">Active</span>   <span class="mi">24</span><span class="n">h</span> <span class="err">#默认生成</span>
+<span class="n">kube</span><span class="o">-</span><span class="n">system</span>       <span class="n">Active</span>   <span class="mi">24</span><span class="n">h</span> <span class="err">#默认生成</span>
+<span class="n">kubeflow</span>          <span class="n">Active</span>   <span class="mi">22</span><span class="n">h</span>
+<span class="n">tensorflow</span>        <span class="n">Active</span>   <span class="mi">4</span><span class="n">h13m</span>
+</pre></div>
+
+
+<p>Kubernetes 安装成功后，默认有初始化了3个名称空间：<br />
+1. <code>default</code> 默认名称空间，如果 Kubernetes 对象中不定义 metadata.namespace 字段，该对象将放在此名称空间下<br />
+2. <code>kube-system</code> Kubernetes系统创建的对象放在此名称空间下<br />
+3. <code>kube-public</code> 此名称空间自动在安装集群是自动创建，并且所有用户都是可以读取的（即使是那些未登录的用户）。主要是为集群预留的，例如，某些情况下，某些Kubernetes对象应该被所有集群用户看到。</p>
+<h2 id="24-pod">2.4. pod</h2>
+<div class="hlcode"><pre><span class="err">#</span> <span class="nx">在指定Namespace下</span> <span class="nx">运行</span> <span class="nx">pod</span>
+<span class="nx">kubectl</span> <span class="nb">run</span> <span class="nx">nginx</span> <span class="o">--</span><span class="n">image</span><span class="o">=</span><span class="nx">nginx</span> <span class="o">--</span><span class="n">namespace</span><span class="o">=&lt;</span><span class="nx">您的名称空间</span><span class="o">&gt;</span>
+<span class="nx">kubectl</span> <span class="nb">get</span> <span class="nx">pods</span> <span class="o">--</span><span class="n">namespace</span><span class="o">=&lt;</span><span class="nx">您的名称空间</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="nx">kubectl</span> <span class="nx">config</span> <span class="nb">set</span><span class="na">-context</span> <span class="o">--</span><span class="nx">current</span> <span class="o">--</span><span class="n">namespace</span><span class="o">=&lt;</span><span class="nx">您的名称空间</span><span class="o">&gt;</span>
+<span class="err">#</span> <span class="nx">验证结果</span>
+<span class="nx">kubectl</span> <span class="nx">config</span> <span class="nx">view</span> <span class="o">--</span><span class="nx">minify</span> <span class="o">|</span> <span class="nx">grep</span> <span class="nx">namespace</span><span class="p">:</span>
+</pre></div>
+
+
+<p>并非所有对象都在名称空间里<br />
+大部分的 Kubernetes 对象（例如，Pod、Service、Deployment、StatefulSet等）都必须在名称空间里。但是某些更低层级的对象，是不在任何名称空间中的，例如 nodes、persistentVolumes、storageClass 等</p>
+<p>执行一下命令可查看哪些 Kubernetes 对象在名称空间里，哪些不在：</p>
+<div class="hlcode"><pre><span class="cp"># 在名称空间里</span>
+<span class="n">kubectl</span> <span class="n">api</span><span class="o">-</span><span class="n">resources</span> <span class="o">--</span><span class="n">namespaced</span><span class="o">=</span><span class="nb">true</span>
+
+<span class="cp"># 不在名称空间里</span>
+<span class="n">kubectl</span> <span class="n">api</span><span class="o">-</span><span class="n">resources</span> <span class="o">--</span><span class="n">namespaced</span><span class="o">=</span><span class="nb">false</span>
+</pre></div>
+
+
+<h1 id="4">4. 容器镜像</h1>
+<h2 id="41">4.1. 镜像拉取策略</h2>
+<ol>
+<li>默认的镜像拉取策略是“IfNotPresent”，在镜像已经存在的情况下，kubelet将不在去拉取镜像。 </li>
+<li>如果总是想要拉取镜像，必须设置拉取策略为“Always”或者设置镜像标签为“:latest”。</li>
+</ol>
+<h2 id="42">4.2. 镜像仓库</h2>
+<p>Kubernetes 的 Pod 中使用容器镜像之前，您必须将其推送到一个镜像仓库（或者使用仓库中已经有的容器镜像）。</p>
+<p>在 Kubernetes 的 Pod 定义中定义容器时，必须指定容器<strong>所使用的镜像</strong>，容器中的 image 字段支持与 docker 命令一样的语法，包括私有镜像仓库和标签。</p>
+<p>在 Kubernetes 中，<strong>没有针对镜像仓库的集群级别配置</strong>，节点各自维护自己的仓库地址，如果需要增加仓库地址，需要修改集群中所有节点配置文件，重启 docker 生效。</p>
+<p>针对 k8s 中私有仓库的使用更新：</p>
+<p>当 k8s 想要配置 http 私有仓库时，只能通过在节点上修改 docker 配置文件 /etc/docker/daemon.json ，添加 “insecure-registries” 字段，并重启 docker 后，k8s 可以自动拉取所需镜像。</p>
+<p>当 k8s 配置 https 私有仓库时，只需将根证书拷贝到 k8s 节点的 /etc/docker/certs.d/<domain.com>/ 下，创建 k8s secret docker-registry ，在 YAML 中指定拉取镜像所需的 secret，就可以自动拉取了。<br />
+可以在 k8s 中配置指定仓库的 secret 类型为 docker-registry 来配置私有仓库的用户名密码，在之后创建 Pod 时指定该 secret 名称即可自动下载，具体操作如下：</p>
+<div class="hlcode"><pre><span class="p">[</span><span class="n">root</span><span class="err">@</span><span class="n">node3</span> <span class="o">~</span><span class="p">]</span><span class="err">#</span> <span class="n">kubectl</span> <span class="n">create</span> <span class="n">secret</span> <span class="n">docker</span><span class="o">-</span><span class="n">registry</span> <span class="n">regsecret</span> <span class="o">--</span><span class="n">docker</span><span class="o">-</span><span class="n">server</span><span class="o">=</span><span class="mf">192.168.30.111</span> <span class="o">--</span><span class="n">docker</span><span class="o">-</span><span class="n">username</span><span class="o">=</span><span class="n">admin</span> <span class="o">--</span><span class="n">docker</span><span class="o">-</span><span class="n">password</span><span class="o">=</span><span class="n">Harbor12345</span> <span class="o">--</span><span class="n">docker</span><span class="o">-</span><span class="n">email</span><span class="o">=</span><span class="n">yiran</span><span class="err">@</span><span class="n">smartx</span><span class="p">.</span><span class="n">com</span>
+<span class="p">[</span><span class="n">root</span><span class="err">@</span><span class="n">node3</span> <span class="o">~</span><span class="p">]</span><span class="err">#</span> <span class="n">kubectl</span> <span class="n">get</span> <span class="n">secret</span> <span class="n">regsecret</span> <span class="o">-</span><span class="n">o</span> <span class="n">yaml</span>
+<span class="p">[</span><span class="n">root</span><span class="err">@</span><span class="n">node3</span> <span class="o">~</span><span class="p">]</span><span class="err">#</span> <span class="n">cat</span> <span class="n">private</span><span class="o">-</span><span class="n">reg</span><span class="o">-</span><span class="n">pod</span><span class="p">.</span><span class="n">yaml</span> 
+<span class="nl">apiVersion:</span> <span class="n">v1</span>
+<span class="nl">kind:</span> <span class="n">Pod</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">private</span><span class="o">-</span><span class="n">reg</span>
+<span class="nl">spec:</span>
+  <span class="nl">nodeSelector:</span>
+    <span class="nl">type:</span> <span class="s">&quot;233&quot;</span>
+  <span class="nl">containers:</span>
+  <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">private</span><span class="o">-</span><span class="n">reg</span><span class="o">-</span><span class="n">container</span>
+    <span class="nl">image:</span> <span class="mf">192.168.30.111</span><span class="o">/</span><span class="n">test</span><span class="o">/</span><span class="n">busybox</span><span class="o">:</span><span class="n">latest</span>
+    <span class="nl">args:</span> <span class="p">[</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">sh</span><span class="p">,</span> <span class="o">-</span><span class="n">c</span><span class="p">,</span>
+           <span class="err">&#39;</span><span class="n">i</span><span class="o">=</span><span class="mi">0</span><span class="p">;</span> <span class="k">while</span> <span class="nb">true</span><span class="p">;</span> <span class="k">do</span> <span class="n">echo</span> <span class="s">&quot;$i: $(date)&quot;</span><span class="p">;</span> <span class="n">i</span><span class="o">=</span><span class="err">$</span><span class="p">((</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">));</span> <span class="n">sleep</span> <span class="mi">1</span><span class="p">;</span> <span class="n">done</span><span class="err">&#39;</span><span class="p">]</span>
+  <span class="nl">imagePullSecrets:</span>
+  <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">regsecret</span>
+</pre></div>
+
+
+<p>在集群中创建保存授权令牌的 Secret<br />
+Kubernetes 集群使用 docker-registry 类型的 Secret 来通过容器仓库的身份验证，进而提取私有映像。</p>
+<p>创建 Secret，命名为 regcred：</p>
+<p>kubectl create secret docker-registry regcred --docker-server=<your-registry-server> --docker-username=<your-name> --docker-password=<your-pword> --docker-email=<your-email><br />
+在这里：</p>
+<p><your-registry-server> 是你的私有 Docker 仓库全限定域名（FQDN）。(参考 https://index.docker.io/v1/ 中关于 DockerHub 的部分)<br />
+<your-name> 是你的 Docker 用户名。<br />
+<your-pword> 是你的 Docker 密码。<br />
+<your-email> 是你的 Docker 邮箱。<br />
+这样您就成功地将集群中的 Docker 凭据设置为名为 regcred 的 Secret。</p>
+<p>检查 Secret regcred<br />
+要了解你创建的 regcred Secret 的内容，可以用 YAML 格式进行查看：</p>
+<p>kubectl get secret regcred --output=yaml<br />
+输出和下面类似：</p>
+<p>apiVersion: v1<br />
+data:<br />
+  .dockerconfigjson: eyJodHRwczovL2luZGV4L ... J0QUl6RTIifX0=<br />
+kind: Secret<br />
+metadata:<br />
+  ...<br />
+  name: regcred<br />
+  ...<br />
+type: kubernetes.io/dockerconfigjson<br />
+.dockerconfigjson 字段的值是 Docker 凭据的 base64 表示。</p>
+<p>要了解 dockerconfigjson 字段中的内容，请将 Secret 数据转换为可读格式：</p>
+<p>kubectl get secret regcred --output="jsonpath={.data..dockerconfigjson}" | base64 --decode<br />
+输出和下面类似：</p>
+<p>{"auths":{"yourprivateregistry.com":{"username":"janedoe","password":"xxxxxxxxxxx","email":"jdoe@example.com","auth":"c3R...zE2"}}}<br />
+要了解 auth 字段中的内容，请将 base64 编码过的数据转换为可读格式：</p>
+<p>echo "c3R...zE2" | base64 --decode<br />
+输出结果中，用户名和密码用 : 链接，类似下面这样：</p>
+<p>janedoe:xxxxxxxxxxx<br />
+注意，Secret 数据包含与本地 ~/.docker/config.json 文件类似的授权令牌。</p>
+<p>这样您就已经成功地将 Docker 凭据设置为集群中的名为 regcred 的 Secret。</p>
+<p>创建一个使用您的 Secret 的 Pod<br />
+下面是一个 Pod 配置文件，它需要访问 regcred 中的 Docker 凭据：</p>
+<p>pods/private-reg-pod.yaml Copy pods/private-reg-pod.yaml to clipboard<br />
+apiVersion: v1<br />
+kind: Pod<br />
+metadata:<br />
+  name: private-reg<br />
+spec:<br />
+  containers:<br />
+  - name: private-reg-container<br />
+    image: <your-private-image><br />
+  imagePullSecrets:<br />
+  - name: regcred</p>
+<p>下载上述文件：</p>
+<p>wget -O my-private-reg-pod.yaml https://k8s.io/examples/pods/private-reg-pod.yaml<br />
+在my-private-reg-pod.yaml 文件中，使用私有仓库的镜像路径替换 <your-private-image>，例如：</p>
+<p>janedoe/jdoe-private:v1<br />
+要从私有仓库拉取镜像，Kubernetes 需要凭证。 配置文件中的 imagePullSecrets 字段表明 Kubernetes 应该通过名为 regcred 的 Secret 获取凭证。</p>
+<p>创建使用了你的 Secret 的 Pod，并检查它是否正常运行：</p>
+<p>kubectl create -f my-private-reg-pod.yaml<br />
+kubectl get pod private-reg</p>
+<h1 id="5">5. 参考资料</h1>
+<ol>
+<li>
+<p>[官方]网络插件：https://kubernetes.io/zh/docs/concepts/extend-kubernetes/compute-storage-net/network-plugins/</p>
+</li>
+<li>
+<p>https://kuboard.cn/learning/k8s-basics/k8s-core-concepts.html#service</p>
+</li>
+</ol>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

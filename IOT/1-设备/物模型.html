@@ -1,0 +1,1225 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>物模型 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#IOT">IOT</a>&nbsp;»&nbsp;<a href="/Wiki/#-1-设备">1-设备</a>&nbsp;»&nbsp;物模型</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">物模型</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 什么是物模型</a><ul>
+<li><a href="#11">1.1. 物模型的别名</a></li>
+<li><a href="#12">1.2. 物模型的技术实现</a></li>
+<li><a href="#13">1.3. 定义范围</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 物模型的行业标准发展现状</a><ul>
+<li><a href="#21-ica">2.1. ICA物模型</a><ul>
+<li><a href="#211">2.1.1. 阿里云</a></li>
+</ul>
+</li>
+<li><a href="#22-onedatamodel">2.2. OneDataModel物模型</a><ul>
+<li><a href="#221-onenet">2.2.1. 中国移动OneNET</a></li>
+<li><a href="#222">2.2.2. 小米</a></li>
+</ul>
+</li>
+<li><a href="#23-3im">2.3. 工业互联网信息模型3IM</a></li>
+<li><a href="#24">2.4. 云平台尝试更加通用性的设计</a><ul>
+<li><a href="#241-azure">2.4.1. Azure/ 腾讯云</a><ul>
+<li><a href="#2411-azure">2.4.1.1. Azure</a></li>
+<li><a href="#2412">2.4.1.2. 腾讯云</a></li>
+</ul>
+</li>
+<li><a href="#242-aws">2.4.2. AWS</a></li>
+<li><a href="#243-google-could">2.4.3. Google Could</a></li>
+<li><a href="#244">2.4.4. 华为云</a></li>
+<li><a href="#245-ibm-watson-iot-platform">2.4.5. IBM Watson IoT Platform</a></li>
+<li><a href="#246">2.4.6. 百度云</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4">4. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1">1. 什么是物模型</h1>
+<p>物模型（Thing Specification Language,TSL）是产品数字化的<strong>描述</strong>。</p>
+<p>物模型由若干条<code>参数</code>组成，参数按描述的功能类型不同，又分为属性、方法和事件。</p>
+<h2 id="11">1.1. 物模型的别名</h2>
+<p>不同的公司对物模型由不同的名字说法，其本质是一样的，依然是对物体的数字化描述。其中常见的包括：<code>信息模型</code>、<code>物联模型</code>、<code>数据profile</code>、<code>数据 schema</code>、<code>设备模板</code></p>
+<table>
+<thead>
+<tr>
+<th>梯队</th>
+<th>厂商</th>
+<th>名称</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>微软Azure</td>
+<td>Device Twin 设备孪生</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Google cloud Iot Core</td>
+<td>Device Data（Device metadata）</td>
+</tr>
+<tr>
+<td>1</td>
+<td>亚马逊 AWS IoT Core</td>
+<td>Thing types 物体类型+ Device Shadow 设备影子</td>
+</tr>
+<tr>
+<td>1</td>
+<td>小米IoT</td>
+<td>spec定义</td>
+</tr>
+<tr>
+<td>1</td>
+<td>阿里云</td>
+<td>Thing Specification Language 物模型+设备影子</td>
+</tr>
+<tr>
+<td>2</td>
+<td>腾讯云</td>
+<td>设备影子</td>
+</tr>
+<tr>
+<td>2</td>
+<td>中国移动OneNet</td>
+<td>物模型</td>
+</tr>
+<tr>
+<td>2</td>
+<td>华为云</td>
+<td>产品模型</td>
+</tr>
+<tr>
+<td>2</td>
+<td>IBM Waston</td>
+<td>deviceInfo</td>
+</tr>
+<tr>
+<td>3</td>
+<td>百度云</td>
+<td>物模型（未上线）</td>
+</tr>
+<tr>
+<td>3</td>
+<td>京东</td>
+<td>物模型（简单）</td>
+</tr>
+</tbody>
+</table>
+<h2 id="12">1.2. 物模型的技术实现</h2>
+<p>物模型语法层定义了IoT物模型描述语言的种类，如XML、JSON等。</p>
+<p>目前JSON较为通用的 <br />
+<img alt="" src="2020-12-31-14-51-29.png" /></p>
+<h2 id="13">1.3. 定义范围</h2>
+<p>物模型定义了物，物模型将不同品牌不同品类的产品功能抽象归纳，形成“标准物模型”，便于各方用统一的语言描述、控制、理解产品功能。</p>
+<p>为了实现设备功能的统一理解，对于每个品类会定义一套“标准参数”，标准参数包含了某个品类可能用到的所有参数，开发者在定义产品物模型时优先从标准参数中选择，如果标准参数未包含的功能，可以定义“自定义参数”。</p>
+<p><img alt="" src="2020-12-31-15-11-34.png" /></p>
+<h1 id="2">2. 物模型的行业标准发展现状</h1>
+<p>没有统一标准，各自为战。ICA物模型和OneDataModel物模型最为先进<sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup></p>
+<h2 id="21-ica">2.1. ICA物模型</h2>
+<p>工业互联网产业联盟（Alliance of Industrial Internet, AII）是由<strong>阿里巴巴</strong>发起，是一个研究物联网接入协议、设备管理等业务标准的行业联盟，是国内物模型研发的领军者。</p>
+<p>目前ICA已发布了自定义的物模型标准，包括设备抽象模型及TSL（Things Specification Language）描述语言</p>
+<p><img alt="" src="2020-12-31-14-01-43.png" /></p>
+<h3 id="211">2.1.1. 阿里云</h3>
+<p><a href="https://help.aliyun.com/document_detail/73727.html">阿里云</a>产品功能类型分为三类：属性、服务和事件。<br />
+功能类型|说明<br />
+--|--<br />
+属性（Property）|一般用于描述设备运行时的状态，如环境监测设备所读取的当前环境温度等。属性支持GET和SET请求方式。应用系统可发起对属性的读取和设置请求。<br />
+服务（Service）|设备可被外部调用的能力或方法，可设置输入参数和输出参数。相比于属性，服务可通过一条指令实现更复杂的业务逻辑，如执行某项特定的任务。<br />
+事件（Event）|设备运行时的事件。事件一般包含需要被外部感知和处理的通知信息，可包含多个输出参数。如，某项任务完成的信息，或者设备发生故障或告警时的温度等，事件可以被订阅和推送。</p>
+<div class="hlcode"><pre><span class="err">///阿里云的物模型案例</span>
+<span class="p">{</span>
+    <span class="nt">&quot;schema&quot;</span><span class="p">:</span> <span class="s2">&quot;物模型结构定义的访问URL&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;profile&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;productKey&quot;</span><span class="p">:</span> <span class="s2">&quot;产品ProductKey&quot;</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="nt">&quot;identifier&quot;</span><span class="p">:</span> <span class="s2">&quot;属性唯一标识符（产品下唯一）&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;属性名称&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;accessMode&quot;</span><span class="p">:</span> <span class="s2">&quot;属性读写类型：只读（r）或读写（rw）。&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;是否是标准功能的必选属性&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;dataType&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;属性类型: int（原生）、float（原生）、double（原生）、text（原生）、date（String类型UTC毫秒）、bool（0或1的int类型）、enum（int类型，枚举项定义方法与bool类型定义0和1的值方法相同）、struct（结构体类型，可包含前面7种类型，下面使用&quot;</span><span class="err">specs</span><span class="s2">&quot;:[{}]描述包含的对象）、array（数组类型，支持int、double、float、text、struct）&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;specs&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;min&quot;</span><span class="p">:</span> <span class="s2">&quot;参数最小值（int、float、double类型特有）&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;max&quot;</span><span class="p">:</span> <span class="s2">&quot;参数最大值（int、float、double类型特有）&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;unit&quot;</span><span class="p">:</span> <span class="s2">&quot;属性单位（int、float、double类型特有，非必填）&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;unitName&quot;</span><span class="p">:</span> <span class="s2">&quot;单位名称（int、float、double类型特有，非必填）&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;size&quot;</span><span class="p">:</span> <span class="s2">&quot;数组元素的个数，最大512（array类型特有）。&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;step&quot;</span><span class="p">:</span> <span class="s2">&quot;步长（text、enum类型无此参数）&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;length&quot;</span><span class="p">:</span> <span class="s2">&quot;数据长度，最大10240（text类型特有）。&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;0&quot;</span><span class="p">:</span> <span class="s2">&quot;0的值（bool类型特有）&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;1的值（bool类型特有）&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;item&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;数组元素的类型（array类型特有）&quot;</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="nt">&quot;events&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="nt">&quot;identifier&quot;</span><span class="p">:</span> <span class="s2">&quot;事件唯一标识符（产品下唯一，其中post是默认生成的属性上报事件。）&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;事件名称&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;desc&quot;</span><span class="p">:</span> <span class="s2">&quot;事件描述&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;事件类型（info、alert、error）&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;是否是标准功能的必选事件&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;outputData&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="nt">&quot;identifier&quot;</span><span class="p">:</span> <span class="s2">&quot;参数唯一标识符&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;参数名称&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;dataType&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;属性类型: int（原生）、float（原生）、double（原生）、text（原生）、date（String类型UTC毫秒）、bool（0或1的int类型）、enum（int类型，枚举项定义方法与bool类型定义0和1的值方法相同）、struct（结构体类型，可包含前面7种类型，下面使用&quot;</span><span class="err">specs</span><span class="s2">&quot;:[{}]描述包含的对象）、array（数组类型，支持int、double、float、text、struct）&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;specs&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="nt">&quot;min&quot;</span><span class="p">:</span> <span class="s2">&quot;参数最小值（int、float、double类型特有）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;max&quot;</span><span class="p">:</span> <span class="s2">&quot;参数最大值（int、float、double类型特有）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;unit&quot;</span><span class="p">:</span> <span class="s2">&quot;属性单位（int、float、double类型特有，非必填）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;unitName&quot;</span><span class="p">:</span> <span class="s2">&quot;单位名称（int、float、double类型特有，非必填）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;size&quot;</span><span class="p">:</span> <span class="s2">&quot;数组元素的个数，最大512（array类型特有）。&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;step&quot;</span><span class="p">:</span> <span class="s2">&quot;步长（text、enum类型无此参数）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;length&quot;</span><span class="p">:</span> <span class="s2">&quot;数据长度，最大10240（text类型特有）。&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;0&quot;</span><span class="p">:</span> <span class="s2">&quot;0的值（bool类型特有）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;1的值（bool类型特有）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;item&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;数组元素的类型（array类型特有）&quot;</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;事件对应的方法名称（根据identifier生成）&quot;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="nt">&quot;services&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="nt">&quot;identifier&quot;</span><span class="p">:</span> <span class="s2">&quot;服务唯一标识符（产品下唯一，其中set/get是根据属性的accessMode默认生成的服务。）&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;服务名称&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;desc&quot;</span><span class="p">:</span> <span class="s2">&quot;服务描述&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="s2">&quot;是否是标准功能的必选服务&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;callType&quot;</span><span class="p">:</span> <span class="s2">&quot;async（异步调用）或sync（同步调用）&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;inputData&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="nt">&quot;identifier&quot;</span><span class="p">:</span> <span class="s2">&quot;入参唯一标识符&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;入参名称&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;dataType&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;属性类型: int（原生）、float（原生）、double（原生）、text（原生）、date（String类型UTC毫秒）、bool（0或1的int类型）、enum（int类型，枚举项定义方法与bool类型定义0和1的值方法相同）、struct（结构体类型，可包含前面7种类型，下面使用&quot;</span><span class="err">specs</span><span class="s2">&quot;:[{}]描述包含的对象）、array（数组类型，支持int、double、float、text、struct）&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;specs&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="nt">&quot;min&quot;</span><span class="p">:</span> <span class="s2">&quot;参数最小值（int、float、double类型特有）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;max&quot;</span><span class="p">:</span> <span class="s2">&quot;参数最大值（int、float、double类型特有）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;unit&quot;</span><span class="p">:</span> <span class="s2">&quot;属性单位（int、float、double类型特有，非必填）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;unitName&quot;</span><span class="p">:</span> <span class="s2">&quot;单位名称（int、float、double类型特有，非必填）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;size&quot;</span><span class="p">:</span> <span class="s2">&quot;数组元素的个数，最大512（array类型特有）。&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;step&quot;</span><span class="p">:</span> <span class="s2">&quot;步长（text、enum类型无此参数）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;length&quot;</span><span class="p">:</span> <span class="s2">&quot;数据长度，最大10240（text类型特有）。&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;0&quot;</span><span class="p">:</span> <span class="s2">&quot;0的值（bool类型特有）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;1的值（bool类型特有）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;item&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;数组元素的类型（array类型特有）&quot;</span>
+                                <span class="p">}</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="err">}</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;outputData&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="p">{</span>
+                    <span class="nt">&quot;identifier&quot;</span><span class="p">:</span> <span class="s2">&quot;出参唯一标识符&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;出参名称&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;dataType&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;属性类型: int（原生）、float（原生）、double（原生）、text（原生）、date（String类型UTC毫秒）、bool（0或1的int类型）、enum（int类型，枚举项定义方法与bool类型定义0和1的方法相同）、struct（结构体类型，可包含前面7种类型，下面使用&quot;</span><span class="err">specs</span><span class="s2">&quot;:[{}]描述包含的对象）、array（数组类型，支持int、double、float、text、struct）&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;specs&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="nt">&quot;min&quot;</span><span class="p">:</span> <span class="s2">&quot;参数最小值（int、float、double类型特有）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;max&quot;</span><span class="p">:</span> <span class="s2">&quot;参数最大值（int、float、double类型特有）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;unit&quot;</span><span class="p">:</span> <span class="s2">&quot;属性单位（int、float、double类型特有，非必填）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;unitName&quot;</span><span class="p">:</span> <span class="s2">&quot;单位名称（int、float、double类型特有，非必填）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;size&quot;</span><span class="p">:</span> <span class="s2">&quot;数组元素的个数，最大512（array类型特有）。&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;step&quot;</span><span class="p">:</span> <span class="s2">&quot;步长（text、enum类型无此参数）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;length&quot;</span><span class="p">:</span> <span class="s2">&quot;数据长度，最大10240（text类型特有）。&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;0&quot;</span><span class="p">:</span> <span class="s2">&quot;0的值（bool类型特有）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;1&quot;</span><span class="p">:</span> <span class="s2">&quot;1的值（bool类型特有）&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;item&quot;</span><span class="p">:</span> <span class="p">{</span>
+                                <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;数组元素的类型（array类型特有）&quot;</span>
+                            <span class="p">}</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">}</span>
+            <span class="p">],</span>
+            <span class="nt">&quot;method&quot;</span><span class="p">:</span> <span class="s2">&quot;服务对应的方法名称（根据identifier生成）&quot;</span>
+        <span class="p">}</span>
+    <span class="p">],</span>
+    <span class="err">//仅自定义模块的TSL中有以下参数。</span>
+    <span class="nt">&quot;functionBlockId&quot;</span><span class="p">:</span> <span class="s2">&quot;自定义模块的唯一标识符，模块ID&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;functionBlockName&quot;</span><span class="p">:</span> <span class="s2">&quot;自定义模块名称&quot;</span>
+
+    <span class="err">//当产品下添加了自定义模块，默认模块TSL中才有functionBlocks，表示自定义模块列表。</span>
+    <span class="s2">&quot;functionBlocks&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="nt">&quot;functionBlockId&quot;</span><span class="p">:</span> <span class="s2">&quot;自定义模块的唯一标识符，模块ID&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;functionBlockName&quot;</span><span class="p">:</span> <span class="s2">&quot;自定义模块名称&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;productKey&quot;</span><span class="p">:</span> <span class="s2">&quot;产品ProductKey&quot;</span>
+    <span class="p">}</span>
+  <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2 id="22-onedatamodel">2.2. OneDataModel物模型</h2>
+<p>OneDataModel：该组织是由多个标准化组织、设备商、平台运营商、IoT专家等参与组成的联络工作组（Liaison Group），专注于物模型标准的研究。目前该组织已发布了第一版物模型标准，包含ODM（Object Definition Model）抽象模型和SDF（Simple Definition Format）描述语言。</p>
+<p><img alt="" src="2020-12-31-14-49-30.png" /></p>
+<p>Github:<a href="https://github.com/one-data-model">https://github.com/one-data-model</a></p>
+<p>OneDataModel的主要参与者包括Zigbee 联盟、OCF、 OMA (LWM2M)、BLE Mesh、OneM2M、Google (Weave)、Comcast、Intel、<br />
+Silicon Labs等，其中<strong>Google、Intel</strong>等厂家推动积极。OneDataModel的愿景是将目前的物模型通用化并扩展到所有的物联网设备，在智能<br />
+家居领域进行实践，助力行业应用开发，降低制造商成本，增加客户易用性。ODM抽象模型的特点是发展迅速，有成为物模型主流标准的趋势。</p>
+<div class="hlcode"><pre><span class="p">{</span>
+  <span class="nt">&quot;title&quot;</span><span class="p">:</span> <span class="s2">&quot;SDF Schema&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;old, pre-1.0 JSON-schema.org definitions for validating SDF instances against the SDF model.&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;$schema&quot;</span><span class="p">:</span> <span class="s2">&quot;http://json-schema.org/draft-07/schema#&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;info&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;title&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;copyright&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;license&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;title&quot;</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="s2">&quot;copyright&quot;</span><span class="p">,</span> <span class="s2">&quot;license&quot;</span><span class="p">],</span>
+      <span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="kc">false</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;namespace&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;defaultnamespace&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+    <span class="p">},</span>
+
+    <span class="nt">&quot;odmThing&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Thing is a composition of objects that work together in some way&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/thingqualities&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;odmProduct&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Product is a composition of things and objects that can model a SKU-level instance of a product&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/productqualities&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;odmObject&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Object is a set of Properties, Actions, and Events that together perform a particular function&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/objectqualities&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;odmProperty&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Property represents the state of an instance of an object&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/propertyqualities&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;odmAction&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Action is a directive to invoke an application layer verb associated with an object&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/actionqualities&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;odmEvent&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Event represents an occurence of something associated with an object&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/eventqualities&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;odmData&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Data represents a piece of information that can be the state of a property or a parameter to an action or a signal in an event&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/dataqualities&quot;</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+
+  <span class="nt">&quot;definitions&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;sdf-pointer&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;uri-reference&quot;</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;pointer-list&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/sdf-pointer&quot;</span>
+      <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;commonqualities&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;$comment&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;title&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;odmRef&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/sdf-pointer&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;odmType&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+            <span class="p">},</span>
+          <span class="nt">&quot;additionalProperties&quot;</span><span class="p">:</span> <span class="kc">false</span>        
+          <span class="p">}</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;odmRequired&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/pointer-list&quot;</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+      <span class="nt">&quot;required&quot;</span><span class="p">:</span> <span class="p">[]</span>
+    <span class="p">},</span>
+
+    <span class="nt">&quot;thingqualities&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;allOf&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/commonqualities&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;odmObject&quot;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/properties/odmObject&quot;</span><span class="p">},</span>
+            <span class="nt">&quot;odmThing&quot;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/properties/odmThing&quot;</span><span class="p">}</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">},</span>
+
+    <span class="nt">&quot;productqualities&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;allOf&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/commonqualities&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;odmObject&quot;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/properties/odmObject&quot;</span><span class="p">},</span>
+            <span class="nt">&quot;odmThing&quot;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/properties/odmThing&quot;</span><span class="p">}</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">},</span>
+
+    <span class="nt">&quot;objectqualities&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;allOf&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/commonqualities&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;odmObject&quot;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/properties/odmObject&quot;</span><span class="p">},</span>
+            <span class="nt">&quot;odmProperty&quot;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/properties/odmProperty&quot;</span><span class="p">},</span>
+            <span class="nt">&quot;odmAction&quot;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/properties/odmAction&quot;</span><span class="p">},</span>
+            <span class="nt">&quot;odmEvent&quot;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/properties/odmEvent&quot;</span><span class="p">},</span>
+            <span class="nt">&quot;odmData&quot;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/properties/odmData&quot;</span><span class="p">}</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">},</span>
+
+    <span class="nt">&quot;propertyqualities&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;allOf&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/dataqualities&quot;</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">},</span>
+
+    <span class="nt">&quot;actionqualities&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;allOf&quot;</span><span class="p">:[</span>
+        <span class="p">{</span>
+          <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/commonqualities&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;odmInputData&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/pointer-list&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;odmRequiredInputData&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/pointer-list&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;odmOutputData&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/pointer-list&quot;</span>
+            <span class="p">}</span>          
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">]</span>   
+    <span class="p">},</span>
+
+    <span class="nt">&quot;eventqualities&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;allOf&quot;</span><span class="p">:[</span>
+        <span class="p">{</span>
+          <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/commonqualities&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;odmOutputData&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/pointer-list&quot;</span>
+            <span class="p">}</span>          
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">]</span>    
+    <span class="p">},</span>
+
+    <span class="nt">&quot;dataqualities&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;allOf&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+          <span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="s2">&quot;#/definitions/commonqualities&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+          <span class="nt">&quot;$ref&quot;</span><span class="p">:</span><span class="s2">&quot;#/definitions/jsonschema&quot;</span>
+        <span class="p">},</span>
+        <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;units&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;scaleMinimum&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;number&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;scaleMaximum&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;number&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;observable&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;readable&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;writable&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;nullable&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;widthInBits&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;number&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;subtype&quot;</span><span class="p">:{</span>
+              <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+              <span class="nt">&quot;enum&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;bytestring&quot;</span><span class="p">,</span> <span class="s2">&quot;unixtime&quot;</span><span class="p">]</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;contentFormat&quot;</span><span class="p">:</span> <span class="p">{</span>
+              <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+            <span class="p">}</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">]</span>
+    <span class="p">},</span>
+
+    <span class="nt">&quot;jsonschema&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;$comment&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;$ref&quot;</span><span class="p">:</span> <span class="s2">&quot;#/definitions/sdf-pointer&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;enum&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;number&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;boolean&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;integer&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;object&quot;</span>
+          <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;enum&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;minItems&quot;</span><span class="p">:</span> <span class="mi">1</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;const&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;oneOf&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span> <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;number&quot;</span><span class="p">},</span>
+            <span class="p">{</span> <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">},</span>
+            <span class="p">{</span> <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">},</span>
+            <span class="p">{</span> <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">},</span>
+            <span class="p">{</span> <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">},</span>
+            <span class="p">{</span> <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;null&quot;</span><span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;default&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;oneOf&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span> <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;number&quot;</span><span class="p">},</span>
+            <span class="p">{</span> <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">},</span>
+            <span class="p">{</span> <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span><span class="p">},</span>
+            <span class="p">{</span> <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">},</span>
+            <span class="p">{</span> <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span><span class="p">},</span>
+            <span class="p">{</span> <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;null&quot;</span><span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;pattern&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;format&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;string&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;enum&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;date-time&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;date&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;time&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;duration&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;email&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;idn-email&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;hostname&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;idn-hostname&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ipv4&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ipv6&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;uri&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;uri-reference&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;iri&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;iri-reference&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;uuid&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;uri-template&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;json-pointer&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;relative-json-pointer&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;regex&quot;</span>
+          <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;minimum&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;number&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;maximum&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;number&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;exclusiveMinimum&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;exclusiveMaximum&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;multipleOf&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;number&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;maxLength&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;number&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;minLength&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;number&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;oneOf&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;minItems&quot;</span><span class="p">:</span> <span class="mi">1</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;anyOf&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;minItems&quot;</span><span class="p">:</span> <span class="mi">1</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;allOf&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;minItems&quot;</span><span class="p">:</span> <span class="mi">1</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;items&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;oneOf&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;contains&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;oneOf&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="p">{</span>
+              <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;array&quot;</span>
+            <span class="p">},</span>
+            <span class="p">{</span>
+              <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span>
+            <span class="p">}</span>
+          <span class="p">]</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;minItems&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;number&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;maxItems&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;number&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;uniqueItems&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;boolean&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;object&quot;</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h3 id="221-onenet">2.2.1. 中国移动OneNET</h3>
+<p><img alt="" src="2020-12-31-14-53-00.png" /></p>
+<div class="hlcode"><pre><span class="p">{</span>
+<span class="nt">&quot;tmThings&quot;</span><span class="p">:{</span>
+    <span class="nt">&quot;tmInfo&quot;</span><span class="p">:{</span>
+
+        <span class="p">},</span>
+    <span class="nt">&quot;tmProperty&quot;</span><span class="p">:{</span>
+
+        <span class="p">},</span>
+    <span class="nt">&quot;tmAction&quot;</span><span class="p">:{</span>
+
+        <span class="p">},</span>
+    <span class="nt">&quot;tmEvent&quot;</span><span class="p">:{</span>
+
+        <span class="p">},</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+
+<span class="err">参考</span> <span class="err">《中国移动物模型标准白皮书》</span>
+</pre></div>
+
+
+<h3 id="222">2.2.2. 小米</h3>
+<p><a href="https://iot.mi.com/new/doc/standard/miot-spec/spec">小米</a> 基于自身丰富的生态产品和ICA物模型进行了模型的修改。这样的架构更加灵活，它将具有某些功能组合的部件抽象成服务，例如空调就是由风扇服务、空气调节服务、指示灯服务组成，增加“服务”层级的意义在于，只要定义了少量的服务，就可以通过不同组合描述不同产品的功能。</p>
+<div class="hlcode"><pre><span class="n">digraph</span> <span class="n">a</span><span class="p">{</span>
+    <span class="n">spec</span><span class="o">-&gt;</span><span class="err">服务</span>
+    <span class="n">spec</span><span class="o">-&gt;</span><span class="err">属性</span>
+    <span class="n">spec</span><span class="o">-&gt;</span><span class="err">方法</span>
+    <span class="n">spec</span><span class="o">-&gt;</span><span class="err">事件</span>
+
+<span class="p">}</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="err">//小米对于摄像头的定义</span>
+
+<span class="p">{</span>
+    <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;urn:miot-spec-v2:service:camera:00000007&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;Camera&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;required-properties&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;urn:miot-spec-v2:property-v2:streaming-status:00000004&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;urn:miot-spec-v2:property-v2:support-video-stream-configuration:00000002&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;urn:miot-spec-v2:property-v2:support-audio-stream-configuration:00000002&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;urn:miot-spec-v2:property-v2:support-rtp-stream-configuration:00000003&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;urn:miot-spec-v2:property-v2:session-id:00000102&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;urn:miot-spec-v2:property-v2:conroller-ip-version:00000103&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;urn:miot-spec-v2:property-v2:conroller-ip-address:00000104&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;urn:miot-spec-v2:property-v2:conroller-video-rtp-port:00000105&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;urn:miot-spec-v2:property-v2:conroller-audio-rtp-port:00000106&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;urn:miot-spec-v2:property-v2:selected-video-parameters:00000107&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;urn:miot-spec-v2:property-v2:selected-audio-parameters:00000108&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;urn:miot-spec-v2:property-v2:device-status:00000109&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;urn:miot-spec-v2:property-v2:device-ip-version:00000110&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;urn:miot-spec-v2:property-v2:device-ip-address:00000111&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;urn:miot-spec-v2:property-v2:synchronization-source-for-video:00000112&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;urn:miot-spec-v2:property-v2:synchronization-source-for-audio:00000113&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;urn:miot-spec-v2:property-v2:session-control:00000119&quot;</span>
+    <span class="p">],</span>
+    <span class="nt">&quot;required-actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;urn:miot-spec-v2:action-v2:get-stream-configuration:00000001&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;urn:miot-spec-v2:action-v2:start-stream:00000101&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;urn:miot-spec-v2:action-v2:stop-stream:00000201&quot;</span>
+    <span class="p">],</span>
+    <span class="nt">&quot;optional-actions&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;urn:miot-spec-v2:action:set-stream-configuration:00000009&quot;</span><span class="p">,</span>
+    <span class="p">],</span>
+    <span class="nt">&quot;required-events&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;urn:miot-spec-v2:event:alert:00000007&quot;</span>
+    <span class="p">],</span>
+    <span class="nt">&quot;optional-events&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;urn:miot-spec-v2:event:warrning:00000008&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2 id="23-3im">2.3. 工业互联网信息模型3IM</h2>
+<p>AII：该联盟由工业、信息通信业、互联网等领域百余家单位共同发起，面向工业互联网研究和制定相关的技术标准。近期该联盟正在开展工业互联网信息模型（3IM）研究。工业互联网信息模型将设备、产品或过程等看作对象，由标识、类和属性构成，是对物模型概念的延伸。</p>
+<p><img alt="" src="2020-12-31-14-17-56.png" /></p>
+<h2 id="24">2.4. 云平台尝试更加通用性的设计</h2>
+<h3 id="241-azure">2.4.1. Azure/ 腾讯云</h3>
+<h4 id="2411-azure">2.4.1.1. Azure</h4>
+<p>参考 <a href="https://docs.microsoft.com/zh-cn/azure/iot-hub/iot-hub-devguide-device-twins">微软文档: 了解并在 IoT 中心内使用设备孪生<br />
+</a><br />
+<img alt="" src="2020-12-31-15-03-31.png" /></p>
+<div class="hlcode"><pre><span class="p">{</span>
+    <span class="nt">&quot;deviceId&quot;</span><span class="p">:</span> <span class="s2">&quot;webcam_68&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;etag&quot;</span><span class="p">:</span> <span class="s2">&quot;AAAAAAAAAAI=&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;deviceEtag&quot;</span><span class="p">:</span> <span class="s2">&quot;ODYwMzQ3NDEx&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;enabled&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;statusUpdateTime&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01T00:00:00Z&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;connectionState&quot;</span><span class="p">:</span> <span class="s2">&quot;Disconnected&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;lastActivityTime&quot;</span><span class="p">:</span> <span class="s2">&quot;0001-01-01T00:00:00Z&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;cloudToDeviceMessageCount&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="nt">&quot;authenticationType&quot;</span><span class="p">:</span> <span class="s2">&quot;certificateAuthority&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;x509Thumbprint&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;primaryThumbprint&quot;</span><span class="p">:</span> <span class="kc">null</span><span class="p">,</span>
+        <span class="nt">&quot;secondaryThumbprint&quot;</span><span class="p">:</span> <span class="kc">null</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;modelId&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+    <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span>
+    <span class="nt">&quot;properties&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;desired&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;location&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;country&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;state&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;city&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;project_id&quot;</span><span class="p">:</span> <span class="s2">&quot;44030175&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;project_name&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;address&quot;</span><span class="p">:</span> <span class="s2">&quot;彩虹阁1F大堂&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;direction&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;angel&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+                    <span class="nt">&quot;top&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;left&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;riht&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;buttom&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;others&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;network&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;pipes&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;192.168.1.87&quot;</span>
+                <span class="p">],</span>
+                <span class="nt">&quot;mac&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;hardware&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;brand&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;cpu&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;gpu&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;jobs&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;online_time&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;部署运维人员&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;责任人&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;$metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                <span class="nt">&quot;location&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                    <span class="nt">&quot;country&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                    <span class="p">},</span>
+                    <span class="nt">&quot;state&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                    <span class="p">},</span>
+                    <span class="nt">&quot;city&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                    <span class="p">},</span>
+                    <span class="nt">&quot;project_id&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                    <span class="p">},</span>
+                    <span class="nt">&quot;project_name&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                    <span class="p">},</span>
+                    <span class="nt">&quot;address&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                    <span class="p">},</span>
+                    <span class="nt">&quot;direction&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                        <span class="nt">&quot;angel&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                        <span class="p">},</span>
+                        <span class="nt">&quot;top&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                        <span class="p">},</span>
+                        <span class="nt">&quot;left&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                        <span class="p">},</span>
+                        <span class="nt">&quot;riht&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                        <span class="p">},</span>
+                        <span class="nt">&quot;buttom&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                        <span class="p">},</span>
+                        <span class="nt">&quot;others&quot;</span><span class="p">:</span> <span class="p">{</span>
+                            <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                            <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                        <span class="p">}</span>
+                    <span class="p">}</span>
+                <span class="p">},</span>
+                <span class="nt">&quot;network&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                    <span class="nt">&quot;pipes&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                    <span class="p">},</span>
+                    <span class="nt">&quot;mac&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                    <span class="p">}</span>
+                <span class="p">},</span>
+                <span class="nt">&quot;hardware&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                    <span class="nt">&quot;brand&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                    <span class="p">},</span>
+                    <span class="nt">&quot;cpu&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                    <span class="p">},</span>
+                    <span class="nt">&quot;gpu&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                    <span class="p">}</span>
+                <span class="p">},</span>
+                <span class="nt">&quot;jobs&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+                    <span class="nt">&quot;online_time&quot;</span><span class="p">:</span> <span class="p">{</span>
+                        <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                        <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                    <span class="p">}</span>
+                <span class="p">},</span>
+                <span class="nt">&quot;部署运维人员&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                <span class="p">},</span>
+                <span class="nt">&quot;责任人&quot;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:40.1898182Z&quot;</span><span class="p">,</span>
+                    <span class="nt">&quot;$lastUpdatedVersion&quot;</span><span class="p">:</span> <span class="mi">2</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;$version&quot;</span><span class="p">:</span> <span class="mi">2</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;reported&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="nt">&quot;$metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;$lastUpdated&quot;</span><span class="p">:</span> <span class="s2">&quot;2020-12-15T03:48:39.733254Z&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;$version&quot;</span><span class="p">:</span> <span class="mi">1</span>
+        <span class="p">}</span>
+    <span class="p">},</span>
+    <span class="nt">&quot;capabilities&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;iotEdge&quot;</span><span class="p">:</span> <span class="kc">false</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h4 id="2412">2.4.1.2. 腾讯云</h4>
+<p>参考<a href="https://cloud.tencent.com/document/product/634/11918">腾讯云文档：设备影子详情</a></p>
+<div class="hlcode"><pre><span class="p">{</span>
+ <span class="nt">&quot;state&quot;</span><span class="p">:</span> <span class="p">{</span>
+  <span class="nt">&quot;reported&quot;</span><span class="p">:</span> <span class="p">{</span>
+   <span class="nt">&quot;attr_name1&quot;</span><span class="p">:</span> <span class="s2">&quot;value1&quot;</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;desired&quot;</span><span class="p">:</span> <span class="p">{</span>
+   <span class="nt">&quot;attr_name2&quot;</span><span class="p">:</span> <span class="s2">&quot;value2&quot;</span>
+  <span class="p">}</span>
+ <span class="p">},</span>
+ <span class="nt">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+  <span class="nt">&quot;reported&quot;</span><span class="p">:</span> <span class="p">{</span>
+   <span class="nt">&quot;attr_name1&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;timestamp&quot;</span><span class="p">:</span> <span class="mi">123456789</span>
+   <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;desired&quot;</span><span class="p">:</span> <span class="p">{</span>
+   <span class="nt">&quot;attr_name2&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;timestamp&quot;</span><span class="p">:</span> <span class="mi">123456789</span>
+   <span class="p">}</span>
+  <span class="p">}</span>
+ <span class="p">},</span>
+ <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+ <span class="nt">&quot;timestamp&quot;</span><span class="p">:</span> <span class="mi">123456789</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p><img alt="" src="2020-12-31-15-18-15.png" /></p>
+<h3 id="242-aws">2.4.2. AWS</h3>
+<p>AWS 通过<code>thingTypeProperties</code>+ <code>Device Shadow</code> 两部分进行设备管理</p>
+<p>参考 ：<br />
+1. <a href="https://docs.aws.amazon.com/iot/latest/developerguide/iot-device-shadows.html">AWS IoT Device Shadow service</a><br />
+2. <a href="https://docs.aws.amazon.com/iot/latest/developerguide/thing-types.html">AWS Documentation:AWS IoT Core Developer Guide--Thing types</a></p>
+<div class="hlcode"><pre><span class="p">{</span>
+    <span class="nt">&quot;thingTypes&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="p">{</span>
+            <span class="nt">&quot;thingTypeName&quot;</span><span class="p">:</span> <span class="s2">&quot;LightBulb&quot;</span><span class="p">,</span>
+            <span class="nt">&quot;thingTypeProperties&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;searchableAttributes&quot;</span><span class="p">:</span> <span class="p">[</span>
+                    <span class="s2">&quot;wattage&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;model&quot;</span>
+                <span class="p">],</span>
+                <span class="nt">&quot;thingTypeDescription&quot;</span><span class="p">:</span> <span class="s2">&quot;light bulb type&quot;</span>
+            <span class="p">},</span>
+            <span class="nt">&quot;thingTypeMetadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="nt">&quot;deprecated&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+                <span class="nt">&quot;creationDate&quot;</span><span class="p">:</span> <span class="mi">1468423800950</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="err">//reported</span>
+<span class="p">{</span>
+  <span class="nt">&quot;state&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;reported&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;GREEN&quot;</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="mi">12</span><span class="p">,</span>
+  <span class="nt">&quot;timestamp&quot;</span><span class="p">:</span> <span class="mi">123456779</span>
+<span class="p">}</span>
+<span class="err">//desired</span>
+<span class="p">{</span>
+  <span class="nt">&quot;state&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="nt">&quot;desired&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="nt">&quot;color&quot;</span><span class="p">:</span> <span class="s2">&quot;GREEN&quot;</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;version&quot;</span><span class="p">:</span> <span class="mi">11</span><span class="p">,</span>
+  <span class="nt">&quot;timestamp&quot;</span><span class="p">:</span> <span class="mi">123456778</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h3 id="243-google-could">2.4.3. Google Could</h3>
+<ol>
+<li>DeviceConfig</li>
+<li>DeviceState</li>
+<li>DeviceCredential</li>
+</ol>
+<p>参考<a href="https://cloud.google.com/iot/docs/reference/cloudiot/rest/v1/projects.locations.registries.devices">Google Cloud IoT Core Documentation 参考文档</a></p>
+<div class="hlcode"><pre><span class="p">{</span>
+  <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="err">string</span><span class="p">,</span>
+  <span class="nt">&quot;name&quot;</span><span class="p">:</span> <span class="err">string</span><span class="p">,</span>
+  <span class="nt">&quot;numId&quot;</span><span class="p">:</span> <span class="err">string</span><span class="p">,</span>
+  <span class="nt">&quot;credentials&quot;</span><span class="p">:</span> <span class="p">[</span>
+    <span class="p">{</span>
+      <span class="err">object(DeviceCredential)</span>
+    <span class="p">}</span>
+  <span class="p">],</span>
+  <span class="nt">&quot;lastHeartbeatTime&quot;</span><span class="p">:</span> <span class="err">string</span><span class="p">,</span>
+  <span class="nt">&quot;lastEventTime&quot;</span><span class="p">:</span> <span class="err">string</span><span class="p">,</span>
+  <span class="nt">&quot;lastStateTime&quot;</span><span class="p">:</span> <span class="err">string</span><span class="p">,</span>
+  <span class="nt">&quot;lastConfigAckTime&quot;</span><span class="p">:</span> <span class="err">string</span><span class="p">,</span>
+  <span class="nt">&quot;lastConfigSendTime&quot;</span><span class="p">:</span> <span class="err">string</span><span class="p">,</span>
+  <span class="nt">&quot;blocked&quot;</span><span class="p">:</span> <span class="err">boolean</span><span class="p">,</span>
+  <span class="nt">&quot;lastErrorTime&quot;</span><span class="p">:</span> <span class="err">string</span><span class="p">,</span>
+  <span class="nt">&quot;lastErrorStatus&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="err">object(Status)</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;config&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="err">object(DeviceConfig)</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;state&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="err">object(DeviceState)</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;logLevel&quot;</span><span class="p">:</span> <span class="err">enum(LogLevel)</span><span class="p">,</span>
+  <span class="nt">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="err">string:</span> <span class="err">string,</span>
+    <span class="err">...</span>
+  <span class="p">},</span>
+  <span class="nt">&quot;gatewayConfig&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="err">object(GatewayConfig)</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h3 id="244">2.4.4. 华为云</h3>
+<div class="hlcode"><pre><span class="p">{</span>
+    <span class="nt">&quot;device_info&quot;</span><span class="p">:{},</span>
+    <span class="nt">&quot;device_server&quot;</span><span class="p">:{}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p><a href="https://support.huaweicloud.com/devg-iothub/iot_01_0017.html">华为云：什么是产品模型</a></p>
+<h3 id="245-ibm-watson-iot-platform">2.4.5. IBM Watson IoT Platform</h3>
+<p>参考 <a href="https://docs.internetofthings.ibmcloud.com/apis/swagger/v0002/org-admin.html#/Device%20Configuration/get_device_types__typeId__devices&gt;">IBM Watson IoT Platform 文档</a></p>
+<div class="hlcode"><pre><span class="p">{</span>
+      <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;d:abc123:myType:myDevice&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;typeId&quot;</span><span class="p">:</span> <span class="s2">&quot;myType&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;deviceId&quot;</span><span class="p">:</span> <span class="s2">&quot;myDevice&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;deviceInfo&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;serialNumber&quot;</span><span class="p">:</span> <span class="s2">&quot;100087&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;manufacturer&quot;</span><span class="p">:</span> <span class="s2">&quot;ACME Co.&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;model&quot;</span><span class="p">:</span> <span class="s2">&quot;7865&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;deviceClass&quot;</span><span class="p">:</span> <span class="s2">&quot;A&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;My shiny device&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;fwVersion&quot;</span><span class="p">:</span> <span class="s2">&quot;1.0.0&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;hwVersion&quot;</span><span class="p">:</span> <span class="s2">&quot;1.0&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;descriptiveLocation&quot;</span><span class="p">:</span> <span class="s2">&quot;Office 5, D Block&quot;</span>
+      <span class="p">},</span>
+      <span class="nt">&quot;metadata&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;customField1&quot;</span><span class="p">:</span> <span class="s2">&quot;customValue1&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;customField2&quot;</span><span class="p">:</span> <span class="s2">&quot;customValue2&quot;</span>
+      <span class="p">},</span>
+      <span class="nt">&quot;registration&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;auth&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;id&quot;</span><span class="p">:</span> <span class="s2">&quot;ibmer@uk.ibm.com&quot;</span><span class="p">,</span>
+          <span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;person&quot;</span>
+        <span class="p">},</span>
+        <span class="nt">&quot;date&quot;</span><span class="p">:</span> <span class="s2">&quot;2015-04-08T11:23:23+00:00&quot;</span>
+      <span class="p">},</span>
+      <span class="nt">&quot;status&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="nt">&quot;alert&quot;</span><span class="p">:</span> <span class="p">{</span>
+          <span class="nt">&quot;enabled&quot;</span><span class="p">:</span> <span class="kc">false</span><span class="p">,</span>
+          <span class="nt">&quot;timestamp&quot;</span><span class="p">:</span> <span class="s2">&quot;2015-04-08T11:23:24+00:00&quot;</span>
+        <span class="p">}</span>
+      <span class="p">},</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h3 id="246">2.4.6. 百度云</h3>
+<p>设备影子</p>
+<p>参考 https://cloud.baidu.com/doc/IoTCore/s/Nkdildw8v<br />
+暂未开放</p>
+<h1 id="4">4. 参考资料</h1>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p><a href="http://www.caict.ac.cn/kxyj/qwfb/bps/202012/P020201215379753410419.pdf">中国信通院：物联网白皮书（2020年）</a>&#160;<a class="footnote-backref" href="#fnref:1" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:2">
+<p>[中国移动:物模型标准白皮书 1.0.0]&#160;<a class="footnote-backref" href="#fnref:2" rev="footnote" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

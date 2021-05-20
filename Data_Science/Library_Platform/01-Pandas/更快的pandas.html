@@ -1,0 +1,1332 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>为了更快的 Pandas - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-01-Pandas">01-Pandas</a>&nbsp;»&nbsp;为了更快的 Pandas</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">为了更快的 Pandas</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 使用更快的内核</a><ul>
+<li><a href="#11-cython">1.1. 使用Cython</a></li>
+<li><a href="#12-numba">1.2. 使用  numba</a></li>
+<li><a href="#13-numpy-blas">1.3. 更快的numpy内核--BLAS库加速</a><ul>
+<li><a href="#blas">常见的BLAS库</a></li>
+<li><a href="#_1">查看</a></li>
+<li><a href="#_2">比较</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#2-pandas">2. 更高效的使用pandas</a><ul>
+<li><a href="#21-io">2.1. 高效数据IO</a><ul>
+<li><a href="#211-pandas">2.1.1. 使用pandas自带函数读取文件</a></li>
+<li><a href="#212-io">2.1.2. 使用二进制格式文件进行I/O</a><ul>
+<li><a href="#2121-hdf5-format">2.1.2.1. HDF5 Format</a></li>
+<li><a href="#2122-feather">2.1.2.2. feather</a></li>
+<li><a href="#2123-parquet-">2.1.2.3. parquet--推荐</a></li>
+<li><a href="#2124-python-pickle-format">2.1.2.4. Python Pickle Format</a></li>
+<li><a href="#_3">比较</a></li>
+</ul>
+</li>
+<li><a href="#213">2.1.3. 数据压缩后再进行持久化</a></li>
+</ul>
+</li>
+<li><a href="#22-">2.2. 高效遍历数据--避免常规循环</a><ul>
+<li><a href="#221-x1">2.2.1. 标准遍历--x1</a></li>
+<li><a href="#222-iterrows-x321">2.2.2. 使用内置函数 iterrows()--x321倍加速</a></li>
+<li><a href="#223-apply-x811">2.2.3. 使用内置函数 apply()--x811倍加速</a></li>
+<li><a href="#224-groupby-">2.2.4. 使用groupby()--减少遍历元素</a><ul>
+<li><a href="#2241-groupbyapplyfunc">2.2.4.1. groupby().apply(func)</a></li>
+<li><a href="#2242-groupbyaggfunc">2.2.4.2. groupby().agg(func)</a></li>
+<li><a href="#2243-groupbytransformfunc">2.2.4.3. groupby().transform(func)</a></li>
+<li><a href="#2244-groupby">2.2.4.4. groupby().内置函数</a></li>
+</ul>
+</li>
+<li><a href="#225-groupbyapplynumpy">2.2.5. 更快的groupby.apply()方法，使用numpy 自定义</a></li>
+<li><a href="#226-npvectorizeapply">2.2.6. 使用向量化函数 np.vectorize代替apply 处理</a></li>
+<li><a href="#227-pandas-x9280">2.2.7. 使用pandas 向量化 —-x9280倍加速</a></li>
+<li><a href="#228-numpy-x658880">2.2.8. 使用numpy 向量化--x658880倍加速</a></li>
+<li><a href="#229">2.2.9. 总结</a></li>
+</ul>
+</li>
+<li><a href="#23">2.3. 高效数据拼接</a><ul>
+<li><a href="#231-append">2.3.1. 避免 append</a></li>
+<li><a href="#232-join-merge-x8">2.3.2. join 代替 merge--x8加速</a></li>
+</ul>
+</li>
+<li><a href="#24">2.4. 高效索引</a><ul>
+<li><a href="#241">2.4.1. 使用层次化索引筛选数据，避免使用条件逻辑筛选</a></li>
+<li><a href="#242-locilocixat">2.4.2. 正确使用 loc\iloc\ix\at</a></li>
+<li><a href="#243-copy-vs-view">2.4.3. copy vs view</a></li>
+</ul>
+</li>
+<li><a href="#25-numpy-numpy">2.5. 能改成numpy 就numpy</a></li>
+<li><a href="#26">2.6. 多线程并行计算</a><ul>
+<li><a href="#261-multiprocessingpool">2.6.1. multiprocessing.Pool</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#3-pandas">3. 更小的pandas</a><ul>
+<li><a href="#31">3.1. 降低数据精度</a><ul>
+<li><a href="#311">3.1.1. 数据读取时</a></li>
+<li><a href="#312">3.1.2. 优化数据结构</a><ul>
+<li><a href="#3121">3.1.2.1. 稀疏矩阵</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#32">3.2. 优化字符串对象</a><ul>
+<li><a href="#321">3.2.1. 字符串内存占用组成</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4-numpy">4. 使用numpy 代替</a></li>
+<li><a href="#5">5. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1">1. 使用更快的内核</h1>
+<h2 id="11-cython">1.1. 使用Cython</h2>
+<p>在jupyter notebook 中使用 Cython magic function<sup id="fnref:2"><a class="footnote-ref" href="#fn:2" rel="footnote">2</a></sup> 可以加速X3倍，对高度使用pandas的代码优化效果不明显。</p>
+<p><strong>原理</strong><br />
+对python 代码转C进行提前编译，对for 循环等python解释器执行的代码进行优化，对高度使用pandas的代码优化效果不明显。</p>
+<div class="hlcode"><pre><span class="c"># Cell 1</span>
+<span class="o">%</span><span class="n">load_ext</span> <span class="n">Cython</span>
+
+<span class="c"># Cell 2</span>
+<span class="c">## 注意需要添加相应的依赖项/包</span>
+<span class="o">%%</span><span class="n">cython</span>
+<span class="kn">import</span> <span class="nn">package</span>
+<span class="k">def</span> <span class="nf">fun_name</span><span class="p">(</span><span class="n">foo</span><span class="p">,</span><span class="n">boo</span><span class="p">):</span>
+    <span class="o">...</span>
+    <span class="k">return</span> <span class="n">res</span> 
+<span class="c"># Cell 3</span>
+<span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">fun_name</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+</pre></div>
+
+
+<h2 id="12-numba">1.2. 使用  numba</h2>
+<p>numba.njit：更高的效率<br />
+当循环被认为可行时，通常会通过numba底层的NumPy数组对其进行优化，以尽可能多地移至C。</p>
+<p>实际上，将numba性能提高到了微秒。没有一些繁琐的工作，将很难获得比这更高的效率。</p>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">numba</span> <span class="kn">import</span> <span class="n">njit</span>
+
+<span class="nd">@njit</span>
+<span class="k">def</span> <span class="nf">divide</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">a</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">res</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">/</span> <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">res</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">return</span> <span class="n">res</span>
+
+<span class="o">%</span><span class="n">timeit</span> <span class="n">divide</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;A&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s">&#39;B&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>  <span class="c"># 717 µs</span>
+</pre></div>
+
+
+<p>使用@njit(parallel=True)可以为更大的阵列提供进一步的提升</p>
+<h2 id="13-numpy-blas">1.3. 更快的numpy内核--BLAS库加速</h2>
+<p>BLAS（basic linear algebra subroutine） 是一系列基本线性代数运算函数的接口（interface）标准．</p>
+<h3 id="blas">常见的BLAS库</h3>
+<p>BLAS 的官网是 Netlib， 可以浏览完整的说明文档以及下载源代码． 这个版本的 BLAS 被称为 reference BLAS， 运行速度较慢， 通常被其他版本用于衡量性能．</p>
+<p><img alt="" src="/attach/images/2019-10-27-13-56-37.png" /></p>
+<p>英特尔数学核心库(Intel MKL) 的开发是致力于加速在intel处理器上进行的数学运算。该库支持 Windows, Linux and macOS 操作系统。</p>
+<h3 id="_1">查看</h3>
+<p><strong>安装</strong></p>
+<div class="hlcode"><pre><span class="n">pip</span> <span class="n">install</span> <span class="n">intel</span><span class="o">-</span><span class="n">numpy</span>
+
+<span class="n">conda</span> <span class="n">install</span> <span class="n">numpy</span> <span class="err">#</span> <span class="n">conda</span> <span class="err">版本已经是优化过的</span> <span class="n">Anoconda</span> <span class="err">（</span><span class="n">base</span><span class="err">）环境里面已经安装过</span> 
+</pre></div>
+
+
+<p><strong>查看</strong></p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span> 
+<span class="n">np</span><span class="o">.</span><span class="n">show_config</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="c"># No MKL</span>
+<span class="n">blas_mkl_info</span><span class="p">:</span>
+  <span class="n">NOT</span> <span class="n">AVAILABLE</span>
+<span class="n">blis_info</span><span class="p">:</span>
+  <span class="n">NOT</span> <span class="n">AVAILABLE</span>
+<span class="n">openblas_info</span><span class="p">:</span>
+    <span class="n">library_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;C:</span><span class="se">\\</span><span class="s">projects</span><span class="se">\\</span><span class="s">numpy-wheels</span><span class="se">\\</span><span class="s">numpy</span><span class="se">\\</span><span class="s">build</span><span class="se">\\</span><span class="s">openblas&#39;</span><span class="p">]</span>
+    <span class="n">libraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;openblas&#39;</span><span class="p">]</span>
+    <span class="n">language</span> <span class="o">=</span> <span class="n">f77</span>
+    <span class="n">define_macros</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;HAVE_CBLAS&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)]</span>
+<span class="n">blas_opt_info</span><span class="p">:</span>
+    <span class="n">library_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;C:</span><span class="se">\\</span><span class="s">projects</span><span class="se">\\</span><span class="s">numpy-wheels</span><span class="se">\\</span><span class="s">numpy</span><span class="se">\\</span><span class="s">build</span><span class="se">\\</span><span class="s">openblas&#39;</span><span class="p">]</span>
+    <span class="n">libraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;openblas&#39;</span><span class="p">]</span>
+    <span class="n">language</span> <span class="o">=</span> <span class="n">f77</span>
+    <span class="n">define_macros</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;HAVE_CBLAS&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)]</span>
+<span class="n">lapack_mkl_info</span><span class="p">:</span>
+  <span class="n">NOT</span> <span class="n">AVAILABLE</span>
+<span class="n">openblas_lapack_info</span><span class="p">:</span>
+    <span class="n">library_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;C:</span><span class="se">\\</span><span class="s">projects</span><span class="se">\\</span><span class="s">numpy-wheels</span><span class="se">\\</span><span class="s">numpy</span><span class="se">\\</span><span class="s">build</span><span class="se">\\</span><span class="s">openblas&#39;</span><span class="p">]</span>
+    <span class="n">libraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;openblas&#39;</span><span class="p">]</span>
+    <span class="n">language</span> <span class="o">=</span> <span class="n">f77</span>
+    <span class="n">define_macros</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;HAVE_CBLAS&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)]</span>
+<span class="n">lapack_opt_info</span><span class="p">:</span>
+    <span class="n">library_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;C:</span><span class="se">\\</span><span class="s">projects</span><span class="se">\\</span><span class="s">numpy-wheels</span><span class="se">\\</span><span class="s">numpy</span><span class="se">\\</span><span class="s">build</span><span class="se">\\</span><span class="s">openblas&#39;</span><span class="p">]</span>
+    <span class="n">libraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;openblas&#39;</span><span class="p">]</span>
+    <span class="n">language</span> <span class="o">=</span> <span class="n">f77</span>
+    <span class="n">define_macros</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;HAVE_CBLAS&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)]</span>
+
+<span class="c"># with mkl</span>
+<span class="n">mkl_info</span><span class="p">:</span>
+    <span class="n">libraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;mkl_rt&#39;</span><span class="p">]</span>
+    <span class="n">library_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;D:/ProgramData/Anaconda3</span><span class="se">\\</span><span class="s">Library</span><span class="se">\\</span><span class="s">lib&#39;</span><span class="p">]</span>
+    <span class="n">define_macros</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;SCIPY_MKL_H&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;HAVE_CBLAS&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)]</span>
+    <span class="n">include_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;C:</span><span class="se">\\</span><span class="s">Program Files (x86)</span><span class="se">\\</span><span class="s">IntelSWTools</span><span class="se">\\</span><span class="s">compilers_and_libraries_2019.0.117</span><span class="se">\\</span><span class="s">windows</span><span class="se">\\</span><span class="s">mkl&#39;</span><span class="p">,</span> <span class="s">&#39;C:</span><span class="se">\\</span><span class="s">Program Files (x86)</span><span class="se">\\</span><span class="s">IntelSWTools</span><span class="se">\\</span><span class="s">compilers_and_libraries_2019.0.117</span><span class="se">\\</span><span class="s">windows</span><span class="se">\\</span><span class="s">mkl</span><span class="se">\\</span><span class="s">include&#39;</span><span class="p">,</span> <span class="s">&#39;C:</span><span class="se">\\</span><span class="s">Program Files (x86)</span><span class="se">\\</span><span class="s">IntelSWTools</span><span class="se">\\</span><span class="s">compilers_and_libraries_2019.0.117</span><span class="se">\\</span><span class="s">windows</span><span class="se">\\</span><span class="s">mkl</span><span class="se">\\</span><span class="s">lib&#39;</span><span class="p">,</span> <span class="s">&#39;D:/ProgramData/Anaconda3</span><span class="se">\\</span><span class="s">Library</span><span class="se">\\</span><span class="s">include&#39;</span><span class="p">]</span>      
+<span class="n">blas_mkl_info</span><span class="p">:</span>
+    <span class="n">libraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;mkl_rt&#39;</span><span class="p">]</span>
+    <span class="n">library_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;D:/ProgramData/Anaconda3</span><span class="se">\\</span><span class="s">Library</span><span class="se">\\</span><span class="s">lib&#39;</span><span class="p">]</span>
+    <span class="n">define_macros</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;SCIPY_MKL_H&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;HAVE_CBLAS&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)]</span>
+    <span class="n">include_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;C:</span><span class="se">\\</span><span class="s">Program Files (x86)</span><span class="se">\\</span><span class="s">IntelSWTools</span><span class="se">\\</span><span class="s">compilers_and_libraries_2019.0.117</span><span class="se">\\</span><span class="s">windows</span><span class="se">\\</span><span class="s">mkl&#39;</span><span class="p">,</span> <span class="s">&#39;C:</span><span class="se">\\</span><span class="s">Program Files (x86)</span><span class="se">\\</span><span class="s">IntelSWTools</span><span class="se">\\</span><span class="s">compilers_and_libraries_2019.0.117</span><span class="se">\\</span><span class="s">windows</span><span class="se">\\</span><span class="s">mkl</span><span class="se">\\</span><span class="s">include&#39;</span><span class="p">,</span> <span class="s">&#39;C:</span><span class="se">\\</span><span class="s">Program Files (x86)</span><span class="se">\\</span><span class="s">IntelSWTools</span><span class="se">\\</span><span class="s">compilers_and_libraries_2019.0.117</span><span class="se">\\</span><span class="s">windows</span><span class="se">\\</span><span class="s">mkl</span><span class="se">\\</span><span class="s">lib&#39;</span><span class="p">,</span> <span class="s">&#39;D:/ProgramData/Anaconda3</span><span class="se">\\</span><span class="s">Library</span><span class="se">\\</span><span class="s">include&#39;</span><span class="p">]</span>      
+<span class="n">blas_opt_info</span><span class="p">:</span>
+    <span class="n">libraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;mkl_rt&#39;</span><span class="p">]</span>
+    <span class="n">library_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;D:/ProgramData/Anaconda3</span><span class="se">\\</span><span class="s">Library</span><span class="se">\\</span><span class="s">lib&#39;</span><span class="p">]</span>
+    <span class="n">define_macros</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;SCIPY_MKL_H&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;HAVE_CBLAS&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)]</span>
+    <span class="n">include_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;C:</span><span class="se">\\</span><span class="s">Program Files (x86)</span><span class="se">\\</span><span class="s">IntelSWTools</span><span class="se">\\</span><span class="s">compilers_and_libraries_2019.0.117</span><span class="se">\\</span><span class="s">windows</span><span class="se">\\</span><span class="s">mkl&#39;</span><span class="p">,</span> <span class="s">&#39;C:</span><span class="se">\\</span><span class="s">Program Files (x86)</span><span class="se">\\</span><span class="s">IntelSWTools</span><span class="se">\\</span><span class="s">compilers_and_libraries_2019.0.117</span><span class="se">\\</span><span class="s">windows</span><span class="se">\\</span><span class="s">mkl</span><span class="se">\\</span><span class="s">include&#39;</span><span class="p">,</span> <span class="s">&#39;C:</span><span class="se">\\</span><span class="s">Program Files (x86)</span><span class="se">\\</span><span class="s">IntelSWTools</span><span class="se">\\</span><span class="s">compilers_and_libraries_2019.0.117</span><span class="se">\\</span><span class="s">windows</span><span class="se">\\</span><span class="s">mkl</span><span class="se">\\</span><span class="s">lib&#39;</span><span class="p">,</span> <span class="s">&#39;D:/ProgramData/Anaconda3</span><span class="se">\\</span><span class="s">Library</span><span class="se">\\</span><span class="s">include&#39;</span><span class="p">]</span>      
+    <span class="n">libraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;mkl_rt&#39;</span><span class="p">]</span>
+    <span class="n">library_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;D:/ProgramData/Anaconda3</span><span class="se">\\</span><span class="s">Library</span><span class="se">\\</span><span class="s">lib&#39;</span><span class="p">]</span>
+    <span class="n">define_macros</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;SCIPY_MKL_H&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;HAVE_CBLAS&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)]</span>
+    <span class="n">include_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;C:</span><span class="se">\\</span><span class="s">Program Files (x86)</span><span class="se">\\</span><span class="s">IntelSWTools</span><span class="se">\\</span><span class="s">compilers_and_libraries_2019.0.117</span><span class="se">\\</span><span class="s">windows</span><span class="se">\\</span><span class="s">mkl&#39;</span><span class="p">,</span> <span class="s">&#39;C:</span><span class="se">\\</span><span class="s">Program Files (x86)</span><span class="se">\\</span><span class="s">IntelSWTools</span><span class="se">\\</span><span class="s">compilers_and_libraries_2019.0.117</span><span class="se">\\</span><span class="s">windows</span><span class="se">\\</span><span class="s">mkl</span><span class="se">\\</span><span class="s">include&#39;</span><span class="p">,</span> <span class="s">&#39;C:</span><span class="se">\\</span><span class="s">Program Files (x86)</span><span class="se">\\</span><span class="s">IntelSWTools</span><span class="se">\\</span><span class="s">compilers_and_libraries_2019.0.117</span><span class="se">\\</span><span class="s">windows</span><span class="se">\\</span><span class="s">mkl</span><span class="se">\\</span><span class="s">lib&#39;</span><span class="p">,</span> <span class="s">&#39;D:/ProgramData/Anaconda3</span><span class="se">\\</span><span class="s">Library</span><span class="se">\\</span><span class="s">include&#39;</span><span class="p">]</span>      
+<span class="n">lapack_opt_info</span><span class="p">:</span>
+    <span class="n">libraries</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;mkl_rt&#39;</span><span class="p">]</span>
+    <span class="n">library_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;D:/ProgramData/Anaconda3</span><span class="se">\\</span><span class="s">Library</span><span class="se">\\</span><span class="s">lib&#39;</span><span class="p">]</span>
+    <span class="n">define_macros</span> <span class="o">=</span> <span class="p">[(</span><span class="s">&#39;SCIPY_MKL_H&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;HAVE_CBLAS&#39;</span><span class="p">,</span> <span class="bp">None</span><span class="p">)]</span>
+    <span class="n">include_dirs</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;C:</span><span class="se">\\</span><span class="s">Program Files (x86)</span><span class="se">\\</span><span class="s">IntelSWTools</span><span class="se">\\</span><span class="s">compilers_and_libraries_2019.0.117</span><span class="se">\\</span><span class="s">windows</span><span class="se">\\</span><span class="s">mkl&#39;</span><span class="p">,</span> <span class="s">&#39;C:</span><span class="se">\\</span><span class="s">Program Files (x86)</span><span class="se">\\</span><span class="s">IntelSWTools</span><span class="se">\\</span><span class="s">compilers_and_libraries_2019.0.117</span><span class="se">\\</span><span class="s">windows</span><span class="se">\\</span><span class="s">mkl</span><span class="se">\\</span><span class="s">include&#39;</span><span class="p">,</span> <span class="s">&#39;C:</span><span class="se">\\</span><span class="s">Program Files (x86)</span><span class="se">\\</span><span class="s">IntelSWTools</span><span class="se">\\</span><span class="s">compilers_and_libraries_2019.0.117</span><span class="se">\\</span><span class="s">windows</span><span class="se">\\</span><span class="s">mkl</span><span class="se">\\</span><span class="s">lib&#39;</span><span class="p">,</span> <span class="s">&#39;D:/ProgramData/Anaconda3</span><span class="se">\\</span><span class="s">Library</span><span class="se">\\</span><span class="s">include&#39;</span><span class="p">]</span> 
+</pre></div>
+
+
+<h3 id="_2">比较</h3>
+<p>比较OpenBLAS，Intel MKL和Eigen的矩阵相乘性能</p>
+<p><code>EIGEN</code>: 是一个线性算术的C++模板库。功能强大、快速、优雅以及支持多平台，可以使用该库来方便处理一些矩阵的操作，达到类似matlab那样的快捷。 需要定义 EIGEN_NO_DEBUG 阻止运行时assertion。编译单线程版本需要开启 -DEIGEN_DONT_PARALLELIZE. 在试验中，我们采用 EIGEN 原生 BLAS 实现。<br />
+Intel MKL: 英特尔数学核心函数库是一套经过高度优化和广泛线程化的数学例程，专为需要极致性能的科学、工程及金融等领域的应用而设计。它可以为当前及下一代英特尔处理器提供性能优化，包括更出色地与 Microsoft Visual Studio、Eclipse和XCode相集成。英特尔 MKL 支持完全集成英特尔兼容性 OpenMP 运行时库，以实现更出色的 Windows/Linux 跨平台兼容性。在试验中的多线程版本需要链接到 mkl_gnu_thread，而不是 mkl_intel_thread，单线程版本需要链接到 mkl_sequential_thread。<br />
+OpenBLAS: 是一个高性能多核 BLAS 库，是 GotoBLAS2 1.13 BSD 版本的衍生版。OpenBLAS 的编译依赖系统环境，并且没有原生单线程版本，在实验这哦那个，通过设置 OMP_NUM_THREADS=1 来模拟单线程版本，可能会带来一点点的性能下降。<br />
+        每个测试程序的编译都采用 “-O4 -msse2 -msse3 -msse4” 优化， 通过设置 OMP_NUM_THREADS 来控制使用的线程数量. 除了 OpenBLAS，其他两个库的测试程序都分别有单线程和多线程的编译版本。</p>
+<div class="hlcode"><pre>    <span class="err">如果</span><span class="n">MKL</span><span class="err">编译出现问题，建议参考</span><span class="n">Intel</span> <span class="n">Math</span> <span class="n">Kernel</span> <span class="n">Library</span> <span class="n">Link</span> <span class="n">Line</span> <span class="n">Advisor</span>
+</pre></div>
+
+
+<p>单线程版本<br />
+        我在实验中进行了一系列的非稀疏矩阵相乘运算，矩阵规模也逐渐增大，单线程的运行时间如下表所示，其中采用的测试轮数为5轮，其中红色表示性能最好的一组实验结果。</p>
+<p>Matrix-Dimension    Eigen   MKL OpenBLAS<br />
+500 0.04159 0.03122 0.03058<br />
+1000    0.31789 0.24339 0.23730<br />
+1500    1.04589 0.81445 0.79869<br />
+2000    2.37567 1.92036 1.87102<br />
+2500    4.68266 3.78569 3.64548<br />
+3000    8.28073 6.42630 6.29797<br />
+3500    13.07470    10.25096    9.98417<br />
+4000    19.34550    15.21931    14.87500<br />
+4500    27.52767    21.45024    21.18227<br />
+5000    37.67552     29.31631   29.07229</p>
+<div class="hlcode"><pre>    <span class="err">从图中可以看出，</span><span class="n">OpenBLAS</span><span class="err">的性能最好，</span><span class="n">MKL</span><span class="err">的表现也很不错，而</span><span class="n">EIGEN</span><span class="err">的表现却很糟糕。</span>
+</pre></div>
+
+
+<p>多线程版本<br />
+        在多线程的测试中，我们采用多个CPU核心来做矩阵乘法运算，所有的结果也同样采用5轮训练，我们采用的CPU核数分别是8，16，32，48。</p>
+<p>Cores = 8<br />
+Matrix-Dimension    Eigen   MKL OpenBLAS<br />
+1000    0.05658 0.03955 0.06468<br />
+2000    0.34981 0.26200 0.23879<br />
+3000    1.20781 0.85449 0.80737<br />
+4000    2.65490 1.90273 1.88366<br />
+5000    5.03304 3.73005 3.67966<br />
+6000    8.78654 6.52766 6.31980<br />
+7000    13.55611    10.13758    10.07120<br />
+8000    19.81634    15.03530    14.89440<br />
+9000    29.11329    21.54359    21.26992<br />
+10000   39.01563    29.93075    29.22034</p>
+<p>Cores = 16<br />
+Matrix-Dimension    Eigen   MKL OpenBLAS<br />
+1000    0.05708 0.02185 0.03897<br />
+2000    0.26694 0.13807 0.30461<br />
+3000    0.70686 0.43692 0.93511<br />
+4000    1.45129 0.97720 2.06761<br />
+5000    2.59477 1.90665 2.49280<br />
+6000    5.43438 3.30945 7.01299<br />
+7000    8.01124 5.17896 6.84496<br />
+8000    11.22280    7.81439 12.99240<br />
+9000    15.15625    11.08906    21.82488<br />
+10000   19.91151    15.22039    30.86908</p>
+<p>Cores = 32<br />
+Matrix-Dimension    Eigen   MKL OpenBLAS<br />
+1000    0.04003 0.02792 0.02244<br />
+2000    0.51213 0.14363 0.16990<br />
+3000    1.13647 0.51105 0.54635<br />
+4000    1.58793 1.10219 1.26401<br />
+5000    2.88341 2.07923 2.48735<br />
+6000    5.92779 3.42785 4.26794<br />
+7000    7.91650 5.32176 6.69391<br />
+8000    11.96467    7.65395 9.98951<br />
+9000    17.45420    10.28328    14.14108<br />
+10000   23.31314    15.10077    19.34171</p>
+<p>Cores = 40<br />
+Matrix-Dimension    Eigen   MKL OpenBLAS<br />
+1000    0.03691 0.02877 0.01779<br />
+2000    0.37739 0.14037 0.13655<br />
+3000    0.61183 0.41057 0.44113<br />
+4000    2.43670 1.02625 1.01414<br />
+5000    3.18099 1.91092 1.97898<br />
+6000    8.24002 2.96157 3.40685<br />
+7000    11.59889    4.68312 5.38634<br />
+8000    9.50613 6.98434 7.95971<br />
+9000    14.83066    9.60891 11.37585<br />
+10000   23.67187    15.52151    15.52680</p>
+<p>Cores = 48<br />
+Matrix-Dimension    Eigen   MKL OpenBLAS<br />
+1000    0.03635 0.02398 0.01548<br />
+2000    0.36417 0.13408 0.11496<br />
+3000    2.32388 0.39291 0.36669<br />
+4000    2.32030 1.13244 0.85790<br />
+5000    2.08269 1.75812 1.66785<br />
+6000    8.70766 2.98694 2.85609<br />
+7000    8.23543 4.62340 4.53257<br />
+8000    21.18603    6.68886 6.72820<br />
+9000    19.86504    9.59635 9.50597<br />
+10000   16.10920    13.13038    13.04432</p>
+<p>可以看出，MKL和OpenBLAS都提供了比较好的性能，MKL性能还更好一点，在各别多线程条件下了，可能某些原因或者我机器设置的问题，出现了各别性能异常，比如小矩阵运算时间反倒比大矩阵运算长，或者更多的线程却不能提供更好的性能。这些情况后面可能还需要查一查。</p>
+<p>伸缩性<br />
+        另外，我也测试了使用不同的cpu核数对性能的影响，下面两个图描述了把cpu从1增加到20的条件下，5000×5000的矩阵相乘的时间开销和加速比。</p>
+<p>结论<br />
+        就我的测试环境而言，Intel MKL 和 OpenBLAS 似乎是矩阵相乘运算方面性能最佳的 BLAS 库，在多核以及不同规模的矩阵方面都具有较好的伸展性和稳定性，而对于单线程情况，OpenBLAS相比 MKL 在性能上有一定提升。</p>
+<h1 id="2-pandas">2. 更高效的使用pandas</h1>
+<h2 id="21-io">2.1. 高效数据IO</h2>
+<h3 id="211-pandas">2.1.1. 使用pandas自带函数读取文件</h3>
+<p>pandas是带buffer，按块读取的。python直接读取是按字节的。一般情况下使用pandas会比直接使用python快</p>
+<h3 id="212-io">2.1.2. 使用二进制格式文件进行I/O</h3>
+<p>选择合适的文件格式，有利于IO性能提升<sup id="fnref:best_format"><a class="footnote-ref" href="#fn:best_format" rel="footnote">5</a></sup></p>
+<p>在极度追求IO性能的情况下推荐使用二进制文件格式（如：<code>hdf</code>、<code>feather</code>或<code>h5py</code>格式）。</p>
+<div class="hlcode"><pre><span class="c"># Text csv</span>
+<span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="s">&quot;./test.csv&quot;</span><span class="p">)</span>
+<span class="c"># 41.1 s</span>
+<span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s">&quot;./test.csv&quot;</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="c"># 4min 7s</span>
+<span class="c"># 800MB -&gt; ./test.csv</span>
+<span class="c"># 1.6GB -&gt; df</span>
+</pre></div>
+
+
+<h4 id="2121-hdf5-format">2.1.2.1. HDF5 Format</h4>
+<p>HDF5 是一种高效的文件格式,<br />
+I/O 读取需要依赖 PyTables &gt;= 3.0.0. </p>
+<div class="hlcode"><pre><span class="c"># binary  HDF5 Format </span>
+<span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_hdf</span><span class="p">(</span><span class="s">&quot;./test.h5&quot;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="s">&quot;df&quot;</span><span class="p">)</span>
+<span class="c"># 6.39 s</span>
+<span class="n">df</span><span class="o">.</span><span class="n">to_hdf</span><span class="p">(</span><span class="s">&quot;./test.h5&quot;</span><span class="p">,</span><span class="n">key</span><span class="o">=</span><span class="s">&quot;df&quot;</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="s">&quot;w&quot;</span><span class="p">)</span>
+<span class="c"># 48.3 s</span>
+<span class="c"># 1.6GB -&gt; ./test.h5</span>
+<span class="c"># 1.6GB -&gt; df</span>
+</pre></div>
+
+
+<h4 id="2122-feather">2.1.2.2. feather</h4>
+<p>Feather 的开发依赖于 Apache Arrow 计划，是一种快速、互动的文件存储格式 <br />
+注意：<br />
+- pd.read_feather 默认 <code>nthreads=1</code>，可以调整</p>
+<div class="hlcode"><pre><span class="c"># feather</span>
+<span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_feather</span><span class="p">(</span><span class="s">&quot;./test.feather&quot;</span><span class="p">,</span><span class="n">nthreads</span> <span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="c"># 21.9 s</span>
+<span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_feather</span><span class="p">(</span><span class="s">&quot;./test.feather&quot;</span><span class="p">,</span><span class="n">nthreads</span> <span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="c"># 17s</span>
+<span class="n">df</span><span class="o">.</span><span class="n">to_feather</span><span class="p">(</span><span class="s">&quot;./test.feather&quot;</span><span class="p">)</span>
+<span class="c"># 8 s</span>
+<span class="c"># 1.6GB -&gt; ./test.feather</span>
+<span class="c"># 1.6GB -&gt; df</span>
+</pre></div>
+
+
+<h4 id="2123-parquet-">2.1.2.3. parquet--推荐</h4>
+<p><a href="https://parquet.apache.org/">apache parquet</a> 为dataframe 格式的内存数据，IO处理提供了优秀的解决方案。<br />
+<code>pd.read_parquet</code> 支持多引擎，兼顾持久化后的内存，支持多种文件路径<br />
+<strong>注意</strong>：<br />
+1. <strong>columns_name</strong> 不支持重复的列名和非字符串列名。<br />
+2. <code>df.index.name=None or ""</code> index 指引如果有，必须是字符串</p>
+<p>关于引擎的说明：<br />
+1. <code>fastparquet</code> uses <strong>numba</strong>, <br />
+2. <code>pyarrow</code> uses a <strong>c-library</strong>,不支持 datetime数据</p>
+<p><img alt="" src="/attach/images/2020-03-09-08-12-42.png" /></p>
+<div class="hlcode"><pre><span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s">&#39;./test.parquet&#39;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s">&#39;pyarrow&#39;</span><span class="p">)</span>
+<span class="c"># 13.9 s</span>
+<span class="n">df</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="s">&#39;./test.parquet&#39;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s">&#39;pyarrow&#39;</span><span class="p">)</span>
+<span class="c"># 12 s</span>
+<span class="c"># 7.13 MB -&gt; ./test.parquet</span>
+<span class="c"># 1.6GB -&gt; df</span>
+
+<span class="c"># 推荐使用 pyarrow 引擎</span>
+<span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_parquet</span><span class="p">(</span><span class="s">&#39;./test.parquet&#39;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s">&#39;fastparquet&#39;</span><span class="p">)</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="s">&#39;./test.parquet&#39;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s">&#39;fastparquet&#39;</span><span class="p">,</span><span class="n">compression</span><span class="o">=</span><span class="s">&quot;UNCOMPRESSED&quot;</span><span class="p">)</span>
+<span class="c"># 8.26 s</span>
+<span class="c"># 1.6GB-&gt; ./test.parquet</span>
+<span class="n">df</span><span class="o">.</span><span class="n">to_parquet</span><span class="p">(</span><span class="s">&#39;./test.parquet&#39;</span><span class="p">,</span> <span class="n">engine</span><span class="o">=</span><span class="s">&#39;fastparquet&#39;</span><span class="p">,</span><span class="n">compression</span><span class="o">=</span><span class="s">&quot;GZIP&quot;</span><span class="p">)</span>
+<span class="c"># 7.13 MB -&gt; ./test.parquet</span>
+<span class="c"># 14.7s</span>
+<span class="c"># 1.6GB -&gt; df</span>
+</pre></div>
+
+
+<h4 id="2124-python-pickle-format">2.1.2.4. Python Pickle Format</h4>
+<p>直接使用</p>
+<div class="hlcode"><pre><span class="c"># binary Python Pickle Format</span>
+<span class="n">df</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="s">&quot;./test.pkl&quot;</span><span class="p">)</span>
+<span class="c"># 3.46 s</span>
+<span class="n">df</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="s">&quot;./test.pkl&quot;</span><span class="p">)</span>
+<span class="c"># 35.7 s</span>
+<span class="c"># 1.6GB -&gt; ./test.pkl</span>
+<span class="c"># 1.6GB -&gt; df</span>
+</pre></div>
+
+
+<p>一般情况下HDF的读取比读取csv文件快几十倍，但HDF文件在大小上会稍微大一些。</p>
+<h4 id="_3">比较</h4>
+<div class="hlcode"><pre><span class="n">print</span><span class="p">(</span><span class="s">&quot;pandas df to disk ####################################################&quot;</span><span class="p">)</span>
+<span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="n">example_feather</span><span class="o">:</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="o">%</span><span class="n">timeit</span> <span class="n">feather</span><span class="p">.</span><span class="n">write_feather</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="err">&#39;</span><span class="n">example_feather</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="cp"># 2.62 ms ± 35.8 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)</span>
+<span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="n">example_parquet</span><span class="o">:</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="o">%</span><span class="n">timeit</span> <span class="n">pq</span><span class="p">.</span><span class="n">write_table</span><span class="p">(</span><span class="n">pa</span><span class="p">.</span><span class="n">Table</span><span class="p">.</span><span class="n">from_pandas</span><span class="p">(</span><span class="n">df</span><span class="p">),</span> <span class="err">&#39;</span><span class="n">example</span><span class="p">.</span><span class="n">parquet</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="cp"># 3.19 ms ± 51 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)</span>
+<span class="n">print</span><span class="p">()</span>
+
+<span class="n">print</span><span class="p">(</span><span class="s">&quot;for comparison:&quot;</span><span class="p">)</span>
+<span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="n">example_pickle</span><span class="o">:</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="o">%</span><span class="n">timeit</span> <span class="n">df</span><span class="p">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="err">&#39;</span><span class="n">example_pickle</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="cp"># 2.75 ms ± 18.8 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)</span>
+<span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="n">example_fp_parquet</span><span class="o">:</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="o">%</span><span class="n">timeit</span> <span class="n">fp</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="err">&#39;</span><span class="n">example_fp_parquet</span><span class="err">&#39;</span><span class="p">,</span> <span class="n">df</span><span class="p">)</span>
+<span class="cp"># 7.06 ms ± 205 µs per loop (mean ± std. dev. of 7 runs, 1 loop each)</span>
+<span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="n">example_hdf</span><span class="o">:</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="o">%</span><span class="n">timeit</span> <span class="n">df</span><span class="p">.</span><span class="n">to_hdf</span><span class="p">(</span><span class="err">&#39;</span><span class="n">example_hdf</span><span class="err">&#39;</span><span class="p">,</span> <span class="err">&#39;</span><span class="n">key_to_store</span><span class="err">&#39;</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="sc">&#39;w&#39;</span><span class="p">,</span> <span class="n">table</span><span class="o">=</span><span class="n">True</span><span class="p">)</span>
+<span class="cp"># 24.6 ms ± 4.45 ms per loop (mean ± std. dev. of 7 runs, 100 loops each)</span>
+<span class="n">print</span><span class="p">()</span>
+
+<span class="n">print</span><span class="p">(</span><span class="s">&quot;pandas df from disk ##################################################&quot;</span><span class="p">)</span>
+<span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="n">example_feather</span><span class="o">:</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="o">%</span><span class="n">timeit</span> <span class="n">feather</span><span class="p">.</span><span class="n">read_feather</span><span class="p">(</span><span class="err">&#39;</span><span class="n">example_feather</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="cp"># 969 µs ± 1.8 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)</span>
+<span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="n">example_parquet</span><span class="o">:</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="o">%</span><span class="n">timeit</span> <span class="n">pq</span><span class="p">.</span><span class="n">read_table</span><span class="p">(</span><span class="err">&#39;</span><span class="n">example</span><span class="p">.</span><span class="n">parquet</span><span class="err">&#39;</span><span class="p">).</span><span class="n">to_pandas</span><span class="p">()</span>
+<span class="cp"># 1.9 ms ± 5.5 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)</span>
+
+<span class="n">print</span><span class="p">(</span><span class="s">&quot;for comparison:&quot;</span><span class="p">)</span>
+<span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="n">example_pickle</span><span class="o">:</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="o">%</span><span class="n">timeit</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="err">&#39;</span><span class="n">example_pickle</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="cp"># 1.07 ms ± 6.21 µs per loop (mean ± std. dev. of 7 runs, 1000 loops each)</span>
+<span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="n">example_fp_parquet</span><span class="o">:</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="o">%</span><span class="n">timeit</span> <span class="n">fp</span><span class="p">.</span><span class="n">ParquetFile</span><span class="p">(</span><span class="err">&#39;</span><span class="n">example_fp_parquet</span><span class="err">&#39;</span><span class="p">).</span><span class="n">to_pandas</span><span class="p">()</span>
+<span class="cp"># 4.53 ms ± 260 µs per loop (mean ± std. dev. of 7 runs, 1 loop each)</span>
+<span class="n">print</span><span class="p">(</span><span class="err">&#39;</span><span class="n">example_hdf</span><span class="o">:</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="o">%</span><span class="n">timeit</span> <span class="n">pd</span><span class="p">.</span><span class="n">read_hdf</span><span class="p">(</span><span class="err">&#39;</span><span class="n">example_hdf</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="cp"># 10 ms ± 43.4 µs per loop (mean ± std. dev. of 7 runs, 100 loops each)</span>
+
+<span class="cp"># pandas version: 0.22.0</span>
+<span class="cp"># fastparquet version: 0.1.3</span>
+<span class="cp"># numpy version: 1.13.3</span>
+<span class="cp"># pandas version: 0.22.0</span>
+<span class="cp"># pyarrow version: 0.8.0</span>
+<span class="cp"># sys.version: 3.6.3</span>
+<span class="cp"># example Dataframe taken from https:</span><span class="c1">//arrow.apache.org/docs/python/parquet.html</span>
+</pre></div>
+
+
+<h3 id="213">2.1.3. 数据压缩后再进行持久化</h3>
+<div class="hlcode"><pre><span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s">&#39;output.csv.gz&#39;</span>
+         <span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s">&#39;|&#39;</span>
+         <span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="bp">True</span>
+         <span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="bp">False</span>
+         <span class="p">,</span> <span class="n">chunksize</span><span class="o">=</span><span class="mi">100000</span>
+         <span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="s">&#39;gzip&#39;</span>
+         <span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+
+<span class="c"># 使用compression=&#39;gzip&#39; 压缩文件 </span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s">&quot;./test.csv&quot;</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="c"># 4min 7s</span>
+<span class="c"># 800MB -&gt; ./test.csv</span>
+<span class="c"># 1.6GB -&gt; df</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">to_csv</span><span class="p">(</span><span class="s">&quot;./test.csv.gz&quot;</span><span class="p">,</span><span class="n">index</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="s">&#39;gzip&#39;</span><span class="p">,</span><span class="n">encoding</span><span class="o">=</span><span class="s">&#39;utf-8&#39;</span><span class="p">)</span>
+<span class="c"># 5min</span>
+<span class="c"># 9.80MB -&gt; ./test.csv.gz</span>
+<span class="c"># 1.6GB -&gt; df</span>
+
+
+<span class="n">df</span><span class="o">.</span><span class="n">to_pickle</span><span class="p">(</span><span class="s">&quot;data.pkl.compress&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="s">&quot;gzip&quot;</span><span class="p">)</span>
+
+<span class="n">rt</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="s">&quot;data.pkl.compress&quot;</span><span class="p">,</span> <span class="n">compression</span><span class="o">=</span><span class="s">&quot;gzip&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="22-">2.2. 高效遍历数据--避免常规循环</h2>
+<p>总结： 如果必须要使用循环，建议使用 apply； 否则的话尽量适应向量化的方法</p>
+<h3 id="221-x1">2.2.1. 标准遍历--x1</h3>
+<div class="hlcode"><pre><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)):</span>
+    <span class="err">判定</span><span class="mi">1</span><span class="err">：</span>
+        <span class="n">df</span><span class="p">[</span><span class="s">&quot;列名&quot;</span><span class="p">]</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
+    <span class="err">判定</span><span class="mi">2</span><span class="err">：</span>
+        <span class="n">df</span><span class="p">[</span><span class="s">&quot;列名&quot;</span><span class="p">]</span><span class="n">iloc</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">value</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">soc_loop</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">TEAM</span><span class="p">,):</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">&#39;Draws&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">99999</span>
+    <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="p">((</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;HomeTeam&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">row</span><span class="p">]</span> <span class="o">==</span> <span class="n">TEAM</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;FTR&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">row</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;D&#39;</span><span class="p">))</span> <span class="o">|</span> \
+            <span class="p">((</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;AwayTeam&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">row</span><span class="p">]</span> <span class="o">==</span> <span class="n">TEAM</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;FTR&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">row</span><span class="p">]</span> <span class="o">==</span> <span class="s">&#39;D&#39;</span><span class="p">)):</span>
+            <span class="n">df</span><span class="p">[</span><span class="s">&#39;Draws&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">row</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Draw&#39;</span>
+        <span class="k">elif</span> <span class="p">((</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;HomeTeam&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">row</span><span class="p">]</span> <span class="o">==</span> <span class="n">TEAM</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;FTR&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">row</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39;D&#39;</span><span class="p">))</span> <span class="o">|</span> \
+            <span class="p">((</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;AwayTeam&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">row</span><span class="p">]</span> <span class="o">==</span> <span class="n">TEAM</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;FTR&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">row</span><span class="p">]</span> <span class="o">!=</span> <span class="s">&#39;D&#39;</span><span class="p">)):</span>
+            <span class="n">df</span><span class="p">[</span><span class="s">&#39;Draws&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">row</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;No_Draw&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">df</span><span class="p">[</span><span class="s">&#39;Draws&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="n">row</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;No_Game&#39;</span>
+    <span class="k">return</span> <span class="n">df</span> 
+
+<span class="n">df</span><span class="o">=</span><span class="n">soc_loop</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="s">&quot;Arsenal&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="222-iterrows-x321">2.2.2. 使用内置函数 iterrows()--x321倍加速</h3>
+<ol>
+<li>使用的是python level 的loop </li>
+<li>实现形式是通过为新的df列添加 list来实现的，其中list通过 <code>append</code> 遍历来实现</li>
+</ol>
+<div class="hlcode"><pre><span class="n">add_list</span><span class="o">=</span><span class="p">[]</span>
+<span class="k">for</span> <span class="n">index</span><span class="p">,</span><span class="n">row</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">iterrows</span><span class="p">():</span>
+    <span class="n">add_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">func</span><span class="p">(</span><span class="n">parmaters_1</span><span class="p">,</span><span class="n">row</span><span class="p">[</span><span class="s">&quot;选择相关列名1&quot;</span><span class="p">],</span><span class="n">row</span><span class="p">[</span><span class="s">&quot;选择相关列名2&quot;</span><span class="p">]))</span>
+
+<span class="n">df</span><span class="p">[</span><span class="s">&quot;列名&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">add_list</span>
+</pre></div>
+
+
+<h3 id="223-apply-x811">2.2.3. 使用内置函数 apply()--x811倍加速</h3>
+<p><code>apply()</code>方法可将函数应用于dataframe特定<code>行</code>或<code>列</code>。 <strong>其本质是另一种形式的遍历loop</strong>。 但比python-level 的遍历效率更高。</p>
+<p>函数可以由lambda方式在代码中内嵌实现，lambda函数的末尾包含axis参数，用来告知Pandas将函数运用于行（axis = 1）或者列（axis = 0），可以普通自定义函数设置。</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">row</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">row</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">sth</span> 
+<span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">foo</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="s">&quot;A&quot;</span><span class="p">]),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="c">#输入pd.Series 到函数中，效率低</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">foo</span><span class="p">(</span><span class="o">*</span><span class="n">row</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="c"># raw=True 输入numpy.array 到函数中，效率高 X10</span>
+
+
+
+<span class="c"># 对一行进行操作，作用于列</span>
+<span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="err">选择行</span><span class="p">,:]</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">col</span><span class="p">:</span> <span class="n">col</span><span class="p">[</span><span class="s">&quot;index_1&quot;</span><span class="p">]</span><span class="o">+</span><span class="n">col</span><span class="p">[</span><span class="s">&quot;index_2&quot;</span><span class="p">],</span> <span class="n">axis</span> <span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c"># 对一列进行操作，作用于行</span>
+<span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,</span><span class="err">选择列</span><span class="p">]</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">row</span><span class="p">[</span><span class="s">&quot;选择相关列名1&quot;</span><span class="p">]</span><span class="o">+</span><span class="n">row</span><span class="p">[</span><span class="s">&quot;选择相关列名2&quot;</span><span class="p">],</span> <span class="n">axis</span> <span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="224-groupby-">2.2.4. 使用groupby()--减少遍历元素</h3>
+<p>通过使用<code>groupby()</code>将数据元素合并分组，避免重复元素遍历，可以提高程序运行效率。</p>
+<p><img alt="" src="/attach/images/2020-03-13-20-41-22.png" /></p>
+<p>主要有：<br />
+1. grouped.apply(func)<br />
+2. grouped.agg(func)<br />
+3. grouped.transform(func)<br />
+4. grouped.uni_func() # 内置函数uni_func</p>
+<p>上述4种应用本质上还是<code>python-level</code>的loop，只是针对dataframe这类的数据结构有不同程度的优化，包括底层C/C++的编译优化</p>
+<h4 id="2241-groupbyapplyfunc">2.2.4.1. groupby().apply(func)</h4>
+<p>自定义函数func<br />
+<strong>输入：</strong>  apply 默认传入的是<strong>整个dataframe</strong> 到<code>自定义函数func</code><br />
+<strong>原理：</strong> apply 函数将<code>函数func</code> 应用到您指定的每个group。<br />
+<strong>输出：</strong> apply 是一个更一般化的方法，自定义函数可以返回scalar, Series , DataFrame ,numpy array , list等形式</p>
+<div class="hlcode"><pre><span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s">&#39;Q&#39;</span><span class="p">:[</span><span class="s">&#39;LI&#39;</span><span class="p">,</span><span class="s">&#39;ZHANG&#39;</span><span class="p">,</span><span class="s">&#39;ZHANG&#39;</span><span class="p">,</span><span class="s">&#39;LI&#39;</span><span class="p">,</span><span class="s">&#39;WANG&#39;</span><span class="p">],</span> <span class="s">&#39;A&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="s">&#39;B&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="s">&#39;C&#39;</span> <span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">6</span><span class="p">,</span><span class="mi">7</span><span class="p">]})</span>
+<span class="o">&gt;&gt;&gt;</span>
+    <span class="n">Q</span>   <span class="n">A</span>   <span class="n">B</span>   <span class="n">C</span>   
+<span class="mi">0</span>   <span class="n">LI</span>  <span class="mi">1</span>   <span class="mi">1</span>   <span class="mi">3</span>   
+<span class="mi">1</span>   <span class="n">ZHANG</span>   <span class="mi">1</span>   <span class="o">-</span><span class="mi">1</span>  <span class="mi">4</span>   
+<span class="mi">2</span>   <span class="n">ZHANG</span>   <span class="mi">1</span>   <span class="mi">0</span>   <span class="mi">5</span>   
+<span class="mi">3</span>   <span class="n">LI</span>  <span class="mi">2</span>   <span class="mi">1</span>   <span class="mi">6</span>   
+<span class="mi">4</span>   <span class="n">WANG</span>    <span class="mi">2</span>   <span class="mi">2</span>   <span class="mi">7</span>   
+
+<span class="c"># 最好先对df 进行切片</span>
+<span class="n">a</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[:,[</span><span class="s">&quot;A&quot;</span><span class="p">,</span><span class="s">&quot;C&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&#39;A&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="p">[</span><span class="s">&quot;A&quot;</span><span class="p">]</span><span class="o">+</span><span class="n">x</span><span class="p">[</span><span class="s">&quot;C&quot;</span><span class="p">])</span>
+<span class="c"># a 是 pd.Series</span>
+<span class="c"># x 是apply 输入到自定义函数func函数中的变量，是dataframe格式</span>
+<span class="n">a</span><span class="o">.</span><span class="n">index</span><span class="o">=</span><span class="n">a</span><span class="o">.</span><span class="n">index</span><span class="o">.</span><span class="n">get_level_values</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">df</span><span class="p">[</span><span class="s">&quot;d&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">a</span>
+<span class="o">&gt;&gt;&gt;</span>
+    <span class="n">Q</span>   <span class="n">A</span>   <span class="n">B</span>   <span class="n">C</span>   <span class="n">d</span>
+<span class="mi">0</span>   <span class="n">LI</span>  <span class="mi">1</span>   <span class="mi">1</span>   <span class="mi">3</span>   <span class="mi">4</span>
+<span class="mi">1</span>   <span class="n">ZHANG</span>   <span class="mi">1</span>   <span class="o">-</span><span class="mi">1</span>  <span class="mi">4</span>   <span class="mi">5</span>
+<span class="mi">2</span>   <span class="n">ZHANG</span>   <span class="mi">1</span>   <span class="mi">0</span>   <span class="mi">5</span>   <span class="mi">6</span>
+<span class="mi">3</span>   <span class="n">LI</span>  <span class="mi">2</span>   <span class="mi">1</span>   <span class="mi">6</span>   <span class="mi">8</span>
+<span class="mi">4</span>   <span class="n">WANG</span>    <span class="mi">2</span>   <span class="mi">2</span>   <span class="mi">7</span>   <span class="mi">9</span>
+
+<span class="c">###其他事项</span>
+<span class="k">def</span> <span class="nf">subtract_two</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="p">[</span><span class="s">&#39;B&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">x</span><span class="p">[</span><span class="s">&#39;C&#39;</span><span class="p">]</span>
+<span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&#39;A&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">subtract_two</span><span class="p">)</span>
+<span class="c"># 可以正常运行</span>
+<span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&#39;A&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">subtract_two</span><span class="p">)</span>
+<span class="c"># 报错</span>
+</pre></div>
+
+
+<h4 id="2242-groupbyaggfunc">2.2.4.2. groupby().agg(func)</h4>
+<p><strong>输入</strong>：agg的调用需要要指定字段,输入指定列到函数func</p>
+<p><strong>输出</strong>：Dataframe ，groupby index</p>
+<div class="hlcode"><pre><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&quot;Q&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s">&quot;mean&quot;</span><span class="p">,</span><span class="s">&quot;sum&quot;</span><span class="p">])</span>
+    <span class="n">A</span>       <span class="n">B</span>       <span class="n">C</span>
+    <span class="n">mean</span>    <span class="nb">sum</span> <span class="n">mean</span>    <span class="nb">sum</span> <span class="n">mean</span>    <span class="nb">sum</span>
+<span class="n">Q</span>                       
+<span class="n">LI</span>  <span class="mf">1.5</span> <span class="mi">3</span>   <span class="mf">1.0</span> <span class="mi">2</span>   <span class="mf">4.5</span> <span class="mi">9</span>
+<span class="n">WANG</span>    <span class="mf">2.0</span> <span class="mi">2</span>   <span class="mf">2.0</span> <span class="mi">2</span>   <span class="mf">7.0</span> <span class="mi">7</span>
+<span class="n">ZHANG</span>   <span class="mf">1.0</span> <span class="mi">2</span>   <span class="o">-</span><span class="mf">0.5</span>    <span class="o">-</span><span class="mi">1</span>  <span class="mf">4.5</span> <span class="mi">9</span>
+
+
+<span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&#39;A&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">B</span><span class="o">=</span><span class="s">&#39;sum&#39;</span><span class="p">,</span> <span class="n">C</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;mean&#39;</span><span class="p">,</span> <span class="s">&#39;prod&#39;</span><span class="p">]))</span>
+<span class="o">&gt;&gt;&gt;</span>
+    <span class="n">B</span>   <span class="n">C</span>
+    <span class="nb">sum</span> <span class="n">mean</span>    <span class="n">prod</span>
+<span class="n">A</span>           
+<span class="mi">1</span>   <span class="mi">0</span>   <span class="mf">4.0</span> <span class="mi">60</span>
+<span class="mi">2</span>   <span class="mi">3</span>   <span class="mf">6.5</span> <span class="mi">42</span>
+</pre></div>
+
+
+<h4 id="2243-groupbytransformfunc">2.2.4.3. groupby().transform(func)</h4>
+<p>自定义函数func<br />
+<strong>输入</strong>：以Series 形式输入<br />
+<strong>返回</strong>：自定义函数<code>func</code> 必须返回<strong>行数相同（必须与group长度相同）</strong>的一维序列（sequence，one dimensional Series, array or list,or scale），或者标量（a single scalar object ）</p>
+<div class="hlcode"><pre><span class="c"># sequence -&gt; same row </span>
+<span class="k">def</span> <span class="nf">rand_group_len</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="n">new_df</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&#39;Q&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">rand_group_len</span><span class="p">)</span>
+
+<span class="n">new_df</span>
+<span class="o">&gt;&gt;&gt;</span>
+    <span class="n">A</span>   <span class="n">B</span>   <span class="n">C</span>
+<span class="mi">0</span>   <span class="mf">0.255113</span>    <span class="mf">0.894918</span>    <span class="mf">0.518019</span>
+<span class="mi">1</span>   <span class="mf">0.641294</span>    <span class="mf">0.849864</span>    <span class="mf">0.847467</span>
+<span class="mi">2</span>   <span class="mf">0.815746</span>    <span class="mf">0.224903</span>    <span class="mf">0.732254</span>
+<span class="mi">3</span>   <span class="mf">0.575618</span>    <span class="mf">0.007238</span>    <span class="mf">0.621828</span>
+<span class="mi">4</span>   <span class="mf">0.254013</span>    <span class="mf">0.331561</span>    <span class="mf">0.431511</span>
+
+<span class="c"># scalar</span>
+<span class="k">def</span> <span class="nf">group_sum</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>
+<span class="n">sequence</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&#39;A&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">group_sum</span><span class="p">)</span>
+
+
+<span class="n">s</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="mi">0</span>    <span class="mi">0</span>
+<span class="mi">1</span>    <span class="mi">1</span>
+<span class="mi">2</span>    <span class="mi">2</span>
+<span class="n">s</span><span class="o">.</span><span class="n">transform</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">])</span>
+<span class="o">&gt;&gt;&gt;</span>
+       <span class="n">sqrt</span>        <span class="n">exp</span>
+<span class="mi">0</span>  <span class="mf">0.000000</span>   <span class="mf">1.000000</span>
+<span class="mi">1</span>  <span class="mf">1.000000</span>   <span class="mf">2.718282</span>
+<span class="mi">2</span>  <span class="mf">1.414214</span>   <span class="mf">7.389056</span>
+</pre></div>
+
+
+<h4 id="2244-groupby">2.2.4.4. groupby().内置函数</h4>
+<p>groupyby 可以直接用的优化过的高速运算方法有count()、sum()、prod()、mean()、median()、min()、max()、std()、var()、first()、last()。</p>
+<div class="hlcode"><pre><span class="n">grouop_df</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&#39;A&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="c"># grouop_df index 是A</span>
+</pre></div>
+
+
+<p>在<code>groupby().agg</code>和<code>groupby().transform</code>时尽量使用内置函数计算，可加速计算。</p>
+<div class="hlcode"><pre><span class="n">grouop_df</span><span class="o">=</span><span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&#39;A&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="s">&quot;mean&quot;</span><span class="p">)</span>
+<span class="c"># grouop_df index 是range(0,n)</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&#39;A&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">agg</span><span class="p">([</span><span class="s">&#39;mean&#39;</span><span class="p">,</span> <span class="s">&#39;std&#39;</span><span class="p">])</span>
+</pre></div>
+
+
+<h3 id="225-groupbyapplynumpy">2.2.5. 更快的groupby.apply()方法，使用numpy 自定义</h3>
+<p>参考<sup id="fnref:fast_groupby"><a class="footnote-ref" href="#fn:fast_groupby" rel="footnote">4</a></sup> : Fast groupby-apply operations in Python with and without Pandas<br />
+http://esantorella.com/2016/06/16/groupby/</p>
+<div class="hlcode"><pre><span class="n">first_category</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">n_categories</span><span class="p">,</span> <span class="n">n_obs</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_obs</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s">&#39;first category&#39;</span><span class="p">:</span> <span class="n">first_category</span><span class="p">,</span>
+                   <span class="s">&#39;y&#39;</span><span class="p">:</span> <span class="n">y</span><span class="p">})</span>
+
+<span class="k">class</span> <span class="nc">Groupby</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">keys</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        精华就再在这里 np.unique</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">keys_as_int</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">return_inverse</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_keys</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys_as_int</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_indices</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">set_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="p">[[]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_keys</span><span class="p">)]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">keys_as_int</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">indices</span> <span class="o">=</span> <span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">elt</span><span class="p">)</span> <span class="k">for</span> <span class="n">elt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">apply</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">vector</span><span class="p">,</span> <span class="n">broadcast</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">broadcast</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">vector</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">:</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">vector</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_keys</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">indices</span><span class="p">):</span>
+                <span class="n">result</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">keys_as_int</span><span class="p">[</span><span class="n">k</span><span class="p">]]</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="n">vector</span><span class="p">[</span><span class="n">idx</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+<span class="o">%%</span><span class="n">timeit</span>
+<span class="n">grouped</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&#39;first category&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
+<span class="c"># 595 ms ± 162 ms</span>
+
+<span class="n">a</span><span class="o">=</span><span class="n">Groupby</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">&quot;first category&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">)</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">,</span><span class="n">df</span><span class="p">[</span><span class="s">&quot;y&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span><span class="bp">False</span><span class="p">)</span>
+<span class="c"># 36.7 ms ± 6.65 ms</span>
+
+<span class="o">%%</span><span class="n">timeit</span>
+<span class="n">df</span><span class="p">[</span><span class="s">&#39;mean&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">groupby</span><span class="p">(</span><span class="s">&#39;first category&#39;</span><span class="p">)[</span><span class="s">&#39;y&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
+<span class="c">#4.28 ms ± 1.03 ms</span>
+<span class="c"># 还是transform好</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="c"># 充分利用这一性能对dataframe 进行分解 然后进行高效map运算</span>
+<span class="n">unique_keys</span><span class="p">,</span> <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">],</span> <span class="n">return_inverse</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">unique_keys</span><span class="p">)</span> 
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">array</span><span class="p">([{</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">}],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">object</span><span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span> 
+<span class="o">&gt;&gt;&gt;</span>
+<span class="c">#list </span>
+<span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="k">print</span><span class="p">(</span><span class="n">unique_keys</span><span class="p">[</span><span class="n">indices</span><span class="p">])</span> 
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">array</span><span class="p">([</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s">&#39;&lt;U1&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="226-npvectorizeapply">2.2.6. 使用向量化函数 np.vectorize代替apply 处理</h3>
+<p><code>np.vectorize</code> is <strong>fake vectorize</strong>.<sup id="fnref:fake_vectorize"><a class="footnote-ref" href="#fn:fake_vectorize" rel="footnote">3</a></sup></p>
+<p><code>np.vectorize</code>的主要作用原理是使用<strong>python-level</strong> 的map函数封装<code>pyfunc</code>对输入数组求值，而不是numpy的boardcast 规则。在这里<strong>boardcast 规则并不重要</strong>。</p>
+<p><code>np.vectorize</code> 运行过程中通过使用<code>np.frompyfunc</code>方法将<code>pyfunc</code> 转换为 numpy 的通用函数<code>ufunc</code>，并通过一些优化（例如缓存）以实现性能提升。</p>
+<p>np.vectorize 依然属于 Python-level 的loop，虽然它比<code>pd.DataFrame.apply</code>更加高效。但依据其原理，其作用效果于 <code>map</code>,<code>zip</code> 在同一级别上</p>
+<div class="hlcode"><pre><span class="o">%</span><span class="n">timeit</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">divide</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s">&#39;A&#39;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s">&#39;B&#39;</span><span class="p">]))</span>                                   <span class="c"># 43.9 ms</span>
+<span class="o">%</span><span class="n">timeit</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">divide</span><span class="p">)(</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;A&#39;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s">&#39;B&#39;</span><span class="p">])</span>                                <span class="c"># 48.1 ms</span>
+<span class="o">%</span><span class="n">timeit</span> <span class="p">[</span><span class="n">divide</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;A&#39;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s">&#39;B&#39;</span><span class="p">])]</span>                      <span class="c"># 49.4 ms</span>
+<span class="o">%</span><span class="n">timeit</span> <span class="n">df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="k">lambda</span> <span class="n">row</span><span class="p">:</span> <span class="n">divide</span><span class="p">(</span><span class="o">*</span><span class="n">row</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">raw</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>                  <span class="c"># 760 ms</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">func</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="o">+</span><span class="mi">2</span>
+<span class="n">vecfunc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+<span class="n">new_array</span> <span class="o">=</span> <span class="n">vecfunc</span><span class="p">(</span><span class="n">old_array</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">a</span><span class="o">+</span><span class="n">b</span>
+<span class="n">df</span><span class="p">[</span><span class="s">&#39;result2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">foo</span><span class="p">)(</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;A&#39;</span><span class="p">],</span> <span class="n">df</span><span class="p">[</span><span class="s">&#39;B&#39;</span><span class="p">])</span>
+
+<span class="c"># func:A python function or method</span>
+<span class="nb">type</span><span class="p">(</span><span class="n">vecfunc</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">numpy</span><span class="o">.</span><span class="n">vectorize</span>
+<span class="c"># Vectorized function. 向量化的函数</span>
+
+<span class="nb">type</span><span class="p">(</span><span class="n">new_array</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">numpy</span><span class="o">.</span><span class="n">array</span>
+</pre></div>
+
+
+<h3 id="227-pandas-x9280">2.2.7. 使用pandas 向量化 —-x9280倍加速</h3>
+<p>pandas 向量化：<br />
+1. 避免使用python解释器 级别的loop循环 <br />
+2. 使用优化的C编译器，使用内存更加高效<br />
+3. 依据<strong>有条件的切片</strong><code>df.loc[i,c]</code> 及函数实现（<strong>注意实现方式</strong>） </p>
+<div class="hlcode"><pre><span class="o">%</span><span class="n">timeit</span> <span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;A&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s">&#39;B&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">replace</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span>  <span class="c"># 1.96 ms</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="c"># 构建函数</span>
+<span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">parameter_1</span><span class="p">,</span><span class="n">col_1</span><span class="p">,</span><span class="n">col_2</span><span class="p">,</span><span class="o">..</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    col_1: df array 相同df</span>
+<span class="sd">    col_2: df array 相同df</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">&quot;列名&quot;</span><span class="p">]</span><span class="o">=</span><span class="mi">1</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="err">行条件</span><span class="mi">1</span><span class="p">,</span><span class="s">&quot;列名&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">value_1</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="err">行条件</span><span class="mi">2</span><span class="p">(</span><span class="n">col_1</span><span class="o">==</span><span class="err">值</span><span class="mi">1</span><span class="p">,</span><span class="n">col_2</span><span class="o">==</span><span class="err">值</span><span class="mi">2</span><span class="p">),</span><span class="s">&quot;列名&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">value_2</span>
+
+<span class="n">df</span><span class="p">[</span><span class="s">&quot;列名&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">func</span><span class="p">(</span><span class="n">parameter_1</span><span class="p">,</span><span class="n">df</span><span class="p">[</span><span class="s">&quot;选择列名1&quot;</span><span class="p">],</span><span class="n">df</span><span class="p">[</span><span class="s">&quot;选择列名2&quot;</span><span class="p">],</span><span class="o">..</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">soc_iter</span><span class="p">(</span><span class="n">TEAM</span><span class="p">,</span><span class="n">home</span><span class="p">,</span><span class="n">away</span><span class="p">,</span><span class="n">ftr</span><span class="p">):</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">&#39;Draws&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;No_Game&#39;</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[((</span><span class="n">home</span> <span class="o">==</span> <span class="n">TEAM</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ftr</span> <span class="o">==</span> <span class="s">&#39;D&#39;</span><span class="p">))</span> <span class="o">|</span> <span class="p">((</span><span class="n">away</span> <span class="o">==</span> <span class="n">TEAM</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ftr</span> <span class="o">==</span> <span class="s">&#39;D&#39;</span><span class="p">)),</span> <span class="s">&#39;Draws&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Draw&#39;</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[((</span><span class="n">home</span> <span class="o">==</span> <span class="n">TEAM</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ftr</span> <span class="o">!=</span> <span class="s">&#39;D&#39;</span><span class="p">))</span> <span class="o">|</span> <span class="p">((</span><span class="n">away</span> <span class="o">==</span> <span class="n">TEAM</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ftr</span> <span class="o">!=</span> <span class="s">&#39;D&#39;</span><span class="p">)),</span> <span class="s">&#39;Draws&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;No_Draw&#39;</span>
+
+<span class="n">df</span><span class="p">[</span><span class="s">&quot;Draws&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">soc_loop</span><span class="p">(</span><span class="s">&quot;Arsenal&quot;</span><span class="p">,</span><span class="n">df</span><span class="p">[</span><span class="s">&quot;HOME&quot;</span><span class="p">],</span><span class="n">df</span><span class="p">[</span><span class="s">&quot;AWAY&quot;</span><span class="p">],</span><span class="n">df</span><span class="p">[</span><span class="s">&quot;FTR&quot;</span><span class="p">])</span>
+</pre></div>
+
+
+<h3 id="228-numpy-x658880">2.2.8. 使用numpy 向量化--x658880倍加速</h3>
+<p>pandas 向量化：<br />
+1. 避免使用python解释器 级别的loop循环 <br />
+2. 使用优化的C编译器，使用内存更加高效<br />
+3. 条件切片<code>df.loc[i,c]</code> 及函数实现（<strong>注意实现方式</strong>） <br />
+4. 函数输入的是numpy array (<strong>不同点</strong>)</p>
+<div class="hlcode"><pre><span class="o">%</span><span class="n">timeit</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;B&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">df</span><span class="p">[</span><span class="s">&#39;A&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="n">df</span><span class="p">[</span><span class="s">&#39;B&#39;</span><span class="p">])</span>       <span class="c"># 1.17 ms</span>
+
+<span class="c"># 构建函数</span>
+<span class="k">def</span> <span class="nf">func</span><span class="p">(</span><span class="n">parameter_1</span><span class="p">,</span><span class="n">col_1</span><span class="p">,</span><span class="n">col_2</span><span class="p">,</span><span class="o">..</span><span class="p">):</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">&quot;列名&quot;</span><span class="p">]</span><span class="o">=</span><span class="mi">1</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="err">行条件</span><span class="mi">1</span><span class="p">,</span><span class="s">&quot;列名&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">value_1</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="err">行条件</span><span class="mi">2</span><span class="p">(</span><span class="n">col_1</span><span class="o">==</span><span class="err">值</span><span class="mi">1</span><span class="p">,</span><span class="n">col_2</span><span class="o">==</span><span class="err">值</span><span class="mi">2</span><span class="p">),</span><span class="s">&quot;列名&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">value_2</span>
+
+<span class="c"># 注意是 df[&quot;col&quot;].value</span>
+<span class="n">df</span><span class="p">[</span><span class="s">&quot;列名&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">func</span><span class="p">(</span><span class="n">parameter_1</span><span class="p">,</span><span class="n">df</span><span class="p">[</span><span class="s">&quot;选择列名1&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="n">df</span><span class="p">[</span><span class="s">&quot;选择列名2&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="o">..</span><span class="p">)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">soc_iter</span><span class="p">(</span><span class="n">TEAM</span><span class="p">,</span><span class="n">home</span><span class="p">,</span><span class="n">away</span><span class="p">,</span><span class="n">ftr</span><span class="p">):</span>
+    <span class="n">df</span><span class="p">[</span><span class="s">&#39;Draws&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;No_Game&#39;</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[((</span><span class="n">home</span> <span class="o">==</span> <span class="n">TEAM</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ftr</span> <span class="o">==</span> <span class="s">&#39;D&#39;</span><span class="p">))</span> <span class="o">|</span> <span class="p">((</span><span class="n">away</span> <span class="o">==</span> <span class="n">TEAM</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ftr</span> <span class="o">==</span> <span class="s">&#39;D&#39;</span><span class="p">)),</span> <span class="s">&#39;Draws&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;Draw&#39;</span>
+    <span class="n">df</span><span class="o">.</span><span class="n">loc</span><span class="p">[((</span><span class="n">home</span> <span class="o">==</span> <span class="n">TEAM</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ftr</span> <span class="o">!=</span> <span class="s">&#39;D&#39;</span><span class="p">))</span> <span class="o">|</span> <span class="p">((</span><span class="n">away</span> <span class="o">==</span> <span class="n">TEAM</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">ftr</span> <span class="o">!=</span> <span class="s">&#39;D&#39;</span><span class="p">)),</span> <span class="s">&#39;Draws&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;No_Draw&#39;</span>
+
+<span class="n">df</span><span class="p">[</span><span class="s">&quot;Draws&quot;</span><span class="p">]</span><span class="o">=</span><span class="n">soc_loop</span><span class="p">(</span><span class="s">&quot;Arsenal&quot;</span><span class="p">,</span><span class="n">df</span><span class="p">[</span><span class="s">&quot;HOME&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="n">df</span><span class="p">[</span><span class="s">&quot;AWAY&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">,</span><span class="n">df</span><span class="p">[</span><span class="s">&quot;FTR&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="229">2.2.9. 总结</h3>
+<p>总结： 如果必须要使用循环，建议使用 apply,同时考虑<strong>减少遍历元素数量</strong>和<strong>提前切片</strong>减小数据大小； 否则的话尽量适应向量化的方法</p>
+<h2 id="23">2.3. 高效数据拼接</h2>
+<h3 id="231-append">2.3.1. 避免 append</h3>
+<p>数据在行层面的<code>df.append</code>，减少数据合并过程中的遍历搜索，建议使用先使用：<br />
+1. <code>list.append</code> 的方式添加到Dataframe中<br />
+2. 创建已知大小的空Dataframe，通过高效索引更改</p>
+<div class="hlcode"><pre><span class="c"># 第一种方式（运行时间最长——1分钟，内存占用一般）</span>
+<span class="n">start1</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+<span class="n">res1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+<span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">df_list</span><span class="p">:</span>
+     <span class="n">res1</span> <span class="o">=</span> <span class="n">res1</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;append耗时：</span><span class="si">%s</span><span class="s">秒&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">start1</span><span class="p">))</span>
+
+<span class="c"># %% 第二种方式（运行时间相对第一种少一些——46秒，但内存接近溢出）</span>
+<span class="n">start2</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+<span class="n">dict_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">df</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()</span> <span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">df_list</span><span class="p">]</span>
+<span class="n">combine_dict</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="n">i</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">dic</span> <span class="ow">in</span> <span class="n">dict_list</span><span class="p">:</span>
+     <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">dic</span><span class="o">.</span><span class="n">values</span><span class="p">())[</span><span class="mi">0</span><span class="p">])</span>
+     <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">length</span><span class="p">):</span>
+         <span class="n">combine_dict</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">dic</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">idx</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">dic</span><span class="o">.</span><span class="n">keys</span><span class="p">()}</span>
+         <span class="n">i</span> <span class="o">+=</span> <span class="mi">1</span>
+<span class="n">res2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">combine_dict</span><span class="p">,</span> <span class="s">&#39;index&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;dict合并方式耗时：</span><span class="si">%s</span><span class="s">秒&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">start2</span><span class="p">))</span>
+
+<span class="c"># 第三种方式：list装好所有值（运行时间最短——4秒多，内存占用低）</span>
+<span class="n">start3</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span>
+<span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">]</span>
+<span class="n">a_list</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">b_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="k">for</span> <span class="n">df</span> <span class="ow">in</span> <span class="n">df_list</span><span class="p">:</span>
+     <span class="n">a_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">])</span>
+     <span class="n">b_list</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s">&#39;b&#39;</span><span class="p">])</span>
+<span class="n">res3</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s">&#39;a&#39;</span><span class="p">:</span> <span class="n">a_list</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">:</span> <span class="n">b_list</span><span class="p">})</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;list装好所有值方式耗时：</span><span class="si">%s</span><span class="s">秒&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span> <span class="o">-</span> <span class="n">start3</span><span class="p">))</span>
+</pre></div>
+
+
+<h3 id="232-join-merge-x8">2.3.2. join 代替 merge--x8加速</h3>
+<p>使用<code>set_index</code> 将需要<code>merger</code>的key column 列设置为dataframe 的index，然后使用df.join 合并确实可以加速。</p>
+<p><strong>加速前提</strong><br />
+速度的提高将取决于您的<strong>索引是否唯一</strong>。如果索引不是唯一的，则在索引上合并两个数据帧可能甚至需要更长的时间</p>
+<p><strong>原理</strong><br />
+Indices have a <code>hash table</code>. Meaning you can look them up in amortized O(1). For a normal column you need O(n) in worst case, meaning merging two dfs with len n takes O(n^2) in worst case</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">pandas</span> <span class="kn">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="n">myids</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">choice</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">10000000</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="mi">1000000</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="n">df1</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">myids</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;A&#39;</span><span class="p">])</span>
+<span class="n">df1</span><span class="p">[</span><span class="s">&#39;B&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1000</span><span class="p">,(</span><span class="mi">1000000</span><span class="p">))</span>
+<span class="n">df2</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">permutation</span><span class="p">(</span><span class="n">myids</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;A2&#39;</span><span class="p">])</span>
+<span class="n">df2</span><span class="p">[</span><span class="s">&#39;B2&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1000</span><span class="p">,(</span><span class="mi">1000000</span><span class="p">))</span>
+
+<span class="o">%%</span><span class="n">timeit</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s">&#39;left&#39;</span><span class="p">,</span> <span class="n">left_on</span><span class="o">=</span><span class="s">&#39;A&#39;</span><span class="p">,</span> <span class="n">right_on</span><span class="o">=</span><span class="s">&#39;A2&#39;</span><span class="p">)</span>   
+<span class="c">#1 loop, best of 3: 664 ms per loop</span>
+
+<span class="o">%%</span><span class="n">timeit</span>  
+    <span class="n">x</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s">&#39;A&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">df2</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s">&#39;A2&#39;</span><span class="p">),</span> <span class="n">how</span><span class="o">=</span><span class="s">&#39;left&#39;</span><span class="p">)</span> 
+<span class="c">#1 loop, best of 3: 354 ms per loop</span>
+
+<span class="o">%%</span><span class="n">time</span> 
+    <span class="n">df1</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s">&#39;A&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+    <span class="n">df2</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s">&#39;A2&#39;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="c">#Wall time: 16 ms</span>
+
+<span class="o">%%</span><span class="n">timeit</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">df1</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">df2</span><span class="p">,</span> <span class="n">how</span><span class="o">=</span><span class="s">&#39;left&#39;</span><span class="p">)</span>
+<span class="c">## </span>
+<span class="n">df</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="n">set_index</span><span class="p">(</span><span class="s">&#39;key&#39;</span><span class="p">),</span> <span class="n">on</span><span class="o">=</span><span class="s">&#39;key&#39;</span><span class="p">)</span>
+  <span class="n">key</span>   <span class="n">A</span>    <span class="n">B</span>
+<span class="mi">0</span>  <span class="n">K0</span>  <span class="n">A0</span>   <span class="n">B0</span>
+<span class="mi">1</span>  <span class="n">K1</span>  <span class="n">A1</span>   <span class="n">B1</span>
+<span class="mi">2</span>  <span class="n">K2</span>  <span class="n">A2</span>   <span class="n">B2</span>
+<span class="mi">3</span>  <span class="n">K3</span>  <span class="n">A3</span>  <span class="n">NaN</span>
+<span class="mi">4</span>  <span class="n">K4</span>  <span class="n">A4</span>  <span class="n">NaN</span>
+<span class="mi">5</span>  <span class="n">K5</span>  <span class="n">A5</span>  <span class="n">NaN</span>  
+</pre></div>
+
+
+<h2 id="24">2.4. 高效索引</h2>
+<p>pandas DataFrame 条件筛选是通过布尔索引完成的，其效率非常高。</p>
+<h3 id="241">2.4.1. 使用层次化索引筛选数据，避免使用条件逻辑筛选</h3>
+<p>层次化索引(hierarchical indexing)是pandas的一个重要的功能，它可以在一个轴上有多个（两个以上）的索引，这就表示着，它能够以低维度形式来表示高维度的数据。</p>
+<div class="hlcode"><pre><span class="n">df</span> <span class="o">=</span> <span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span>
+                     <span class="n">index</span><span class="o">=</span><span class="p">[[</span><span class="s">&quot;a&quot;</span><span class="p">,</span><span class="s">&quot;a&quot;</span><span class="p">,</span><span class="s">&quot;b&quot;</span><span class="p">,</span><span class="s">&quot;b&quot;</span><span class="p">],[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]],</span>
+                     <span class="n">columns</span><span class="o">=</span><span class="p">[[</span><span class="s">&quot;A&quot;</span><span class="p">,</span><span class="s">&quot;A&quot;</span><span class="p">,</span><span class="s">&quot;B&quot;</span><span class="p">],[</span><span class="s">&quot;Z&quot;</span><span class="p">,</span><span class="s">&quot;X&quot;</span><span class="p">,</span><span class="s">&quot;C&quot;</span><span class="p">]])</span>
+<span class="k">print</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">         A       B</span>
+<span class="sd">         Z   X   C</span>
+<span class="sd">    a 1  0   1   2</span>
+<span class="sd">      2  3   4   5</span>
+<span class="sd">    b 1  6   7   8</span>
+<span class="sd">      2  9  10  11</span>
+
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="c">#选取列,参数只能选取&quot;A&quot;或&quot;B&quot;</span>
+<span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s">&quot;A&quot;</span><span class="p">])</span><span class="c">#等价于data.ix[:,&quot;A&quot;]</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Z   X</span>
+<span class="sd">a 1  0   1</span>
+<span class="sd">    2  3   4</span>
+<span class="sd">b 1  6   7</span>
+<span class="sd">    2  9  10</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="c">#选取行</span>
+<span class="k">print</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="s">&quot;a&quot;</span><span class="p">])</span>
+<span class="s">&#39;&#39;&#39;</span>
+<span class="s">    A     B</span>
+<span class="s">    Z  X  C</span>
+<span class="s">1  0  1  2</span>
+<span class="s">2  3  4  5</span>
+<span class="s">&quot;&quot;&quot;</span>
+</pre></div>
+
+
+<ol>
+<li>df-&gt;Series,先把table_s转为层次化索引的Series，</li>
+<li>Series--索引--&gt;数据。然后按索引值直接检索数据，</li>
+</ol>
+<p>这比采用形如<code>df[(df.col1==a)&amp;(df.col2==b)]</code>这种条件逻辑筛选法程序更简洁，运行也更快一些。</p>
+<h3 id="242-locilocixat">2.4.2. 正确使用 loc\iloc\ix\at</h3>
+<p><code>df.loc[i,c]</code> 能够选取多行多列</p>
+<p><code>df.at[i,c]</code> 一次只能访问一个值，同等条件下比<code>loc</code>快10倍速</p>
+<div class="hlcode"><pre><span class="o">%%</span><span class="n">timeit</span>
+<span class="n">outdf</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">indf</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="mi">100</span> <span class="n">loops</span><span class="p">,</span> <span class="n">best</span> <span class="n">of</span> <span class="mi">3</span><span class="p">:</span> <span class="mf">11.7</span> <span class="n">ms</span> <span class="n">per</span> <span class="n">loop</span>
+
+<span class="o">%%</span><span class="n">timeit</span> 
+<span class="n">outdf</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">indf</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="mi">100</span> <span class="n">loops</span><span class="p">,</span> <span class="n">best</span> <span class="n">of</span> <span class="mi">3</span><span class="p">:</span> <span class="mf">11.4</span> <span class="n">ms</span> <span class="n">per</span> <span class="n">loop</span>
+
+<span class="o">%%</span><span class="n">timeit</span> 
+<span class="n">outdf</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">indf</span><span class="o">.</span><span class="n">ix</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="mi">100</span> <span class="n">loops</span><span class="p">,</span> <span class="n">best</span> <span class="n">of</span> <span class="mi">3</span><span class="p">:</span> <span class="mf">11.6</span> <span class="n">ms</span> <span class="n">per</span> <span class="n">loop</span>
+
+
+<span class="o">%%</span><span class="n">timeit</span>
+<span class="n">outdf</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="s">&#39;time&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">indf</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="s">&#39;time&#39;</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="mi">10000</span> <span class="n">loops</span><span class="p">,</span> <span class="n">best</span> <span class="n">of</span> <span class="mi">3</span><span class="p">:</span> <span class="mf">25.3</span> <span class="err">µ</span><span class="n">s</span> <span class="n">per</span> <span class="n">loop</span>
+</pre></div>
+
+
+<h3 id="243-copy-vs-view">2.4.3. copy vs view</h3>
+<p>尽量使用切片而不是列表</p>
+<div class="hlcode"><pre><span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,</span><span class="mi">10</span><span class="p">:</span><span class="mi">20</span><span class="p">]</span> <span class="c"># 更好</span>
+
+<span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[:,[</span><span class="mi">10</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="o">...</span><span class="p">,</span><span class="mi">20</span><span class="p">]]</span> <span class="c">#差</span>
+</pre></div>
+
+
+<h2 id="25-numpy-numpy">2.5. 能改成numpy 就numpy</h2>
+<p><strong>给numpy数据一个名字</strong> <br />
+我喜欢用 pandas, 因为 pandas 能让你给数据命名, 用名字来做 index. 在数据类型很多的时候, 名字总是比 index 好记太多了, 也好用太多了. 但是 pandas 的确比 numpy 慢. 好在我们还是有途径可以实现用名字来索引. 这就是 structured array. 下面 a/b 的结构是一样的, 只是一个是 numpy 一个是 pandas.</p>
+<div class="hlcode"><pre><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="p">[(</span><span class="s">&#39;foo&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;bar&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)])</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;foo&#39;</span><span class="p">,</span> <span class="s">&#39;bar&#39;</span><span class="p">])</span>
+<span class="n">b</span><span class="p">[</span><span class="s">&#39;bar&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="s">&#39;bar&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd"># a</span>
+<span class="sd">array([(0,  0.), (0,  0.), (0,  0.)],</span>
+<span class="sd">      dtype=[(&#39;foo&#39;, &#39;&lt;i4&#39;), (&#39;bar&#39;, &#39;&lt;f2&#39;)])</span>
+
+<span class="sd"># b</span>
+<span class="sd">   foo  bar</span>
+<span class="sd">0    0  0.0</span>
+<span class="sd">1    0  0.0</span>
+<span class="sd">2    0  0.0</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="k">def</span> <span class="nf">f1</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">a</span><span class="p">[</span><span class="s">&#39;bar&#39;</span><span class="p">]</span> <span class="o">*=</span> <span class="n">a</span><span class="p">[</span><span class="s">&#39;foo&#39;</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">f2</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">b</span><span class="p">[</span><span class="s">&#39;bar&#39;</span><span class="p">]</span> <span class="o">*=</span> <span class="n">b</span><span class="p">[</span><span class="s">&#39;foo&#39;</span><span class="p">]</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">((</span><span class="n">t1</span><span class="o">-</span><span class="n">t0</span><span class="p">)</span><span class="o">/</span><span class="n">N</span><span class="p">))</span>    <span class="c"># 0.000003</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">((</span><span class="n">t2</span><span class="o">-</span><span class="n">t1</span><span class="p">)</span><span class="o">/</span><span class="n">N</span><span class="p">))</span>    <span class="c"># 0.000508</span>
+</pre></div>
+
+
+<h2 id="26">2.6. 多线程并行计算</h2>
+<p>由于Pandas的一些操作都是单核的，往往浪费其他核的计算时间。</p>
+<p>使用多CPU核心分块并行运算，对于可分块运行的数据运算任务，可使用多线程类编程，调用多个CPU核心并行工作提高速度。</p>
+<h3 id="261-multiprocessingpool">2.6.1. multiprocessing.Pool</h3>
+<p>因为 GIL 的缘故 threading 不能用，那么我们就好好研究研究 multiprocessing。（当然，如果你说你不用 CPython，没有 GIL 的问题，那也是极佳的。）</p>
+<p>首先介绍一个简单粗暴，非常实用的工具，就是 <code>multiprocessing.Pool</code>。如果你的任务能用<code>ys = map(f, xs)</code> 来解决，大家可能都知道，这样的形式天生就是最容易并行的，那么在 Python 里面并行计算这个任务真是再简单不过了。举个例子，把每个数都平方：</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">multiprocessing</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="k">def</span> <span class="nf">f</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">_sleep_time</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">()</span><span class="o">*</span><span class="mi">10</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">_sleep_time</span><span class="p">)</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s">&quot;sleep {} s&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">_sleep_time</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span>
+<span class="k">def</span> <span class="nf">f2</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">_sleep_time</span><span class="o">=</span><span class="n">x</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">_sleep_time</span><span class="p">)</span>
+    <span class="k">print</span> <span class="p">(</span><span class="s">&quot;sleep {} s&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">_sleep_time</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">x</span>
+
+
+<span class="n">cores</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span>
+<span class="n">pool</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="o">=</span><span class="n">cores</span><span class="p">)</span>
+<span class="n">xs</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="c"># method 0:  built-in function map</span>
+<span class="o">%%</span><span class="n">timeit</span>
+<span class="k">print</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="n">xs</span><span class="p">)))</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="c"># 0 sleep 3.6515010268734596 s</span>
+<span class="c"># 1 sleep 9.622811159423282 s</span>
+<span class="c"># 2 sleep 4.5357524694481075 s</span>
+<span class="c"># 3 sleep 0.06634438382474794 s</span>
+<span class="c"># 4 sleep 9.26407616547759 s</span>
+<span class="c"># [0, 1, 4, 9, 16]</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">有序输入，与形参无关的全局变量每次确定，返回有序</span>
+<span class="sd">python-level loop</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="k">print</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="n">f2</span><span class="p">,</span><span class="n">xs</span><span class="p">)))</span>
+<span class="o">&gt;&gt;&gt;...</span>
+<span class="c"># 10s</span>
+
+
+<span class="c"># method 1: map</span>
+<span class="k">print</span> <span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">xs</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="c"># 3 sleep 3.6515010268734596 s</span>
+<span class="c"># 4 sleep 3.6515010268734596 s</span>
+<span class="c"># 2 sleep 3.6515010268734596 s</span>
+<span class="c"># 1 sleep 3.6515010268734596 s</span>
+<span class="c"># 0 sleep 3.6515010268734596 s</span>
+<span class="c"># [0, 1, 4, 9, 16]</span>
+<span class="sd">&quot;&quot;&quot;无序输入，与形参无关的全局变量一次确定，返回有序</span>
+<span class="sd">shuffle-map-reduce</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="k">print</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">f2</span><span class="p">,</span><span class="n">xs</span><span class="p">)))</span>
+<span class="o">&gt;&gt;&gt;...</span>
+<span class="c"># 4s 多线程 分配计算，合并</span>
+
+<span class="c"># method 2: imap</span>
+<span class="c"># 返回的是迭代器</span>
+<span class="k">print</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">imap</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">xs</span><span class="p">)))</span>
+<span class="c"># 0 sleep 4.854476661038866 s</span>
+<span class="c"># 2 sleep 4.854476661038866 s</span>
+<span class="c"># 4 sleep 4.854476661038866 s</span>
+<span class="c"># 1 sleep 4.854476661038866 s</span>
+<span class="c"># 3 sleep 4.854476661038866 s</span>
+<span class="c"># [0, 1, 4, 9, 16]</span>
+<span class="sd">&quot;&quot;&quot;无序输入，与形参无关的全局变量一次确定，返回有序</span>
+<span class="sd">shuffle-map-reduce</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c"># method 3: imap_unordered</span>
+<span class="c"># 返回的是迭代器</span>
+<span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">pool</span><span class="o">.</span><span class="n">imap_unordered</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">xs</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+<span class="k">print</span> <span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">pool</span><span class="o">.</span><span class="n">imap_unordered</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">xs</span><span class="p">)))</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="c"># 2 sleep 2.1295588889839454 s</span>
+<span class="c"># 1 sleep 2.1295588889839454 s</span>
+<span class="c"># 0 sleep 2.1295588889839454 s</span>
+<span class="c"># 3 sleep 8.694609405762515 s</span>
+<span class="c"># 4 sleep 8.694609405762515 s</span>
+<span class="c"># [0, 4, 1, 9, 16]</span>
+
+<span class="sd">&quot;&quot;&quot;无序输入，与形参无关的全局变量分次确定，返回有序</span>
+<span class="sd">shuffle-map</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+
+
+<p>当计算时间比较长的时候，我们可能想要加上一个进度条，这个时候 i 系列的好处就体现出来了。另外，有一个小技巧，就是输出 <code>\r</code> 可以使得光标回到行首而不换行，这样就可以制作简易的进度条了。</p>
+<div class="hlcode"><pre><span class="n">cnt</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="n">pool</span><span class="o">.</span><span class="n">imap_unordered</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">xs</span><span class="p">):</span>
+    <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&#39;done </span><span class="si">%d</span><span class="s">/</span><span class="si">%d</span><span class="se">\r</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">cnt</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">xs</span><span class="p">)))</span>
+    <span class="n">cnt</span> <span class="o">+=</span> <span class="mi">1</span>
+</pre></div>
+
+
+<p><sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup></p>
+<h1 id="3-pandas">3. 更小的pandas</h1>
+<div class="hlcode"><pre><span class="c"># 查看内存占用情况</span>
+<span class="n">df</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="o">&lt;</span><span class="k">class</span> <span class="err">&#39;</span><span class="nc">pandas</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">frame</span><span class="o">.</span><span class="n">DataFrame</span><span class="s">&#39;&gt;</span>
+<span class="n">Index</span><span class="p">:</span> <span class="mi">1034849</span> <span class="n">entries</span><span class="p">,</span> <span class="n">_14680064</span> <span class="n">to</span> <span class="n">_6291451</span>
+<span class="n">Columns</span><span class="p">:</span> <span class="mi">212</span> <span class="n">entries</span><span class="p">,</span> <span class="mi">2016</span><span class="o">-</span><span class="mo">01</span><span class="o">-</span><span class="mo">01</span> <span class="n">to</span> <span class="mi">2016</span><span class="o">-</span><span class="mo">07</span><span class="o">-</span><span class="mi">30</span>
+<span class="n">dtypes</span><span class="p">:</span> <span class="n">float64</span><span class="p">(</span><span class="mi">212</span><span class="p">)</span>
+<span class="n">memory</span> <span class="n">usage</span><span class="p">:</span> <span class="mf">1.6</span><span class="o">+</span> <span class="n">GB</span>
+</pre></div>
+
+
+<h2 id="31">3.1. 降低数据精度</h2>
+<p>pandas中常用类型的数据类型内存占用大小情况：<br />
+<img alt="" src="../../../../../attach/images/2020-03-05-09-18-28.png" /></p>
+<p>Pandas dtype mapping<br />
+| Pandas dtype | Python type | NumPy type | Usage |<br />
+| ------------ | ----------- | ---------- | ----- ||  |  |<br />
+| object        | str         | string_, unicode_                                              | Text                              |<br />
+| int64         | int         | int_, int8, int16, int32, int64, uint8, uint16, uint32, uint64 | Integer numbers                   |<br />
+| float64       | float       | float_, float16, float32, float64                              | Floating point numbers            |<br />
+| bool          | bool        | bool_                                                          | True/False values                 |<br />
+| datetime64    | NA          | datetime64[ns]                                                 | Date and time values              |<br />
+| timedelta[ns] | NA          | NA                                                             | Differences between two datetimes |<br />
+| category      | NA          | NA                                                             | Finite list of text values        |</p>
+<p><strong>主要思路</strong><br />
+1. 将数值型列降级到更高效的类型(例如:float64-&gt;float32)<br />
+2. 将字符串列转换为类别类型</p>
+<div class="hlcode"><pre><span class="c"># float 类型</span>
+<span class="n">gl_float</span> <span class="o">=</span> <span class="n">gl</span><span class="o">.</span><span class="n">select_dtypes</span><span class="p">(</span><span class="n">include</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;float&#39;</span><span class="p">])</span>
+<span class="n">converted_float</span> <span class="o">=</span> <span class="n">gl_float</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">to_numeric</span><span class="p">,</span><span class="n">downcast</span><span class="o">=</span><span class="s">&#39;float&#39;</span><span class="p">)</span>
+
+<span class="c">#category (暂不推荐)</span>
+<span class="c">#对于独特值少，重复值多的列有较好的效果</span>
+<span class="n">dow_cat</span> <span class="o">=</span> <span class="n">dow</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">&#39;category&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="311">3.1.1. 数据读取时</h3>
+<p>使用pd.read_csv()读取数据时，默认按64位精度读取数据，且有的数据读取为object类型，这些都极耗内存。可根据实际需要采用低位精度读取，并指定object类型为实际的类型或category类型，只读取需要处理的列。如</p>
+<div class="hlcode"><pre><span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;O_LINENO&#39;</span><span class="p">,</span><span class="s">&#39;O_TERMINALNO&#39;</span><span class="p">,</span><span class="s">&#39;O_TIME&#39;</span><span class="p">,</span><span class="s">&#39;O_UP&#39;</span><span class="p">,</span><span class="s">&#39;O_NEXTSTATIONNO&#39;</span><span class="p">]</span>
+<span class="n">col_types</span> <span class="o">=</span> <span class="p">[</span><span class="s">&#39;uint16&#39;</span><span class="p">,</span><span class="s">&#39;int32&#39;</span><span class="p">,</span><span class="s">&#39;category&#39;</span><span class="p">,</span><span class="s">&#39;int8&#39;</span><span class="p">,</span><span class="s">&#39;uint8&#39;</span><span class="p">]</span>
+<span class="n">columns_types</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">columns</span><span class="p">,</span> <span class="n">col_types</span><span class="p">))</span>
+<span class="n">table_all</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">FOLDER</span> <span class="o">+</span> <span class="s">&#39;</span><span class="se">\\</span><span class="s">&#39;</span> <span class="o">+</span> <span class="s">&#39;table_all.csv&#39;</span><span class="p">,</span><span class="n">usecols</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span><span class="n">dtype</span><span class="o">=</span><span class="n">columns_types</span><span class="p">)</span>
+<span class="n">table_all</span><span class="o">.</span><span class="n">O_TIME</span><span class="o">=</span><span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">table_all</span><span class="o">.</span><span class="n">O_TIME</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="312">3.1.2. 优化数据结构</h3>
+<h4 id="3121">3.1.2.1. 稀疏矩阵</h4>
+<h2 id="32">3.2. 优化字符串对象</h2>
+<h3 id="321">3.2.1. 字符串内存占用组成</h3>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">sys</span>
+
+<span class="c"># 空的二进制对象</span>
+<span class="n">val</span><span class="o">=</span><span class="n">b</span><span class="s">&quot;&quot;</span> 
+
+<span class="c"># 空的unicode对象</span>
+<span class="n">unicode_val</span><span class="o">=</span><span class="s">u&quot;&quot;</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="mi">33</span>
+<span class="c"># 32+1 (nul) Python中的字符串是nul终止的</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">getsizeof</span><span class="p">(</span><span class="n">unicode_val</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> 
+<span class="mi">49</span>
+<span class="c"># 48+1(nul)</span>
+</pre></div>
+
+
+<p>pandas 中 ：</p>
+<div class="hlcode"><pre><span class="cp"># 内存占用情况</span>
+<span class="mi">8</span> <span class="p">(</span><span class="n">PyObject</span><span class="o">*</span><span class="p">)</span> <span class="o">+</span> <span class="mi">48</span> <span class="p">(</span><span class="n">Python</span> <span class="n">C</span> <span class="k">struct</span><span class="p">)</span> <span class="o">+</span> <span class="n">string_length</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+
+
+<p><strong>问题</strong> <br />
+pandas Dataframe 中可能存在(m,n)行列，数据巨大时候，意味着存在多个不长的字符串对象，每个字符串对象都 需要占用一个<code>8 (PyObject*) + 48 (Python C struct)</code>内存</p>
+<div class="hlcode"><pre><span class="n">df</span><span class="o">.</span><span class="n">shape</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="p">(</span><span class="mi">1000000</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span> <span class="c"># 10字符串长度</span>
+<span class="c">#10MB-&gt;./test.csv</span>
+<span class="c">#60MB-&gt;df</span>
+</pre></div>
+
+
+<h1 id="4-numpy">4. 使用numpy 代替</h1>
+<p>我喜欢用 pandas, 因为 pandas 能让你给数据命名, 用名字来做 index. 在数据类型很多的时候, 名字总是比 index 好记太多了, 也好用太多了. 但是 pandas 的确比 numpy 慢. 好在我们还是有途径可以实现用名字来索引. 这就是 structured array. 下面 a/b 的结构是一样的, 只是一个是 numpy 一个是 pandas.</p>
+<div class="hlcode"><pre><span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="p">[(</span><span class="s">&#39;foo&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;bar&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)])</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;foo&#39;</span><span class="p">,</span> <span class="s">&#39;bar&#39;</span><span class="p">])</span>
+<span class="n">b</span><span class="p">[</span><span class="s">&#39;bar&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">b</span><span class="p">[</span><span class="s">&#39;bar&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span>
+
+
+<span class="c"># 5. a</span>
+<span class="n">array</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">),</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">)],</span>
+      <span class="n">dtype</span><span class="o">=</span><span class="p">[(</span><span class="s">&#39;foo&#39;</span><span class="p">,</span> <span class="s">&#39;&lt;i4&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;bar&#39;</span><span class="p">,</span> <span class="s">&#39;&lt;f2&#39;</span><span class="p">)])</span>
+
+<span class="c"># 6. b</span>
+   <span class="n">foo</span>  <span class="n">bar</span>
+<span class="mi">0</span>    <span class="mi">0</span>  <span class="mf">0.0</span>
+<span class="mi">1</span>    <span class="mi">0</span>  <span class="mf">0.0</span>
+<span class="mi">2</span>    <span class="mi">0</span>  <span class="mf">0.0</span>
+
+
+<span class="k">def</span> <span class="nf">f1</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">a</span><span class="p">[</span><span class="s">&#39;bar&#39;</span><span class="p">]</span> <span class="o">*=</span> <span class="n">a</span><span class="p">[</span><span class="s">&#39;foo&#39;</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">f2</span><span class="p">(</span><span class="n">b</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+        <span class="n">b</span><span class="p">[</span><span class="s">&#39;bar&#39;</span><span class="p">]</span> <span class="o">*=</span> <span class="n">b</span><span class="p">[</span><span class="s">&#39;foo&#39;</span><span class="p">]</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">((</span><span class="n">t1</span><span class="o">-</span><span class="n">t0</span><span class="p">)</span><span class="o">/</span><span class="n">N</span><span class="p">))</span>    <span class="c"># 0.000003</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%f</span><span class="s">&#39;</span> <span class="o">%</span> <span class="p">((</span><span class="n">t2</span><span class="o">-</span><span class="n">t1</span><span class="p">)</span><span class="o">/</span><span class="n">N</span><span class="p">))</span>    <span class="c"># 0.000508</span>
+</pre></div>
+
+
+<p>可以看出来, numpy 明显比 pandas 快很多. 如果需要使用到不同数据形式, numpy 也是可以胜任的, 并且在还保持了快速的计算速度. 至于 pandas 为什么比 numpy 慢, 因为 pandas data 里面还有很多七七八八的数据, 记录着这个 data 的种种其他的特征。</p>
+<h1 id="5">5. 参考资料</h1>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>How To Make Your Pandas Loop 71803 Times Faster https://towardsdatascience.com/how-to-make-your-pandas-loop-71-803-times-faster-805030df4f06&#160;<a class="footnote-backref" href="#fnref:1" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:2">
+<p><a href="https://pandas.pydata.org/pandas-docs/stable/user_guide/enhancingperf.html#expression-evaluation-via-eval">官方文档Enhancing performance</a>&#160;<a class="footnote-backref" href="#fnref:2" rev="footnote" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn:fake_vectorize">
+<p>Stackoverflow:<a href="https://stackoverflow.com/questions/52673285/performance-of-pandas-apply-vs-np-vectorize-to-create-new-column-from-existing-c">Performance of Pandas apply vs np.vectorize to create new column from existing columns</a>&#160;<a class="footnote-backref" href="#fnref:fake_vectorize" rev="footnote" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+<li id="fn:fast_groupby">
+<p>Fast groupby <a href="http://esantorella.com/2016/06/16/groupby/">Fast groupby-apply operations in Python with and without Pandas</a>&#160;<a class="footnote-backref" href="#fnref:fast_groupby" rev="footnote" title="Jump back to footnote 4 in the text">&#8617;</a></p>
+</li>
+<li id="fn:best_format">
+<p><a href="https://towardsdatascience.com/the-best-format-to-save-pandas-data-414dca023e0d">The Best Format to Save Pandas Data</a>&#160;<a class="footnote-backref" href="#fnref:best_format" rev="footnote" title="Jump back to footnote 5 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

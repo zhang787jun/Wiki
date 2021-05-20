@@ -1,0 +1,655 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Docker实践 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Virtualization_and_Cloud_Computing">Virtualization_and_Cloud_Computing</a>&nbsp;»&nbsp;<a href="/Wiki/#-2. Container容器技术">2. Container容器技术</a>&nbsp;»&nbsp;<a href="/Wiki/#-Docker">Docker</a>&nbsp;»&nbsp;Docker实践</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Docker实践</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-docker">1. Docker 安装</a><ul>
+<li><a href="#11">1.1. 版本情况说明</a></li>
+<li><a href="#12-for-linux">1.2. For Linux</a></li>
+<li><a href="#13-for-windows">1.3. For windows</a></li>
+<li><a href="#14">1.4. 注意与优化</a></li>
+</ul>
+</li>
+<li><a href="#2-docker">2. Docker 概念</a></li>
+<li><a href="#3-docker">3. Docker 命令</a></li>
+<li><a href="#4-docker">4. Docker 数据管理</a><ul>
+<li><a href="#41">4.1. 数据传输</a><ul>
+<li><a href="#411-cp">4.1.1. 复制cp</a></li>
+</ul>
+</li>
+<li><a href="#42">4.2. 数据挂载</a><ul>
+<li><a href="#421-volume">4.2.1. volume</a></li>
+<li><a href="#422-bind-mount">4.2.2. bind mount</a></li>
+<li><a href="#423-tmpfs">4.2.3. tmpfs</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#5-docker">5. Docker 网络</a><ul>
+<li><a href="#51-birdge">5.1. birdge 桥接方式</a></li>
+<li><a href="#52-host">5.2. host 寄主网络</a></li>
+<li><a href="#53-container">5.3. container</a></li>
+<li><a href="#54-none">5.4. None</a></li>
+</ul>
+</li>
+<li><a href="#6">6. 镜像管理</a><ul>
+<li><a href="#61-docker-registry">6.1. Docker Registry</a><ul>
+<li><a href="#611">6.1.1. 公共镜像注册中心</a><ul>
+<li><a href="#6111-docker-hub">6.1.1.1. Docker hub</a><ul>
+<li><a href="#61111-docker-hub">6.1.1.1.1. Docker hub 的国内加速器</a></li>
+</ul>
+</li>
+<li><a href="#6112">6.1.1.2. 阿里云</a></li>
+</ul>
+</li>
+<li><a href="#612">6.1.2. 私有镜像注册中心</a></li>
+</ul>
+</li>
+<li><a href="#62">6.2. 镜像下载</a><ul>
+<li><a href="#621">6.2.1. 更换镜像下载镜像</a></li>
+</ul>
+</li>
+<li><a href="#63">6.3. 本地镜像发布到远程仓库</a><ul>
+<li><a href="#631">6.3.1. 阿里云实践</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#7">7. 镜像存储目录迁移</a></li>
+<li><a href="#8">8. 参考资料</a></li>
+</ul>
+</div>
+<p>Docker 的主要笔记资料参考：<br />
+1. <a href="https://yeasy.gitbooks.io/docker_practice/content/">Docker — 从入门到实践</a></p>
+<h1 id="1-docker">1. Docker 安装</h1>
+<h2 id="11">1.1. 版本情况说明</h2>
+<p>目前Docker已经分为<br />
+1. 社区版（Docker CE）--免费，支持周期7个月<br />
+2. 商业版（docker EE）--强调安全，付费使用，支持周期 4个月</p>
+<p>Docker-CE 是docker公司维护的开源项目，本节主要针对此版本进行说明。</p>
+<p>Docker CE 分为 stable、test 和 nightly 三个更新频道。</p>
+<h2 id="12-for-linux">1.2. For Linux</h2>
+<div class="hlcode"><pre><span class="cp"># 使用官方安装脚本自动安装 （仅适用于公网环境 阿里云）</span>
+<span class="n">curl</span> <span class="o">-</span><span class="n">fsSL</span> <span class="n">https</span><span class="o">:</span><span class="c1">//get.docker.com | bash -s docker --mirror Aliyun</span>
+</pre></div>
+
+
+<h2 id="13-for-windows">1.3. For windows</h2>
+<p>Docker Windos客户端 主要由2种：<br />
+1. 针对Windows 10+ ，开启Hyper-V的系统：推荐使用 <code>Docker for Windows</code>（下载地址：<a href="http://mirrors.aliyun.com/docker-toolbox/windows/docker-for-windows/">点击这里</a>）<br />
+2. 针对Windows 10- ,使用 <code>Docker Toolbox
+Windows</code>（下载地址：<a href="http://mirrors.aliyun.com/docker-toolbox/windows/docker-toolbox/">点击这里</a>）</p>
+<ul>
+<li>可以使用迅雷p2p 下载境外资源</li>
+</ul>
+<h2 id="14">1.4. 注意与优化</h2>
+<ol>
+<li>Docker for Windows 和 Docker Toolbox互不兼容，如果同时安装两者的话，需要使用 hyper-v的参数启动。</li>
+</ol>
+<div class="hlcode"><pre><span class="n">docker</span><span class="o">-</span><span class="n">machine</span> <span class="n">create</span> <span class="o">--</span><span class="n">engine</span><span class="o">-</span><span class="n">registry</span><span class="o">-</span><span class="n">mirror</span><span class="o">=</span><span class="n">http</span><span class="o">:</span><span class="c1">//hub-mirror.c.163.com -d hyperv default</span>
+</pre></div>
+
+
+<ol>
+<li>Docker for Windows 有两种运行模式，一种运行Windows相关容器，一种运行传统的Linux容器。同一时间只能选择一种模式运行。</li>
+</ol>
+<div class="hlcode"><pre>docker<span class="o">-</span>machine ssh 
+
+sudo mkdir <span class="o">-</span>p <span class="o">/</span>etc<span class="o">/</span>docker
+sudo tee <span class="o">/</span>etc<span class="o">/</span>docker<span class="o">/</span>daemon.json <span class="o">&lt;&lt;-</span><span class="s">&#39;EOF&#39;</span>
+<span class="p">{</span>
+  <span class="s">&quot;registry-mirrors&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s">&quot;http://hub-mirror.c.163.com&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+EOF
+</pre></div>
+
+
+<ol>
+<li>Windows 10 家庭版开启 hyper-v</li>
+</ol>
+<div class="hlcode"><pre><span class="n">pushd</span> <span class="s">&quot;%~dp0&quot;</span>
+<span class="n">dir</span> <span class="o">/</span><span class="n">b</span> <span class="o">%</span><span class="n">SystemRoot</span><span class="o">%</span><span class="err">\</span><span class="n">servicing</span><span class="err">\</span><span class="n">Packages</span><span class="err">\</span><span class="o">*</span><span class="n">Hyper</span><span class="o">-</span><span class="n">V</span><span class="o">*</span><span class="p">.</span><span class="n">mum</span> <span class="o">&gt;</span><span class="n">hyper</span><span class="o">-</span><span class="n">v</span><span class="p">.</span><span class="n">txt</span>
+<span class="k">for</span> <span class="o">/</span><span class="n">f</span> <span class="o">%%</span><span class="n">i</span> <span class="n">in</span> <span class="p">(</span><span class="err">&#39;</span><span class="n">findstr</span> <span class="o">/</span><span class="n">i</span> <span class="p">.</span> <span class="n">hyper</span><span class="o">-</span><span class="n">v</span><span class="p">.</span><span class="n">txt</span> <span class="mi">2</span><span class="o">^&gt;</span><span class="n">nul</span><span class="err">&#39;</span><span class="p">)</span> <span class="k">do</span> <span class="n">dism</span> <span class="o">/</span><span class="n">online</span> <span class="o">/</span><span class="n">norestart</span> <span class="o">/</span><span class="n">add</span><span class="o">-</span><span class="n">package</span><span class="o">:</span><span class="s">&quot;%SystemRoot%\servicing\Packages\%%i&quot;</span>
+<span class="n">del</span> <span class="n">hyper</span><span class="o">-</span><span class="n">v</span><span class="p">.</span><span class="n">txt</span>
+<span class="n">Dism</span> <span class="o">/</span><span class="n">online</span> <span class="o">/</span><span class="n">enable</span><span class="o">-</span><span class="n">feature</span> <span class="o">/</span><span class="n">featurename</span><span class="o">:</span><span class="n">Microsoft</span><span class="o">-</span><span class="n">Hyper</span><span class="o">-</span><span class="n">V</span><span class="o">-</span><span class="n">All</span> <span class="o">/</span><span class="n">LimitAccess</span> <span class="o">/</span><span class="n">ALL</span>
+</pre></div>
+
+
+<p>步骤： <br />
+   1. 新建 <code>Hyper-V.cmd</code> 文件，并以管理员身份运行。<br />
+   2. 等待处理完成以后，在最末处输入：Y，电脑自动重启，进行配置更新。注意：不能关闭计算机。<br />
+   3. 重启动后Windows管理工具中就会出现Hyper-V管理器。</p>
+<ol>
+<li>绕过校验<br />
+因为docker for windows安装时会校验windows版本，因此我们需要通过以下方式通过校验：将以下代码复制并保存为<code>.cmd</code>文件并右键管理员方式运行</li>
+</ol>
+<div class="hlcode"><pre><span class="n">REG</span> <span class="n">ADD</span> <span class="s">&quot;HKEY_LOCAL_MACHINE\software\Microsoft\Windows NT\CurrentVersion&quot;</span> <span class="o">/</span><span class="n">v</span> <span class="n">EditionId</span> <span class="o">/</span><span class="n">T</span> <span class="n">REG_EXPAND_SZ</span> <span class="o">/</span><span class="n">d</span> <span class="n">Professional</span> <span class="o">/</span><span class="n">F</span>
+</pre></div>
+
+
+<ol>
+<li>Linux 下用户权限</li>
+</ol>
+<div class="hlcode"><pre>sudo groupadd docker
+sudo usermod -aG docker <span class="cp">${</span><span class="n">USER</span><span class="cp">}</span>
+sudo systemctl restart docker
+
+newgrp - docker
+</pre></div>
+
+
+<h1 id="2-docker">2. Docker 概念</h1>
+<p><strong>容器</strong> --模拟系统：运行在更为完全隔离的沙盒中，出现在每个容器里的仅仅是操作系统的最小内核，共享了底层系统的资源。容器化的最大优势在于对于相同的硬件占用空间更小，可以比虚拟机运行更多的实例。</p>
+<p><strong>虚拟机</strong> --模拟硬件：运行的是一个完整的组件堆栈——从操作系统到应用服务器，以及仿真的虚拟硬件包括网络组件、CPU和内存</p>
+<p><strong>Boot2Docker</strong> 是一个专为Docker而设计的轻量级Linux发型包，解决Windows或者OS X用户不能安装Docker的问题。 Boot2Docker完全运行于内存中，24M大小，启动仅5-6秒。</p>
+<p><strong>CoreOS</strong> 是一个基于Linux内核的轻量级操作系统，为了计算机集群的基础设施建设而生，专注于自动化、轻松部署、安全、可靠、规模化。作为一个操作系统，CoreOS 提供了在应用容器内部署应用所需要的基础功能环境以及一系列用于服务发现和配置共享的内建工具。</p>
+<p><img alt="" src="/attach/images/2020-02-06-09-37-27.png" /></p>
+<p><img alt="" src="/attach/images/2020-02-06-11-48-38.png" /></p>
+<p><strong>Alpine</strong> 操作系统是一个面向安全的轻型 Linux 发行版。它不同于通常 Linux 发行版，Alpine 采用了 musl libc 和 busybox 以减小系统的体积和运行时资源消耗，但功能上比 busybox 又完善的多，因此得到开源社区越来越多的青睐。在保持瘦身的同时，Alpine 还提供了自己的包管理工具 apk，可以通过 https://pkgs.alpinelinux.org/packages 网站上查询包信息，也可以直接通过 apk 命令直接查询和安装各种软件。</p>
+<p>Alpine 由非商业组织维护的，支持广泛场景的 Linux发行版，它特别为资深/重度Linux用户而优化，关注安全，性能和资源效能。Alpine 镜像可以适用于更多常用场景，并且是一个优秀的可以适用于生产的基础系统/环境。</p>
+<p>Alpine Docker 镜像也继承了 Alpine Linux 发行版的这些优势。相比于其他 Docker 镜像，它的容量非常小，仅仅只有 5 MB 左右（对比 Ubuntu 系列镜像接近 200 MB），且拥有非常友好的包管理机制。官方镜像来自 docker-alpine 项目。</p>
+<p>目前 Docker 官方已开始推荐使用 Alpine 替代之前的 Ubuntu 做为基础镜像环境。这样会带来多个好处。包括镜像下载速度加快，镜像安全性提高，主机之间的切换更方便，占用更少磁盘空间等。</p>
+<h1 id="3-docker">3. Docker 命令</h1>
+<p><img alt="" src="/attach/images/2020-02-26-1.png" /></p>
+<h1 id="4-docker">4. Docker 数据管理</h1>
+<p>做好docker的数据管理，需要先对docker 的文件系统有深刻认识。<br />
+1. 镜像文件是<strong>只读的</strong>（read-only）<br />
+2. 当您打开一个镜像，运行容器实例的时候，Docker 添加一个<strong>可读写层</strong>在镜像文件上层。</p>
+<p>容器运行时应该尽量保持的<strong>操作原则</strong>：<br />
+1. 容器存储层<strong>不发生写操作</strong>，<br />
+2. 对于需要保存动态数据的应用，其数据库文件应该保存于卷(volume)中。</p>
+<h2 id="41">4.1. 数据传输</h2>
+<h3 id="411-cp">4.1.1. 复制cp</h3>
+<p>最原始的数据管理方式，是将数据通过复制copy的方式，在容器和宿主机之间进行转换。</p>
+<div class="hlcode"><pre><span class="n">digraph</span> <span class="n">a</span><span class="p">{</span>
+    <span class="err">文件</span><span class="n">_</span><span class="err">目录</span><span class="o">-&gt;</span><span class="err">容器文件</span><span class="n">_</span><span class="err">目录</span><span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;copy to &quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="err">#</span> <span class="nb">HOST</span><span class="o">-&gt;</span><span class="nx">Container</span>
+<span class="nx">docker</span> <span class="nx">cp</span> <span class="o">&lt;</span><span class="nx">FILES</span><span class="p">/</span><span class="nx">DIR_IN_HOST</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="nx">Container_ID</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="nx">FILES</span><span class="p">/</span><span class="nx">DIR_IN_Container</span><span class="o">&gt;</span>
+<span class="nx">docker</span> <span class="nx">cp</span> <span class="nx">需要拷贝的文件或者目录</span>  <span class="nx">容器名称</span><span class="err">：</span><span class="nx">容器目录</span>
+
+<span class="err">#</span> <span class="nx">Container</span><span class="o">-&gt;</span><span class="nb">HOST</span>
+<span class="nx">docker</span> <span class="nx">cp</span> <span class="o">&lt;</span><span class="nx">Container_ID</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="nx">FILES</span><span class="p">/</span><span class="nx">DIR_IN_Container</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="nx">FILES</span><span class="p">/</span><span class="nx">DIR_IN_HOST</span><span class="o">&gt;</span> 
+<span class="nx">docker</span> <span class="nx">cp</span> <span class="nx">容器名称</span><span class="err">：</span><span class="nx">容器目录</span>    <span class="nx">宿主机目录</span>
+</pre></div>
+
+
+<p><strong>注意区分</strong>：<br />
+- Dockerfile 中的<code>COPY</code> 是在构建镜像文件时候，将本地文件写入到镜像中，形成只读文件。</p>
+<ul>
+<li><code>docker cp</code> 命令是将host 机器文件 复制到政治运行的容器中。</li>
+</ul>
+<h2 id="42">4.2. 数据挂载</h2>
+<p>docker 的数据挂载分为三种：<br />
+1. 数据卷（volume）<sup id="fnref:use_volume"><a class="footnote-ref" href="#fn:use_volume" rel="footnote">3</a></sup><br />
+2. 挂载主机目录（bind mount）<br />
+3. tmpfs</p>
+<p><img alt="" src="/attach/images/2020-02-06-11-44-52.png" /></p>
+<h3 id="421-volume">4.2.1. volume</h3>
+<p><code>数据卷 volume</code> 是由Docker容器创建并使用的数据持久化机制，也是由docker默认及推荐的数据挂载方式。</p>
+<p><strong>原理</strong><br />
+数据卷提供了供一个或多个特殊目录给容器使用，它绕过 UFS(UNIX文件系统)，它将主机操作系统目录直接映射进容器。</p>
+<p><strong>优点</strong> <br />
+1. 数据隔离<br />
+   -  Volume机制可以将容器以及容器产生的数据分离开来，使得<strong>volume和容器的生命周期完全独立</strong>。对数据卷Volume的更新，不会影响镜像，不增加镜像大小，容器删除时volume仍然存在。<br />
+   - 对数据卷的修改会立马生效，并反映在容器中。</p>
+<ol>
+<li>数据共享</li>
+<li>
+<p>同一个数据卷可以在多个容器之间更安全地共享和重用。</p>
+</li>
+<li>
+<p>Docker 专用 </p>
+</li>
+<li>数据卷 volume由docker直接管理，非 docker 进程不应该去修改该区域。</li>
+<li>volume 在生成的时候如果不指定名称，便会随机生成。</li>
+<li>功能强大</li>
+<li>volume 在 Linux 和 Windows 容器上都能工作。</li>
+<li>volume 驱动程序允许你在远程主机或云上提供存储、加密或其他功能。</li>
+<li>新 volume 的内容可以由容器预填充。</li>
+<li>volume 更容易备份或迁移。可以使用 Docker CLI 命令或 Docker API 来管理。</li>
+</ol>
+<p><strong>缺点</strong>: <br />
+1. volume在宿主机上比较难定位.<br />
+   - 在Linux下，默认情况是<code>/var/lib/docker/volumes/&lt;volumes_name&gt;/_data</code>下创建了一个目录。<br />
+   - Window10 Hyper-V 条件下，默认情况是在<code>C:\Users\Public\Documents\Hyper-V\Virtual hard disks\</code> 下挂载 <code>/var/lib/docker</code>,使得<code>/var/lib/docker/volumes/&lt;volumes_name&gt;/_data</code>, 成为其地址</p>
+<div class="hlcode"><pre><span class="n">ls</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">docker</span><span class="o">/</span><span class="n">volumes</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">ff664768bfe64e1a8cae4369dd4a2e1929362e29580735480290684e38c8f140</span>
+<span class="n">ffa4846b581c1a50a01e7a12a6342ad2aaa442701a35ae56ef2f0e5d7888b22c</span>
+</pre></div>
+
+
+<ol>
+<li>在宿主机上直接操作volume比较困难。</li>
+<li>非 docker 进程不应该去修改该区域。</li>
+</ol>
+<p><strong>注意</strong><br />
+数据卷的使用，类似于 Linux 下对目录或文件进行 mount，镜像中的被指定为挂载点的目录中的文件会隐藏掉，能显示看的是挂载的数据卷。</p>
+<p><strong>数据卷挂载实践</strong></p>
+<p><strong>构建镜像时</strong></p>
+<p>在 <strong>Dockerfile</strong> 中，我们可以使用<code>volume</code>命令，事先指定某些目录挂载为<code>匿名卷</code>，这样在运行时如果用户不指定挂载，其应用也可以正常运行，不会向容器存储层写入大量数据。</p>
+<div class="hlcode"><pre><span class="cp"># Dockerfile 构建镜像文件中声明</span>
+<span class="n">VOLUME</span> <span class="o">/</span><span class="n">data</span>
+<span class="cp"># 容器中的/data 目录会在容器运行时自动挂载为匿名卷</span>
+</pre></div>
+
+
+<p>这里的 <code>/data</code> 目录就会在运行时自动挂载为匿名卷，任何向 <code>/data</code> 中写入的信息都不会记录进容器存储层，从而保证了容器存储层的无状态化。</p>
+<p>当然，运行时可以覆盖这个挂载设置。比如：</p>
+<div class="hlcode"><pre><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">v</span> <span class="n">mydata</span><span class="o">:/</span><span class="n">data</span> <span class="n">xxxx</span>
+</pre></div>
+
+
+<p>在这行命令中，就使用了 mydata 这个命名卷挂载到了 /data 这个位置，替代了 Dockerfile 中定义的匿名卷的挂载配置。</p>
+<p><strong>运行容器时</strong></p>
+<p>使用<strong>命令行</strong>主要有2种：<br />
+1. <code>-v/--volume</code><br />
+2. <code>--mount</code></p>
+<p><code>-v/--volume</code>，由（:）分隔的三个字段组成，<code>&lt;卷名&gt;:&lt;容器路径&gt;:&lt;选项列表&gt;</code>。选项列表，如：ro只读。</p>
+<div class="hlcode"><pre><span class="err">#</span> <span class="nx">挂载数据集</span>
+<span class="nx">docker</span> <span class="nb">run</span> <span class="na">-v</span> <span class="o">&lt;</span><span class="nx">volume</span><span class="na">-name</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="nx">some_dir</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="nx">opt</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="nx">Images_name</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="kt">tag</span><span class="o">&gt;</span>
+<span class="err">#</span> <span class="nx">注意</span><span class="o">&lt;</span><span class="nx">volume</span><span class="na">-name</span><span class="o">&gt;</span><span class="nx">不能更改为文件夹路径</span><span class="o">&lt;</span><span class="nx">dir_path</span><span class="o">&gt;</span><span class="p">,</span><span class="nx">更改为</span><span class="o">&lt;</span><span class="nx">dir_path</span><span class="o">&gt;</span> <span class="nx">将会使用bind</span><span class="na">-mount</span> <span class="nx">形式</span>
+<span class="nx">docker</span> <span class="nb">run</span> <span class="na">-v</span> <span class="nx">myvol2</span><span class="p">:/</span><span class="nx">app</span> 
+</pre></div>
+
+
+<p><code>--mount</code>，由多个键值对组成，由,分隔，每个由一个<code>key=&lt;value&gt;</code>元组组成。<br />
+- <code>type</code> ，值可以为 <code>bind</code>，<code>volume</code>，<code>tmpfs</code>。<br />
+- <code>source/src</code>，对于命名卷，是卷名。对于匿名卷，这个字段被省略。可能被指定为 source 或 src。<br />
+- <code>destination/dst/target</code>, 文件或目录将被挂载到容器中的路径。<br />
+- <code>volume-opt</code> 可以多次指定。</p>
+<div class="hlcode"><pre><span class="err">#</span> <span class="nx">挂载数据集</span>
+<span class="nx">docker</span> <span class="nb">run</span> <span class="o">--</span><span class="nx">mount</span> <span class="k">type</span><span class="o">=</span><span class="nx">volume</span><span class="p">,</span><span class="n">source</span><span class="o">=&lt;</span><span class="nx">volume</span><span class="na">-name</span><span class="o">&gt;</span><span class="p">,</span><span class="n">target</span><span class="o">=&lt;</span><span class="nx">some_dir</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="nx">Images_name</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="kt">tag</span><span class="o">&gt;</span>
+
+<span class="nx">docker</span> <span class="nb">run</span> <span class="o">--</span><span class="nx">mount</span> <span class="n">source</span><span class="o">=</span><span class="nx">myvol2</span><span class="p">,</span><span class="n">target</span><span class="o">=</span><span class="p">/</span><span class="nx">app</span> <span class="nx">nginx</span><span class="p">:</span><span class="nx">latest</span>
+<span class="err">#</span><span class="nx">默认情况下将数据卷</span><span class="o">&lt;</span><span class="nx">volume</span><span class="na">-name</span><span class="o">&gt;</span><span class="nx">挂载到容器中的指定路径</span><span class="o">&lt;</span><span class="nx">some_dir</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<p><strong>数据共享</strong><br />
+如果要授权一个容器访问另一个容器的Volume，我们可以使用<code>-volumes-from</code> 参数来执行<code>docker run</code>。</p>
+<div class="hlcode"><pre><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">it</span> <span class="o">-</span><span class="n">h</span> <span class="n">NEWCONTAINER</span> <span class="o">--</span><span class="n">volumes</span><span class="o">-</span><span class="n">from</span> <span class="n">container</span><span class="o">-</span><span class="n">test</span> <span class="n">debian</span> <span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">bash</span>
+</pre></div>
+
+
+<p><strong>数据集管理实践</strong></p>
+<div class="hlcode"><pre><span class="err">#</span> <span class="nx">创建数据卷</span>
+<span class="nx">docker</span> <span class="nx">volume</span> <span class="nb">create</span> <span class="o">&lt;</span><span class="nx">volume</span><span class="na">-name</span><span class="o">&gt;</span>
+<span class="err">#</span> <span class="nx">默认情况下是在</span><span class="p">/</span><span class="nb">var</span><span class="p">/</span><span class="nx">lib</span><span class="p">/</span><span class="nx">docker下创建了一个目录</span>
+
+<span class="err">#</span> <span class="nx">查看所有数据卷</span>
+<span class="nx">docker</span> <span class="nx">volume</span> <span class="nx">ls</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="kd">local</span>               <span class="o">&lt;</span><span class="nx">volume</span><span class="na">-name</span><span class="o">&gt;</span>
+
+<span class="err">#</span><span class="nx">无主的数据卷可能会占据很多空间</span><span class="err">，</span><span class="nx">要清理请使用以下命令</span>
+<span class="nx">docker</span> <span class="nx">volume</span> <span class="nb">prune</span>
+
+<span class="vi">#volume</span> <span class="nx">在容器停止或删除的时候会继续存在</span><span class="err">，</span><span class="nx">如需删除需要显示声明</span><span class="err">。</span>
+<span class="nx">docker</span> <span class="nx">rm</span> <span class="na">-v</span> <span class="o">&lt;</span><span class="nx">container_id</span><span class="o">&gt;</span>
+<span class="nx">docker</span> <span class="nx">volume</span> <span class="nx">rm</span> <span class="o">&lt;</span><span class="nx">volume_name</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<h3 id="422-bind-mount">4.2.2. bind mount</h3>
+<p><code>bind mount</code> 是直接将宿主机文件系统上的文件路径映射到容器中，<strong>两边双向同步</strong>。</p>
+<div class="hlcode"><pre><span class="n">digraph</span> <span class="n">a</span><span class="p">{</span>
+    <span class="err">容器文件系统</span><span class="o">-&gt;</span><span class="err">主机文件系统</span>
+    <span class="err">主机文件系统</span><span class="o">-&gt;</span><span class="err">容器文件系统</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p><strong>优点</strong><br />
+1. 方便<br />
+可以直接访问，也可以被别的程序使用。比如我们打包一个本地应用到本地/target路径，我们就可以把这个路径使用bind mount的方式挂在到依赖他的应用的docker容器中，这样本地应用打包后，docker里的数据卷也会同时更新；</p>
+<p><strong>缺点</strong><br />
+1. 安全问题<br />
+因为你可以把任何文件路径使用bind mount的方式绑定到容器中，这样有可能一些安全问题，比如把宿主机的系统文件绑定到容器中。</p>
+<div class="hlcode"><pre><span class="cp"># 使用-v 添加本地宿主文件地址 是使用bind mount</span>
+<span class="o">-</span><span class="n">v</span> <span class="o">&lt;</span><span class="n">host</span> <span class="n">path</span> <span class="n">name</span><span class="o">&gt;:&lt;</span><span class="n">container</span> <span class="n">path</span> <span class="n">name</span><span class="o">&gt;</span>
+<span class="o">--</span><span class="n">volume</span> <span class="o">&lt;</span><span class="n">host</span> <span class="n">path</span> <span class="n">name</span><span class="o">&gt;:&lt;</span><span class="n">container</span> <span class="n">path</span> <span class="n">name</span><span class="o">&gt;</span>
+
+<span class="o">--</span><span class="n">mount</span> <span class="n">type</span><span class="o">=</span><span class="n">bind</span><span class="p">,</span><span class="n">source</span><span class="o">=/</span><span class="n">src</span><span class="o">/</span><span class="n">webapp</span><span class="p">,</span><span class="n">target</span><span class="o">=/</span><span class="n">opt</span><span class="o">/</span><span class="n">webapp</span><span class="p">,</span><span class="n">readonly</span>
+
+<span class="cp"># Docker 挂载主机目录的默认权限是 读写 用户也可以通过增加 readonly 指定为 只读</span>
+<span class="o">--</span><span class="n">mount</span> <span class="n">type</span><span class="o">=</span><span class="n">bind</span><span class="p">,</span><span class="n">source</span><span class="o">=/</span><span class="n">src</span><span class="o">/</span><span class="n">webapp</span><span class="p">,</span><span class="n">target</span><span class="o">=/</span><span class="n">opt</span><span class="o">/</span><span class="n">webapp</span><span class="p">,</span><span class="n">readonly</span>
+</pre></div>
+
+
+<ul>
+<li>Tips:</li>
+<li>本地目录的路径必须是<strong>绝对路径</strong>，</li>
+<li>如果本地目录 </li>
+<li>使用 <code>-v</code> 参数，Docker 会自动为你创建一个文件夹，</li>
+<li>使用 <code>--mount</code> 参数，则报错。</li>
+</ul>
+<h3 id="423-tmpfs">4.2.3. tmpfs</h3>
+<p>tmpfs 这种方式是使用宿主机的内存作为存储，不会写到宿主机的文件系统中，和前两种区别较大。</p>
+<p><strong>Docker Toolbox Windows中的数据挂载</strong></p>
+<p>使用 Docker Toolbox Windows 实际是在VM 虚拟机上构建了Linux系统上运行的docker，需要VM 虚拟机与Windows宿主系统开启文件共享（挂载），再</p>
+<div class="hlcode"><pre><span class="n">win</span><span class="err">系统</span> <span class="o">-&gt;</span> <span class="n">VM</span> <span class="err">虚拟机（</span><span class="n">docker</span> <span class="n">Machine</span><span class="err">）</span><span class="o">-&gt;</span><span class="n">docker</span> 
+</pre></div>
+
+
+<p>Docker 再win系统中 挂载的docker Machine 中文件 <br />
+docker Machine 同过VM 虚拟机 与win系统中某一文件夹共享文件夹</p>
+<h1 id="5-docker">5. Docker 网络</h1>
+<p>Docker支持的网络通信方式主要有4种:<br />
+1. bridge<br />
+2. host<br />
+3. container<br />
+4. none</p>
+<p>除bridge方式，Docker还支持host、container、none三种网络通信方式，使用其它通信方式，只要在Docker启动时，指定–net参数即可，比如:</p>
+<h2 id="51-birdge">5.1. birdge 桥接方式</h2>
+<p>Docker的网络功能相对简单，没有过多复杂的配置，Docker默认使用<strong>birdge桥接方式</strong>与容器通信，启动Docker后，宿主机上会产生<code>docker0</code>这样一个虚拟网络接口， docker0不是一个普通的网络接口， 它是一个虚拟的以太网桥，可以为绑定到docker0上面的网络接口自动转发数据包，这样可以使容器与宿主机之间相互通信。每次Docker创建一个容器，会产生一对虚拟接口，在宿主机上执行ifconfig，会发现多了一个类似<code>veth****</code>这样的网络接口，它会绑定到docker0 上，由于所有容器都绑定到docker0上，容器之间也就可以通信。</p>
+<p>在宿主机上执行ifconfig，会看到docker0这个网络接口， 启动一个container，再次执行ifconfig, 会有一个类似<code>veth****</code>的interface，每个container的缺省路由是宿主机上docker0的ip，在container中执行netstat -r可以看到如下图所示内容：container路由<br />
+container路由</p>
+<p>容器中的默认网关跟docker0的地址是一样的：docker0<br />
+docker0</p>
+<p>当容器退出之后，veth***虚拟接口也会被销毁。</p>
+<h2 id="52-host">5.2. host 寄主网络</h2>
+<p>host方式可以让容器无需创建自己的网络协议栈，而直接访问宿主机的网络接口，在容器中执行<code>ip addr</code>会发现与宿主机的网络配置是一样的，host方式让容器直接使用宿主机的网络接口，传输数据的效率会更加高效，避免bridge方式带来的额外开销，但是这种方式也可以让容器访问宿主机的D-bus等网络服务，可能会带来意想不到的安全问题，应谨慎使用host方式</p>
+<div class="hlcode"><pre><span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">i</span> <span class="o">-</span><span class="n">t</span>  <span class="o">--</span><span class="n">net</span><span class="o">=</span><span class="n">host</span> <span class="n">ubuntu</span> <span class="o">/</span><span class="n">bin</span><span class="o">/</span><span class="n">bash</span>
+</pre></div>
+
+
+<h2 id="53-container">5.3. container</h2>
+<p>container 方式可以让容器共享一个已经存在容易的网络配置；</p>
+<h2 id="54-none">5.4. None</h2>
+<p>none方式不会对容器的网络做任务配置，需要用户自己去定制。</p>
+<h1 id="6">6. 镜像管理</h1>
+<p><strong>概念再解析</strong><br />
+Docker Image：Docker 镜像 <br />
+Docker Registry ：Docker镜像注册中心，一个集中的存储、分发镜像的服务中心<br />
+Docker Repository：Docker仓库,一个仓库对应一个软件，一个软件有多个版本</p>
+<div class="hlcode"><pre><span class="n">digraph</span> <span class="n">a</span><span class="p">{</span>
+    <span class="n">Docker</span><span class="err">镜像注册中心</span><span class="o">-&gt;</span><span class="n">Docker</span><span class="err">仓库</span><span class="mi">1</span>
+    <span class="n">Docker</span><span class="err">镜像注册中心</span><span class="o">-&gt;</span><span class="n">Docker</span><span class="err">仓库</span><span class="mi">2</span>
+    <span class="n">Docker</span><span class="err">镜像注册中心</span><span class="o">-&gt;</span><span class="n">Docker</span><span class="err">仓库</span><span class="mi">3</span>
+    <span class="n">Docker</span><span class="err">仓库</span><span class="mi">1</span><span class="o">-&gt;</span><span class="s">&quot;软件A:版本1 镜像&quot;</span>
+    <span class="n">Docker</span><span class="err">仓库</span><span class="mi">1</span><span class="o">-&gt;</span><span class="s">&quot;软件A:版本2 镜像&quot;</span>
+    <span class="n">Docker</span><span class="err">仓库</span><span class="mi">1</span><span class="o">-&gt;</span><span class="s">&quot;软件A:版本3 镜像&quot;</span>
+    <span class="n">Docker</span><span class="err">仓库</span><span class="mi">2</span><span class="o">-&gt;</span><span class="s">&quot;软件B:版本1 镜像&quot;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h2 id="61-docker-registry">6.1. Docker Registry</h2>
+<div class="hlcode"><pre><span class="cp"># 查看Registry</span>
+<span class="n">docker</span> <span class="n">system</span> <span class="n">info</span>
+<span class="n">docker</span> <span class="n">info</span>
+</pre></div>
+
+
+<h3 id="611">6.1.1. 公共镜像注册中心</h3>
+<h4 id="6111-docker-hub">6.1.1.1. Docker hub</h4>
+<h5 id="61111-docker-hub">6.1.1.1.1. Docker hub 的国内加速器</h5>
+<h4 id="6112">6.1.1.2. 阿里云</h4>
+<h3 id="612">6.1.2. 私有镜像注册中心</h3>
+<h2 id="62">6.2. 镜像下载</h2>
+<div class="hlcode"><pre><span class="n">docker</span> <span class="n">pull</span> <span class="p">[</span><span class="err">选项</span><span class="p">]</span> <span class="p">[</span><span class="n">Docker</span> <span class="n">Registry</span> <span class="err">地址</span><span class="p">[</span><span class="o">:</span><span class="err">端口号</span><span class="p">]</span><span class="o">/</span><span class="p">]</span><span class="err">仓库名</span><span class="o">:</span><span class="p">[</span><span class="err">标签</span><span class="p">]</span>
+</pre></div>
+
+
+<p><strong>Windows10</strong> Hyper 模式镜像文件是存储在虚拟硬盘上，虚拟硬盘的位置为<code>C:\Users\Public\Documents\Hyper-V\Virtual hard disks</code></p>
+<p><strong>Linux</strong> 下为<code>/var/lib/docker</code></p>
+<h3 id="621">6.2.1. 更换镜像下载镜像</h3>
+<p><strong>Ubuntu 系统</strong></p>
+<div class="hlcode"><pre>sudo mkdir <span class="o">-</span>p <span class="o">/</span>etc<span class="o">/</span>docker
+sudo tee <span class="o">/</span>etc<span class="o">/</span>docker<span class="o">/</span>daemon.json <span class="o">&lt;&lt;-</span><span class="s">&#39;EOF&#39;</span>
+<span class="p">{</span>
+  <span class="s">&quot;registry-mirrors&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s">&quot;http://hub-mirror.c.163.com&quot;</span><span class="p">,</span>
+  <span class="s">&quot;https://docker.mirrors.ustc.edu.cn&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+EOF
+sudo systemctl daemon<span class="o">-</span>reload
+sudo systemctl restart docker
+</pre></div>
+
+
+<p><strong>针对Docker Toolbox用户</strong><br />
+1. 创建一台安装有Docker环境的Linux虚拟机，指定机器名称为default，同时配置Docker加速器地址。</p>
+<div class="hlcode"><pre><span class="n">docker</span><span class="o">-</span><span class="n">machine</span> <span class="n">create</span> <span class="o">--</span><span class="n">engine</span><span class="o">-</span><span class="n">registry</span><span class="o">-</span><span class="n">mirror</span><span class="o">=</span><span class="n">http</span><span class="o">:</span><span class="c1">//hub-mirror.c.163.com -d virtualbox default</span>
+</pre></div>
+
+
+<ol>
+<li>查看机器的环境配置，并配置到本地，并通过Docker客户端访问Docker服务。</li>
+</ol>
+<div class="hlcode"><pre><span class="n">docker</span><span class="o">-</span><span class="n">machine</span> <span class="n">env</span> <span class="n">defaulteval</span> <span class="s">&quot;$(docker-machine env default)&quot;</span><span class="n">docker</span> <span class="n">info</span>
+</pre></div>
+
+
+<p><strong>针对Docker for Windows用户</strong><br />
+1. 在系统右下角托盘图标内右键菜单选择 Settings，打开配置窗口后左侧导航菜单选择 Docker Daemon。编辑窗口内的JSON串，填写下方加速器地址：</p>
+<div class="hlcode"><pre><span class="p">{</span>
+  <span class="s">&quot;registry-mirrors&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s">&quot;http://hub-mirror.c.163.com&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<ol>
+<li>编辑完成后点击 Apply 保存按钮，等待Docker重启并应用配置的镜像加速器。</li>
+</ol>
+<h2 id="63">6.3. 本地镜像发布到远程仓库</h2>
+<p>我们的镜像现在已经构建并且在本地运行了。但我们通常需要将镜像发布到 Kubernetes 集群、容器镜像服务商处（Docker Hub、阿里云、腾讯云） 中。</p>
+<div class="hlcode"><pre><span class="err">#</span> <span class="nx">发布镜像到容器镜像服务商</span> <span class="nx">Docker</span> <span class="nx">Hub</span>
+<span class="err">#</span> <span class="mi">1</span><span class="nx">.</span> <span class="nx">登入容器镜像服务商</span>
+<span class="nx">docker</span> <span class="nx">login</span> <span class="o">--</span><span class="n">username</span><span class="o">=&lt;</span><span class="nx">USERNAME</span><span class="o">&gt;</span>
+
+<span class="nx">docker</span> <span class="nb">push</span> <span class="err">$</span><span class="p">{</span><span class="nx">DOCKER_USERNAME</span><span class="p">}</span><span class="o">/&lt;</span><span class="nb">IMAGE</span><span class="na">-name</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="nb">IMAGE</span><span class="na">-tag</span><span class="o">&gt;</span>
+</pre></div>
+
+
+<h3 id="631">6.3.1. 阿里云实践</h3>
+<ol>
+<li>登录阿里云Docker Registry</li>
+</ol>
+<div class="hlcode"><pre><span class="nx">docker</span> <span class="nx">login</span> <span class="o">--</span><span class="n">username</span><span class="o">=&lt;</span><span class="nx">USERNAME</span><span class="o">&gt;</span> <span class="nx">registry.cn</span><span class="na">-hangzhou.aliyuncs.com</span>
+</pre></div>
+
+
+<ul>
+<li><code>&lt;USERNAME&gt;</code>为阿里云账号全名</li>
+<li>
+<p>密码为开通服务时设置的密码,您可以在访问凭证页面修改凭证密码。</p>
+</li>
+<li>
+<p>从Registry中拉取镜像</p>
+</li>
+</ul>
+<div class="hlcode"><pre><span class="nx">docker</span> <span class="nx">pull</span> <span class="nx">registry.cn</span><span class="na">-hangzhou.aliyuncs.com</span><span class="o">/&lt;</span><span class="nb">NAMESPACEs</span><span class="o">&gt;</span> <span class="o">/&lt;</span><span class="nb">IMAGE</span><span class="na">-name</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="nb">IMAGE</span><span class="na">-tag-num</span><span class="o">&gt;</span>
+<span class="err">#</span> <span class="nb">NAMESPACEs</span> <span class="nx">命名空间</span>
+<span class="err">#</span> <span class="nb">IMAGE</span><span class="na">-name</span> <span class="nx">镜像名称</span>
+<span class="err">#</span> <span class="nb">IMAGE</span><span class="na">-tag-num</span> <span class="nx">镜像版本号</span> 
+</pre></div>
+
+
+<ol>
+<li>将镜像推送到Registry</li>
+</ol>
+<div class="hlcode"><pre><span class="nx">docker</span> <span class="nx">login</span> <span class="o">--</span><span class="n">username</span><span class="o">=&lt;</span><span class="nx">USERNAME</span><span class="o">&gt;</span> <span class="nx">registry.cn</span><span class="na">-hangzhou.aliyuncs.com</span>
+
+<span class="nx">docker</span> <span class="kt">tag</span> <span class="err">[</span><span class="nx">ImageId</span><span class="cp">]</span> registry.cn-hangzhou.aliyuncs.com/<span class="nt">&lt;NAMESPACEs&gt;</span> /<span class="nt">&lt;IMAGE</span><span class="na">-name</span><span class="nt">&gt;</span>:<span class="nt">&lt;IMAGE</span><span class="na">-tag-num</span><span class="nt">&gt;</span>
+# NAMESPACEs 命名空间
+# IMAGE-name 镜像名称
+# IMAGE-tag-num 镜像版本号 
+
+docker push registry.cn-hangzhou.aliyuncs.com/<span class="nt">&lt;NAMESPACEs&gt;</span> /<span class="nt">&lt;IMAGE</span><span class="na">-name</span><span class="nt">&gt;</span>:<span class="nt">&lt;IMAGE</span><span class="na">-tag-num</span><span class="nt">&gt;</span>
+# 请根据实际镜像信息替换示例中的<span class="cp">[</span><span class="nx">ImageId</span><span class="cp">]</span>和<span class="cp">[</span><span class="nx">镜像版本号</span><span class="cp">]</span>参数。
+</pre></div>
+
+
+<ol>
+<li>选择合适的镜像仓库地址</li>
+</ol>
+<p>从ECS推送镜像时，可以选择使用镜像仓库<strong>内网地址</strong>。推送速度将得到提升并且将不会损耗您的公网流量。</p>
+<p>如果您使用的机器位于VPC网络，请使用 <code>registry-vpc.cn-hangzhou.aliyuncs.com</code> 作为Registry的域名登录，并作为镜像命名空间前缀。<br />
+5. 示例<br />
+使用<code>docker tag</code>命令重命名镜像，并将它通过专有网络地址推送至Registry。</p>
+<div class="hlcode"><pre><span class="cp"># [1] 确定 tag id</span>
+<span class="n">docker</span> <span class="n">images</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">REPOSITORY</span>                                                         <span class="n">TAG</span>                 <span class="n">IMAGE</span> <span class="n">ID</span>            <span class="n">CREATED</span>             <span class="n">VIRTUAL</span> <span class="n">SIZE</span>
+<span class="n">registry</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">acs</span><span class="o">/</span><span class="n">agent</span>                                    <span class="mf">0.7</span><span class="o">-</span><span class="n">dfb6816</span>         <span class="mi">37</span><span class="n">bb9c63c8b2</span>        <span class="mi">7</span> <span class="n">days</span> <span class="n">ago</span>          <span class="mf">37.89</span> <span class="n">MB</span>
+<span class="cp">#　[2] 为镜像添加 tag</span>
+<span class="n">docker</span> <span class="n">tag</span> <span class="mi">37</span><span class="n">bb9c63c8b2</span> <span class="n">registry</span><span class="o">-</span><span class="n">vpc</span><span class="p">.</span><span class="n">cn</span><span class="o">-</span><span class="n">hangzhou</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">acs</span><span class="o">/</span><span class="n">agent</span><span class="o">:</span><span class="mf">0.7</span><span class="o">-</span><span class="n">dfb6816</span>
+
+<span class="cp">#　[3] 为镜像添加 tag</span>
+<span class="cp">## 使用&quot;docker images&quot;命令找到镜像，将该镜像名称中的域名部分变更为Registry专有网络地址。</span>
+
+<span class="n">docker</span> <span class="n">push</span> <span class="n">registry</span><span class="o">-</span><span class="n">vpc</span><span class="p">.</span><span class="n">cn</span><span class="o">-</span><span class="n">hangzhou</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">acs</span><span class="o">/</span><span class="n">agent</span><span class="o">:</span><span class="mf">0.7</span><span class="o">-</span><span class="n">dfb6816</span>
+</pre></div>
+
+
+<p>d<sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup><sup id="fnref:2"><a class="footnote-ref" href="#fn:2" rel="footnote">2</a></sup></p>
+<h1 id="7">7. 镜像存储目录迁移</h1>
+<div class="hlcode"><pre><span class="cp">#备份fstab文件</span>
+<span class="n">sudo</span> <span class="n">cp</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">fstab</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">fstab</span><span class="p">.</span><span class="err">$</span><span class="p">(</span><span class="n">date</span> <span class="o">+%</span><span class="n">Y</span><span class="o">-%</span><span class="n">m</span><span class="o">-%</span><span class="n">d</span><span class="p">)</span>
+
+<span class="cp">#停止docker</span>
+<span class="n">sudo</span> <span class="n">service</span> <span class="n">docker</span> <span class="n">stop</span>
+
+<span class="cp">#/data/docker/为目标路径，根据机器情况设定。</span>
+<span class="n">export</span> <span class="n">DOCKER_PATH</span><span class="o">=/</span><span class="n">data</span><span class="o">/</span><span class="n">docker</span><span class="o">/</span>
+
+<span class="cp">#用rsync同步/var/lib/docker到新位置</span>
+<span class="n">sudo</span> <span class="n">rsync</span> <span class="o">-</span><span class="n">avPHSX</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">docker</span><span class="o">/</span><span class="p">.</span>  <span class="err">$</span><span class="n">DOCKER_PATH</span>
+
+<span class="n">sudo</span> <span class="n">echo</span> <span class="err">$</span><span class="n">DOCKER_PATH</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">docker</span>  <span class="n">none</span> <span class="n">bind</span> <span class="mi">0</span> <span class="mi">0</span> <span class="o">&gt;&gt;</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">fstab</span>
+<span class="n">sudo</span> <span class="n">mount</span> <span class="o">-</span><span class="n">a</span>
+<span class="n">df</span> <span class="o">-</span><span class="n">h</span>
+
+<span class="n">sudo</span> <span class="n">service</span> <span class="n">docker</span> <span class="n">start</span>
+</pre></div>
+
+
+<ol>
+<li>查看docker和文件系统</li>
+</ol>
+<p>Docker的镜像以及一些数据都是在<code>/var/lib/docker</code>目录下，它占用的是Linux的系统分区，也就是下面的/dev/vda1,当有多个镜像时，/dev/vda1的空间可能不足，我们可以把docker的数据挂载到数据盘，例如：/dev/vdb目录下。</p>
+<div class="hlcode"><pre><span class="n">df</span> <span class="o">-</span><span class="n">lhT</span>
+<span class="o">&gt;&gt;&gt;</span> 
+<span class="n">Filesystem</span>     <span class="n">Type</span>      <span class="n">Size</span>  <span class="n">Used</span> <span class="n">Avail</span> <span class="n">Use</span><span class="o">%</span> <span class="n">Mounted</span> <span class="n">on</span>
+<span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">vda1</span>      <span class="n">xfs</span>        <span class="mi">20</span><span class="n">G</span>  <span class="mf">3.8</span><span class="n">G</span>   <span class="mi">16</span><span class="n">G</span>  <span class="mi">20</span><span class="o">%</span> <span class="o">/</span>
+<span class="n">devtmpfs</span>       <span class="n">devtmpfs</span>  <span class="mi">916</span><span class="n">M</span>     <span class="mi">0</span>  <span class="mi">916</span><span class="n">M</span>   <span class="mi">0</span><span class="o">%</span> <span class="o">/</span><span class="n">dev</span>
+<span class="n">tmpfs</span>          <span class="n">tmpfs</span>     <span class="mi">921</span><span class="n">M</span>     <span class="mi">0</span>  <span class="mi">921</span><span class="n">M</span>   <span class="mi">0</span><span class="o">%</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">shm</span>
+<span class="n">tmpfs</span>          <span class="n">tmpfs</span>     <span class="mi">921</span><span class="n">M</span>   <span class="mi">43</span><span class="n">M</span>  <span class="mi">878</span><span class="n">M</span>   <span class="mi">5</span><span class="o">%</span> <span class="o">/</span><span class="n">run</span>
+<span class="n">tmpfs</span>          <span class="n">tmpfs</span>     <span class="mi">921</span><span class="n">M</span>     <span class="mi">0</span>  <span class="mi">921</span><span class="n">M</span>   <span class="mi">0</span><span class="o">%</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">fs</span><span class="o">/</span><span class="n">cgroup</span>
+<span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">vdb</span>       <span class="n">xfs</span>       <span class="mi">100</span><span class="n">G</span>   <span class="mi">11</span><span class="n">G</span>   <span class="mi">90</span><span class="n">G</span>  <span class="mi">11</span><span class="o">%</span> <span class="o">/</span><span class="n">data</span>
+</pre></div>
+
+
+<h1 id="8">8. 参考资料</h1>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p><a href="https://yeasy.gitbooks.io/docker_practice/content/">Docker — 从入门到实践</a>&#160;<a class="footnote-backref" href="#fnref:1" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:2">
+<p><a href="https://code.visualstudio.com/docs/remote/containers">VScode 开发指南Developing inside a Container</a>&#160;<a class="footnote-backref" href="#fnref:2" rev="footnote" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn:use_volume">
+<p><a href="https://docs.docker.com/storage/volumes/">官方文档：Use Volumes</a>&#160;<a class="footnote-backref" href="#fnref:use_volume" rev="footnote" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

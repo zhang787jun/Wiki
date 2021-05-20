@@ -1,0 +1,374 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Pytorch--Tensor基本操作 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-06-Pytorch">06-Pytorch</a>&nbsp;»&nbsp;Pytorch--Tensor基本操作</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Pytorch--Tensor基本操作</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#img21img21">img[:2,:1]==img[:2,:1,:,:]</a></li>
+<li><a href="#_1">还有一种索引中的...操作，有自动填充的功能,一般用于维数很多时使用。</a></li>
+<li><a href="#img">同样是上面的img</a></li>
+<li><a href="#_2">比如要取前三张图片，那么就是针对第一个维度（图片数目）进行挑选</a></li>
+<li><a href="#mask">利用掩码mask</a></li>
+<li><a href="#take">利用take取元素</a></li>
+<li><a href="#tensor136tensor">则最后结果为tensor([1,3,6]),也就是说会先将tensor压缩成一维向量，再按照索引取元素。</a><ul>
+<li><a href="#viewreshape">view(reshape)</a></li>
+</ul>
+</li>
+<li><a href="#viewreshape_1">view==reshape,可以任意替换</a><ul>
+<li><a href="#squeezeunsqueeze">squeeze减少维度数和unsqueeze扩展维度数</a></li>
+</ul>
+</li>
+<li><a href="#squeeze1">squeeze只关心有值的，可以挤压该值只有1个的维度，则最后会保留值总数目</a></li>
+<li><a href="#unsqueeze">unsqueeze会在参数维度上进行，若有此维度则会先将当前维度后移再拓展</a></li>
+<li><a href="#_3">例如图片要在某个维度上面做加减，那么仅仅有一维数据是不够的，此时就需要将一维数据扩展维度</a></li>
+<li><a href="#4321414apiexpand">但仅仅如此是不够的，我们知道矩阵进行加减操作是需要形状完全一致的，所以形状必须为[4,32,14,14],这就需要在某一维度上进行拓展的操作，需要了解后面的api(expand)才可以解决。</a><ul>
+<li><a href="#expendstarstarstarrepeat">expend仅在有需要时增加数据的扩展(starstarstar)/repeat主动增加数据的扩展</a></li>
+</ul>
+</li>
+<li><a href="#132114321414">为了将[1,32,1,1]扩展为[4,32,14,14]:</a></li>
+<li><a href="#expend">expend</a></li>
+<li><a href="#repeat">repeat，注意参数输入的是在该维度上拷贝的次数而不是形状！</a></li>
+<li><a href="#_4">正确操作</a></li>
+<li><a href="#_5">张量的转置（维度交换）操作</a></li>
+<li><a href="#_6">对于二维向量来说：</a></li>
+<li><a href="#transpose">对于任意维度张量的转置操作：transpose</a></li>
+<li><a href="#indexpermute">接收index来进行转置：permute</a></li>
+<li><a href="#unsqueezeexpand">有点类似于先unsqueeze再expand</a></li>
+<li><a href="#01broadcast">自动会在第0维处插入一个维度,并且同时将形状为1的部分自动转换成想要运算的对象的形状，这表示着在broadcast前先要将后面的维度数调至想要的样子再使用。</a></li>
+<li><a href="#324321414unsueeze3211broadcast4321414">例如，将形状为(32)的向量转化为(4,32,14,14),则先要unsueeze到(32,1,1),才会自动broadcast为(4,32,14,14).</a></li>
+<li><a href="#broadcast3232biasbias14141414bias">转换成物理意义容易理解,比如矩阵加上一个数就是broadcast.比如上面为图片数据时,(32)就是对32个通道想要加的不同bias，会自动广播为对每个灰度值上的bias。（真正运算的是该数据的最基本单位）。加上（14，14）就是对每一张图的每个通道的图上加上一个(14,14)的bias。</a></li>
+<li><a href="#cat">cat拼接</a></li>
+<li><a href="#2dim0dim0dim">若为2维数据，dim=0则是竖向拼接，dim=0就是横向拼接。dim所指维度可以不同，但其他维度形状必须一致</a></li>
+<li><a href="#stack">stack增维度拼接</a></li>
+<li><a href="#split">split拆分</a></li>
+<li><a href="#_7">根据欲拆分长度：</a></li>
+<li><a href="#chunk">chunk拆分</a></li>
+<li><a href="#_8">根据欲拆分数量</a></li>
+<li><a href="#torchadd">+等价于torch.add()</a></li>
+<li><a href="#_9">乘法</a></li>
+<li><a href="#tensorelement-wisetorchmatmul">tensor直接相*,其结果为element wise,矩阵乘法为torch.matmul或者@</a></li>
+<li><a href="#tensor">高维tensor矩阵相乘实际上是对多个二维矩阵进行并行运算</a></li>
+<li><a href="#432864416432416432436432">若(4,3,28,64)@(4,1,64,32)则会自动调用广播机制，把(4,1,64,32)转变为(4,3,64,32)再相乘。无法调用广播机制的乘法则会报错。</a></li>
+<li><a href="#_10">平方</a></li>
+<li><a href="#_11">开方</a></li>
+<li><a href="#explog">exp,log</a></li>
+<li><a href="#_12">近似</a></li>
+<li><a href="#floorceilround">floor()向下取整，ceil()向上取整，round()四舍五入。</a></li>
+<li><a href="#_13">取整取小数</a></li>
+<li><a href="#truncfrac">trunc()取整，frac()取小数</a></li>
+<li><a href="#clamp">clamp取范围</a></li>
+<li><a href="#_14">范数</a></li>
+<li><a href="#pnormpp">求多少p范数只需要在norm(p)的参数中修改p即可</a></li>
+<li><a href="#_15">求最大值和最小值与其相关的索引</a></li>
+<li><a href="#_16">累加总和</a></li>
+<li><a href="#_17">累乘综合</a></li>
+<li><a href="#dimkeepdim">dim,keepdim</a></li>
+<li><a href="#a410">假设a的形状为(4,10)</a></li>
+<li><a href="#top-kk-th">top-k,k-th</a></li>
+<li><a href="#_18">比较操作</a></li>
+<li><a href="#element-wise">都是进行element-wise操作</a></li>
+</ul>
+</div>
+<p>Copy<br />
+a=np.array([2,2,2])<br />
+b=torch.from_numpy(a)<br />
+​ 2.列表转tensor：</p>
+<p>Copy<br />
+a=torch.tensor([2,2])<br />
+b=torch.FloatTensor([2,2.])#不常用<br />
+c=torch.tensor([[1,2],[3,4]])#2*2矩阵<br />
+​ 3.利用大写接受shape创建:</p>
+<p>Copy<br />
+torch.empty(2,3)#生成一个2<em>3的0矩阵<br />
+torch.Tensor(2,3)#生成一个2</em>3的随机矩阵<br />
+torch.IntTensor(2,3)<br />
+torch.FloatTensor(2,3).type()<br />
+默认下，Tensor为‘torch.FloatTensor’类型，若要改为double类型的，则需要执行</p>
+<p>torch.set_default_tensor_type(torch.DoubleTensor)来修改。</p>
+<p>​ 4.随机创建Tensor：</p>
+<p>Copy<br />
+a=torch.rand(3,3)#创建3*3的0到1均匀分布的矩阵<br />
+a=torch.randn(3,3)#均值为0方差为1正态分布矩阵</p>
+<p>torch.rand_like(a)#等价于下一条<br />
+torch.rand(a.shape)</p>
+<p>torch.randint(1,10,[3,3])#创建3*3的1到10随机分布的整数矩阵<br />
+​ 5.创建相同数的矩阵：</p>
+<p>Copy<br />
+torch.full([3,3],1)#生成3<em>3的全为1的矩阵<br />
+torch.full([],1)#生成标量1<br />
+torch.full([2],1)#生成一个长度为2的值全为1的向量<br />
+torch.ones(3,3)<br />
+torch.zeros(3,3)<br />
+torch.eye(3,4)#生成对角为1矩阵，若不是对角矩阵，则多余出用0填充<br />
+torch.eye(3)#3</em>3对角矩阵<br />
+​ 6.创建规律数列矩阵：</p>
+<p>Copy<br />
+torch.arange(0,10)#生成[0,1,2,3,4,5,6,7,8,9]<br />
+torch.arange(0,10,2)#生成增量为2的数列<br />
+torch.arange(10)#效果同于（0，10）</p>
+<p>torch.linspace(0,10,4)#生成[0.0000,3.3333,6,6667,10,0000]包括10的4等分向量<br />
+torch.logspace(0,-1,steps=10,base=10)#生成10个0到-1等分的数，再以其为指数，如第一个数#为1.000,最后一个数为0.100<br />
+​ 7.创建随机打散数组：</p>
+<p>Copy<br />
+torch.randperm(10)#生成0~9这10个数乱序的数组（常用作索引）</p>
+<p>tensor的比较：#<br />
+Copy<br />
+torch.eq(a,b)#返回对比后的矩阵，若矩阵形状相同，那么会对没一个位置进行比较，返回一个同样形状的矩阵，相应位置若相同则返回1，不相等则为0<br />
+torch.all(torch.eq(a,b))#a,b相同时返回1，否则为1。即all内的张量为全1矩阵会返回1<br />
+tensor的切片(start : end : step)：#<br />
+如果要存放一张rgb的minist（28*28）图片：</p>
+<p>Copy<br />
+img=torch.rand(4,3,28,28)#4张图片</p>
+<p>img[1]#获取第二张图片<br />
+img[0,0].shape#获取第一张图片的第一个通道的图片形状<br />
+img[0,0,2,4]#返回像素灰度值标量</p>
+<p>img[:2]#获得img[0]和img[1]</p>
+<h1 id="img21img21">img[:2,:1]==img[:2,:1,:,:]</h1>
+<p>img[2:]#获得img[2],img[3],img[4]三张图片<br />
+img[-1:]#获得img[4]<br />
+img[:,:,::2,::2]#对图片进行隔行（列）采样</p>
+<h1 id="_1">还有一种索引中的...操作，有自动填充的功能,一般用于维数很多时使用。</h1>
+<p>img[0,...]#img.shape的结果是torch.Size([4,28,28]),这是和img[0,:]或者img[0]是一样的。<br />
+img[0,...,0:28:2]#此时由于写了最右边的索引，中间的...等价于:,:，即img[0,:,:,0:28:2]</p>
+<p>tensor的索引查找（index_select/masked_select/take）：#<br />
+Copy</p>
+<h1 id="img">同样是上面的img</h1>
+<h1 id="_2">比如要取前三张图片，那么就是针对第一个维度（图片数目）进行挑选</h1>
+<p>img.index_select(0,torch.tensor([0,1,2]))#第一个参数为轴，第二个参数为tensor类型的索引<br />
+img.index_select(0,torch.arange(3))#效果同上句</p>
+<h1 id="mask">利用掩码mask</h1>
+<p>x=torch.rand(3,4)<br />
+mask=x.ge(0.5)#会把x中大于0.5的置为一，其他置为0，类似于阈值化操作。<br />
+y=torch.masked_select(x,mask)#将mask中值为1的元素取出来，比如mask有3个位置值为1<br />
+y.shape#结果为tensor.Size([3])</p>
+<h1 id="take">利用take取元素</h1>
+<p>x=torch.tensor([[1,2,3],[4,5,6]])<br />
+torch.take(x,torch.tensor([0,2,6]))</p>
+<h1 id="tensor136tensor">则最后结果为tensor([1,3,6]),也就是说会先将tensor压缩成一维向量，再按照索引取元素。</h1>
+<p>tensor的维度变换（view/reshape/squeeze/transpose/expand/permute）：#<br />
+Copy<br />
+img=torch.rand(4,1,28,28)</p>
+<h2 id="viewreshape">view(reshape)</h2>
+<h1 id="viewreshape_1">view==reshape,可以任意替换</h1>
+<p>x=img.view(4,28*28)<br />
+img.view(4,28,28)</p>
+<p>x.view(4,28,28,1)#此操作可行但不合理，逻辑上的问题会造成信息污染<br />
+Copy</p>
+<h2 id="squeezeunsqueeze">squeeze减少维度数和unsqueeze扩展维度数</h2>
+<h1 id="squeeze1">squeeze只关心有值的，可以挤压该值只有1个的维度，则最后会保留值总数目</h1>
+<p>x=torch.rand(1,32,1,1)#1张图，有32个通道，每个通道一个像素<br />
+x.squeeze()#形状变为[32]<br />
+x.squeeze(0)#[32,1,1]<br />
+x.squeeze(1)#[1,32,1,1]并没有发生压缩，因为该维度上有值，不能减少这一维度，不会报错</p>
+<h1 id="unsqueeze">unsqueeze会在参数维度上进行，若有此维度则会先将当前维度后移再拓展</h1>
+<p>img.unsqueeze(0).shape#结果为torch.Size([1,4,1,28,28]),物理意义为batch<br />
+img.unsqueeze(-1).shape#结果为torch.Size([4,1,28,28,1]),等价于unsqueeze(4)</p>
+<h1 id="_3">例如图片要在某个维度上面做加减，那么仅仅有一维数据是不够的，此时就需要将一维数据扩展维度</h1>
+<p>b=torch.rand(32)#torch.Size([32])<br />
+f=torch.rand(4,32,14,14)#要做到在每个channel上增加某一bias<br />
+b=b.unsqueeze(1).unsqueeze(2).unsqueeze(0)#形状为[1,32,1,1]</p>
+<h1 id="4321414apiexpand">但仅仅如此是不够的，我们知道矩阵进行加减操作是需要形状完全一致的，所以形状必须为[4,32,14,14],这就需要在某一维度上进行拓展的操作，需要了解后面的api(expand)才可以解决。</h1>
+<p>Copy</p>
+<h2 id="expendstarstarstarrepeat">expend仅在有需要时增加数据的扩展(starstarstar)/repeat主动增加数据的扩展</h2>
+<h1 id="132114321414">为了将[1,32,1,1]扩展为[4,32,14,14]:</h1>
+<h1 id="expend">expend</h1>
+<p>b.expend(4,32,14,14)#直接输入想要的形状，但是只有原维度上的数值为1时才可以进行扩展<br />
+b.expend(4,33,14,14)#报错<br />
+b.expend(4,-1,-1,-1)#表示其他维度不变，仅怎加第0维的内容</p>
+<h1 id="repeat">repeat，注意参数输入的是在该维度上拷贝的次数而不是形状！</h1>
+<p>b.repeat(4,32,1,1)#[4,1024,1,1] 1024=32*32</p>
+<h1 id="_4">正确操作</h1>
+<p>b.repeat(4,1,14,14)#[4,32,14,14]<br />
+Copy</p>
+<h1 id="_5">张量的转置（维度交换）操作</h1>
+<h1 id="_6">对于二维向量来说：</h1>
+<p>a=torch.rand(3,4)<br />
+a.t()#即完成了转置</p>
+<h1 id="transpose">对于任意维度张量的转置操作：transpose</h1>
+<p>a=torch.rand(4,3,32,32)<br />
+a.transpose(1,3)#接收参数为要进行交换那两个维度，[4,32,32,3]</p>
+<h1 id="indexpermute">接收index来进行转置：permute</h1>
+<p>a.permute(0,2,3,1)#形状为[4,32,32,3]<br />
+tensor的Broadcasting:#<br />
+在矩阵相加时，如果两矩阵的形状不一致，则会自动运行broadcast</p>
+<p>Copy</p>
+<h1 id="unsqueezeexpand">有点类似于先unsqueeze再expand</h1>
+<h1 id="01broadcast">自动会在第0维处插入一个维度,并且同时将形状为1的部分自动转换成想要运算的对象的形状，这表示着在broadcast前先要将后面的维度数调至想要的样子再使用。</h1>
+<h1 id="324321414unsueeze3211broadcast4321414">例如，将形状为(32)的向量转化为(4,32,14,14),则先要unsueeze到(32,1,1),才会自动broadcast为(4,32,14,14).</h1>
+<h1 id="broadcast3232biasbias14141414bias">转换成物理意义容易理解,比如矩阵加上一个数就是broadcast.比如上面为图片数据时,(32)就是对32个通道想要加的不同bias，会自动广播为对每个灰度值上的bias。（真正运算的是该数据的最基本单位）。加上（14，14）就是对每一张图的每个通道的图上加上一个(14,14)的bias。</h1>
+<p>tensor的拼接与拆分(cat/stack/spilit/chunk):#<br />
+Copy</p>
+<h1 id="cat">cat拼接</h1>
+<p>a=torch.rand(4,3,18,18)<br />
+b=torch.rand(5,3,18,18)<br />
+c=torch.rand(4,1,18,18)<br />
+d=a.copy()</p>
+<p>torch.cat([a,b],dim=0)#拼接得到(9,3,18,18)的数据</p>
+<h1 id="2dim0dim0dim">若为2维数据，dim=0则是竖向拼接，dim=0就是横向拼接。dim所指维度可以不同，但其他维度形状必须一致</h1>
+<p>torch.cat([a,c],dim=1)#就会得到(4,4,18,18)的数据。<br />
+Copy</p>
+<h1 id="stack">stack增维度拼接</h1>
+<p>torch.stack([a,b],dim=0)#得到形状为(2,4,3,18,18)。使用时列表内对象的形状需要一致。<br />
+Copy</p>
+<h1 id="split">split拆分</h1>
+<h1 id="_7">根据欲拆分长度：</h1>
+<p>a1,a2=a.split(2,dim=0)#拆分长度为2.对第0维按照2个一份进行拆分。拆分获得两个形状为(2,3,18,18)的张量。<br />
+a1,a2=a.split([3,1],dim=0)#不同长度拆分。获得(3,3,18,18)和(1,3,18,18)两个形状的张量。<br />
+Copy</p>
+<h1 id="chunk">chunk拆分</h1>
+<h1 id="_8">根据欲拆分数量</h1>
+<p>a1,a2,a3,a4=a.chunk(4,dim=0)#将张量依第0维拆分成4个(1,3,18,18)的张量。等效于a.split(1,dim=0)</p>
+<p>tensor的运算:#<br />
+Copy</p>
+<h1 id="torchadd">+等价于torch.add()</h1>
+<h1 id="_9">乘法</h1>
+<h1 id="tensorelement-wisetorchmatmul">tensor直接相*,其结果为element wise,矩阵乘法为torch.matmul或者@</h1>
+<h1 id="tensor">高维tensor矩阵相乘实际上是对多个二维矩阵进行并行运算</h1>
+<p>a=torch.rand(4,3,28,64)<br />
+b=torch.rand(4,3,64,32)<br />
+a@b#结果得到的形状为(4,3,28,32)</p>
+<h1 id="432864416432416432436432">若(4,3,28,64)@(4,1,64,32)则会自动调用广播机制，把(4,1,64,32)转变为(4,3,64,32)再相乘。无法调用广播机制的乘法则会报错。</h1>
+<h1 id="_10">平方</h1>
+<p>a=torch.full([2,2],2)#创建一个(2,2)的全2矩阵<br />
+a.pow(2)#a的每个元素都平方<br />
+a**2#等价于上一句</p>
+<h1 id="_11">开方</h1>
+<p>a.sqrt()#平方根<br />
+a**0.5#等价于上一句</p>
+<h1 id="explog">exp,log</h1>
+<p>a.torch.exp(torch.ones(2,2))<br />
+torch.log(a)</p>
+<h1 id="_12">近似</h1>
+<h1 id="floorceilround">floor()向下取整，ceil()向上取整，round()四舍五入。</h1>
+<h1 id="_13">取整取小数</h1>
+<h1 id="truncfrac">trunc()取整，frac()取小数</h1>
+<h1 id="clamp">clamp取范围</h1>
+<p>a=torch.tensor([[3,5],[6,8]])<br />
+a.clamp(6)#得到[[6,6],[6,8]],小于6的都变为6<br />
+a.clamp(5,6)#得到[[5,5],[6,6]],小于下限变为下限，大于上限变为上限。<br />
+tensor的统计属性:#<br />
+Copy</p>
+<h1 id="_14">范数</h1>
+<h1 id="pnormpp">求多少p范数只需要在norm(p)的参数中修改p即可</h1>
+<p>a.norm(1)#求a的一范数，范数也可以加dim=</p>
+<h1 id="_15">求最大值和最小值与其相关的索引</h1>
+<p>a.min()<br />
+a.max()<br />
+a.argmax()#会得到索引值，返回的永远是一个标量，多维张量会先拉成向量再求得其索引。拉伸的过程为每一行加起来变成一整行，而不是matlab中的列拉成一整列。<br />
+a.argmin()<br />
+a.argmax(dim=1)#如果不想获取拉伸后的索引值就需要在指定维度上进行argmax，比如如果a为(2，2)的矩阵，那么这句话的结果就可能是[1,1],表示第一行第一个在此行最大，第二行第一个在此行最大。</p>
+<h1 id="_16">累加总和</h1>
+<p>a.sum()</p>
+<h1 id="_17">累乘综合</h1>
+<p>a.prod()</p>
+<h1 id="dimkeepdim">dim,keepdim</h1>
+<h1 id="a410">假设a的形状为(4,10)</h1>
+<p>a.max(dim=1)#结果会得到一个(4)的张量，表示4个样本中每个样本10个特征的最大值组成的张量。(max换成argmax也是同理)。<br />
+a.max(dim=1,keepdim=True)#同时返回a.argmax(dim=1)得到的结果，以保持维度数目和原来一致。</p>
+<h1 id="top-kk-th">top-k,k-th</h1>
+<p>a.topk(5)#返回张量a前5个最大值组成的向量<br />
+a.topk(5,dim=1,largest=False)#关闭largest求最小的5个<br />
+a.kthvalue(8,dim=1)#返回第八小的值</p>
+<h1 id="_18">比较操作</h1>
+<h1 id="element-wise">都是进行element-wise操作</h1>
+<p>torch.eq(a,b)#返回的是张量<br />
+torch.equal(a,b)#返回的是True或者False<br />
+tensor的where和gather:#<br />
+Copy<br />
+torch.where(condition,x,y)<br />
+torch.gather(input,dim,index,out=none)<br />
+作者： 科西嘉人</p>
+<p>出处：https://www.cnblogs.com/IaCorse/p/11762548.html</p>
+<p>版权：本文采用「署名-非商业性使用-相同方式共享 4.0 国际」知识共享许可协议进行许可。</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

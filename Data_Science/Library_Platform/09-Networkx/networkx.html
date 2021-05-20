@@ -1,0 +1,401 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>networkx--复杂网络分析包 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-09-Networkx">09-Networkx</a>&nbsp;»&nbsp;networkx--复杂网络分析包</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">networkx--复杂网络分析包</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 基本操作</a><ul>
+<li><a href="#11">1.1. 创建图</a></li>
+<li><a href="#_1">添加边/节点</a></li>
+<li><a href="#_2">删除边/节点</a></li>
+</ul>
+</li>
+<li><a href="#_3">可视化</a><ul>
+<li><a href="#_4">其他</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="1">1. 基本操作</h1>
+<h2 id="11">1.1. 创建图</h2>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">networkx</span> <span class="kn">as</span> <span class="nn">nx</span>
+
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span> <span class="c"># 创建无向图</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span> <span class="c"># 创建有向图</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">MultiGraph</span><span class="p">()</span> <span class="c"># 创建多重无向图</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">MultiDigraph</span><span class="p">()</span> <span class="c"># 创建多重有向图</span>
+<span class="n">G</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span> <span class="c">#清空图</span>
+</pre></div>
+
+
+<h2 id="_1">添加边/节点</h2>
+<div class="hlcode"><pre><span class="c"># 创建无向图</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c"># 添加节点１</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span> <span class="c">#　添加节点２，３并链接２３节点</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_nodes_from</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span> <span class="c"># 添加节点１</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edges_from</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span> <span class="c">#　添加节点２，３并链接２３节点</span>
+
+<span class="k">print</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">,</span> <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">,</span> <span class="n">G</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">(),</span> <span class="n">G</span><span class="o">.</span><span class="n">number_of_edges</span><span class="p">())</span>
+
+<span class="c"># 创建有向图</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span> 
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">to_undirected</span><span class="p">()</span>  <span class="c"># 转换成无向图</span>
+<span class="k">print</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">)</span>
+
+<span class="c"># 加权图</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_weighted_edges_from</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mf">3.0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mf">7.5</span><span class="p">)])</span> <span class="c"># 给０１边加权３，　１２边加权７．５</span>
+<span class="k">print</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>  <span class="c"># 获得１２边的属性</span>
+
+<span class="n">G</span><span class="o">.</span><span class="n">add_weighted_edges_from</span><span class="p">([(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">)],</span> <span class="n">weight</span><span class="o">=</span><span class="s">&#39;color&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="o">.</span><span class="n">data</span><span class="p">())</span>
+
+<span class="n">G</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="k">print</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">data</span><span class="p">())</span>
+</pre></div>
+
+
+<h2 id="_2">删除边/节点</h2>
+<div class="hlcode"><pre><span class="n">F</span><span class="o">.</span><span class="n">remove_edge</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">F</span><span class="o">.</span><span class="n">remove_edges_from</span><span class="p">([(</span><span class="mi">11</span><span class="p">,</span><span class="mi">12</span><span class="p">),</span> <span class="p">(</span><span class="mi">13</span><span class="p">,</span><span class="mi">14</span><span class="p">)])</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">F</span><span class="p">,</span> <span class="n">with_labels</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+
+<h1 id="_3">可视化</h1>
+<div class="hlcode"><pre><span class="n">nx</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">with_labels</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="hlcode"><pre>    <span class="n">load_data</span> <span class="o">=</span> <span class="n">sio</span><span class="o">.</span><span class="n">loadmat</span><span class="p">(</span><span class="n">load_path</span><span class="p">)</span>
+
+    <span class="c">#阈值处理</span>
+      <span class="n">mat</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">load_data</span><span class="p">[</span><span class="s">&#39;R&#39;</span><span class="p">])</span>
+      <span class="n">mat</span><span class="p">[</span><span class="n">mat</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span>
+      <span class="n">mat</span><span class="p">[</span><span class="n">mat</span><span class="o">&lt;</span><span class="mf">0.45</span><span class="p">]</span><span class="o">=</span><span class="mi">0</span>
+
+    <span class="c">#写入txt文件</span>
+     <span class="c"># np.savetxt(thr_path, mat);</span>
+
+      <span class="c">#计算degree</span>
+      <span class="n">g</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+      <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mat</span><span class="p">)):</span>
+          <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mat</span><span class="p">)):</span>
+              <span class="k">if</span><span class="p">(</span><span class="n">mat</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">]</span><span class="o">&gt;</span><span class="mi">0</span><span class="p">):</span>  <span class="c">#删除边的权重小于等于0的边</span>
+                <span class="n">g</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span><span class="n">weight</span><span class="o">=</span><span class="n">mat</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span>
+
+      <span class="c"># nx.draw(g)</span>
+      <span class="c"># nx.draw(g,with_labels=True)  # 将标号标出来</span>
+      <span class="c"># plt.show()</span>
+
+      <span class="c"># 按权重划分为重权值得边和轻权值的边</span>
+      <span class="n">elarge</span> <span class="o">=</span> <span class="p">[(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="s">&#39;weight&#39;</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mf">0.5</span><span class="p">]</span>
+      <span class="n">esmall</span> <span class="o">=</span> <span class="p">[(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">v</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span> <span class="ow">in</span> <span class="n">g</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="s">&#39;weight&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">]</span>
+      <span class="c"># 节点位置</span>
+      <span class="n">pos</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>  <span class="c"># positions for all nodes</span>
+      <span class="c"># 首先画出节点位置</span>
+      <span class="c"># nodes</span>
+      <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_nodes</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">node_color</span><span class="o">=</span><span class="s">&#39;b&#39;</span><span class="p">,</span><span class="n">node_size</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
+      <span class="c"># 根据权重，实线为权值大的边，虚线为权值小的边</span>
+      <span class="c"># edges</span>
+      <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_edges</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">edgelist</span><span class="o">=</span><span class="n">elarge</span><span class="p">,</span>
+                             <span class="n">width</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+      <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_edges</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">edgelist</span><span class="o">=</span><span class="n">esmall</span><span class="p">,</span>
+                             <span class="n">width</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">edge_color</span><span class="o">=</span><span class="s">&#39;g&#39;</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="s">&#39;dashed&#39;</span><span class="p">)</span>
+
+      <span class="c"># labels标签定义</span>
+      <span class="n">nx</span><span class="o">.</span><span class="n">draw_networkx_labels</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">font_size</span><span class="o">=</span><span class="mi">13</span><span class="p">,</span> <span class="n">font_family</span><span class="o">=</span><span class="s">&#39;sans-serif&#39;</span><span class="p">)</span>
+
+      <span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s">&#39;off&#39;</span><span class="p">)</span>
+      <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s">&quot;weighted_graph.png&quot;</span><span class="p">)</span>  <span class="c"># save as png</span>
+      <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+
+<h2 id="_4">其他</h2>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">networkx</span> <span class="kn">as</span> <span class="nn">nx</span>
+
+<span class="n">oo</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s">&#39;inf&#39;</span><span class="p">)</span>
+
+<span class="c"># 创建无向图</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="c"># 添加节点１</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)</span> <span class="c">#　添加节点２，３并链接２３节点</span>
+<span class="k">print</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="p">,</span> <span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">,</span> <span class="n">G</span><span class="o">.</span><span class="n">number_of_nodes</span><span class="p">(),</span> <span class="n">G</span><span class="o">.</span><span class="n">number_of_edges</span><span class="p">())</span>
+
+<span class="c"># 创建有向图</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span> 
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">to_undirected</span><span class="p">()</span>  <span class="c"># 转换成无向图</span>
+<span class="k">print</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="p">)</span>
+
+<span class="c"># 加权图</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_weighted_edges_from</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mf">3.0</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mf">7.5</span><span class="p">)])</span> <span class="c"># 给０１边加权３，　１２边加权７．５</span>
+<span class="k">print</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">get_edge_data</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">))</span>  <span class="c"># 获得１２边的属性</span>
+
+<span class="n">G</span><span class="o">.</span><span class="n">add_weighted_edges_from</span><span class="p">([(</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">)],</span> <span class="n">weight</span><span class="o">=</span><span class="s">&#39;color&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">edges</span><span class="o">.</span><span class="n">data</span><span class="p">())</span>
+
+<span class="n">G</span><span class="o">.</span><span class="n">node</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="s">&#39;size&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="k">print</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">nodes</span><span class="o">.</span><span class="n">data</span><span class="p">())</span>
+
+
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="n">g_data</span> <span class="o">=</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>
+          <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span>  <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span>
+          <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+          <span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">6</span><span class="p">)]</span>
+
+<span class="c"># 最小生成树</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+<span class="n">g</span><span class="o">.</span><span class="n">add_weighted_edges_from</span><span class="p">(</span><span class="n">g_data</span><span class="p">)</span>
+<span class="n">tree</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">minimum_spanning_tree</span><span class="p">(</span><span class="n">g</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="s">&#39;prim&#39;</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">tree</span><span class="o">.</span><span class="n">edges</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+
+<span class="c"># 最短路径</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">path_graph</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>  <span class="c"># 0-1-2-3-4链</span>
+<span class="k">print</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">dijkstra_path</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+
+<span class="c"># 所有节点之间的最短路径</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_weighted_edges_from</span><span class="p">(</span><span class="n">g_data</span><span class="p">)</span>
+<span class="n">gen</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">all_pairs_shortest_path</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">dict</span><span class="p">(</span><span class="n">gen</span><span class="p">))</span>
+
+<span class="c"># 各点之间可达性</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_weighted_edges_from</span><span class="p">(</span><span class="n">g_data</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">communicability</span><span class="p">(</span><span class="n">G</span><span class="p">))</span>
+
+<span class="c"># 获得图中非连通点的列表</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">isolates</span><span class="p">(</span><span class="n">G</span><span class="p">)))</span>
+
+<span class="c"># 遍历</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_weighted_edges_from</span><span class="p">(</span><span class="n">g_data</span><span class="p">)</span>
+<span class="n">d_gen</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">dfs_edges</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>  <span class="c">#  按边深度搜索, 1为起点</span>
+<span class="n">b_gen</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">bfs_edges</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">d_gen</span><span class="p">),</span> <span class="nb">list</span><span class="p">(</span><span class="n">b_gen</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">dfs_tree</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">nodes</span><span class="p">())</span>  <span class="c"># 按点深搜</span>
+
+
+<span class="kn">from</span> <span class="nn">networkx.algorithms.flow</span> <span class="kn">import</span> <span class="n">shortest_augmenting_path</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">,</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="n">capacity</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">,</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="n">capacity</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span><span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="n">capacity</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;b&#39;</span><span class="p">,</span><span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="n">capacity</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;b&#39;</span><span class="p">,</span><span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="n">capacity</span><span class="o">=</span><span class="mf">4.0</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;d&#39;</span><span class="p">,</span><span class="s">&#39;e&#39;</span><span class="p">,</span> <span class="n">capacity</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;c&#39;</span><span class="p">,</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">capacity</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;e&#39;</span><span class="p">,</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">capacity</span><span class="o">=</span><span class="mf">3.0</span><span class="p">)</span>
+
+<span class="c"># 将参数画到图上</span>
+<span class="n">pos</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">spring_layout</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+<span class="n">capacity</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">get_edge_attributes</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s">&#39;capacity&#39;</span><span class="p">)</span>
+<span class="c"># nx.draw_networkx_nodes(G, pos)</span>
+<span class="c"># nx.draw_networkx_edges(G, pos)</span>
+<span class="c"># nx.draw_networkx_labels(G, pos)</span>
+<span class="c"># nx.draw_networkx_edge_labels(G,pos,capacity)</span>
+
+<span class="c"># 最大流</span>
+<span class="n">flow_value</span><span class="p">,</span> <span class="n">flow_dict</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">maximum_flow</span><span class="p">(</span><span class="n">G</span><span class="p">,</span><span class="s">&#39;x&#39;</span><span class="p">,</span> <span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">flow_func</span><span class="o">=</span><span class="n">shortest_augmenting_path</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">flow_value</span><span class="p">,</span> <span class="n">flow_dict</span><span class="p">)</span>
+<span class="c"># plt.show()</span>
+
+
+<span class="c"># 最小成本流</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="n">demand</span> <span class="o">=</span> <span class="o">-</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_node</span><span class="p">(</span><span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="n">demand</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">capacity</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">capacity</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">capacity</span> <span class="o">=</span> <span class="mi">9</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">capacity</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
+<span class="n">flow_cost</span><span class="p">,</span> <span class="n">flow_dict</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">capacity_scaling</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">flow_cost</span><span class="p">,</span> <span class="n">flow_dict</span><span class="p">)</span>
+
+<span class="c"># 欧拉回路  一个无向图G,一条路径经过图G的每一条边,且仅经过一次,这条路径称为欧拉路径．如果起点和终点同一点，则为欧拉回路</span>
+<span class="c"># 无向图：每个顶点的度数都是偶数则存在欧拉回路</span>
+<span class="c"># 有向图：每个顶点的入度都等于出度则存在欧拉回路</span>
+<span class="n">DG</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="mi">1</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="mi">2</span><span class="p">:</span> <span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="mi">3</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]})</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">({</span><span class="mi">0</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="mi">1</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">],</span> <span class="mi">2</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="mi">3</span><span class="p">:</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="mi">4</span><span class="p">:[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">]})</span>
+<span class="k">print</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">is_eulerian</span><span class="p">(</span><span class="n">DG</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">is_eulerian</span><span class="p">(</span><span class="n">G</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">eulerian_circuit</span><span class="p">(</span><span class="n">DG</span><span class="p">)))</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">eulerian_circuit</span><span class="p">(</span><span class="n">G</span><span class="p">)))</span>
+
+<span class="c"># 最小点割集</span>
+<span class="n">node_cut</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">minimum_node_cut</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">flow_func</span><span class="o">=</span><span class="n">shortest_augmenting_path</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">node_cut</span><span class="p">)</span>
+
+<span class="c"># 对于带权无向图边切割，得到最小切割权之和，以及两个分离区域</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">,</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">,</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span><span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;b&#39;</span><span class="p">,</span><span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;b&#39;</span><span class="p">,</span><span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;d&#39;</span><span class="p">,</span><span class="s">&#39;e&#39;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;c&#39;</span><span class="p">,</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;e&#39;</span><span class="p">,</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="n">cut_value</span><span class="p">,</span> <span class="n">partition</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">stoer_wagner</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">cut_value</span><span class="p">,</span> <span class="n">partition</span><span class="p">)</span>
+
+<span class="c"># 最大权重匹配　匈牙利、KM算法</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_weighted_edges_from</span><span class="p">([(</span><span class="s">&#39;A&#39;</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;A&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;B&#39;</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;B&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;B&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;C&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="mi">5</span><span class="p">)])</span>
+<span class="k">print</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">max_weight_matching</span><span class="p">(</span><span class="n">G</span><span class="p">))</span>
+
+<span class="c"># 拓扑排序</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;x&#39;</span><span class="p">,</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span><span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;b&#39;</span><span class="p">,</span><span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;b&#39;</span><span class="p">,</span><span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;d&#39;</span><span class="p">,</span><span class="s">&#39;e&#39;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;c&#39;</span><span class="p">,</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;e&#39;</span><span class="p">,</span><span class="s">&#39;y&#39;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">topological_sort</span><span class="p">(</span><span class="n">G</span><span class="p">)))</span>
+
+<span class="c"># 最小成本最大流</span>
+<span class="n">G</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">DiGraph</span><span class="p">()</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span> <span class="n">capacity</span> <span class="o">=</span> <span class="mi">4</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="mi">6</span><span class="p">,</span> <span class="n">capacity</span> <span class="o">=</span> <span class="mi">10</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="n">capacity</span> <span class="o">=</span> <span class="mi">9</span><span class="p">)</span>
+<span class="n">G</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="s">&#39;c&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="mi">2</span><span class="p">,</span> <span class="n">capacity</span> <span class="o">=</span> <span class="mi">5</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">nx</span><span class="o">.</span><span class="n">max_flow_min_cost</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="s">&#39;d&#39;</span><span class="p">))</span>
+
+
+<span class="c">#复杂网络生成</span>
+<span class="c"># ER随机图   # 随机生成20个节点，节点间的连接概率都是0.2</span>
+<span class="c"># ER = nx.random_graphs.erdos_renyi_graph(20, 0.2)</span>
+<span class="c"># pos = nx.shell_layout(ER)</span>
+<span class="c"># nx.draw(ER, pos, with_labels=False,edge_color=&#39;b&#39;, alpha=0.3, node_size=30)</span>
+<span class="c"># plt.show()</span>
+
+<span class="c"># WS小世界网络  生成一个含有n个节点、每个节点有k个邻居、以概率p随机化重连边的WS小世界网络。</span>
+<span class="n">WS</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">random_graphs</span><span class="o">.</span><span class="n">watts_strogatz_graph</span><span class="p">(</span><span class="mi">20</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
+<span class="n">pos</span> <span class="o">=</span> <span class="n">nx</span><span class="o">.</span><span class="n">circular_layout</span><span class="p">(</span><span class="n">WS</span><span class="p">)</span>
+<span class="n">nx</span><span class="o">.</span><span class="n">draw</span><span class="p">(</span><span class="n">WS</span><span class="p">,</span> <span class="n">pos</span><span class="p">,</span> <span class="n">with_labels</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">node_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">edge_color</span><span class="o">=</span><span class="s">&#39;b&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.3</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+<span class="c"># BA无标度网络 生成一个含有n个节点、每次加入m条边的BA无标度网络</span>
+<span class="c"># BA = nx.random_graphs.barabasi_albert_graph(10,2)</span>
+<span class="c"># pos = nx.spring_layout(BA)</span>
+<span class="c"># nx.draw(BA, pos, with_labels=False, node_size=30, edge_color=&#39;b&#39;, alpha=0.3)</span>
+<span class="c"># plt.show()</span>
+
+<span class="c"># 扩展ＢＡ无标度网络  节点数，添加新边数，两点间添加边的概率，边重连的概率</span>
+<span class="c"># ExBA = nx.random_graphs.extended_barabasi_albert_graph(200, 4, 0.4, 0.2)</span>
+<span class="c"># pos = nx.spring_layout(ExBA)</span>
+<span class="c"># nx.draw(ExBA, pos, with_labels=False, node_size=30, edge_color=&#39;b&#39;, alpha=0.3)</span>
+<span class="c"># plt.show()</span>
+</pre></div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

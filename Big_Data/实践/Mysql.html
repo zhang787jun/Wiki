@@ -1,0 +1,146 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Mysql 杂谈 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Big_Data">Big_Data</a>&nbsp;»&nbsp;<a href="/Wiki/#-实践">实践</a>&nbsp;»&nbsp;Mysql 杂谈</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Mysql 杂谈</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#mysql">Mysql 杂谈</a><ul>
+<li><a href="#mysql_1">Mysql的通信</a></li>
+<li><a href="#centos">CentOS 下的安装</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="mysql">Mysql 杂谈</h1>
+<h2 id="mysql_1">Mysql的通信</h2>
+<p>Mysql有两种连接方式：<br />
+（1）TCP/IP<br />
+（2）socket<br />
+对mysql.sock来说，其作用是程序与mysqlserver处于同一台机器，发起本地连接时可用。<br />
+例如你无须定义连接host的具体IP得，只要为空或localhost就可以。<br />
+在此种情况下，即使你改变mysql的外部port也是一样可能正常连接。<br />
+因为你在my.ini中或my.cnf中改变端口后，mysql.sock是随每一次 mysql server启动生成的。已经根据你在更改完my.cnf后重启mysql时重新生成了一次，信息已跟着变更。</p>
+<h2 id="centos">CentOS 下的安装</h2>
+<p>查资料发现是CentOS 7 版本将MySQL数据库软件从默认的程序列表中移除，用mariadb代替了。<br />
+有两种解决办法：<br />
+1. 方法一：安装mariadb<br />
+MariaDB数据库管理系统是MySQL的一个分支，主要由开源社区在维护，采用GPL授权许可。开发这个分支的原因之一是：甲骨文公司收购了MySQL后，有将MySQL闭源的潜在风险，因此社区采用分支的方式来避开这个风险。MariaDB的目的是完全兼容MySQL，包括API和命令行，使之能轻松成为MySQL的代替品。<br />
+安装mariadb，大小59 M。</p>
+<div class="hlcode"><pre><span class="n">yum</span> <span class="n">install</span> <span class="n">mariadb</span><span class="o">-</span><span class="n">server</span> <span class="n">mariadb</span>
+</pre></div>
+
+
+<ol>
+<li>官网下载</li>
+</ol>
+<div class="hlcode"><pre><span class="n">wget</span> <span class="n">http</span><span class="o">:</span><span class="c1">//dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm</span>
+<span class="n">rpm</span> <span class="o">-</span><span class="n">ivh</span> <span class="n">mysql</span><span class="o">-</span><span class="n">community</span><span class="o">-</span><span class="n">release</span><span class="o">-</span><span class="n">el7</span><span class="o">-</span><span class="mf">5.</span><span class="n">noarch</span><span class="p">.</span><span class="n">rpm</span>
+<span class="n">yum</span> <span class="n">install</span> <span class="n">mysql</span><span class="o">-</span><span class="n">community</span><span class="o">-</span><span class="n">server</span>
+</pre></div>
+
+
+<p>在应用程序中，经常需要全局唯一的ID作为数据库主键。如何生成全局唯一ID？</p>
+<p>首先，需要确定全局唯一ID是整型还是字符串？如果是字符串，那么现有的UUID就完全满足需求，不需要额外的工作。缺点是字符串作为ID占用空间大，索引效率比整型低。</p>
+<p>如果采用整型作为ID，那么首先排除掉32位int类型，因为范围太小，必须使用64位long型。</p>
+<p>采用整型作为ID时，如何生成自增、全局唯一且不重复的ID？</p>
+<p>方案一：利用数据库的自增ID，从1开始，基本可以做到连续递增。Oracle可以用SEQUENCE，MySQL可以用主键的AUTO_INCREMENT，虽然不能保证全局唯一，但每个表唯一，也基本满足需求。</p>
+<p>数据库自增ID的缺点是数据在插入前，无法获得ID。数据在插入后，获取的ID虽然是唯一的，但一定要等到事务提交后，ID才算是有效的。有些双向引用的数据，不得不插入后再做一次更新，比较麻烦。</p>
+<p>第二种方式是采用一个集中式ID生成器，它可以是Redis，也可以是ZooKeeper，也可以利用数据库的表记录最后分配的ID。</p>
+<p>这种方式最大的缺点是复杂性太高，需要严重依赖第三方服务，而且代码配置繁琐。一般来说，越是复杂的方案，越不可靠，并且测试越痛苦。</p>
+<p>第三种方式是类似Twitter的Snowflake算法，它给每台机器分配一个唯一标识，然后通过时间戳+标识+自增实现全局唯一ID。这种方式好处在于ID生成算法完全是一个无状态机，无网络调用，高效可靠。缺点是如果唯一标识有重复，会造成ID冲突。</p>
+<p>Snowflake算法采用41bit毫秒时间戳，加上10bit机器ID，加上12bit序列号，理论上最多支持1024台机器每秒生成4096000个序列号，对于Twitter的规模来说够用了。</p>
+<p>但是对于绝大部分普通应用程序来说，根本不需要每秒超过400万的ID，机器数量也达不到1024台，所以，我们可以改进一下，使用更短的ID生成方式：</p>
+<p>53bitID由32bit秒级时间戳+16bit自增+5bit机器标识组成，累积32台机器，每秒可以生成6.5万个序列号，核心代码：</p>
+<p><img alt="" src="../../attach/images/2019-08-27-13-51-41.png" /></p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

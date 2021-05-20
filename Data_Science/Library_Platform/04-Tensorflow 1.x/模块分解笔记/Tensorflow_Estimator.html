@@ -1,0 +1,259 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Tensorflow Estimator - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-04-Tensorflow 1.x">04-Tensorflow 1.x</a>&nbsp;»&nbsp;<a href="/Wiki/#-模块分解笔记">模块分解笔记</a>&nbsp;»&nbsp;Tensorflow Estimator</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Tensorflow Estimator</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 输入函数</a></li>
+<li><a href="#2">2. 训练</a></li>
+<li><a href="#3">3. 评估</a></li>
+<li><a href="#4">4. 预测</a></li>
+<li><a href="#5">5. 模型保存</a><ul>
+<li><a href="#51-serving_input_receiver_fn">5.1. serving_input_receiver_fn</a><ul>
+<li><a href="#511">5.1.1. 功能</a></li>
+<li><a href="#512">5.1.2. 编写函数</a><ul>
+<li><a href="#_1">编写数据解析方式</a></li>
+<li><a href="#servinginputreceiver">编写服务输入接收器 ServingInputReceiver</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<p>Estimator.</p>
+<p><img alt="" src="../../../../attach/images/2019-09-29-16-26-15.png" /><br />
+<img alt="" src="../../../../attach/images/2019-09-29-16-27-17.png" /><br />
+<img alt="" src="../../../../attach/images/2019-09-30-09-42-22.png" /></p>
+<h1 id="1">1. 输入函数</h1>
+<p>输入函数返回dataset </p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">train_input_fn</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An input function for training 用于训练的输入函数</span>
+<span class="sd">    Args:</span>
+<span class="sd">        特征</span>
+<span class="sd">        标签</span>
+<span class="sd">        batch_size</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        tf.data dataset</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c"># 将输入转换为数据集。</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="nb">dict</span><span class="p">(</span><span class="n">features</span><span class="p">),</span> <span class="n">labels</span><span class="p">))</span>
+    <span class="c"># 随机播放，重复和批处理示例。</span>
+    <span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span><span class="o">.</span><span class="n">repeat</span><span class="p">()</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+    <span class="c"># 返回管道读取的结束端。</span>
+    <span class="k">return</span> <span class="n">dataset</span><span class="o">.</span><span class="n">make_one_shot_iterator</span><span class="p">()</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+</pre></div>
+
+
+<h1 id="2">2. 训练</h1>
+<h1 id="3">3. 评估</h1>
+<h1 id="4">4. 预测</h1>
+<h1 id="5">5. 模型保存</h1>
+<p>tf.estimator.export</p>
+<h2 id="51-serving_input_receiver_fn">5.1. serving_input_receiver_fn</h2>
+<p>训练过程中 input_fn()用于提供数据输入，类似地，预测阶段输入数据由 serving_input_receiver_fn提供。</p>
+<h3 id="511">5.1.1. 功能</h3>
+<p>serving_input_receiver_fn 以下功能：</p>
+<ol>
+<li>将预测需要输入数据的placeholder添加到graph中。  <strong>（input）</strong></li>
+<li>添加额外的用于将输入数据格式转换为feature Tensors格式的op。<strong>（receiver）</strong></li>
+<li>决定Save Model的签名 <strong>（signature）</strong></li>
+</ol>
+<p>当编写 <code>serving_input_receiver_fn</code>时，需要提供一个</p>
+<h3 id="512">5.1.2. 编写函数</h3>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">serving_input_receiver_fn</span><span class="p">():</span>
+  <span class="sd">&quot;&quot;&quot;An input receiver that expects a serialized tf.Example.&quot;&quot;&quot;</span>
+    <span class="c"># 1. 模型的输入数据 spec</span>
+    <span class="n">feature_spec</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&#39;foo&#39;</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">FixedLenFeature</span><span class="p">(</span><span class="o">...</span><span class="p">),</span>
+        <span class="s">&#39;bar&#39;</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">VarLenFeature</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+                <span class="p">}</span>
+
+    <span class="c"># 2. 作为服务的模型接收的序列号 tensor</span>
+    <span class="n">serialized_tf_example</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">string</span><span class="p">,</span>
+                                            <span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">default_batch_size</span><span class="p">],</span>
+                                            <span class="n">name</span><span class="o">=</span><span class="s">&#39;input_example_tensor&#39;</span><span class="p">)</span>
+    <span class="c"># 3. 说明数据解析的方式</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">parse_example</span><span class="p">(</span><span class="n">serialized_tf_example</span><span class="p">,</span> <span class="n">feature_spec</span><span class="p">)</span>
+    <span class="c"># features={&quot;foo&quot;:&lt;tf.tensor..&gt;}</span>
+    <span class="n">receiver_tensors</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;examples&#39;</span><span class="p">:</span> <span class="n">serialized_tf_example</span><span class="p">}</span>
+    <span class="c"># receiver_tensors ={&quot;examples&quot;:&lt;tf.tensor..&gt;}</span>
+
+    <span class="c">#4. 构建服务输入接收器</span>
+    <span class="n">ServingInputReceiver</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">ServingInputReceiver</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">receiver_tensors</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">ServingInputReceiver</span>
+</pre></div>
+
+
+<p>说明：</p>
+<h4 id="_1">编写数据解析方式</h4>
+<p>数据解析方式通过字典定义 </p>
+<div class="hlcode"><pre><span class="n">features</span><span class="o">=</span><span class="p">{</span>
+    <span class="s">&quot;name_1&quot;</span><span class="p">:</span><span class="n">tensor_1</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>可以通过 tf.parse_example 指定输入的序列化数据格式，返回数据解析的字典 <br />
+数据的约定spec 可以包括：<br />
+    1. tf.FixedLenFeature<br />
+    2. tf.VarLenFeature<br />
+    3. tf.SparseFeature</p>
+<div class="hlcode"><pre><span class="c"># 1. 模型的输入数据 spec</span>
+<span class="n">feature_spec</span> <span class="o">=</span> <span class="p">{</span>
+<span class="s">&quot;unique_ids&quot;</span> <span class="p">:</span>  <span class="n">tf</span><span class="o">.</span><span class="n">FixedLenFeature</span><span class="p">([],</span> <span class="n">tf</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+<span class="s">&quot;input_ids&quot;</span> <span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">FixedLenFeature</span><span class="p">([</span><span class="n">MAX_SEQ_LENGTH</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+<span class="s">&quot;input_mask&quot;</span> <span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">FixedLenFeature</span><span class="p">([</span><span class="n">MAX_SEQ_LENGTH</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+<span class="s">&quot;segment_ids&quot;</span> <span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">FixedLenFeature</span><span class="p">([</span><span class="n">MAX_SEQ_LENGTH</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+<span class="p">}</span>
+
+<span class="c"># 2. 作为服务的模型接收的序列化 tensor</span>
+<span class="n">serialized_tf_example</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">string</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="n">FLAGS</span><span class="o">.</span><span class="n">train_batch_size</span><span class="p">],</span><span class="n">name</span><span class="o">=</span><span class="s">&#39;input_example_tensor&#39;</span><span class="p">)</span>
+
+<span class="n">features</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">parse_example</span><span class="p">(</span><span class="n">serialized_tf_example</span><span class="p">,</span> <span class="n">feature_spec</span><span class="p">)</span>
+<span class="nb">type</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span><span class="nb">dict</span> 
+<span class="n">features</span><span class="o">=</span><span class="p">{</span>
+    <span class="s">&quot;unique_ids&quot;</span> <span class="p">:</span>  <span class="o">&lt;</span><span class="n">tf</span><span class="o">.</span><span class="n">tensor</span> <span class="o">..&gt;</span><span class="p">,</span>
+    <span class="s">&quot;input_ids&quot;</span> <span class="p">:</span>  <span class="o">&lt;</span><span class="n">tf</span><span class="o">.</span><span class="n">tensor</span> <span class="o">..&gt;</span><span class="p">,</span>
+    <span class="s">&quot;input_mask&quot;</span> <span class="p">:</span>  <span class="o">&lt;</span><span class="n">tf</span><span class="o">.</span><span class="n">tensor</span> <span class="o">..&gt;</span><span class="p">,</span>
+    <span class="s">&quot;segment_ids&quot;</span> <span class="p">:</span>  <span class="o">&lt;</span><span class="n">tf</span><span class="o">.</span><span class="n">tensor</span> <span class="o">..&gt;</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h4 id="servinginputreceiver">编写服务输入接收器 ServingInputReceiver</h4>
+<p>ServingInputReceiver 的定义可以<br />
+1. 直接通过实例化类定义<br />
+2. 通过函数定义 </p>
+<div class="hlcode"><pre><span class="c"># 1. 直接通过实例化类定义</span>
+
+<span class="n">ServingInputReceiver</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">ServingInputReceiver</span><span class="p">(</span><span class="n">features</span><span class="p">,</span> <span class="n">receiver_tensors</span><span class="p">)</span>
+
+<span class="nb">type</span><span class="p">(</span><span class="n">feature</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">dict</span> 
+<span class="nb">type</span><span class="p">(</span><span class="n">receiver_tensors</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">dict</span> 
+<span class="c"># receiver_tensors,feature 可自定义不同</span>
+
+
+<span class="c"># 2. 通过函数1定义</span>
+<span class="n">ServingInputReceiver</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">build_raw_serving_input_receiver_fn</span><span class="p">(</span><span class="n">features</span><span class="p">)()</span>
+
+<span class="c"># feature与receiver_tensors相同</span>
+
+
+<span class="c"># 3. 通过函数2定义</span>
+<span class="n">ServingInputReceiver</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">export</span><span class="o">.</span><span class="n">build_parsing_serving_input_receiver_fn</span><span class="p">(</span>
+    <span class="n">feature_spec</span><span class="p">,</span>
+    <span class="n">default_batch_size</span><span class="o">=</span><span class="bp">None</span>
+<span class="p">)()</span>
+
+<span class="n">ServingInputReceiver</span><span class="o">.</span><span class="n">feature</span>
+<span class="o">&gt;&gt;&gt;</span>
+
+
+<span class="n">ServingInputReceiver</span><span class="o">.</span><span class="n">receiver_tensors</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="p">{</span><span class="s">&#39;examples&#39;</span><span class="p">:</span> <span class="o">&lt;</span><span class="n">tf</span><span class="o">.</span><span class="n">Tensor</span> <span class="s">&#39;input_example_tensor_2:0&#39;</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="err">?</span><span class="p">,)</span> <span class="n">dtype</span><span class="o">=</span><span class="n">string</span><span class="o">&gt;</span><span class="p">}</span>
+</pre></div>
+
+
+<p>注意：当训练一个模型提供服务并在一个local server上使用Predict API，不需要parsing阶段，因为模型会接受原始特征数据。</p>
+<p>即使你不需要parsing或者其它的输入预处理——也就是说，serving系统会直接feed相应的特征Tensors——你必须仍要提供一个serving_input_receiver_fn()，它会为特征Tensors创建placeholders，并将它们传进去。tf.estimator.export.build_raw_serving_input_receiver_fn可以提供该功能。</p>
+<p>如果这些工具类不能满足你的需要，你可以自由地编写自己的serving_input_receiver_fn()。一种情况是，如果训练input_fn()合并提炼了一些预处理逻辑，在serving时必须重新被使用。为了减少training-serving交叉的风险，我们推荐你在一个函数中重新封装这样的处理逻辑，然后它可以被input_fn()和serving_input_receiver_fn()调用。</p>
+<p>注意，serving_input_receiver_fn() 也会决定签名（signature）的input部分。也就是说，当编写一个serving_input_receiver_fn()时，你必须告知parser：期望什么签名（signatures）、如何将它们映射到你的模型所期望的输入。相反地，signature的output部分由模型来决定。</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

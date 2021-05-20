@@ -1,0 +1,186 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>OpenCV 融合深度神经网络 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Computer_Vision">Computer_Vision</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-OpenCV">OpenCV</a>&nbsp;»&nbsp;<a href="/Wiki/#-基础">基础</a>&nbsp;»&nbsp;OpenCV 融合深度神经网络</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">OpenCV 融合深度神经网络</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#_1">优势</a></li>
+<li><a href="#_2">架构与机理</a></li>
+<li><a href="#1">1. 基本步骤</a><ul>
+<li><a href="#11">1.1. 加载模型</a></li>
+<li><a href="#12">1.2. 图像预处理</a></li>
+<li><a href="#13">1.3. 模型推理</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p>OpenCV 的DNN module 只能用于推理阶段。</p>
+<p>https://github.com/opencv/opencv/wiki/Deep-Learning-in-OpenCV</p>
+<h1 id="_1">优势</h1>
+<ol>
+<li>轻量级</li>
+<li>方便</li>
+<li>通用</li>
+<li>适用于CPU/GPU 设备</li>
+<li>适用于Android、Linux、Win、Mac 系统 </li>
+</ol>
+<h1 id="_2">架构与机理</h1>
+<p><img alt="" src="../../../../attach/images/2020-09-09-20-36-50.png" /></p>
+<h1 id="1">1. 基本步骤</h1>
+<h2 id="11">1.1. 加载模型</h2>
+<p>因为OpenCV只支持推理，所以首先你需要有一个训练好的模型。OpenCV支持所有主流框架的大部分模型。从OpenCV的readNet系列函数就可以看出来：</p>
+<div class="hlcode"><pre><span class="n">net</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">dnn</span><span class="o">.</span><span class="n">readNetFromCaffe</span><span class="p">()</span>
+<span class="n">net</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">dnn</span><span class="o">.</span><span class="n">readNetFromTensorflow</span><span class="p">()</span>
+<span class="n">net</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">dnn</span><span class="o">.</span><span class="n">readNetFromTorch</span><span class="p">()</span>
+<span class="n">net</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">dnn</span><span class="o">.</span><span class="n">readNetFromDarknet</span><span class="p">()</span>
+<span class="n">net</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">dnn</span><span class="o">.</span><span class="n">readNetFromONNX</span><span class="p">()</span>
+<span class="n">net</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">dnn</span><span class="o">.</span><span class="n">readNetFromModelOptimizer</span><span class="p">()</span>
+</pre></div>
+
+
+<h2 id="12">1.2. 图像预处理</h2>
+<p>在OpenCV中，输入给模型的图像需要首先被构建成一个4维的Blob，看到Blob这个词感觉是收到了Caffe的影响。在构建Blob的时候会做一些诸如resize、归一化和缩放之类的简单预处理。OpenCV提供的函数为:</p>
+<div class="hlcode"><pre><span class="n">blob</span><span class="o">=</span><span class="n">cv2</span><span class="o">.</span><span class="n">dnn</span><span class="o">.</span><span class="n">blobFromImage</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">scalefactor</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">mean</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">swapRB</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">crop</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">ddepth</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+
+<span class="nb">type</span><span class="p">(</span><span class="n">blob</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> 
+<span class="n">np</span><span class="o">.</span><span class="n">array</span>
+
+
+<span class="n">blob</span><span class="o">.</span><span class="n">shape</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="n">w</span><span class="p">,</span><span class="n">h</span><span class="p">,</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+
+
+<p>这个函数在构建Blob的之前会先做如下计算：</p>
+<ol>
+<li>(image - mean) * scalefactor。</li>
+</ol>
+<div class="hlcode"><pre><span class="cp"># 功能差不多</span>
+<span class="n">blob</span><span class="o">=</span><span class="n">cv2</span><span class="p">.</span><span class="n">dnn</span><span class="p">.</span><span class="n">blobFromImages</span><span class="p">(</span>
+    <span class="n">image</span><span class="p">,</span> <span class="n">scalefactor</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">swapRB</span><span class="o">=</span><span class="n">True</span><span class="p">,</span><span class="n">crop</span><span class="o">=</span><span class="n">False</span><span class="p">,</span><span class="n">ddepth</span> <span class="o">=</span> <span class="n">CV_32F</span> <span class="p">)</span>
+</pre></div>
+
+
+<p><strong>参数说明</strong><br />
+1. <code>image</code> :这是传入的，需要进行处理的图像。<br />
+2. <code>scalefactor</code>: 执行完减均值后，需要缩放图像，默认是1，需要注意，$scalefactor = \frac{1}{\sigma}1 / $,这是真正乘上的值。 </p>
+<ol>
+<li>
+<p><code>size</code>,这是神经网络，真正支持输入的值。</p>
+</li>
+<li>
+<p><code>mean</code>, 这是我们要减去的均值，可以是R,G,B均值三元组，或者是一个值，每个通道都减这值。如果执行减均值，通道顺序是RGB。 如果，输入图像通道顺序是BGR，那么请确保<code>swapRB = True</code>，交换通道。</p>
+</li>
+<li>
+<p><code>swapRB</code>, swap Blue and Red channels</p>
+</li>
+<li>干的是<code>cv2.cvtColor(image, cv2.COLOR_BGR2RGB)</code>的事情。</li>
+<li>OpenCV认为图像通道顺序是BGR，而减均值时顺序是RGB，为了解决这个矛盾，设置swapRB=True即可。</li>
+<li><code>crop</code></li>
+<li>如果<code>crop==True</code>，则调整输入图像的大小，使调整大小后的一侧等于相应的尺寸，另一侧等于或大于。然后，从中心进行裁剪。</li>
+<li>如果<code>crop==False</code>，则直接调整大小而不进行裁剪并保留纵横比。</li>
+<li><code>ddepth</code>, 输出blob的深度，选则<code>cv2.CV_32F</code> or <code>cv2.CV_8U</code>。</li>
+</ol>
+<h2 id="13">1.3. 模型推理</h2>
+<p>模型推理过程就是神经网络模型进行一次前向传播，在OpenCV中，用以下可读性非常强的两行代码即可完成：</p>
+<div class="hlcode"><pre><span class="n">net</span><span class="o">.</span><span class="n">setInput</span><span class="p">(</span><span class="n">blob</span><span class="p">)</span>
+<span class="n">output</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">forward</span><span class="p">()</span>
+</pre></div>
+
+
+<p>把第一节构建的blob输入给模型，然后执行一次前向传播。</p>
+<p>得到输出output再做一些处理使得我们可以更好的可视化图像</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

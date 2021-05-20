@@ -1,0 +1,544 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>xgboost分布式训练  - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-03-Gradient_boosting_framework">03-Gradient_boosting_framework</a>&nbsp;»&nbsp;<a href="/Wiki/#-Xgboost">Xgboost</a>&nbsp;»&nbsp;<a href="/Wiki/#-使用">使用</a>&nbsp;»&nbsp;xgboost分布式训练 </div>
+</div>
+<div class="clearfix"></div>
+<div id="title">xgboost分布式训练 </div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-distributed-xgboost-with-kubernetes">1. Distributed XGBoost with Kubernetes</a><ul>
+<li><a href="#11">1.1. 数据并行</a></li>
+<li><a href="#12">1.2. 模型并行</a></li>
+<li><a href="#13">1.3. 原理</a><ul>
+<li><a href="#131">1.3.1. 并行计算的可行性</a></li>
+<li><a href="#133-xgboost">1.3.3. XGBoost的并行处理的工程实践</a><ul>
+<li><a href="#1331-rabit">1.3.3.1. rabit</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#2">2. 基本步骤</a><ul>
+<li><a href="#21">2.1. 架构设计</a></li>
+<li><a href="#22">2.2. 安装</a></li>
+<li><a href="#23">2.3. 源代码编写</a><ul>
+<li><a href="#231-main">2.3.1. main() 函数构建训练及预测模式</a></li>
+<li><a href="#232-train">2.3.2. train() 函数构建单机及分布式模式</a></li>
+</ul>
+</li>
+<li><a href="#233">2.3.3. 构建容器镜像</a></li>
+<li><a href="#_1">镜像推送到镜像仓库</a></li>
+<li><a href="#234-job-yaml">2.3.4. 编写 job yaml</a><ul>
+<li><a href="#235-xgboost-job-kubernetes">2.3.5. 提交XGBoost job 到Kubernetes 集群</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#_2">最佳实践</a></li>
+<li><a href="#3">3. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1-distributed-xgboost-with-kubernetes">1. Distributed XGBoost with Kubernetes</h1>
+<h2 id="11">1.1. 数据并行</h2>
+<p>将训练数据分割，数据并行进行模型的训练、预测。</p>
+<h2 id="12">1.2. 模型并行</h2>
+<p><code>xgboost工具</code> 支持并行计算，可基于分布式系统，进行模型并行分布式计算。</p>
+<h2 id="13">1.3. 原理</h2>
+<h3 id="131">1.3.1. 并行计算的可行性</h3>
+<p><strong>boosting算法的并行计算可能性？</strong> </p>
+<blockquote>
+<p>boosting算法是一种串行结构的算法，顺序处理完成上一个树，再构建下一个树，算法上没有并行计算的可能性</p>
+</blockquote>
+<p><strong>xgboost 工具为什么有并行计算的可能性</strong></p>
+<blockquote>
+<p>xgboost在训练之前，对输入的每个特征进行了预排序，并保存为block结构，为并行计算成为了可能。</p>
+</blockquote>
+<p><strong>并行计算什么？</strong></p>
+<blockquote>
+<p>多线程计算各个特征的增益</p>
+</blockquote>
+<p>boosting是一种串行的结构，怎么并行的？注意xgboost的并行不是tree粒度的并行，xgboost也是一次迭代完才能进行下一次迭代的（第t次迭代的代价函数里包含了前面t-1次迭代的预测值）。xgboost的并行是在特征粒度上的。</p>
+<p>决策树的学习最耗时的一个步骤就是: <strong>对特征的值进行排序</strong>（因为要确定最佳分割点）</p>
+<p>xgboost在训练之前，预先对数据进行了排序，然后保存为block结构，后面的迭代中重复地使用这个结构，大大减小计算量。这个block结构也使得并行成为了可能，在进行节点的分裂时，需要计算每个特征的增益，最终选增益最大的那个特征去做分裂，那么<strong>各个特征的增益计算就可以开多线程进行</strong>。</p>
+<h3 id="133-xgboost">1.3.3. XGBoost的并行处理的工程实践</h3>
+<p>XGBoost的分布式逻辑其实还是通过RABIT来完成的，并且是通过RabitTracker完成任务的co-ordination。</p>
+<h4 id="1331-rabit">1.3.3.1. rabit</h4>
+<p>rabit(Reliable Allreduce and Broadcast Interface)是一个实现 <code>Allreduce（规约）</code> 和 <code>Broadcast</code> 的容错接口的轻量级库。它旨在支持便捷的、可拓展、可实现的分布式机器学习程序。底层是通过<code>socket</code>通讯.<br />
+CAP <br />
+说它可容错是因为它为所有的节点设计了一个环状结构，假如某个节点down掉了可以通过ring replication strategy从相邻的节点恢复。</p>
+<p>Allreduce 结构</p>
+<p><img alt="" src="/attach/images/2020-02-14-10-01-16.png" /></p>
+<p>1 当一个xgboost任务提交到yarn上时，先在driver端启动一个RabitTracker，RabitTracker提供N个end point给worker连接。<br />
+2 然后通过yarnclient向RM请求资源来创建AM。<br />
+3 RM先在NM上创建一个container，并在这个container里面启动任务的AM。<br />
+4 AM根据资源配置向RM请求具体执行的容器。<br />
+5 AM申请到容器之后，会将boost程序发送到容器并启动，同时管理这些容器。<br />
+6 每一个xgboost通过rabit框架和rabitTracker通信完成注册，rabitTracker将这些rabit编号并形成环形网络结构。<br />
+7那么AM监控和管理容器的运行情况，rabittracker协调xgboost的运作。</p>
+<p>RabitTracker过执行dmlc-core工程下的tracker.py来创建。具体做得事：<br />
+1启动daemon线程，提供worker结点注册联接所需的end point，所有的worker结点都可以通过与Tracker程序通信来完成自身状态信息的注册。<br />
+2 co-ordinate worker结点的执行：<br />
+为worker结点分配Rank编号。 基于收到的worker注册信息完成环形网络结构的构建，并广播给worker结点，以确保worker结点之间建立起合规的网络拓扑。 当所有的worker结点都建立起完备的网络拓扑关系以后，就可以启动计算任务监控整个执行过程。</p>
+<p><a href="http://zhanpengfang.github.io/418home.html">Parallel Gradient Boosting Decision Trees</a></p>
+<h1 id="2">2. 基本步骤</h1>
+<h2 id="21">2.1. 架构设计</h2>
+<h2 id="22">2.2. 安装</h2>
+<p>官方推荐再kubernetes集群上使用 Kubeflow 提供的 <a href="https://github.com/kubeflow/xgboost-operator">XGBoost Operator</a> 来支持分布式的 XGBoost 训练及预测</p>
+<h2 id="23">2.3. 源代码编写</h2>
+<div class="hlcode"><pre><span class="n">digraph</span> <span class="n">a</span><span class="p">{</span>
+  <span class="n">main</span><span class="o">-&gt;</span><span class="n">train</span>
+  <span class="n">main</span><span class="o">-&gt;</span><span class="n">predict</span> 
+  <span class="n">train</span><span class="o">-&gt;</span><span class="n">cluster</span>
+  <span class="n">train</span><span class="o">-&gt;</span><span class="n">single_node</span>
+  <span class="n">cluster</span><span class="o">-&gt;</span><span class="n">master</span> 
+  <span class="n">cluster</span><span class="o">-&gt;</span><span class="n">worker</span>
+  <span class="n">master</span><span class="o">-&gt;</span><span class="n">strat_rabit</span><span class="o">-&gt;</span><span class="n">init_rabit</span>
+  <span class="n">worker</span><span class="o">-&gt;</span><span class="n">init_rabit</span>
+  <span class="n">init_rabit</span><span class="o">-&gt;</span><span class="err">数据分块读入</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<ol>
+<li><code>main()</code> 函数设置传入命令行参数(分为 <code>train</code>,<code>predict</code>模式)</li>
+<li>设置Master,Works架构</li>
+<li></li>
+</ol>
+<h3 id="231-main">2.3.1. main() 函数构建训练及预测模式</h3>
+<p><code>main()</code> 函数需要通过命令行参数处理：</p>
+<ol>
+<li>训练模式</li>
+<li>预测模式</li>
+</ol>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">train</span> <span class="kn">import</span> <span class="n">train</span>
+<span class="kn">from</span> <span class="nn">predict</span> <span class="kn">import</span> <span class="n">predict</span>
+<span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">dump_model</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+
+    <span class="n">model_storage_type</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">model_storage_type</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">model_storage_type</span> <span class="o">==</span> <span class="s">&quot;local&quot;</span> <span class="ow">or</span> <span class="n">model_storage_type</span> <span class="o">==</span> <span class="s">&quot;oss&quot;</span><span class="p">):</span>
+      <span class="k">print</span> <span class="p">(</span> <span class="s">&quot;The storage type is &quot;</span> <span class="o">+</span> <span class="n">model_storage_type</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+      <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s">&quot;Only supports storage types like local and OSS&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">job_type</span> <span class="o">==</span> <span class="s">&quot;Predict&quot;</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;starting the predict job&quot;</span><span class="p">)</span>
+        <span class="n">predict</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">job_type</span> <span class="o">==</span> <span class="s">&quot;Train&quot;</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;starting the train job&quot;</span><span class="p">)</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">train</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">model</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;finish the model training, and start to dump model &quot;</span><span class="p">)</span>
+            <span class="n">model_path</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">model_path</span>
+            <span class="n">dump_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">model_storage_type</span><span class="p">,</span> <span class="n">model_path</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+    <span class="k">elif</span> <span class="n">args</span><span class="o">.</span><span class="n">job_type</span> <span class="o">==</span> <span class="s">&quot;All&quot;</span><span class="p">:</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;starting the train and predict job&quot;</span><span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Finish distributed XGBoost job&quot;</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">()</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+           <span class="s">&#39;--job_type&#39;</span><span class="p">,</span>
+           <span class="n">help</span><span class="o">=</span><span class="s">&quot;Train, Predict, All&quot;</span><span class="p">,</span>
+           <span class="n">required</span><span class="o">=</span><span class="bp">True</span>
+           <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+           <span class="s">&#39;--xgboost_parameter&#39;</span><span class="p">,</span>
+           <span class="n">help</span><span class="o">=</span><span class="s">&#39;XGBoost model parameter like: objective, number_class&#39;</span><span class="p">,</span>
+          <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+          <span class="s">&#39;--n_estimators&#39;</span><span class="p">,</span>
+          <span class="n">help</span><span class="o">=</span><span class="s">&#39;Number of trees in the model&#39;</span><span class="p">,</span>
+          <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+          <span class="n">default</span><span class="o">=</span><span class="mi">1000</span>
+          <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+           <span class="s">&#39;--learning_rate&#39;</span><span class="p">,</span>
+           <span class="n">help</span><span class="o">=</span><span class="s">&#39;Learning rate for the model&#39;</span><span class="p">,</span>
+           <span class="n">default</span><span class="o">=</span><span class="mf">0.1</span>
+          <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+          <span class="s">&#39;--early_stopping_rounds&#39;</span><span class="p">,</span>
+          <span class="n">help</span><span class="o">=</span><span class="s">&#39;XGBoost argument for stopping early&#39;</span><span class="p">,</span>
+          <span class="n">default</span><span class="o">=</span><span class="mi">50</span>
+          <span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+          <span class="s">&#39;--model_path&#39;</span><span class="p">,</span>
+          <span class="n">help</span><span class="o">=</span><span class="s">&#39;place to store model&#39;</span><span class="p">,</span>
+          <span class="n">default</span><span class="o">=</span><span class="s">&quot;/tmp/xgboost_model&quot;</span>
+          <span class="p">)</span>
+    <span class="c"># 模型默认存储在对象存储oss上</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+          <span class="s">&#39;--model_storage_type&#39;</span><span class="p">,</span>
+          <span class="n">help</span><span class="o">=</span><span class="s">&#39;place to store the model&#39;</span><span class="p">,</span>
+          <span class="n">default</span><span class="o">=</span><span class="s">&quot;oss&quot;</span>
+          <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+          <span class="s">&#39;--oss_param&#39;</span><span class="p">,</span>
+          <span class="n">help</span><span class="o">=</span><span class="s">&#39;oss parameter if you choose the model storage as OSS type&#39;</span><span class="p">,</span>
+          <span class="p">)</span>
+
+    <span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%(message)s</span><span class="s">&#39;</span><span class="p">)</span>
+    <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+    <span class="n">main_args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">main</span><span class="p">(</span><span class="n">main_args</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="232-train">2.3.2. train() 函数构建单机及分布式模式</h3>
+<p>train() 函数需要通过命令行参数输入确定：<br />
+1. Master 节点<br />
+2. Worker 节点</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">xgboost</span> <span class="kn">as</span> <span class="nn">xgb</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+
+<span class="kn">from</span> <span class="nn">tracker</span> <span class="kn">import</span> <span class="n">RabitTracker</span>
+<span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">read_train_data</span><span class="p">,</span> <span class="n">extract_xgbooost_cluster_env</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">__name__</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">train</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    :param args: configuration for train job</span>
+<span class="sd">    :return: XGBoost model</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">addr</span><span class="p">,</span> <span class="n">port</span><span class="p">,</span> <span class="n">rank</span><span class="p">,</span> <span class="n">world_size</span> <span class="o">=</span> <span class="n">extract_xgbooost_cluster_env</span><span class="p">()</span>
+    <span class="n">rabit_tracker</span> <span class="o">=</span> <span class="bp">None</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;start to build the network&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">world_size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="c"># 如果有多个节点</span>
+            <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;start the master node&quot;</span><span class="p">)</span>
+
+                <span class="n">rabit</span> <span class="o">=</span> <span class="n">RabitTracker</span><span class="p">(</span><span class="n">hostIP</span><span class="o">=</span><span class="s">&quot;0.0.0.0&quot;</span><span class="p">,</span> <span class="n">nslave</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span>
+                                     <span class="n">port</span><span class="o">=</span><span class="n">port</span><span class="p">,</span> <span class="n">port_end</span><span class="o">=</span><span class="n">port</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">rabit</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">world_size</span><span class="p">)</span>
+                <span class="n">rabit_tracker</span> <span class="o">=</span> <span class="n">rabit</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;###### RabitTracker Setup Finished ######&#39;</span><span class="p">)</span>
+            <span class="c"># 每个节点都运行以下</span>
+            <span class="n">envs</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s">&#39;DMLC_NUM_WORKER=</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">world_size</span><span class="p">,</span>
+                <span class="s">&#39;DMLC_TRACKER_URI=</span><span class="si">%s</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">addr</span><span class="p">,</span>
+                <span class="s">&#39;DMLC_TRACKER_PORT=</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">port</span><span class="p">,</span>
+                <span class="s">&#39;DMLC_TASK_ID=</span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">rank</span>
+            <span class="p">]</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;##### Rabit rank setup with below envs #####&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">env</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">envs</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+                <span class="n">envs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+
+            <span class="c"># 每个节点都要进行初始化</span>
+            <span class="n">xgb</span><span class="o">.</span><span class="n">rabit</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="n">envs</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&#39;##### Rabit rank = </span><span class="si">%d</span><span class="s">&#39;</span> <span class="o">%</span> <span class="n">xgb</span><span class="o">.</span><span class="n">rabit</span><span class="o">.</span><span class="n">get_rank</span><span class="p">())</span>
+            <span class="n">rank</span> <span class="o">=</span> <span class="n">xgb</span><span class="o">.</span><span class="n">rabit</span><span class="o">.</span><span class="n">get_rank</span><span class="p">()</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">world_size</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Start the train in a single node&quot;</span><span class="p">)</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="n">read_train_data</span><span class="p">(</span><span class="n">rank</span><span class="o">=</span><span class="n">rank</span><span class="p">,</span> <span class="n">num_workers</span><span class="o">=</span><span class="n">world_size</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;dtrain&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;num_boost_round&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">n_estimators</span><span class="p">)</span>
+        <span class="n">param_xgboost_default</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;max_depth&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;eta&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;silent&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+                                 <span class="s">&#39;objective&#39;</span><span class="p">:</span> <span class="s">&#39;multi:softprob&#39;</span><span class="p">,</span> <span class="s">&#39;num_class&#39;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+        <span class="n">kwargs</span><span class="p">[</span><span class="s">&quot;params&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">param_xgboost_default</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;starting to train xgboost at node with rank </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">rank</span><span class="p">)</span>
+        <span class="n">bst</span> <span class="o">=</span> <span class="n">xgb</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">rank</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">bst</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="bp">None</span>
+
+        <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;finish xgboost training at node with rank </span><span class="si">%d</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">rank</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;something wrong happen: </span><span class="si">%s</span><span class="s">&quot;</span><span class="p">,</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exc</span><span class="p">())</span>
+        <span class="k">raise</span> <span class="n">e</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;xgboost training job finished!&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">world_size</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">xgb</span><span class="o">.</span><span class="n">rabit</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">rabit_tracker</span><span class="p">:</span>
+            <span class="n">rabit_tracker</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">model</span>
+</pre></div>
+
+
+<h2 id="233">2.3.3. 构建容器镜像</h2>
+<p>构建镜像 并命名为 <code>xgboost-dist-iris</code></p>
+<div class="hlcode"><pre><span class="cp"># Use an official Ubuntu 18.04 as parent image</span>
+<span class="n">FROM</span> <span class="n">ubuntu</span><span class="o">:</span><span class="mf">18.04</span>
+
+<span class="cp"># Install python 2.7</span>
+<span class="n">FROM</span> <span class="n">python</span><span class="o">:</span><span class="mf">2.7</span>
+
+<span class="n">RUN</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+<span class="n">RUN</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">install</span> <span class="o">-</span><span class="n">y</span> <span class="n">git</span> <span class="n">make</span> <span class="n">g</span><span class="o">++</span>
+
+<span class="cp"># Build XGBoost</span>
+<span class="n">RUN</span> <span class="n">git</span> <span class="n">clone</span> <span class="o">--</span><span class="n">recursive</span> <span class="n">https</span><span class="o">:</span><span class="c1">//github.com/dmlc/xgboost &amp;&amp; \</span>
+<span class="c1">    cd xgboost &amp;&amp; \</span>
+<span class="c1">    make -j4 &amp;&amp; \</span>
+<span class="c1">    cd python-package; python setup.py install</span>
+
+<span class="cp"># Download code and install dependencies</span>
+<span class="cp"># 下载源代码 同时安装依赖包</span>
+<span class="n">RUN</span> <span class="n">cd</span> <span class="p">..</span> <span class="o">&amp;&amp;</span> \
+    <span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="o">:</span><span class="c1">//github.com/kubeflow/examples.git &amp;&amp; \</span>
+<span class="c1">    cd examples &amp;&amp; \</span>
+<span class="c1">    cd xgboost_ames_housing &amp;&amp; \</span>
+<span class="c1">    pip install -r seldon_serve/requirements.txt</span>
+
+<span class="n">ENTRYPOINT</span> <span class="p">[</span><span class="s">&quot;python&quot;</span><span class="p">,</span> <span class="s">&quot;examples/xgboost_ames_housing/housing.py&quot;</span><span class="p">]</span> 
+</pre></div>
+
+
+<h2 id="_1">镜像推送到镜像仓库</h2>
+<div class="hlcode"><pre><span class="n">docker</span> <span class="n">push</span> <span class="n">xxx</span>
+</pre></div>
+
+
+<h2 id="234-job-yaml">2.3.4. 编写 job yaml</h2>
+<p>1个Master2个Worker 节点规划的训练模式配置文件</p>
+<div class="hlcode"><pre><span class="nl">apiVersion:</span> <span class="s">&quot;xgboostjob.kubeflow.org/v1alpha1&quot;</span>
+<span class="nl">kind:</span> <span class="s">&quot;XGBoostJob&quot;</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="s">&quot;xgboost-dist-iris-test-train&quot;</span>
+<span class="nl">spec:</span>
+  <span class="nl">xgbReplicaSpecs:</span>
+    <span class="nl">Master:</span>
+      <span class="err">#</span> <span class="err">设置</span><span class="n">Master</span> <span class="err">副本数量</span>
+      <span class="nl">replicas:</span> <span class="mi">1</span>
+      <span class="nl">restartPolicy:</span> <span class="n">Never</span>
+      <span class="nl">template:</span>
+        <span class="nl">apiVersion:</span> <span class="n">v1</span>
+        <span class="nl">kind:</span> <span class="n">Pod</span>
+        <span class="nl">spec:</span>
+          <span class="nl">containers:</span>
+          <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">xgboostjob</span>
+            <span class="nl">image:</span> <span class="n">docker</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">merlintang</span><span class="o">/</span><span class="n">xgboost</span><span class="o">-</span><span class="n">dist</span><span class="o">-</span><span class="n">iris</span><span class="o">:</span><span class="mf">1.1</span> <span class="err">#</span> <span class="err">使用自定义的镜像（注意镜像仓库地址）</span>
+            <span class="nl">ports:</span>
+            <span class="o">-</span> <span class="n">containerPort</span><span class="o">:</span> <span class="mi">9991</span>
+              <span class="nl">name:</span> <span class="n">xgboostjob</span><span class="o">-</span><span class="n">port</span>
+            <span class="nl">imagePullPolicy:</span> <span class="n">Always</span>
+            <span class="err">#</span> <span class="err">设置</span><span class="n">python</span> <span class="err">程序</span> <span class="err">参数</span>
+            <span class="nl">args:</span>
+              <span class="o">-</span> <span class="o">--</span><span class="n">job_type</span><span class="o">=</span><span class="n">Train</span>
+              <span class="o">-</span> <span class="o">--</span><span class="n">xgboost_parameter</span><span class="o">=</span><span class="n">objective</span><span class="o">:</span><span class="n">multi</span><span class="o">:</span><span class="n">softprob</span><span class="p">,</span><span class="n">num_class</span><span class="o">:</span><span class="mi">3</span>
+              <span class="o">-</span> <span class="o">--</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">10</span>
+              <span class="o">-</span> <span class="o">--</span><span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.1</span>
+              <span class="o">-</span> <span class="o">--</span><span class="n">model_path</span><span class="o">=</span><span class="n">autoAI</span><span class="o">/</span><span class="n">xgb</span><span class="o">-</span><span class="n">opt</span><span class="o">/</span><span class="mi">2</span>
+              <span class="o">-</span> <span class="o">--</span><span class="n">model_storage_type</span><span class="o">=</span><span class="n">oss</span>
+              <span class="o">-</span> <span class="o">--</span><span class="n">oss_param</span><span class="o">=</span><span class="n">unknown</span>
+    <span class="nl">Worker:</span>
+      <span class="nl">replicas:</span> <span class="mi">2</span>
+      <span class="nl">restartPolicy:</span> <span class="n">ExitCode</span>
+      <span class="nl">template:</span>
+        <span class="nl">apiVersion:</span> <span class="n">v1</span>
+        <span class="nl">kind:</span> <span class="n">Pod</span>
+        <span class="nl">spec:</span>
+          <span class="nl">containers:</span>
+          <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">xgboostjob</span>
+            <span class="nl">image:</span> <span class="n">docker</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">merlintang</span><span class="o">/</span><span class="n">xgboost</span><span class="o">-</span><span class="n">dist</span><span class="o">-</span><span class="n">iris</span><span class="o">:</span><span class="mf">1.1</span> <span class="err">#</span> <span class="err">使用自定义的镜像（与</span><span class="n">Master</span><span class="err">相同）</span>
+            <span class="nl">ports:</span>
+            <span class="o">-</span> <span class="n">containerPort</span><span class="o">:</span> <span class="mi">9991</span>
+              <span class="nl">name:</span> <span class="n">xgboostjob</span><span class="o">-</span><span class="n">port</span>
+            <span class="nl">imagePullPolicy:</span> <span class="n">Always</span>
+            <span class="err">#</span> <span class="err">设置传入</span><span class="n">python</span> <span class="err">的参数</span> 
+            <span class="n">args</span><span class="o">:</span>
+              <span class="o">-</span> <span class="o">--</span><span class="n">job_type</span><span class="o">=</span><span class="n">Train</span>
+              <span class="o">-</span> <span class="o">--</span><span class="n">xgboost_parameter</span><span class="o">=</span><span class="s">&quot;objective:multi:softprob,num_class:3&quot;</span>
+              <span class="o">-</span> <span class="o">--</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">10</span>
+              <span class="o">-</span> <span class="o">--</span><span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.1</span>
+</pre></div>
+
+
+<p>1 Master 2 Work 的预测模式配置文件</p>
+<div class="hlcode"><pre><span class="nl">apiVersion:</span> <span class="s">&quot;xgboostjob.kubeflow.org/v1alpha1&quot;</span>
+<span class="nl">kind:</span> <span class="s">&quot;XGBoostJob&quot;</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="s">&quot;xgboost-dist-iris-test-predict&quot;</span>
+<span class="nl">spec:</span>
+  <span class="nl">xgbReplicaSpecs:</span>
+    <span class="nl">Master:</span>
+      <span class="nl">replicas:</span> <span class="mi">1</span>
+      <span class="nl">restartPolicy:</span> <span class="n">Never</span>
+      <span class="nl">template:</span>
+        <span class="nl">apiVersion:</span> <span class="n">v1</span>
+        <span class="nl">kind:</span> <span class="n">Pod</span>
+        <span class="nl">spec:</span>
+          <span class="nl">containers:</span>
+          <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">xgboostjob</span>
+            <span class="nl">image:</span> <span class="n">docker</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">merlintang</span><span class="o">/</span><span class="n">xgboost</span><span class="o">-</span><span class="n">dist</span><span class="o">-</span><span class="n">iris</span><span class="o">:</span><span class="mf">1.1</span>
+            <span class="nl">ports:</span>
+            <span class="o">-</span> <span class="n">containerPort</span><span class="o">:</span> <span class="mi">9991</span>
+              <span class="nl">name:</span> <span class="n">xgboostjob</span><span class="o">-</span><span class="n">port</span>
+            <span class="nl">imagePullPolicy:</span> <span class="n">Always</span>
+            <span class="nl">args:</span>
+              <span class="o">-</span> <span class="o">--</span><span class="n">job_type</span><span class="o">=</span><span class="n">Predict</span>
+              <span class="o">-</span> <span class="o">--</span><span class="n">model_path</span><span class="o">=</span><span class="n">autoAI</span><span class="o">/</span><span class="n">xgb</span><span class="o">-</span><span class="n">opt</span><span class="o">/</span><span class="mi">2</span>
+              <span class="o">-</span> <span class="o">--</span><span class="n">model_storage_type</span><span class="o">=</span><span class="n">oss</span>
+              <span class="o">-</span> <span class="o">--</span><span class="n">oss_param</span><span class="o">=</span><span class="n">unknown</span>
+    <span class="nl">Worker:</span>
+      <span class="nl">replicas:</span> <span class="mi">2</span>
+      <span class="nl">restartPolicy:</span> <span class="n">ExitCode</span>
+      <span class="nl">template:</span>
+        <span class="nl">apiVersion:</span> <span class="n">v1</span>
+        <span class="nl">kind:</span> <span class="n">Pod</span>
+        <span class="nl">spec:</span>
+          <span class="nl">containers:</span>
+          <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">xgboostjob</span>
+            <span class="nl">image:</span> <span class="n">docker</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">merlintang</span><span class="o">/</span><span class="n">xgboost</span><span class="o">-</span><span class="n">dist</span><span class="o">-</span><span class="n">iris</span><span class="o">:</span><span class="mf">1.1</span>
+            <span class="nl">ports:</span>
+            <span class="o">-</span> <span class="n">containerPort</span><span class="o">:</span> <span class="mi">9991</span>
+              <span class="nl">name:</span> <span class="n">xgboostjob</span><span class="o">-</span><span class="n">port</span>
+            <span class="nl">imagePullPolicy:</span> <span class="n">Always</span>
+            <span class="nl">args:</span>
+             <span class="o">-</span> <span class="o">--</span><span class="n">job_type</span><span class="o">=</span><span class="n">Predict</span>
+             <span class="o">-</span> <span class="o">--</span><span class="n">model_path</span><span class="o">=</span><span class="n">autoAI</span><span class="o">/</span><span class="n">xgb</span><span class="o">-</span><span class="n">opt</span><span class="o">/</span><span class="mi">2</span>
+             <span class="o">-</span> <span class="o">--</span><span class="n">model_storage_type</span><span class="o">=</span><span class="n">oss</span>
+             <span class="o">-</span> <span class="o">--</span><span class="n">oss_param</span><span class="o">=</span><span class="n">unknown</span>
+</pre></div>
+
+
+<h3 id="235-xgboost-job-kubernetes">2.3.5. 提交XGBoost job 到Kubernetes 集群</h3>
+<div class="hlcode"><pre><span class="cp">## For training job </span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">xgboostjob_v1alpha1_iris_train</span><span class="p">.</span><span class="n">yaml</span> 
+
+<span class="cp">## For bath prediction job </span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">xgboostjob_v1alpha1_iris_predict</span><span class="p">.</span><span class="n">yaml</span>
+</pre></div>
+
+
+<p><strong>监控任务</strong> </p>
+<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">get</span> <span class="o">-</span><span class="n">o</span> <span class="n">yaml</span> <span class="n">XGBoostJob</span><span class="o">/</span><span class="n">xgboost</span><span class="o">-</span><span class="n">dist</span><span class="o">-</span><span class="n">iris</span><span class="o">-</span><span class="n">test</span><span class="o">-</span><span class="n">predict</span>
+</pre></div>
+
+
+<h1 id="_2">最佳实践</h1>
+<ol>
+<li>下模板（<a href="https://github.com/kubeflow/xgboost-operator/tree/master/config/samples/xgboost-dist">地址</a>），改代码</li>
+<li>新建镜像</li>
+<li>修改编排yml</li>
+<li>提交</li>
+</ol>
+<h1 id="3">3. 参考资料</h1>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:官方">
+<p><a href="https://xgboost.readthedocs.io/en/latest/tutorials/kubernetes.html">官方文档 Distributed XGBoost with Kubernetes</a>&#160;<a class="footnote-backref" href="#fnref:官方" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

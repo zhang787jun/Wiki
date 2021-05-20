@@ -1,0 +1,198 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>5.模型选择与评估  - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-Scikit-Learn">02-Scikit-Learn</a>&nbsp;»&nbsp;<a href="/Wiki/#-模块分解笔记">模块分解笔记</a>&nbsp;»&nbsp;5.模型选择与评估 </div>
+</div>
+<div class="clearfix"></div>
+<div id="title">5.模型选择与评估 </div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 模型选择</a></li>
+<li><a href="#2">2. 模型评估</a><ul>
+<li><a href="#21">2.1. 分类问题</a><ul>
+<li><a href="#211">2.1.1. 通用分类</a></li>
+<li><a href="#212">2.1.2. 二分类</a></li>
+</ul>
+</li>
+<li><a href="#22">2.2. 回归指标</a></li>
+<li><a href="#23">2.3. 聚类指标</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="1">1. 模型选择</h1>
+<h1 id="2">2. 模型评估</h1>
+<h2 id="21">2.1. 分类问题</h2>
+<h3 id="211">2.1.1. 通用分类</h3>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">accuracy_score</span>
+<span class="n">score</span><span class="o">=</span><span class="n">accuracy_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+<span class="n">score</span>
+<span class="o">&gt;&gt;&gt;</span> 
+<span class="mf">0.8349474338391424</span>
+
+
+<span class="c">## 推荐</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">classification_report</span>
+<span class="n">report_str</span><span class="o">=</span><span class="n">classification_report</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+
+<span class="nb">type</span><span class="p">(</span><span class="n">report_str</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="nb">str</span>
+
+<span class="k">print</span> <span class="p">(</span><span class="n">report_str</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>
+              <span class="n">precision</span>    <span class="n">recall</span>  <span class="n">f1</span><span class="o">-</span><span class="n">score</span>   <span class="n">support</span>
+
+         <span class="mf">0.0</span>       <span class="mf">0.90</span>      <span class="mf">0.79</span>      <span class="mf">0.84</span>     <span class="mi">21521</span>
+         <span class="mf">1.0</span>       <span class="mf">0.77</span>      <span class="mf">0.89</span>      <span class="mf">0.83</span>     <span class="mi">17097</span>
+
+    <span class="n">accuracy</span>                           <span class="mf">0.83</span>     <span class="mi">38618</span>
+   <span class="n">macro</span> <span class="n">avg</span>       <span class="mf">0.84</span>      <span class="mf">0.84</span>      <span class="mf">0.83</span>     <span class="mi">38618</span>
+<span class="n">weighted</span> <span class="n">avg</span>       <span class="mf">0.84</span>      <span class="mf">0.83</span>      <span class="mf">0.84</span>     <span class="mi">38618</span>
+</pre></div>
+
+
+<h3 id="212">2.1.2. 二分类</h3>
+<div class="hlcode"><pre><span class="c"># 混淆矩阵</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">confusion_matrix</span>
+<span class="n">array</span><span class="o">=</span><span class="n">confusion_matrix</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+<span class="n">array</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">array</span><span class="p">([[</span><span class="mi">17097</span><span class="p">,</span>  <span class="mi">4424</span><span class="p">],</span>
+       <span class="p">[</span> <span class="mi">1950</span><span class="p">,</span> <span class="mi">15147</span><span class="p">]])</span>
+
+<span class="c"># F1 值</span>
+<span class="n">f1_score</span> <span class="o">=</span> <span class="n">sklearn</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">f1_score</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+<span class="n">f1_score</span>
+<span class="o">&gt;&gt;&gt;</span>
+
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">confusion_matrix</span>
+<span class="n">array</span><span class="o">=</span><span class="n">confusion_matrix</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="22">2.2. 回归指标</h2>
+<div class="hlcode"><pre><span class="c"># 平均绝对误差</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_absolute_error</span>
+<span class="n">mae</span><span class="o">=</span><span class="n">mean_absolute_error</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+<span class="n">mae</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="mf">1.12</span>
+
+<span class="c"># 均方误差</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">mean_squared_error</span>
+<span class="n">mse</span><span class="o">=</span><span class="n">mean_squared_error</span><span class="p">(</span><span class="n">y_test</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+<span class="n">mse</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="mf">2.22</span>
+
+<span class="c"># R2 评分 决定系数</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">r2_score</span>
+<span class="n">r2_score</span><span class="o">=</span><span class="n">r2_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+<span class="n">r2_score</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="mf">0.11</span>
+</pre></div>
+
+
+<h2 id="23">2.3. 聚类指标</h2>
+<p>群集指标</p>
+<div class="hlcode"><pre><span class="c"># 修正兰德系数</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">adjusted_rand_score</span>
+<span class="n">adjusted_rand_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+<span class="c"># 同质性</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">homogeneity_score</span>
+<span class="n">homogeneity_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+<span class="c"># V-measure</span>
+<span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">v_measure_score</span>
+<span class="n">metrics</span><span class="o">.</span><span class="n">v_measure_score</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">)</span>
+</pre></div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

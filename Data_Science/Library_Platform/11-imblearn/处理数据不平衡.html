@@ -1,0 +1,242 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>imblearn-101 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-11-imblearn">11-imblearn</a>&nbsp;»&nbsp;imblearn-101</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">imblearn-101</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 安装</a></li>
+<li><a href="#2">2. 过采样</a><ul>
+<li><a href="#21">2.1. 随机过采样</a></li>
+<li><a href="#22-smoteadasyn">2.2. SMOTE和ADASYN</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 欠采样</a><ul>
+<li><a href="#31-prototype-generation">3.1. Prototype generation</a></li>
+<li><a href="#32">3.2. 随机欠采样</a></li>
+</ul>
+</li>
+<li><a href="#4">4. 组合采样</a><ul>
+<li><a href="#41">4.1. 两种组合采样的方法</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="1">1. 安装</h1>
+<div class="hlcode"><pre><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">U</span> <span class="n">imbalanced</span><span class="o">-</span><span class="n">learn</span>
+</pre></div>
+
+
+<h1 id="2">2. 过采样</h1>
+<p>正样本严重不足，那就补充正样本。使用imblearn包中的over_sampling进行过采样有如下几种方法。</p>
+<h2 id="21">2.1. 随机过采样</h2>
+<div class="hlcode"><pre><span class="c">#使用make_classification生成样本数据</span>
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_classification</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">n_features</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_informative</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                            <span class="n">n_redundant</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_repeated</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_classes</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                            <span class="n">n_clusters_per_class</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                           <span class="n">weights</span><span class="o">=</span><span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.94</span><span class="p">],</span>
+                            <span class="n">class_sep</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="c">#查看各个标签的样本量</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+<span class="n">Counter</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+<span class="c">#输出样本结果</span>
+<span class="n">Counter</span><span class="p">({</span><span class="mi">2</span><span class="p">:</span> <span class="mi">4674</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">262</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span> <span class="mi">64</span><span class="p">})</span>
+</pre></div>
+
+
+<p>可以看出样本的三个标签中，1，2的样本量极少，样本失衡。下面使用imblearn进行过采样。</p>
+<div class="hlcode"><pre><span class="c">#使用imblearn进行随机过采样</span>
+
+<span class="kn">from</span> <span class="nn">imblearn.over_sampling</span> <span class="kn">import</span> <span class="n">RandomOverSampler</span>
+<span class="n">ros</span> <span class="o">=</span> <span class="n">RandomOverSampler</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">X_resampled</span><span class="p">,</span> <span class="n">y_resampled</span> <span class="o">=</span> <span class="n">ros</span><span class="o">.</span><span class="n">fit_resample</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+
+
+<span class="c">#查看结果</span>
+<span class="n">Counter</span><span class="p">(</span><span class="n">y_resampled</span><span class="p">)</span>
+
+<span class="c">#过采样后样本结果</span>
+<span class="n">Counter</span><span class="p">({</span><span class="mi">2</span><span class="p">:</span> <span class="mi">4674</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="mi">4674</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span> <span class="mi">4674</span><span class="p">})</span>
+</pre></div>
+
+
+<p>过采样后，三个标签的样本比例变为1:1:1。</p>
+<h2 id="22-smoteadasyn">2.2. SMOTE和ADASYN</h2>
+<div class="hlcode"><pre><span class="c">#SMOTE过采样</span>
+<span class="kn">from</span> <span class="nn">imblearn.over_sampling</span> <span class="kn">import</span> <span class="n">SMOTE</span><span class="p">,</span> <span class="n">ADASYN</span>
+<span class="n">X_resampled</span><span class="p">,</span> <span class="n">y_resampled</span> <span class="o">=</span> <span class="n">SMOTE</span><span class="p">()</span><span class="o">.</span><span class="n">fit_resample</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">Counter</span><span class="p">(</span><span class="n">y_resampled</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+
+<span class="c">#ADASYN过采样</span>
+<span class="n">X_resampled</span><span class="p">,</span> <span class="n">y_resampled</span> <span class="o">=</span> <span class="n">ADASYN</span><span class="p">()</span><span class="o">.</span><span class="n">fit_resample</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">Counter</span><span class="p">(</span><span class="n">y_resampled</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+
+<span class="c">#两种过采样的结果</span>
+<span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4674</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4674</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4674</span><span class="p">)]</span>
+<span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4673</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4662</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4674</span><span class="p">)]</span>
+</pre></div>
+
+
+<p>这两种方法的差别如下：</p>
+<p>SMOTE: 对于少数类样本a, 随机选择一个最近邻的样本b, 然后从a与b的连线上随机选取一个点c作为新的少数类样本;</p>
+<p>ADASYN: 关注的是在那些基于K近邻分类器被错误分类的原始样本附近生成新的少数类样本；</p>
+<h1 id="3">3. 欠采样</h1>
+<p>过采样是补充那些数据量少的样本，使得不同标签的样本量达到均衡。而欠采样是将多的样本进行裁剪，已达到样本的均衡。使用过采样，总样本量增多。欠采样则是变少。欠采样同样有几种方法；</p>
+<h2 id="31-prototype-generation">3.1. Prototype generation</h2>
+<p>ClusterCentroids使用K-means来减少样本数量。 因此，每个类将用K-means方法的质心而不是原始样本合成。 </p>
+<p>ClusterCentroids提供了一种有效的方式来表示数据集群的样本数量减少 。但是，此方法要求将数据分组到群集中。 另外，应该设置质心的数量，使得欠采样的簇代表原始的簇。</p>
+<div class="hlcode"><pre><span class="c">#欠采样</span>
+<span class="kn">from</span> <span class="nn">imblearn.under_sampling</span> <span class="kn">import</span> <span class="n">ClusterCentroids</span>
+<span class="n">cc</span> <span class="o">=</span> <span class="n">ClusterCentroids</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">X_resampled</span><span class="p">,</span> <span class="n">y_resampled</span> <span class="o">=</span> <span class="n">cc</span><span class="o">.</span><span class="n">fit_resample</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">Counter</span><span class="p">(</span><span class="n">y_resampled</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+<span class="c">#结果</span>
+<span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">64</span><span class="p">)]</span>
+</pre></div>
+
+
+<p>不同于过采样后，各个标签样本量为4662，欠采样后的各个标签数据量为64。<br />
+2.随机欠采样</p>
+<p>RandomUnderSampler 是一种快速简便的方法，通过随机选择目标类的数据子集来平衡数据。</p>
+<h2 id="32">3.2. 随机欠采样</h2>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">imblearn.under_sampling</span> <span class="kn">import</span> <span class="n">RandomUnderSampler</span>
+<span class="n">rus</span> <span class="o">=</span> <span class="n">RandomUnderSampler</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">X_resampled</span><span class="p">,</span> <span class="n">y_resampled</span> <span class="o">=</span> <span class="n">rus</span><span class="o">.</span><span class="n">fit_resample</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">Counter</span><span class="p">(</span><span class="n">y_resampled</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+
+<span class="c">#结果</span>
+<span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">64</span><span class="p">)]</span>
+</pre></div>
+
+
+<h1 id="4">4. 组合采样</h1>
+<p>我们之前介绍过SMOTE，并表明这种方法可以通过在边际异常值和内点之间插入新点来生成噪声样本。 这个问题可以通过清除过度采样产生的空间来解决。</p>
+<p>用于组合过采样和欠采样方法的两个工具是：SMOTETomek 和SMOTEENN。</p>
+<p>SMOTEENN倾向于清除比SMOTETomek更多的噪声样本。</p>
+<h2 id="41">4.1. 两种组合采样的方法</h2>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">Counter</span>
+<span class="kn">from</span> <span class="nn">sklearn.datasets</span> <span class="kn">import</span> <span class="n">make_classification</span>
+<span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">make_classification</span><span class="p">(</span><span class="n">n_samples</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">n_features</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_informative</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+                           <span class="n">n_redundant</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_repeated</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">n_classes</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                           <span class="n">n_clusters_per_class</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                           <span class="n">weights</span><span class="o">=</span><span class="p">[</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.94</span><span class="p">],</span>
+                           <span class="n">class_sep</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">Counter</span><span class="p">(</span><span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+
+<span class="kn">from</span> <span class="nn">imblearn.combine</span> <span class="kn">import</span> <span class="n">SMOTEENN</span>
+<span class="n">smote_enn</span> <span class="o">=</span> <span class="n">SMOTEENN</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">X_resampled</span><span class="p">,</span> <span class="n">y_resampled</span> <span class="o">=</span> <span class="n">smote_enn</span><span class="o">.</span><span class="n">fit_resample</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">Counter</span><span class="p">(</span><span class="n">y_resampled</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+
+<span class="kn">from</span> <span class="nn">imblearn.combine</span> <span class="kn">import</span> <span class="n">SMOTETomek</span>
+<span class="n">smote_tomek</span> <span class="o">=</span> <span class="n">SMOTETomek</span><span class="p">(</span><span class="n">random_state</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">X_resampled</span><span class="p">,</span> <span class="n">y_resampled</span> <span class="o">=</span> <span class="n">smote_tomek</span><span class="o">.</span><span class="n">fit_resample</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="nb">sorted</span><span class="p">(</span><span class="n">Counter</span><span class="p">(</span><span class="n">y_resampled</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()))</span>
+
+<span class="c">#原始数据</span>
+<span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">262</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4674</span><span class="p">)]</span>
+
+<span class="c">#SMOTEENN采样后的数据</span>
+<span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4060</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4381</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3502</span><span class="p">)]</span>
+
+<span class="c">#SMOTETomek采样后的数据</span>
+<span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4499</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4566</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4413</span><span class="p">)]</span>
+</pre></div>
+
+
+<p>imblearn官网地址：</p>
+<p>https://imbalanced-learn.org/en/stable/introduction.html</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

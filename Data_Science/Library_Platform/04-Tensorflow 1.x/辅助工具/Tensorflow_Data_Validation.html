@@ -1,0 +1,322 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Tensorflow数据可视化工具--TensorFlow Data Validation - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-04-Tensorflow 1.x">04-Tensorflow 1.x</a>&nbsp;»&nbsp;<a href="/Wiki/#-辅助工具">辅助工具</a>&nbsp;»&nbsp;Tensorflow数据可视化工具--TensorFlow Data Validation</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Tensorflow数据可视化工具--TensorFlow Data Validation</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 安装</a><ul>
+<li><a href="#11-pip">1.1. pip</a></li>
+<li><a href="#12-docker">1.2. docker</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 基本使用</a></li>
+<li><a href="#3">3. 一些小问题</a><ul>
+<li><a href="#31">3.1. 国内使用无法显示可视化界面</a></li>
+</ul>
+</li>
+<li><a href="#4">4. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1">1. 安装</h1>
+<p>安装时一定要注意各相关组件的版本</p>
+<table>
+<thead>
+<tr>
+<th>tensorflow-data-validation</th>
+<th>tensorflow</th>
+<th>apache-beam[gcp]</th>
+<th>pyarrow</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="https://github.com/tensorflow/data-validation/blob/master/RELEASE.md">GitHub master</a></td>
+<td>nightly (1.x/2.x)</td>
+<td>2.17.0</td>
+<td>0.15.0</td>
+</tr>
+<tr>
+<td><a href="https://github.com/tensorflow/data-validation/blob/v0.21.5/RELEASE.md">0.21.5</a></td>
+<td>1.15 / 2.1</td>
+<td>2.17.0</td>
+<td>0.15.0</td>
+</tr>
+<tr>
+<td><a href="https://github.com/tensorflow/data-validation/blob/v0.21.4/RELEASE.md">0.21.4</a></td>
+<td>1.15 / 2.1</td>
+<td>2.17.0</td>
+<td>0.15.0</td>
+</tr>
+<tr>
+<td><a href="https://github.com/tensorflow/data-validation/blob/v0.21.2/RELEASE.md">0.21.2</a></td>
+<td>1.15 / 2.1</td>
+<td>2.17.0</td>
+<td>0.15.0</td>
+</tr>
+<tr>
+<td><a href="https://github.com/tensorflow/data-validation/blob/v0.21.1/RELEASE.md">0.21.1</a></td>
+<td>1.15 / 2.1</td>
+<td>2.17.0</td>
+<td>0.15.0</td>
+</tr>
+<tr>
+<td><a href="https://github.com/tensorflow/data-validation/blob/v0.21.0/RELEASE.md">0.21.0</a></td>
+<td>1.15 / 2.1</td>
+<td>2.17.0</td>
+<td>0.15.0</td>
+</tr>
+<tr>
+<td><a href="https://github.com/tensorflow/data-validation/blob/v0.15.0/RELEASE.md">0.15.0</a></td>
+<td>1.15 / 2.0</td>
+<td>2.16.0</td>
+<td>0.14.0</td>
+</tr>
+<tr>
+<td><a href="https://github.com/tensorflow/data-validation/blob/v0.14.1/RELEASE.md">0.14.1</a></td>
+<td>1.14</td>
+<td>2.14.0</td>
+<td>0.14.0</td>
+</tr>
+<tr>
+<td><a href="https://github.com/tensorflow/data-validation/blob/v0.14.0/RELEASE.md">0.14.0</a></td>
+<td>1.14</td>
+<td>2.14.0</td>
+<td>0.14.0</td>
+</tr>
+<tr>
+<td><a href="https://github.com/tensorflow/data-validation/blob/v0.13.1/RELEASE.md">0.13.1</a></td>
+<td>1.13</td>
+<td>2.11.0</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td><a href="https://github.com/tensorflow/data-validation/blob/v0.13.0/RELEASE.md">0.13.0</a></td>
+<td>1.13</td>
+<td>2.11.0</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td><a href="https://github.com/tensorflow/data-validation/blob/v0.12.0/RELEASE.md">0.12.0</a></td>
+<td>1.12</td>
+<td>2.10.0</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td><a href="https://github.com/tensorflow/data-validation/blob/v0.11.0/RELEASE.md">0.11.0</a></td>
+<td>1.11</td>
+<td>2.8.0</td>
+<td>n/a</td>
+</tr>
+<tr>
+<td><a href="https://github.com/tensorflow/data-validation/blob/v0.9.0/RELEASE.md">0.9.0</a></td>
+<td>1.9</td>
+<td>2.6.0</td>
+<td>n/a</td>
+</tr>
+</tbody>
+</table>
+<h2 id="11-pip">1.1. pip</h2>
+<div class="hlcode"><pre><span class="n">pip</span> <span class="n">install</span> <span class="n">tensorflow</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">validation</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">pip</span> <span class="n">install</span> <span class="n">apache</span><span class="o">-</span><span class="n">beam</span><span class="o">==</span><span class="mf">2.14.0</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">tensorflow</span><span class="o">==</span><span class="mf">1.14.0</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">tensorflow</span><span class="o">-</span><span class="n">data</span><span class="o">-</span><span class="n">validation</span><span class="o">==</span><span class="mf">0.14.0</span>
+</pre></div>
+
+
+<h2 id="12-docker">1.2. docker</h2>
+<div class="hlcode"><pre><span class="cp"># win10 </span>
+<span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">rm</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="mi">8888</span><span class="o">:</span><span class="mi">8888</span><span class="o">/</span><span class="n">tcp</span>  <span class="o">-</span><span class="n">v</span> <span class="o">&lt;</span><span class="n">full</span><span class="o">-</span><span class="n">file</span><span class="o">-</span><span class="n">path</span><span class="o">&gt;:/</span><span class="n">notebooks</span> <span class="n">registry</span><span class="p">.</span><span class="n">cn</span><span class="o">-</span><span class="n">zhangjiakou</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">zjlbzf_docker</span><span class="o">/</span><span class="n">tfdv</span><span class="o">:</span><span class="n">latest</span>
+
+<span class="cp"># Linux</span>
+<span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">rm</span> <span class="o">-</span><span class="n">d</span> <span class="o">-</span><span class="n">p</span> <span class="mi">8888</span><span class="o">:</span><span class="mi">8888</span><span class="o">/</span><span class="n">tcp</span>  <span class="o">-</span><span class="n">v</span> <span class="p">.</span><span class="o">:/</span><span class="n">notebooks</span> <span class="n">registry</span><span class="p">.</span><span class="n">cn</span><span class="o">-</span><span class="n">zhangjiakou</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">zjlbzf_docker</span><span class="o">/</span><span class="n">tfdv</span><span class="o">:</span><span class="n">latest</span>
+</pre></div>
+
+
+<h1 id="2">2. 基本使用</h1>
+<ol>
+<li>生成统计数据 </li>
+</ol>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">tensorflow_data_validation</span> <span class="kn">as</span> <span class="nn">tfdv</span>
+
+<span class="c"># 1. 从tfrecord 获得 </span>
+<span class="n">stats</span> <span class="o">=</span> <span class="n">tfdv</span><span class="o">.</span><span class="n">generate_statistics_from_tfrecord</span><span class="p">(</span><span class="n">data_location</span><span class="o">=</span><span class="n">path</span><span class="p">)</span>
+
+<span class="c"># 2. 从dataframe 获得</span>
+<span class="c">## 默认n_jobs =1 ,可以根据系统的cores of cpus 更改</span>
+<span class="n">stats</span> <span class="o">=</span> <span class="n">tfdv</span><span class="o">.</span><span class="n">generate_statistics_from_dataframe</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">n_jobs</span><span class="p">)</span>
+
+<span class="c"># 3. 从csv获得</span>
+<span class="n">stats</span> <span class="o">=</span> <span class="n">tfdv</span><span class="o">.</span><span class="n">generate_statistics_from_csv</span><span class="p">(</span><span class="n">data_location</span><span class="o">=</span><span class="n">path</span><span class="p">)</span>
+
+
+<span class="c"># 最佳实践 </span>
+<span class="n">stats</span> <span class="o">=</span> <span class="n">tfdv</span><span class="o">.</span><span class="n">generate_statistics_from_dataframe</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">n_jobs</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+
+<ol>
+<li>统计数据的可视化 </li>
+</ol>
+<div class="hlcode"><pre><span class="n">tfdv</span><span class="o">.</span><span class="n">visualize_statistics</span><span class="p">(</span><span class="n">stats1</span><span class="p">,</span><span class="n">stats2</span><span class="p">,</span><span class="s">&quot;stats1_name&quot;</span><span class="p">,</span><span class="s">&quot;stats2_name&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="c">#可视化面板</span>
+</pre></div>
+
+
+<ol>
+<li>生成数据模式 <br />
+数据模式内容包括：<ol>
+<li>数据类型</li>
+<li>每个样本的特征数量</li>
+</ol>
+</li>
+</ol>
+<div class="hlcode"><pre><span class="n">feature</span> <span class="p">{</span>
+  <span class="nl">name:</span> <span class="s">&quot;payment_type&quot;</span>
+  <span class="n">value_count</span> <span class="p">{</span>
+    <span class="nl">min:</span> <span class="mi">1</span>
+    <span class="nl">max:</span> <span class="mi">1</span>
+  <span class="p">}</span>
+  <span class="nl">type:</span> <span class="n">BYTES</span>
+  <span class="nl">domain:</span> <span class="s">&quot;payment_type&quot;</span>
+  <span class="n">presence</span> <span class="p">{</span>
+    <span class="nl">min_fraction:</span> <span class="mf">1.0</span>
+    <span class="nl">min_count:</span> <span class="mi">1</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">schema</span> <span class="o">=</span> <span class="n">tfdv</span><span class="o">.</span><span class="n">infer_schema</span><span class="p">(</span><span class="n">statistics</span><span class="o">=</span><span class="n">train_stats</span><span class="p">)</span>
+<span class="n">tfdv</span><span class="o">.</span><span class="n">display_schema</span><span class="p">(</span><span class="n">schema</span><span class="o">=</span><span class="n">schema</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="c"># 数据模式表格</span>
+</pre></div>
+
+
+<h1 id="3">3. 一些小问题</h1>
+<h2 id="31">3.1. 国内使用无法显示可视化界面</h2>
+<p>可视化面板的js脚本中 指向了 <br />
+https://raw.githubusercontent.com/PAIR-code/facets/master/facets-dist/facets-jupyter.html</p>
+<p>该地址国内访问不稳定，可能导致可视化界面无法显示。<br />
+将该html文件下载到本地或放到其他服务器上，代码中重新指引就可以解决。<br />
+需要在 tensorflow_data_validation 的源码中（2个地方）进行一些修改 </p>
+<div class="hlcode"><pre><span class="c"># tensorflow_data_validation/utils/display_util.py</span>
+<span class="c"># tensorflow_data_validation/utils/display_util_test.py.py</span>
+<span class="o">&lt;</span><span class="n">link</span> <span class="n">rel</span><span class="o">=</span><span class="s">&quot;import&quot;</span> <span class="n">href</span><span class="o">=</span><span class="s">&quot;https://raw.githubusercontent.com/PAIR-code/facets/master/facets-dist/facets-jupyter.html&quot;</span><span class="o">&gt;</span><span class="p">;</span>
+
+
+<span class="c"># 修改为 </span>
+<span class="o">&gt;&gt;&gt;</span>
+
+<span class="o">&lt;</span><span class="n">link</span> <span class="n">rel</span><span class="o">=</span><span class="s">&quot;import&quot;</span> <span class="n">href</span><span class="o">=</span><span class="s">&quot;https://zhang787jun.github.io/Wiki/attach/tensorflow_data_validation/facets-jupyter.html&quot;</span><span class="o">&gt;</span><span class="p">;</span>
+
+
+<span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">zhang787jun</span><span class="o">.</span><span class="n">github</span><span class="o">.</span><span class="n">io</span><span class="o">/</span><span class="n">Wiki</span><span class="o">/</span><span class="n">attach</span><span class="o">/</span><span class="n">tensorflow_data_validation</span><span class="o">/</span><span class="n">facets</span><span class="o">-</span><span class="n">jupyter</span><span class="o">.</span><span class="n">html</span> <span class="err">可替换成任意可访问的的</span><span class="n">facets</span><span class="o">-</span><span class="n">jupyter</span><span class="o">.</span><span class="n">html</span> <span class="err">地址</span>
+</pre></div>
+
+
+<h1 id="4">4. 参考资料</h1>
+<ol>
+<li>
+<p>https://tensorflow.google.cn/tfx/guide/tfdv#drift_detection_tfdv_drift_detection</p>
+</li>
+<li>
+<p>https://github.com/tensorflow/data-validation</p>
+</li>
+</ol>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

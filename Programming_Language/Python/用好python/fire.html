@@ -1,0 +1,666 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Python--Fire - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Programming_Language">Programming_Language</a>&nbsp;»&nbsp;<a href="/Wiki/#-Python">Python</a>&nbsp;»&nbsp;<a href="/Wiki/#-用好python">用好python</a>&nbsp;»&nbsp;Python--Fire</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Python--Fire</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#_1">安装</a></li>
+</ul>
+</div>
+<p>Fire是google开发的一个python第三方库，其作用是可以将python组件(函数调用，类调用)转换成命令行的形式去调用。</p>
+<h1 id="_1">安装</h1>
+<p>可以直接使用pip来安装</p>
+<p>pip install fire<br />
+1<br />
+或者可以从Fire源码安装，clole如下源码https://github.com/google/python-fire.git, 然后进入目录，运行如下命令</p>
+<p>python setup.py install<br />
+1<br />
+使用方法<br />
+Hello world<br />
+version1: fire.Fire()<br />
+使用Fire最简单的方法是在python程序结束时调用fire.Fire(), 这会将程序的全部内容暴露给命令行。例如有如下一个程序text.py</p>
+<p>import fire</p>
+<p>def hello(name):<br />
+  return 'Hello {name}!'.format(name=name)</p>
+<p>if <strong>name</strong> == '<strong>main</strong>':<br />
+  fire.Fire(hello)<br />
+1<br />
+2<br />
+3<br />
+4<br />
+5<br />
+6<br />
+7<br />
+我们可以通过如下命令运行程序</p>
+<p>$python test.py hello world<br />
+Hello world!<br />
+1<br />
+2<br />
+version2: fire.Fire(<fn>)<br />
+稍微改动程序，仅将hello函数暴露给命令行</p>
+<p>import fire</p>
+<p>def hello(name):<br />
+  return 'Hello {name}!'.format(name=name)</p>
+<p>if <strong>name</strong> == '<strong>main</strong>':<br />
+  fire.Fire(hello)<br />
+1<br />
+2<br />
+3<br />
+4<br />
+5<br />
+6<br />
+7<br />
+通过如下命令运行程序</p>
+<p>$ python test.py World<br />
+Hello World!<br />
+1<br />
+2<br />
+现在我们不需要在指定hello函数，因为我们是通过fire.Fire(hello)调用的</p>
+<p>version3: using a main<br />
+我们也可以这样来写这个程序</p>
+<p>import fire</p>
+<p>def hello(name):<br />
+  return 'Hello {name}!'.format(name=name)</p>
+<p>def main():<br />
+  fire.Fire(hello)</p>
+<p>if <strong>name</strong> == '<strong>main</strong>':<br />
+  main()<br />
+1<br />
+2<br />
+3<br />
+4<br />
+5<br />
+6<br />
+7<br />
+8<br />
+9<br />
+10<br />
+Exposing Multiple Commands<br />
+在前面的例子中，我们向命令行暴露了一个函数。现在我们来看看如何将多个函数暴露给命令行。</p>
+<p>version1: fire.Fire()<br />
+暴露多个命令最简单的方法是编写多个函数，然后调用Fire。 例如有如下文件example.py</p>
+<p>import fire</p>
+<p>def add(x, y):<br />
+  return x + y</p>
+<p>def multiply(x, y):<br />
+  return x * y</p>
+<p>if <strong>name</strong> == '<strong>main</strong>':<br />
+  fire.Fire()<br />
+1<br />
+2<br />
+3<br />
+4<br />
+5<br />
+6<br />
+7<br />
+8<br />
+9<br />
+10<br />
+运行如下命令得到结果</p>
+<p>$ python example.py add 10 20<br />
+30<br />
+$ python example.py multiply 10 20<br />
+200<br />
+1<br />
+2<br />
+3<br />
+4<br />
+注意到Fire正确地将10和20解析为数字，而不是字符串。更多关于参数解析的例子，参考https://github.com/google/python-fire/blob/master/docs/guide.md#argument-parsing</p>
+<p>Version 2: fire.Fire()<br />
+在Version 1中，我们将所有程序的功能暴露给命令行。 而通过使用字典，我们可以有选择性地将一些函数暴露给命令行。</p>
+<p>import fire</p>
+<p>def add(x, y):<br />
+  return x + y</p>
+<p>def multiply(x, y):<br />
+  return x * y</p>
+<p>if <strong>name</strong> == '<strong>main</strong>':<br />
+  fire.Fire({<br />
+      'add': add,<br />
+      'multiply': multiply,<br />
+  })<br />
+1<br />
+2<br />
+3<br />
+4<br />
+5<br />
+6<br />
+7<br />
+8<br />
+9<br />
+10<br />
+11<br />
+12<br />
+13<br />
+运行如下命令得到结果</p>
+<p>$ python example.py add 10 20<br />
+30<br />
+$ python example.py multiply 10 20<br />
+200<br />
+1<br />
+2<br />
+3<br />
+4<br />
+Version 3: fire.Fire()<br />
+Fire也适用于对象，这是暴露多个命令行的一个好做法</p>
+<p>import fire</p>
+<p>class Calculator(object):</p>
+<p>def <strong>init</strong>(self, value):<br />
+    self.value = value</p>
+<p>def add(self, x, y):<br />
+    return x + y + self.value</p>
+<p>def multiply(self, x, y):<br />
+    return x * y + self.value</p>
+<p>if <strong>name</strong> == '<strong>main</strong>':<br />
+  calculator = Calculator()<br />
+  fire.Fire(calculator)<br />
+1<br />
+2<br />
+3<br />
+4<br />
+5<br />
+6<br />
+7<br />
+8<br />
+9<br />
+10<br />
+11<br />
+12<br />
+13<br />
+14<br />
+15<br />
+16<br />
+运行如下命令得到结果</p>
+<p>$ python example.py add 10 20<br />
+35<br />
+$ python example.py multiply 10 20<br />
+205<br />
+1<br />
+2<br />
+3<br />
+4<br />
+Version 4: fire.Fire()<br />
+Fire也适用于类。 这是暴露多个命令的另一个好的做法。</p>
+<p>import fire</p>
+<p>class Calculator(object):</p>
+<p>def <strong>init</strong>(self, value):<br />
+    self.value = value</p>
+<p>def add(self, x, y):<br />
+    return x + y + self.value</p>
+<p>def multiply(self, x, y):<br />
+    return x * y + self.value</p>
+<p>if <strong>name</strong> == '<strong>main</strong>':<br />
+  fire.Fire(Calculator)<br />
+1<br />
+2<br />
+3<br />
+4<br />
+5<br />
+6<br />
+7<br />
+8<br />
+9<br />
+10<br />
+11<br />
+12<br />
+13<br />
+14<br />
+15<br />
+运行如下命令得到结果</p>
+<p>$ python example.py add 10 20 --value 5<br />
+35<br />
+$ python example.py multiply 10 20 --value 5<br />
+205<br />
+1<br />
+2<br />
+3<br />
+4<br />
+与调用普通函数不同，它可以通过位置参数和命名参数（–flag语法）完成<br />
+，这里的–value 5就是将__init__中的🈯️设为5</p>
+<p>Grouping Commands 分组命令<br />
+下面是一个如何使用分组命令创建命令行界面的示例。</p>
+<p>class IngestionStage(object):</p>
+<p>def run(self):<br />
+    return 'Ingesting! Nom nom nom...'</p>
+<p>class DigestionStage(object):</p>
+<p>def run(self, volume=1):<br />
+    return ' '.join(['Burp!'] * volume)</p>
+<p>def status(self):<br />
+    return 'Satiated.'</p>
+<p>class Pipeline(object):</p>
+<p>def <strong>init</strong>(self):<br />
+    self.ingestion = IngestionStage()<br />
+    self.digestion = DigestionStage()</p>
+<p>def run(self):<br />
+    self.ingestion.run()<br />
+    self.digestion.run()</p>
+<p>if <strong>name</strong> == '<strong>main</strong>':<br />
+  fire.Fire(Pipeline)<br />
+1<br />
+2<br />
+3<br />
+4<br />
+5<br />
+6<br />
+7<br />
+8<br />
+9<br />
+10<br />
+11<br />
+12<br />
+13<br />
+14<br />
+15<br />
+16<br />
+17<br />
+18<br />
+19<br />
+20<br />
+21<br />
+22<br />
+23<br />
+24<br />
+25<br />
+运行如下命令</p>
+<p>$ python example.py run<br />
+Ingesting! Nom nom nom...<br />
+Burp!<br />
+$ python example.py ingestion run<br />
+Ingesting! Nom nom nom...<br />
+$ python example.py digestion run<br />
+Burp!<br />
+$ python example.py digestion status<br />
+Satiated.<br />
+1<br />
+2<br />
+3<br />
+4<br />
+5<br />
+6<br />
+7<br />
+8<br />
+9<br />
+Accessing Properties 属性访问<br />
+Chaining Function Calls 链式函数调用<br />
+如果你想设置你的函数链式调用，你只需要设置类方法返回self。下面通过一个例子说明：</p>
+<p>import fire</p>
+<p>class BinaryCanvas(object):<br />
+  """A canvas with which to make binary art, one bit at a time."""</p>
+<p>def <strong>init</strong>(self, size=10):<br />
+    self.pixels = [[0] * size for _ in range(size)]<br />
+    self._size = size<br />
+    self._row = 0  # The row of the cursor.<br />
+    self._col = 0  # The column of the cursor.</p>
+<p>def <strong>str</strong>(self):<br />
+    return '\n'.join(' '.join(str(pixel) for pixel in row) for row in self.pixels)</p>
+<p>def show(self):<br />
+    print(self)<br />
+    return self</p>
+<p>def move(self, row, col):<br />
+    self._row = row % self._size<br />
+    self._col = col % self._size<br />
+    return self</p>
+<p>def on(self):<br />
+    return self.set(1)</p>
+<p>def off(self):<br />
+    return self.set(0)</p>
+<p>def set(self, value):<br />
+    self.pixels[self._row][self._col] = value<br />
+    return self</p>
+<p>if <strong>name</strong> == '<strong>main</strong>':<br />
+  fire.Fire(BinaryCanvas)<br />
+1<br />
+2<br />
+3<br />
+4<br />
+5<br />
+6<br />
+7<br />
+8<br />
+9<br />
+10<br />
+11<br />
+12<br />
+13<br />
+14<br />
+15<br />
+16<br />
+17<br />
+18<br />
+19<br />
+20<br />
+21<br />
+22<br />
+23<br />
+24<br />
+25<br />
+26<br />
+27<br />
+28<br />
+29<br />
+30<br />
+31<br />
+32<br />
+33<br />
+34<br />
+35<br />
+运行如下命令</p>
+<p>$ python example.py move 3 3 on move 3 6 on move 6 3 on move 6 6 on move 7 4 on move 7 5 on<br />
+0 0 0 0 0 0 0 0 0 0<br />
+0 0 0 0 0 0 0 0 0 0<br />
+0 0 0 0 0 0 0 0 0 0<br />
+0 0 0 1 0 0 1 0 0 0<br />
+0 0 0 0 0 0 0 0 0 0<br />
+0 0 0 0 0 0 0 0 0 0<br />
+0 0 0 1 0 0 1 0 0 0<br />
+0 0 0 0 1 1 0 0 0 0<br />
+0 0 0 0 0 0 0 0 0 0<br />
+0 0 0 0 0 0 0 0 0 0<br />
+1<br />
+2<br />
+3<br />
+4<br />
+5<br />
+6<br />
+7<br />
+8<br />
+9<br />
+10<br />
+11<br />
+我们可以看到一系列的0 1打印在了屏幕上，可以通过定义类的__str_方法来定义一个类如何输出的。<br />
+如果类存在自定义的__str_方法，则序列化并打印该对象。如果没有自定义的__str__方法，则显示对象的帮助屏幕。</p>
+<p>more simpler way<br />
+import fire<br />
+english = 'Hello World'<br />
+spanish = 'Hola Mundo'<br />
+fire.Fire()<br />
+1<br />
+2<br />
+3<br />
+4<br />
+使用如下命令</p>
+<p>$ python example.py english<br />
+Hello World<br />
+$ python example.py spanish<br />
+Hola Mundo<br />
+1<br />
+2<br />
+3<br />
+4<br />
+函数调用<br />
+构造函数的参数可以使用–flag语法–name = value传递。<br />
+例如，考虑如下一个简单的类</p>
+<p>import fire</p>
+<p>class Building(object):</p>
+<p>def <strong>init</strong>(self, name, stories=1):<br />
+    self.name = name<br />
+    self.stories = stories</p>
+<p>def climb_stairs(self, stairs_per_story=10):<br />
+    for story in range(self.stories):<br />
+      for stair in range(1, stairs_per_story):<br />
+        yield stair<br />
+      yield 'Phew!'<br />
+    yield 'Done!'</p>
+<p>if <strong>name</strong> == '<strong>main</strong>':<br />
+  fire.Fire(Building)<br />
+1<br />
+2<br />
+3<br />
+4<br />
+5<br />
+6<br />
+7<br />
+8<br />
+9<br />
+10<br />
+11<br />
+12<br />
+13<br />
+14<br />
+15<br />
+16<br />
+17<br />
+我们可以通过这种方式实例化它：python example.py --name =“Sherrerd Hall”<br />
+其他函数的参数同样可以使用–flag语法来传递。<br />
+要实例化一个Building，然后运行climb_stairs函数，以下命令都是有效的：</p>
+<p>$ python example.py --name="Sherrerd Hall" --stories=3 climb_stairs 10<br />
+$ python example.py --name="Sherrerd Hall" climb_stairs --stairs_per_story=10<br />
+$ python example.py --name="Sherrerd Hall" climb_stairs --stairs-per-story 10<br />
+$ python example.py climb-stairs --stairs-per-story 10 --name="Sherrerd Hall"<br />
+1<br />
+2<br />
+3<br />
+4<br />
+你会注意到连字符和下划线（ -和_）在成员名称和标志名称中是可以互换的。<br />
+你还会注意到构造函数的参数可以在其他函数的参数之后或函数之前。<br />
+你还会注意到，标志名称和其值之间的等号是可选的。</p>
+<p>带有*args和<strong>kwargs的函数<br />
+Fire支持带*args或</strong> kwargs的函数。 这是一个例子：</p>
+<p>import fire</p>
+<p>def order_by_length(*items):<br />
+  """Orders items by length, breaking ties alphabetically."""<br />
+  sorted_items = sorted(items, key=lambda item: (len(str(item)), str(item)))<br />
+  return ' '.join(sorted_items)</p>
+<p>if <strong>name</strong> == '<strong>main</strong>':<br />
+  fire.Fire(order_by_length)<br />
+1<br />
+2<br />
+3<br />
+4<br />
+5<br />
+6<br />
+7<br />
+8<br />
+9<br />
+运行命令</p>
+<p>$ python example.py dog cat elephant<br />
+cat dog elephant<br />
+1<br />
+2<br />
+可以使用分隔符给函数提供参数。分隔符后的所有参数将用于处理函数的结果，而不是传递给函数本身。 默认分隔符是连字符 -。</p>
+<p>$ python example.py dog cat elephant - upper<br />
+CAT DOG ELEPHANT<br />
+1<br />
+2<br />
+如果没有分隔符，upper会被认为是一个参数</p>
+<p>$ python example.py dog cat elephant upper<br />
+cat dog upper elephant<br />
+1<br />
+2<br />
+你可以使用–separator标志更改分隔符。通过–将标志与你的Fire指令隔开 。 以下是我们更改分隔符的示例。</p>
+<p>$ python example.py dog cat elephant X upper -- --separator=X<br />
+CAT DOG ELEPHANT<br />
+1<br />
+2<br />
+当函数接受<em>args，</em>*kwargs或你不想指定的默认值时，分隔符会很有用。当想把"-"作为分隔符时，改变分隔符也很重要</p>
+<p>Argument Parsing 参数解析<br />
+参数的类型取决于它们的值，而不是使用它们的函数签名。 您可以从命令行传递任何Python文本：数字，字符串，元组，列表，字典（仅在某些版本的Python中支持集合）。您也可以任意嵌套这些类型。</p>
+<p>为了演示这个，我们将制作一个小程序，通过这个小程序告诉我们传给它的参数类型：</p>
+<p>import fire<br />
+fire.Fire(lambda obj: type(obj).<strong>name</strong>)<br />
+1<br />
+2<br />
+我们可以得到如下结果</p>
+<p>$ python example.py 10<br />
+int<br />
+$ python example.py 10.0<br />
+float<br />
+$ python example.py hello<br />
+str<br />
+$ python example.py '(1,2)'<br />
+tuple<br />
+$ python example.py [1,2]<br />
+list<br />
+$ python example.py True<br />
+bool<br />
+$ python example.py {name: David}<br />
+dict<br />
+1<br />
+2<br />
+3<br />
+4<br />
+5<br />
+6<br />
+7<br />
+8<br />
+9<br />
+10<br />
+11<br />
+12<br />
+13<br />
+14<br />
+在最后一个例子中，你会注意到裸词会自动替换为字符串。<br />
+要注意！ 如果你想传递字符串"10"而不是int 10，你需要转义或者引用你的引号。 否则，Bash将会把你的引用取消并将一个没有引号的10传递给你的Python程序，在那里Fire将把它解释为一个数字。</p>
+<p>$ python example.py 10<br />
+int<br />
+$ python example.py "10"<br />
+int<br />
+$ python example.py '"10"'<br />
+str<br />
+$ python example.py "'10'"<br />
+str<br />
+$ python example.py \"10\"<br />
+str<br />
+1<br />
+2<br />
+3<br />
+4<br />
+5<br />
+6<br />
+7<br />
+8<br />
+9<br />
+10<br />
+要注意！ 记住Bash首先处理你的参数，然后Fire解析结果。 如果你想将dict {“name”：“David Bieber”}传递给你的程序，你可以试试这个：</p>
+<p>$ python example.py '{"name": "David Bieber"}'  # Good! Do this.<br />
+dict<br />
+$ python example.py {"name":'"David Bieber"'}  # Okay.<br />
+dict<br />
+$ python example.py {"name":"David Bieber"}  # Wrong. This is parsed as a string.<br />
+str<br />
+$ python example.py {"name": "David Bieber"}  # Wrong. This isn't even treated as a single argument.<br />
+<error><br />
+$ python example.py '{"name": "Justin Bieber"}'  # Wrong. This is not the Bieber you're looking for. (The syntax is fine though :))<br />
+dict<br />
+1<br />
+2<br />
+3<br />
+4<br />
+5<br />
+6<br />
+7<br />
+8<br />
+9<br />
+10<br />
+Boolean Arguments 布尔类型的参数<br />
+True和False被解析为布尔值。<br />
+你也可以通过–flag语法–name和–noname来指定布尔值，它们分别将名称设置为True和False。<br />
+继续前面的例子，我们可以运行以下任何一个：</p>
+<p>$ python example.py --obj=True<br />
+bool<br />
+$ python example.py --obj=False<br />
+bool<br />
+$ python example.py --obj<br />
+bool<br />
+$ python example.py --noobj<br />
+bool<br />
+1<br />
+2<br />
+3<br />
+4<br />
+5<br />
+6<br />
+7<br />
+8<br />
+要注意！ 如果除另一个标志之外的标志紧跟在应该是布尔值的标志之后，该标志将取代该标志的值而不是布尔值。 您可以解决这个问题：通过在最后一个标志之后放置一个分隔符，明确指出布尔标志的值（如–obj = True），或者确保在布尔标志参数后面有另一个标志。</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

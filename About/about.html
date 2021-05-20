@@ -1,0 +1,118 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>关于这个wiki - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#About">About</a>&nbsp;»&nbsp;关于这个wiki</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">关于这个wiki</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#_1">见面</a></li>
+<li><a href="#_2">技术实现</a></li>
+</ul>
+</div>
+<h1 id="_1">见面</h1>
+<p>Hello, 大家好！</p>
+<p>这里是一个自己记录、整理专业内容的笔记收纳中心，覆盖的内容比较杂乱，甚至不能匹配上Wiki（知识网格系统）这样的称号。</p>
+<p>但纵使这里有这样那样的不足，还是很高兴有缘与您见面，欢迎指导、交流。</p>
+<p><img alt="image" src="https://img.shields.io/badge/图学习-PyG-blue.svg" /><br />
+<img alt="image" src="https://img.shields.io/badge/NLP-Tensorflow-orange.svg" /><br />
+<img alt="image" src="https://img.shields.io/badge/推荐-Tensorflow,Xgboost-orange.svg" /><br />
+<img alt="image" src="https://img.shields.io/badge/推荐-Tensorflow-orange.svg" /><br />
+<img alt="image" src="https://img.shields.io/badge/时序-Tensorflow-orange.svg" /><br />
+<img alt="image" src="https://img.shields.io/badge/CV-Pytorch,OpenCV,Gst-blue.svg" /><br />
+<img alt="image" src="https://img.shields.io/badge/时序,IOT-TensorFlow,sklearn-orange.svg" /></p>
+<p><strong>体会</strong></p>
+<p>优秀的写作是为了看的人更好的理解，要关注阅读者需要的输入什么，不是满足写作人的内容输出</p>
+<p>很遗憾，相比于blog及专栏，这个wiki还真是更面向自我的一个空间。</p>
+<h1 id="_2">技术实现</h1>
+<p>整个Wiki基于 <a href="http://simiki.org/">Simiki</a> 实现</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

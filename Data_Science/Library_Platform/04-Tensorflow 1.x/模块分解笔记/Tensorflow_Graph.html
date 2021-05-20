@@ -1,0 +1,254 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Tensorflow 图的管理 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-04-Tensorflow 1.x">04-Tensorflow 1.x</a>&nbsp;»&nbsp;<a href="/Wiki/#-模块分解笔记">模块分解笔记</a>&nbsp;»&nbsp;Tensorflow 图的管理</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Tensorflow 图的管理</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 图的概念</a></li>
+<li><a href="#2">2. 图的操作</a><ul>
+<li><a href="#21">2.1. 图的建立/加载</a></li>
+<li><a href="#22">2.2. 图的管理操作</a><ul>
+<li><a href="#221">2.2.1. 设置为默认图</a></li>
+<li><a href="#222">2.2.2. 多图合并</a></li>
+</ul>
+</li>
+<li><a href="#23-edge">2.3. edge(边缘)操作</a></li>
+<li><a href="#24-node">2.4. node(节点)操作</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 集合机制</a></li>
+</ul>
+</div>
+<h1 id="1">1. 图的概念</h1>
+<p>图=edge(边缘)+node(节点)</p>
+<h1 id="2">2. 图的操作</h1>
+<h2 id="21">2.1. 图的建立/加载</h2>
+<div class="hlcode"><pre><span class="n">graph</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span>
+<span class="n">graph</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">get_default_graph</span><span class="p">()</span> 
+</pre></div>
+
+
+<h2 id="22">2.2. 图的管理操作</h2>
+<h3 id="221">2.2.1. 设置为默认图</h3>
+<div class="hlcode"><pre><span class="n">graph</span><span class="o">.</span><span class="n">as_default</span><span class="p">()</span>
+<span class="n">graph</span><span class="o">.</span><span class="n">as_graph_def</span><span class="p">(</span><span class="n">from_version</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">add_shapes</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+
+
+<p>tensorflow 中可以定义多个计算图，<strong>不同计算图上的张量和运算是相互独立的</strong>，不会共享。计算图可以用来隔离张量和计算，同时提供了管理张量和计算的机制。计算图可以通过<code>Graph.device</code>函数来指定运行计算的设备，为TensorFlow充分利用GPU/CPU提供了机制。</p>
+<ol>
+<li>使用 g = tf.Graph()函数创建新的计算图;</li>
+<li><strong>在with g.as_default()语句下</strong>定义属于计算图g的张量和操作</li>
+<li>
+<p><strong>在with tf.Session()中</strong>通过参数 graph = xxx指定当前会话所运行的计算图;</p>
+</li>
+<li>
+<p>如果没有显式指定张量和操作所属的计算图，则这些张量和操作属于默认计算图;</p>
+</li>
+<li>一个图可以在多个sess中运行，一个sess也能运行多个图</li>
+</ol>
+<h3 id="222">2.2.2. 多图合并</h3>
+<ol>
+<li>什么是并联神经网络<br />
+如下图所示，有时候需要搭建一个如下图的网络：“并联”两个子网络，将他们的输出层Concat到一起，然后在二者合并之后的网络上继续添加隐层。</li>
+</ol>
+<p><img alt="" src="../../../../../attach/images/2020-08-18-11-08-15.png" /></p>
+<div class="hlcode"><pre><span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Graph</span><span class="p">()</span><span class="o">.</span><span class="n">as_default</span><span class="p">()</span> <span class="k">as</span> <span class="n">g_combined</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">graph</span><span class="o">=</span><span class="n">g_combined</span><span class="p">)</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+        <span class="n">graph_def_detect</span> <span class="o">=</span> <span class="n">load_def</span><span class="p">(</span><span class="n">detect_pb_path</span><span class="p">)</span>
+        <span class="n">graph_def_seg</span><span class="o">=</span> <span class="n">load_def</span><span class="p">(</span><span class="n">seg_pb_path</span><span class="p">)</span>
+        <span class="n">input_image</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">uint8</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;image&quot;</span><span class="p">)</span><span class="c">#定义新的网络输入</span>
+        <span class="n">input_image1</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span><span class="n">shape</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="bp">None</span><span class="p">,</span><span class="bp">None</span><span class="p">,</span><span class="mi">3</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s">&quot;image1&quot;</span><span class="p">)</span>
+        <span class="c">#将原始网络的输入映射到input_image(节点为：新的输入节点“image”)</span>
+        <span class="n">detection</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">import_graph_def</span><span class="p">(</span><span class="n">graph_def_detect</span><span class="p">,</span> <span class="n">input_map</span><span class="o">=</span><span class="p">{</span><span class="s">&#39;image_tensor:0&#39;</span><span class="p">:</span> <span class="n">input_image</span><span class="p">},</span><span class="n">return_elements</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;detection_boxes:0&#39;</span><span class="p">,</span> <span class="s">&#39;detection_scores:0&#39;</span><span class="p">,</span><span class="s">&#39;detection_classes:0&#39;</span><span class="p">,</span><span class="s">&#39;num_detections:0&#39;</span> <span class="p">])</span>
+                <span class="c">#新的输出节点为“detect”</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">detection</span><span class="p">,</span> <span class="s">&#39;detect&#39;</span><span class="p">)</span>
+        <span class="c"># second graph load</span>
+        <span class="n">seg_predict</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">import_graph_def</span><span class="p">(</span><span class="n">graph_def_seg</span><span class="p">,</span> <span class="n">input_map</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;create_inputs/batch:0&quot;</span><span class="p">:</span> <span class="n">input_image1</span><span class="p">},</span> <span class="n">return_elements</span><span class="o">=</span><span class="p">[</span><span class="s">&quot;conv6/out_1:0&quot;</span><span class="p">])</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">identity</span><span class="p">(</span><span class="n">seg_predict</span><span class="p">,</span> <span class="s">&quot;seg_predict&quot;</span><span class="p">)</span>
+
+        <span class="c"># freeze combined graph</span>
+        <span class="n">g_combined_def</span> <span class="o">=</span> <span class="n">graph_util</span><span class="o">.</span><span class="n">convert_variables_to_constants</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span> <span class="n">sess</span><span class="o">.</span><span class="n">graph_def</span><span class="p">,</span> <span class="p">[</span><span class="s">&quot;seg_predict&quot;</span><span class="p">,</span><span class="s">&quot;detect&quot;</span><span class="p">])</span>
+                <span class="c">#合成大图，生成新的pb</span>
+        <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">write_graph</span><span class="p">(</span><span class="n">g_combined_def</span><span class="p">,</span> <span class="n">out_pb_path</span><span class="p">,</span> <span class="s">&#39;merge_model.pb&#39;</span><span class="p">,</span> <span class="n">as_text</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="23-edge">2.3. edge(边缘)操作</h2>
+<div class="hlcode"><pre><span class="c">#根据名称返回操作节点 </span>
+<span class="n">op</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">Graph</span><span class="o">.</span><span class="n">get_operation_by_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+<span class="c">#根据名称返回tensor数据     </span>
+<span class="n">tensor</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">Graph</span><span class="o">.</span><span class="n">get_tensor_by_name</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>       
+
+<span class="c">#返回一个图中与obj相关联的对象，为一个操作节点或者tensor数据</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">Graph</span><span class="o">.</span><span class="n">as_graph_element</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">allow_tensor</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">allow_operation</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> 
+<span class="c">#用于覆盖梯度函数的上下文管理器</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">Graph</span><span class="o">.</span><span class="n">gradient_override_map</span><span class="p">(</span><span class="n">op_type_map</span><span class="p">)</span> 
+</pre></div>
+
+
+<h2 id="24-node">2.4. node(节点)操作</h2>
+<div class="hlcode"><pre><span class="n">op_list</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">Graph</span><span class="o">.</span><span class="n">get_operations</span><span class="p">()</span>  
+<span class="c">#返回图中的操作节点列表</span>
+</pre></div>
+
+
+<p>tf.Graph</p>
+<table>
+<thead>
+<tr>
+<th align="left">操作</th>
+<th align="left">描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">class tf.Graph</td>
+<td align="left">tensorflow中的计算以图数据流的方式表示,一个图包含一系列表示计算单元的操作对象以及在图中流动的数据单元以tensor对象表现</td>
+</tr>
+<tr>
+<td align="left"><code>tf.Graph.__init__()</code></td>
+<td align="left">建立一个空图</td>
+</tr>
+<tr>
+<td align="left">tf.Graph.as_default()</td>
+<td align="left">一个将某图设置为默认图，并返回一个上下文管理器，如果不显式添加一个默认图，系统会自动设置一个全局的默认图。所设置的默认图，在模块范围内所定义的节点都将默认加入默认图中</td>
+</tr>
+<tr>
+<td align="left">tf.Graph.as_graph_def(from_version=None, add_shapes=False)</td>
+<td align="left">返回一个图的序列化的GraphDef表示，序列化的GraphDef可以导入至另一个图中(使用 import_graph_def())或者使用C++ Session API</td>
+</tr>
+<tr>
+<td align="left">tf.Graph.finalize()</td>
+<td align="left">完成图的构建，即将其设置为只读模式</td>
+</tr>
+<tr>
+<td align="left">tf.Graph.finalized</td>
+<td align="left">返回True，如果图被完成</td>
+</tr>
+<tr>
+<td align="left">tf.Graph.control_dependencies(control_inputs)</td>
+<td align="left">定义一个控制依赖，并返回一个上下文管理器</td>
+</tr>
+<tr>
+<td align="left">with g.control_dependencies([a, b, c])</td>
+<td align="left"># <code>d</code> 和 <code>e</code> 将在 <code>a</code>, <code>b</code>, 和<code>c</code>执行完之后运行.d = …e = …</td>
+</tr>
+<tr>
+<td align="left">tf.Graph.device(device_name_or_function)</td>
+<td align="left">定义运行图所使用的设备，并返回一个上下文管理器，with g.device('/gpu:0'): 、...with g.device('/cpu:0'): ...</td>
+</tr>
+<tr>
+<td align="left">tf.Graph.name_scope(name)</td>
+<td align="left">为节点创建层次化的名称，并返回一个上下文管理器</td>
+</tr>
+<tr>
+<td align="left">tf.Graph.add_to_collection(name, value)</td>
+<td align="left">将value以name的名称存储在收集器(collection)中</td>
+</tr>
+<tr>
+<td align="left">tf.Graph.get_collection(name, scope=None)</td>
+<td align="left">根据name返回一个收集器中所收集的值的列表</td>
+</tr>
+</tbody>
+</table>
+<p>Module: tf.contrib.graph_editor<br />
+TensorFlow Graph Editor.</p>
+<h1 id="3">3. 集合机制</h1>
+<p>将 op 加入到集合中</p>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">add_to_collection</span><span class="p">(</span><span class="s">&quot;training_collection&quot;</span><span class="p">,</span><span class="n">loss</span><span class="p">)</span>
+
+<span class="n">tf</span><span class="o">.</span><span class="n">add_to_collection</span><span class="p">(</span><span class="s">&quot;training_collection&quot;</span><span class="p">,</span><span class="n">train_op</span><span class="p">)</span>
+</pre></div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

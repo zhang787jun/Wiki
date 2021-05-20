@@ -1,0 +1,326 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>kubeadm 基本操作 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Virtualization_and_Cloud_Computing">Virtualization_and_Cloud_Computing</a>&nbsp;»&nbsp;<a href="/Wiki/#-3. Kubernetes容器集群管理">3. Kubernetes容器集群管理</a>&nbsp;»&nbsp;<a href="/Wiki/#-2. Kubernetes实践">2. Kubernetes实践</a>&nbsp;»&nbsp;kubeadm 基本操作</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">kubeadm 基本操作</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-kubeadm">1. kubeadm 基本操作</a><ul>
+<li><a href="#11-kubeadm-init">1.1. kubeadm init</a><ul>
+<li><a href="#111-flags">1.1.1. flags 参数输入</a></li>
+</ul>
+</li>
+<li><a href="#12-kubeadm-join">1.2. kubeadm join</a><ul>
+<li><a href="#121">1.2.1. 基本步骤</a><ul>
+<li><a href="#1211">1.2.1.1. 预检检查</a></li>
+<li><a href="#1212">1.2.1.2. 发现集群信息</a><ul>
+<li><a href="#12121-token">1.2.1.2.1. 基于共享Token的集群发现</a></li>
+<li><a href="#12122-https">1.2.1.2.2. 基于标准文件/https的集群发现</a></li>
+</ul>
+</li>
+<li><a href="#1213-tls">1.2.1.3. TLS 引导</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#13-kubeadm-token">1.3. kubeadm token</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="1-kubeadm">1. kubeadm 基本操作</h1>
+<p>参考资料 <a href="http://docs.kubernetes.org.cn/829.html#i-4">(官方)kubeadm 实现细节</a></p>
+<p>接下可以做什么<br />
+• <code>kubeadm init</code> 启动一个 Kubernetes 主节点<br />
+• <code>kubeadm join</code> 启动一个 Kubernetes 工作节点并且将其加入到集群<br />
+• <code>kubeadm upgrade</code> 更新一个 Kubernetes 集群到新版本<br />
+• <code>kubeadm config</code> 如果使用 v1.7.x 或者更低版本的 kubeadm 初始化集群，您需要对集群做一些配置以便使用 <code>kubeadm upgrade</code> 命令<br />
+• <code>kubeadm token</code> 管理 kubeadm join 使用的令牌<br />
+• <code>kubeadm reset</code> 还原 kubeadm init 或者 kubeadm join 对主机所做的任何更改<br />
+• <code>kubeadm version</code> 打印 kubeadm 版本<br />
+• <code>kubeadm alpha</code> 预览一组可用的新功能以便从社区搜集反馈</p>
+<h2 id="11-kubeadm-init">1.1. kubeadm init</h2>
+<div class="hlcode"><pre><span class="cp"># 初始化集群</span>
+<span class="n">kubeadm</span> <span class="n">init</span> <span class="p">[</span><span class="n">flags</span><span class="p">]</span>
+</pre></div>
+
+
+<h3 id="111-flags">1.1.1. flags 参数输入</h3>
+<p>--<code>image-repository</code> = registry.aliyuncs.com/google_containers</p>
+<p>--<code>apiserver-advertise-address</code>="0.0.0.0" <br />
+string, API Server将要广播的监听地址。如指定为 <code>0.0.0.0</code> 将使用缺省的网卡地址。</p>
+<p>--<code>apiserver-bind-port</code>=6443<br />
+int32, 缺省值: 6443 Kuberneter API Server绑定的端口</p>
+<p>--<code>apiserver-cert-extra-sans</code>=""<br />
+string,Slice可选的额外提供的证书主题别名（SANs）用于指定API Server的服务器证书。可以是IP地址也可以是DNS名称。</p>
+<p>--<code>cert-dir</code>="/etc/kubernetes/pki"<br />
+string, 缺省值: "/etc/kubernetes/pki"证书的存储路径。</p>
+<p>--<code>config</code>="/var/run/dockershim.sock"<br />
+string,kubeadm配置文件的路径。警告：配置文件的功能是实验性的。</p>
+<p>--<code>cri-socket</code>="/var/run/dockershim.sock"<br />
+string, 缺省值: "/var/run/dockershim.sock" 指明要连接的CRI socket文件</p>
+<p>--<code>dry-run</code><br />
+不会应用任何改变；只会输出将要执行的操作。</p>
+<p>--<code>feature-gates</code> <br />
+string,键值对的集合，用来控制各种功能的开关。可选项有:<br />
+Auditing=true|false (当前为ALPHA状态 - 缺省值=false)<br />
+CoreDNS=true|false (缺省值=true)<br />
+DynamicKubeletConfig=true|false (当前为BETA状态 - 缺省值=false)</p>
+<p>-<code>h</code>, --<code>help</code><br />
+获取init命令的帮助信息</p>
+<p>--<code>ignore-preflight-errors</code> stringSlice<br />
+忽视检查项错误列表，BS列表中的每一个检查项如发生错误将被展示输出为警告，而非错误。 例如: 'IsPrivilegedUser,Swap'. 如填写为 'all' 则将忽视所有的检查项错误。</p>
+<p>--<code>kubernetes-version</code> ="stable-1"<br />
+string  缺省值: "stable-1" ,为control plane选择一个特定的Kubernetes版本。</p>
+<p>--<code>node-name</code> =""<br />
+string,指定节点的名称。</p>
+<p>--<code>pod-network-cidr</code> ="10.244.0.0/16"<br />
+string, 指明pod网络可以使用的<strong>IP地址段</strong>。 如果设置了这个参数，control plane将会为每一个节点自动分配CIDRs。</p>
+<p>--<code>service-cidr</code>= "10.96.0.0/12"<br />
+string ,缺省值: "10.96.0.0/12" 为service的虚拟IP地址另外指定<strong>IP地址段</strong></p>
+<p>--<code>service-dns-domain</code>="cluster.local"<br />
+string ,缺省值: "cluster.local" 为services另外指定域名, 例如： "myorg.internal".</p>
+<p>--<code>skip-token-print</code><br />
+不打印出由 <code>kubeadm init</code> 命令生成的默认令牌。</p>
+<p>--<code>token</code> string<br />
+这个令牌用于建立主从节点间的双向受信链接。格式为 [a-z0-9]{6}.[a-z0-9]{16} - 示例： abcdef.0123456789abcdef</p>
+<p>--<code>token-ttl duration</code>     缺省值: 24h0m0s<br />
+令牌被自动删除前的可用时长 (示例： 1s, 2m, 3h). 如果设置为 '0', 令牌将永不过期。</p>
+<h2 id="12-kubeadm-join">1.2. kubeadm join</h2>
+<p>基本形式</p>
+<div class="hlcode"><pre><span class="cp"># 在worknode节点（需要添加进入集群的节点）上执行</span>
+<span class="n">kubeadm</span> <span class="n">join</span>  <span class="n">xxx</span><span class="p">.</span><span class="n">xxx</span><span class="p">.</span><span class="n">xxx</span><span class="p">.</span><span class="n">xxx</span><span class="o">:</span><span class="n">prot</span> <span class="o">--</span><span class="n">discovery</span><span class="o">-</span><span class="n">token</span><span class="o">=*****</span>
+<span class="o">--</span><span class="n">discovery</span><span class="o">-</span><span class="n">token</span><span class="o">-</span><span class="n">ca</span><span class="o">-</span><span class="n">cert</span><span class="o">-</span><span class="n">hash</span><span class="o">=**</span><span class="err">@@@@@@@@</span>
+<span class="o">&lt;</span><span class="n">API</span><span class="o">-</span><span class="n">service</span><span class="o">-</span><span class="n">ip</span><span class="o">&gt;</span> <span class="o">:</span><span class="n">prot</span><span class="o">:</span> <span class="n">api</span><span class="err">服务的</span><span class="n">ip</span><span class="err">地址</span> <span class="err">及端口号</span>
+</pre></div>
+
+
+<p>为集群添加结点，使得work 节点与master 节点建立<strong>双向</strong>信任机制。</p>
+<p><strong>双向</strong>信任机制分为2部分：<br />
+1. 节点发现（让work节点信任master节点）<br />
+2. TLS bootstrap引导（让master节点信任work节点）</p>
+<h3 id="121">1.2.1. 基本步骤</h3>
+<h4 id="1211">1.2.1.1. 预检检查</h4>
+<p>kubeadm 在开始连接之前执行一组预检检查，目的是验证先决条件并避免常见的集群启动问题。</p>
+<p><em>注意：</em><br />
+    kubeadm join 预检检查基本上是一个 kubeadm init 预检检查的子集</p>
+<h4 id="1212">1.2.1.2. 发现集群信息</h4>
+<p>针对发现，有两个主要的解决方案:<br />
+1. 使用共享token +  API server IP 地址。<br />
+2. 标准 kubeconfig 文件</p>
+<h5 id="12121-token">1.2.1.2.1. 基于共享Token的集群发现</h5>
+<div class="hlcode"><pre><span class="n">kubeadm</span> <span class="n">join</span>  <span class="n">xxx</span><span class="p">.</span><span class="n">xxx</span><span class="p">.</span><span class="n">xxx</span><span class="p">.</span><span class="n">xxx</span> <span class="o">--</span><span class="n">discovery</span><span class="o">-</span><span class="n">token</span><span class="o">=*****</span>
+</pre></div>
+
+
+<p>步骤<br />
+1. 检索集群 CA 证书<br />
+kubeadm 执行节点基本上从Namespace kube-public 下 cluster-info ConfigMap 中检索集群 CA 证书 。</p>
+<p>为了防止 “中间人” 攻击，采取了几个步骤：</p>
+<p>首先，通过不安全的连接检索 CA 证书（这是可能的，因为 kubeadm init 对 system:unauthenticated 授予了访问 cluster-info 用户的权限）<br />
+然后 CA 证书通过以下验证步骤：<br />
+    基本验证：针对 JWT 签名使用令牌 ID<br />
+    发布密钥验证：使用提供的 --discovery-token-ca-cert-hash。此值可在 kubeadm init 的输出中获取，也可以使用标准工具计算（散列是在 SPKI（Subject Public Key Info）对象的字节上计算的，如 RFC 7469 中所示）。--discovery-token-ca-cert-hash 标志可以重复多次，以允许多个公钥。 -作为附加验证，CA 证书通过安全连接进行检索，然后与最初检索的 CA 进行比较</p>
+<p>请注意：</p>
+<div class="hlcode"><pre><span class="err">通过</span> <span class="o">--</span><span class="n">discovery</span><span class="o">-</span><span class="n">token</span><span class="o">-</span><span class="n">unsafe</span><span class="o">-</span><span class="n">skip</span><span class="o">-</span><span class="n">ca</span><span class="o">-</span><span class="n">verification</span> <span class="err">标志可以跳过发布密钥验证</span><span class="p">;</span> <span class="err">这削弱了</span> <span class="n">kubeadm</span> <span class="err">安全模型，因为其他人可能潜在模仿</span> <span class="n">Kubernetes</span> <span class="n">Master</span><span class="err">。</span>
+</pre></div>
+
+
+<h5 id="12122-https">1.2.1.2.2. 基于标准文件/https的集群发现</h5>
+<div class="hlcode"><pre><span class="n">kubeadm</span> <span class="n">join</span>  <span class="n">xxx</span><span class="p">.</span><span class="n">xxx</span><span class="p">.</span><span class="n">xxx</span><span class="p">.</span><span class="n">xxx</span> <span class="o">--</span><span class="n">discovery</span><span class="o">-</span><span class="n">file</span><span class="o">=*****</span>
+</pre></div>
+
+
+<p>如果 kubeadm join 被调用为 --discovery-file，则使用文件发现; 此文件可以是本地文件或通过 HTTPS URL 下载; 在 HTTPS 的情况下，主机安装的 CA 用于验证连接。</p>
+<p>通过文件发现，集群 CA 证书被提供到文件本身; 事实上，发现的文件是一个 kubeconfig 文件，其中只设置了 server 和 certificate-authority-data 属性，如 kubeadm join 参考文档中所述; 当与集群建立连接时，kubeadm 尝试访问 cluster-info ConfigMap，如果可用，则使用它。</p>
+<h4 id="1213-tls">1.2.1.3. TLS 引导</h4>
+<p>一旦知道了集群信息，就会编写文件 bootstrap-kubelet.conf，从而允许 kubelet 执行 TLS 引导（相反，直到 v1.7 TLS 引导被 kubeadm 管理）。</p>
+<p>TLS 引导机制</p>
+<p><strong>基本步骤</strong><br />
+1. 使用共享Token提交csr。<br />
+使用共享Token临时向 Kubernetes Master 进行身份验证，以提交本地创建的密钥对的证书签名请求（CSR）。</p>
+<ol>
+<li>自动批准该请求，并完成保存 <code>ca.crt</code> 文件和用于加入集群的 <code>kubelet.conf</code> 文件，而 bootstrap-kubelet.conf 被删除。</li>
+</ol>
+<p>csr审批控制器<code>csrapproving</code> 控制器将作为<code>kube-controller-manage</code>r 的一部分，被默认启用,将处理 csr 的审批问题</p>
+<div class="hlcode"><pre><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">kubernetes</span>
+<span class="err">├──</span> <span class="n">kubelet</span><span class="p">.</span><span class="n">conf</span> <span class="err">#</span> <span class="err">用于加入集群的配置文件</span>
+<span class="err">├──</span> <span class="n">manifests</span>
+<span class="err">└──</span> <span class="n">pki</span>
+    <span class="err">└──</span> <span class="n">ca</span><span class="p">.</span><span class="n">crt</span>  <span class="err">#</span> <span class="n">ca</span> <span class="err">证书</span>
+</pre></div>
+
+
+<p>请注意：<br />
+    临时验证是根据 kubeadm init 过程中保存的Token进行验证的（或者使用 kubeadm token 创建的附加令牌）<br />
+    对 kubeadm init 过程中被授予访问 CSR api 的 system:bootstrappers:kubeadm:default-node-token 组的用户成员的临时身份验证解析<br />
+    自动 CSR 审批由 csrapprover 控制器管理，与 kubeadm init 过程的配置相一致</p>
+<p>如果 kubeadm 被调用为 --feature-gates=DynamicKubeletConfig：<br />
+    使用引导令牌凭据从 kube-system 命名空间中的 kubelet-base-config-v1.9 ConfigMap 中读取 kubelet 基本配置，并将其写入磁盘，作为 kubelet init 配置文件 /var/lib/kubelet/config/init/kubelet<br />
+    当 kubelet 以节点自己的凭据（/etc/kubernetes/kubelet.conf）开始时，更新当前节点配置，指定 node/kubelet 配置的源是上面的 ConfigMap。</p>
+<p>请注意：<br />
+    要使动态 kubelet 配置正常工作，应在 /etc/systemd/system/kubelet.service.d/10-kubeadm.conf 中指定标志 --dynamic-config-dir=/var/lib/kubelet/config/dynamic</p>
+<p>关键问题：<br />
+  1. 什么样子的节点可以加入<br />
+  2. 哪个节点</p>
+<p>集群对节点的认证：<br />
+  2.1 X509 客户证书<br />
+  2.2 Static Token File<br />
+      2.2.1 Putting a Bearer Token in a Request<br />
+  2.3 Bootstrap Tokens<br />
+  2.4 Static Password File<br />
+  2.5 OpenID Connect Tokens<br />
+      2.5.1 Configuring the API Server<br />
+      2.5.2 使用kubectl<br />
+          2.5.2.1 选项1-OIDC AUTHENTICATOR<br />
+          2.5.2.2 选项 2 - USE THE --TOKEN OPTION<br />
+  2.6 Webhook Token Authentication<br />
+  2.7 Authenticating Proxy<br />
+  2.8 Keystone Password</p>
+<p><code>kubeadm join</code> 命令最简单的方式是通过Token，主控节点上使用<code>kubeadm token</code>命令可以管理集群所产生的Token。</p>
+<p>基于文件或HTTPS的发现<br />
+这提供了一种带外方式来在控制平面节点和自举节点之间建立信任根。如果要使用kubeadm构建自动置备，请考虑使用此模式。发现文件的格式是常规的Kubernetes kubeconfig文件。</p>
+<p>X.509格式证书是被广泛使用的数字证书标准，是用于标志通讯各方身份信息的一系列数据。</p>
+<p>如果发现文件不包含凭据，则将使用TLS发现令牌。</p>
+<p>基本步骤: <br />
+1. 获取token value</p>
+<div class="hlcode"><pre><span class="n">kubeadm</span> 
+</pre></div>
+
+
+<ol>
+<li>获取ca证书sha256编码hash值</li>
+</ol>
+<div class="hlcode"><pre><span class="n">openssl</span> <span class="n">x509</span> <span class="o">-</span><span class="n">pubkey</span> <span class="o">-</span><span class="n">in</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">kubernetes</span><span class="o">/</span><span class="n">pki</span><span class="o">/</span><span class="n">ca</span><span class="p">.</span><span class="n">crt</span> <span class="o">|</span> <span class="n">openssl</span> <span class="n">rsa</span> <span class="o">-</span><span class="n">pubin</span> <span class="o">-</span><span class="n">outform</span> <span class="n">der</span> <span class="mi">2</span><span class="o">&gt;/</span><span class="n">dev</span><span class="o">/</span><span class="n">null</span> <span class="o">|</span> <span class="n">openssl</span> <span class="n">dgst</span> <span class="o">-</span><span class="n">sha256</span> <span class="o">-</span><span class="n">hex</span> <span class="o">|</span> <span class="n">sed</span> <span class="err">&#39;</span><span class="n">s</span><span class="o">/^</span><span class="p">.</span><span class="o">*</span> <span class="c1">//&#39;</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="mi">2</span><span class="n">cc3029123db737f234186636330e87b5510c173c669f513a9c0e0da395515b0</span>
+<span class="cp"># 别人的 我怎么敢把自己的hash值放上去</span>
+</pre></div>
+
+
+<p>3c190bad5c715d3315f566ba8fed575dee0022d078109cb200a18675b757d55f</p>
+<p>3.node节点加入</p>
+<div class="hlcode"><pre><span class="n">kubeadm</span> <span class="n">join</span> <span class="mf">10.167.11.153</span><span class="o">:</span><span class="mi">6443</span> <span class="o">--</span><span class="n">token</span> <span class="n">o4avtg</span><span class="mf">.65</span><span class="n">ji6b778nyacw68</span> <span class="o">--</span><span class="n">discovery</span><span class="o">-</span><span class="n">token</span><span class="o">-</span><span class="n">ca</span><span class="o">-</span><span class="n">cert</span><span class="o">-</span><span class="n">hash</span> <span class="n">sha256</span><span class="o">:</span><span class="mi">2</span><span class="n">cc3029123db737f234186636330e87b5510c173c669f513a9c0e0da395515b0</span>
+</pre></div>
+
+
+<p>kubeadm join 172.24.195.43:6443 --token d8hvdo.6ub9nq2dgnlodq2h --discovery-token-ca-cert-hash 3c190bad5c715d3315f566ba8fed575dee0022d078109cb200a18675b757d55f</p>
+<p>示例kubea1dm join命令：</p>
+<div class="hlcode"><pre><span class="cp"># 使用token 将节点加入集群</span>
+<span class="n">kubeadm</span> <span class="n">join</span> <span class="err">–</span><span class="n">token</span> <span class="mf">4f</span><span class="n">ccd2</span><span class="p">.</span><span class="n">b0e0f8918bd95d3e</span> <span class="mf">192.168.119.132</span><span class="o">:</span><span class="mi">6443</span>
+
+<span class="cp"># 使用外部配置文件 将节点加入集群</span>
+<span class="n">kubeadm</span> <span class="n">join</span> <span class="o">--</span><span class="n">discovery</span><span class="o">-</span><span class="n">file</span> <span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">file</span><span class="p">.</span><span class="n">conf</span> <span class="err">（本地文件）</span>
+<span class="n">kubeadm</span> <span class="n">join</span> <span class="o">--</span><span class="n">discovery</span><span class="o">-</span><span class="n">file</span> <span class="n">https</span><span class="o">:</span><span class="c1">//url/file.conf （远程HTTPS URL）</span>
+</pre></div>
+
+
+<p>kubeadm join 172.24.195.43:6443 --token bdibtv.8iu07mfcpssfdrmg \<br />
+    --discovery-token-ca-cert-hash sha256:6732957bd86580ac23b70bb7a1a0135149db580e3f25a7ce24c4c1409cd5b923</p>
+<h2 id="13-kubeadm-token">1.3. kubeadm token</h2>
+<p>参考： https://kubernetes.io/docs/reference/setup-tools/kubeadm/kubeadm-token/</p>
+<div class="hlcode"><pre><span class="cp"># 创建一个永久有效的token。（生成的token 可以通过kubeadm token list 查看）</span>
+<span class="n">kubeadm</span> <span class="n">token</span> <span class="n">create</span>
+<span class="cp"># 查看token</span>
+<span class="n">kubeadm</span> <span class="n">token</span> <span class="n">list</span>
+<span class="cp"># 删除 token</span>
+<span class="n">kubeadm</span> <span class="n">token</span> <span class="n">delete</span> <span class="p">[</span><span class="n">token</span><span class="o">-</span><span class="n">value</span><span class="p">]</span>
+<span class="cp"># 生成并打印出 一个随机生成的引导token,该token可以用于 kubeadm init 和kubeadm join 命令中。kubeadm token list 中不显示</span>
+<span class="n">kubeadm</span> <span class="n">token</span> <span class="n">generate</span>
+
+<span class="cp"># 方法重新生成链接Token并打印输出加入命令</span>
+<span class="n">kubeadm</span> <span class="n">token</span> <span class="n">create</span> <span class="o">--</span><span class="n">print</span><span class="o">-</span><span class="n">join</span><span class="o">-</span><span class="n">command</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">kubeadm</span> <span class="n">join</span> <span class="n">XXX</span><span class="p">.</span><span class="n">XXX</span><span class="p">.</span><span class="n">xxx</span><span class="p">.</span><span class="n">xxx</span><span class="o">:</span><span class="mi">6443</span> <span class="o">--</span><span class="n">token</span> <span class="n">XXXXXXX</span> <span class="o">--</span><span class="n">discovery</span><span class="o">-</span><span class="n">token</span><span class="o">-</span><span class="n">ca</span><span class="o">-</span><span class="n">cert</span><span class="o">-</span><span class="n">hash</span> <span class="n">XXXXXX</span>
+</pre></div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

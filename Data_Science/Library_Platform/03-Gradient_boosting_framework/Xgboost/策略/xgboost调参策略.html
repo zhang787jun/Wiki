@@ -1,0 +1,463 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>xgboost 调参策略 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-03-Gradient_boosting_framework">03-Gradient_boosting_framework</a>&nbsp;»&nbsp;<a href="/Wiki/#-Xgboost">Xgboost</a>&nbsp;»&nbsp;<a href="/Wiki/#-策略">策略</a>&nbsp;»&nbsp;xgboost 调参策略</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">xgboost 调参策略</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-xgboost">1. Xgboost 参数说明</a><ul>
+<li><a href="#11">1.1. 基础设置</a><ul>
+<li><a href="#111">1.1.1. 基分类器</a></li>
+<li><a href="#112">1.1.2. 目标函数</a></li>
+<li><a href="#113">1.1.3. 模型评价</a></li>
+</ul>
+</li>
+<li><a href="#12">1.2. 训练过程参数</a></li>
+<li><a href="#13">1.3. 集成算法设置</a></li>
+<li><a href="#14">1.4. 弱评估器设置</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 调参实践指南</a><ul>
+<li><a href="#21-3">2.1. 一般性的调参路径3</a></li>
+<li><a href="#22">2.2. 可用的调参工具</a><ul>
+<li><a href="#221">2.2.1. 遍历</a></li>
+<li><a href="#222-cv">2.2.2. 自带CV</a></li>
+<li><a href="#223">2.2.3. 其他</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#3-qa">3. Q&amp;A</a><ul>
+<li><a href="#31">3.1. 为什么近似分割算法比精确贪心算法要快？</a></li>
+<li><a href="#32">3.2. 不平衡数据问题 怎么处理</a></li>
+<li><a href="#33">3.3. 如何控制模型复杂度</a></li>
+<li><a href="#34">3.4. 如何增加随机性</a></li>
+</ul>
+</li>
+<li><a href="#4">4. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1-xgboost">1. Xgboost 参数说明</h1>
+<p>XGBoost 本身的核心是基于梯度提升树实现的集成算法，整体来说可以有三个核心部分<sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup>：<br />
+1. 集成算法本身<br />
+2. 用于集成的 弱评估器<br />
+3. 应用中的其他过程</p>
+<p><img alt="" src="/attach/images/2019-10-16-11-54-02.png" /></p>
+<p><img alt="" src="/attach/images/2019-10-16-13-39-32.png" /></p>
+<h3 id="11">1.1. 基础设置</h3>
+<h4 id="111">1.1.1. 基分类器</h4>
+<ul>
+<li>
+<p><code>booster</code> [default= <code>gbtree</code> ]</p>
+</li>
+<li>
+<p>Which booster to use. Can be <code>gbtree</code>, <code>gblinear</code> or <code>dart</code>; <code>gbtree</code> and <code>dart</code> use tree based models while <code>gblinear</code> uses linear functions.</p>
+</li>
+</ul>
+<h4 id="112">1.1.2. 目标函数</h4>
+<ul>
+<li><code>objective</code> [default = <code>reg：squarederror</code>]<br />
+  选择目标函数形式。适用于以下问题</li>
+<li>回归 reg</li>
+<li>二分 binary</li>
+<li>多分类 multi</li>
+<li>排序 rank</li>
+<li>泊松回归 count</li>
+<li>Cox回归</li>
+</ul>
+<hr />
+<p><code>reg:squarederror</code>：损失平方回归。</p>
+<p><code>reg:squaredlogerror</code>：对数损失平方回归 $log(pred+1)−log(label+1)$。所有输入标签都必须大于-1。</p>
+<p><code>reg:logistic</code>：逻辑回归</p>
+<p><code>reg:gamma</code>：使用对数链接进行伽马回归。输出是伽马分布的平均值。例如，对于建模保险索赔严重性或对可能是伽马分布的任何结果，它可能很有用。</p>
+<p><code>reg:tweedie</code>：使用对数链接进行Tweedie回归。它可能有用，例如，用于建模保险的总损失，或用于可能是Tweedie-distributed的任何结果。</p>
+<p><code>binary:logistic</code>：二元分类的逻辑回归，输出概率</p>
+<p><code>binary:logitraw</code>：用于二进制分类的逻辑回归，逻辑转换之前的输出得分</p>
+<p><code>binary:hinge</code>：二进制分类的铰链损失。这使预测为0或1，而不是产生概率。</p>
+<p><code>count:poisson</code> –计数数据的泊松回归，泊松分布的输出平均值</p>
+<ul>
+<li>max_delta_step 在泊松回归中默认设置为0.7（用于维护优化）</li>
+</ul>
+<p><code>survival:cox</code>：针对正确的生存时间数据进行Cox回归（负值被视为正确的生存时间）。请注意，预测是按危险比等级返回的（即，比例危险函数中的HR = exp（marginal_prediction））。h(t) = h0(t) * HR</p>
+<p><code>multi:softmax</code>：设置XGBoost以使用softmax目标进行多类分类，还需要设置num_class（类数）</p>
+<p><code>multi:softprob</code>：与softmax相同，但输出向量，可以进一步重整为矩阵。结果包含属于每个类别的每个数据点的预测概率。ndata * nclassndata * nclass</p>
+<p><code>rank:pairwise</code>：使用LambdaMART进行成对排名，从而使成对损失(Pairwise Classification Loss)最小化， 构建树使得  <code>Max(Map(Rank(y), Rank(y_hat)))</code>. However, output is always <code>y_hat</code>.</p>
+<p><code>rank:ndcg</code>：使用LambdaMART进行列表式排名，使标准化折让累积收益（NDCG）最大化</p>
+<p><code>rank:map</code>：使用LambdaMART进行列表平均排名，使平均平均精度（MAP）最大化</p>
+<p><code>base_score</code> [默认值= 0.5]</p>
+<p>所有实例的初始预测得分，整体偏差<br />
+对于足够的迭代次数，更改此值不会有太大影响。</p>
+<h4 id="113">1.1.3. 模型评价</h4>
+<ul>
+<li><code>eval_metric</code> [根据目标函数确定默认值]</li>
+<li>验证数据的评估指标，将根据目标分配默认指标（回归均方根，分类误差，排名的平均平均精度）</li>
+<li>用户可以添加多个评估指标。Python用户：记住将指标作为参数对的列表而不是映射进行传递，以使后者eval_metric不会覆盖前一个</li>
+</ul>
+<p>下面列出了这些选择:<br />
+<code>rmse</code>:均方根误差<br />
+<code>rmsle</code>:均方根对数误差:<br />
+<code>mae</code>:平均绝对误差<br />
+<code>logloss</code>:负对数似然<br />
+<code>error</code>:二进制分类错误率。计算公式为$error=\frac{wrong cases}{all cases}$。对于预测，评估会将预测值大于0.5的实例视为肯定实例，而将其他实例视为否定实例。<br />
+<code>error@t</code>:可以通过提供't'的数值来指定不同于0.5的二进制分类阈值。<br />
+<code>merror</code>:多类分类错误率。计算公式为。#(wrong cases)/#(all cases)<br />
+<code>mlogloss</code>:多类logloss。<br />
+<code>auc</code>:曲线下面积<br />
+<code>aucpr</code>:PR曲线下的面积<br />
+<code>ndcg</code>:归一化累计折扣<br />
+<code>map</code>:平均平均精度<br />
+<code>ndcg@n</code>，<code>map@n</code>:'n'可以被指定为整数，以切断列表中的最高位置以进行评估。<br />
+<code>ndcg-</code>，<code>map-</code>，<code>ndcg@n-</code>，<code>map@n-</code>:在XGBoost，NDCG和MAP将评估清单的比分没有任何阳性样品为1加入-在评价指标XGBoost将评估这些得分为0，是在一定条件下一致。<br />
+<code>poisson-nloglik</code>:泊松回归的负对数似然<br />
+<code>gamma-nloglik</code>:伽马回归的对数似然率<br />
+<code>cox-nloglik</code>:Cox比例风险回归的负对数似然率<br />
+<code>gamma-deviance</code>:伽马回归的残余偏差<br />
+<code>tweedie-nloglik</code>:Tweedie回归的负对数似然（在tweedie_variance_power参数的指定值处）</p>
+<h3 id="12">1.2. 训练过程参数</h3>
+<ul>
+<li><code>seed</code> [default=0]</li>
+<li>
+<p>随机数种子</p>
+</li>
+<li>
+<p><code>silent</code> [default=0] [弃用]</p>
+</li>
+<li>
+<p>Deprecated.  Please use <code>verbosity</code> instead.</p>
+</li>
+<li>
+<p><code>verbosity</code> [default=1]</p>
+</li>
+<li>训练过程信息输出设置</li>
+<li>
+<p>Verbosity of printing messages.  Valid values are 0 (silent),<br />
+    1 (warning), 2 (info), 3 (debug).  Sometimes XGBoost tries to change</p>
+</li>
+<li>
+<p><code>nthread</code> [default to maximum number of threads available if not set] 别名 <code>n_jobs</code> </p>
+</li>
+<li>
+<p>Number of parallel threads used to run XGBoost</p>
+</li>
+<li>
+<p><code>disable_default_eval_metric</code> [default=0]</p>
+</li>
+<li>
+<p>Flag to disable default metric. Set to &gt;0 to disable.</p>
+</li>
+<li>
+<p><code>num_pbuffer</code> [set automatically by XGBoost, no need to be set by user]</p>
+</li>
+<li>
+<p>Size of prediction buffer, normally set to number of training instances. The buffers are used to save the prediction results of last boosting step.</p>
+</li>
+<li>
+<p><code>num_feature</code> [set automatically by XGBoost, no need to be set by user]</p>
+</li>
+<li>
+<p>Feature dimension used in boosting, set to maximum dimension of the feature</p>
+</li>
+<li>
+<p><code>tree_method</code> [default= <code>'auto'</code> ] </p>
+</li>
+<li>指定了构建树的算法，可以为下列的值(分布式，以及外存版本的算法只支持 <code>approx</code>,<code>hist</code>,<code>gpu_hist</code> 等近似算法)：</li>
+<li>
+<p><code>auto</code>： 使用启发式算法来选择一个更快的 tree_method：</p>
+<ul>
+<li>对于小的和中等的训练集，使用<code>exact greedy</code> 算法分裂节点</li>
+<li>对于非常大的训练集，使用<code>approx</code>近似算法分裂节点</li>
+<li>旧版本在单机上总是使用<code>exact greedy</code> 分裂节点</li>
+</ul>
+</li>
+<li>
+<p><code>exact</code>： 使用精确贪婪算法<strong>Basic Exact Greedy Algorithms</strong>分裂节点</p>
+</li>
+<li><code>approx</code>： 使用近似算法<strong>Approximate Algorithm for Split Finding</strong> 分裂节点</li>
+<li><code>hist</code>： 使用histogram 优化的近似算法分裂节点（比如使用了bin cacheing 优化， <code>max_bin</code> (default 256) could be tuned）</li>
+<li><code>gpu_exact</code> ： 基于GPU 的exact greedy 算法分裂节点</li>
+<li><code>gpu_hist</code>： 基于GPU 的histogram 算法分裂节点</li>
+</ul>
+<h3 id="13">1.3. 集成算法设置</h3>
+<ul>
+<li>
+<p><code>n_estimator</code>(sklean中叫n_estimator,xgb原生中的num_boosting_rounds): Number of gradient boosted trees(理解为梯度提升树的迭代生成每个版本的数量/次数). Equivalent to number of boosting rounds.<br />
+也是最大的迭代次数。</p>
+</li>
+<li>
+<p><code>learning_rate</code>(eta)[default=0.3]: <br />
+每一步迭代的步长，很重要。太大了运行准确率不高，太小了运行速度慢。我们一般使用比默认值小一点。<br />
+that the "shrinkage" parameter 0&lt;η≤1 controls the learning rate of the procedure. Empirically (Friedman 1999)</p>
+</li>
+<li>
+<p><code>subsample</code>[default=1]。<br />
+训练集采样比例。这个参数控制对于每棵树，<strong>每行随机采样的比例</strong>。减小这个参数的值，算法会更加保守，避免过拟合。但是，如果这个值设置得过小，它可能会导致欠拟合。典型值：0.5-1，0.5代表平均采样，防止过拟合. 范围: (0,1]，注意不可取0。</p>
+</li>
+</ul>
+<p>子采样的方法有两种：行子采样(row subsampling)与列子采样(column subsampling)。这里主要指的是行子采样(row subsampling)</p>
+<h3 id="14">1.4. 弱评估器设置</h3>
+<ul>
+<li>
+<p><code>gamma</code>(min_split_loss)[default=0]</p>
+<div class="hlcode"><pre><span class="k">if</span> <span class="n">loss</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">&lt;</span><span class="n">gamma</span><span class="o">:</span>
+    <span class="n">make_tree_break</span><span class="p">()</span>
+</pre></div>
+
+
+<p>如果分裂能够使loss函数减小的值大于gamma，则这个节点才分裂。gamma设置了这个减小的最低阈值。如果gamma设置为0，表示只要使得loss函数减少，就分裂</p>
+</li>
+<li>
+<p><code>colsample_bytree</code>[default=1]<br />
+用来控制每棵随机<strong>采样的列数</strong>的占比(每一列是一个特征)。 典型值：0.5-1范围: (0,1]</p>
+</li>
+<li>
+<p><code>colsample_bylevel</code>[default=1]<br />
+这个就相比于前一个更加细致了，它指的是每棵树每次节点分裂的时候列采样的比例</p>
+</li>
+<li>
+<p><code>max_depth</code>[default=6]<br />
+我们常用3-10之间的数字。这个值为树的最大深度。这个值是用来控制过拟合的。max_depth越大，模型学习的更加具体。设置为0代表没有限制，范围: [0,∞]</p>
+</li>
+<li>
+<p><code>max_delta_step</code>[default=0]<br />
+这个参数限制了每棵树权重改变的最大步长，如果这个参数的值为0,则意味着没有约束。如果他被赋予了某一个正值，则是这个算法更加保守。通常，这个参数我们不需要设置，但是当个类别的样本极不平衡的时候，这个参数对逻辑回归优化器是很有帮助的。</p>
+</li>
+<li>
+<p><code>lambda(reg_lambda)</code>[default=0]<br />
+权重的L2正则化项。(和Ridge  regression类似)。这个参数是用来控制XGBoost的正则化部分的。这个参数在减少过拟合上很有帮助。</p>
+</li>
+<li>
+<p><code>alpha(reg_alpha)</code>[default=0]<br />
+权重的L1正则化项。(和Lasso regression类似)。 可以应用在很高维度的情况下，使得算法的速度更快。</p>
+</li>
+<li>
+<p><code>scale_pos_weight</code>[default=1]<br />
+在各类别样本十分不平衡时，把这个参数设定为一个正值，可以使算法更快收敛。通常可以将其设置为负样本的数目与正样本数目的比值。</p>
+</li>
+<li>
+<p><code>min_child_weight</code> [default=1]<br />
+子树需要的最小海森权重矩阵</p>
+<ul>
+<li>
+<p>instance weight (hessian) 是不带正则项的损失函数的二阶导（Hessian Matrix，海森矩阵）<br />
+$$h_i=\nabla^2 L(y_i,y^{y-1}) $$</p>
+</li>
+<li>
+<p>sum of instance weight (hessian)<br />
+$$H_h=\sum{h_i} $$<br />
+<code>if H_h&lt;min_child_weight:
+    stop_tree_break</code><br />
+这个参数用来控制过拟合，如果数值太大可能会导致欠拟合。对于高度不平衡问题，叶节点将会有更小的size group， <code>min_child_weight</code> 应该设的更小。 </p>
+</li>
+<li>
+<p>对于<strong>回归问题</strong>，假设损失函数是均方误差函数，每个样本的二阶导数是一个常数，这个时候 min_child_weight就是这个叶子结点中样本的数目。如果这个值设置的太小，那么会出现单个样本成一个叶子结点的情况，这很容易过拟合。</p>
+</li>
+<li>对于分类问题，假设为二分类问题，损失函数为交叉熵，则每个样本的二阶导数可以写成几个因子相乘的形式，其中一项为sigmoid(y_hat)*(1-sigmoid(y_hat))。对分类问题，我们考虑叶子结点的纯度。假设某个叶子节点只包含一类，y = 1,那个这个节点有很大的可能是: 该节点包含的yhat非常正，也就是我们给这个节点打分非常正，这个时候sigmoid(y_hat)非常接近1，上面的式子接近0；反之，假设某个叶子节点只包含y=0，情况也是类似的。从分析中可知，如果某个叶子结点的二阶导之和越小，或者越接近0，这个节点就越纯，这种情况下容易过拟合。</li>
+</ul>
+</li>
+</ul>
+<p><sup id="fnref:2"><a class="footnote-ref" href="#fn:2" rel="footnote">2</a></sup></p>
+<h1 id="2">2. 调参实践指南</h1>
+<p>主要参考资料：<a href="https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-xgboost-with-codes-python/">Complete Guide to Parameter Tuning in XGBoost with codes in Python<br />
+</a></p>
+<h2 id="21-3">2.1. 一般性的调参路径<sup id="fnref:3"><a class="footnote-ref" href="#fn:3" rel="footnote">3</a></sup></h2>
+<ol>
+<li>选择相对较高的学习率<code>lr</code>。</li>
+<li>通常设定学习率为0.1。但是对于不同的问题，在0.05~0.3的范围内也有效。</li>
+<li>确定此学习率的下最佳决策树数量<code>tree_num</code>。</li>
+<li>XGBoost具有一个非常实用的功能--<code>cv</code>，该功能在每次增强迭代时执行交叉验证，从而返回所需的最佳树数。</li>
+<li>在确定lr、tree_num 后调整树特定的参数。</li>
+<li>max_depth, min_child_weight, gamma, subsample, colsample_bytree</li>
+<li>调整 xgboost的正则化参数（lambda，alpha），可以帮助降低模型复杂性并提高性能。</li>
+<li>降低学习率并确定最佳参数。</li>
+<li>...loop</li>
+</ol>
+<h2 id="22">2.2. 可用的调参工具</h2>
+<h3 id="221">2.2.1. 遍历</h3>
+<p>问如果数据量不大的话可否用parm_grid罗列所有可能的参数，使用<code>sklearn.GridSearchCV</code>来验证。将所有可能的组合都尝试一下？</p>
+<h3 id="222-cv">2.2.2. 自带CV</h3>
+<p>一般自己写CV ，<code>xgb.cv()</code> 内存消耗太大。</p>
+<p>As uses all the data training in its "black box" cross validation process, one's can have problems with huge data sets. </p>
+<div class="hlcode"><pre><span class="n">cv_results</span> <span class="o">=</span> <span class="n">xgboost</span><span class="o">.</span><span class="n">cv</span><span class="err">（</span>
+    <span class="n">params</span><span class="err">，</span>
+    <span class="n">dtrain</span><span class="err">，</span>
+    <span class="n">num_boost_round</span> <span class="o">=</span> <span class="n">num_boost_round</span><span class="err">，</span>
+    <span class="n">seed</span> <span class="o">=</span> <span class="mi">42</span><span class="err">，</span>
+    <span class="n">nfold</span> <span class="o">=</span> <span class="mi">5</span><span class="err">，</span>
+    <span class="n">metrics</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;mae&#39;</span><span class="p">}</span><span class="err">，</span>
+    <span class="n">early_stopping_rounds</span> <span class="o">=</span> <span class="mi">10</span> 
+<span class="err">）</span>
+<span class="n">cv_results</span>
+</pre></div>
+
+
+<h3 id="223">2.2.3. 其他</h3>
+<p>参考自动调参工具</p>
+<p>## 一般性的参数范围</p>
+<p><strong>树的参数</strong><br />
+<code>max_depth</code>=5 : [4-6] 可以作为好的起始值 <br />
+<code>min_child_weight</code> = 1 : 对于高度不平衡问题，可以设的更小<br />
+<code>gamma</code> = 0 : 像[0.1-0.2] 这样的小的数值也可以设置为起始值，通常改值在后期进行调整。</p>
+<p><code>subsample</code>=0.8：通常在[0.5-0.9] 之间设置起始值<br />
+<code>colsample_bytree</code> = 0.8 :通常在[0.5-0.9] 之间设置起始值</p>
+<p><code>scale_pos_weight</code> = 1: 通常可以将其设置为负样本的数目与正样本数目的比值。</p>
+<h1 id="3-qa">3. Q&amp;A</h1>
+<h2 id="31">3.1. 为什么近似分割算法比精确贪心算法要快？</h2>
+<p>首先我们得捋一下这两个寻找最佳分裂点的时候都有哪些公共的时间开销<br />
+1. 预排序。 每个特征都是按照排序好的顺序存储的，这一部分在存储的时候就已经完成了<br />
+2. 计算所有样本的一阶导G和二阶导L。这个过程只需要进行一次<br />
+3. 对样本的G和L累加求和，这个过程也只需要进行一次，为了后续做差加速<br />
+   - 精确贪心算法中是将所有样本G、L累加<br />
+   - 近似分割算法中是按桶累加<br />
+4. 算法中的两个for循环，<br />
+    1. 第一个循环是遍历所有特征（这一步两个算法相同）<br />
+    2. (<strong>关键差异点</strong>)不同的开销在于，两个算法中第二个for循环中。因为桶的数目远小于样本数，所以得以加速</p>
+<div class="hlcode"><pre><span class="c"># 精确贪心算法O(samples_counts)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">samples_counts</span><span class="p">):</span>
+    <span class="n">do</span><span class="o">...</span>
+<span class="c"># 近似贪心算法 O(bins_counts)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">bins_counts</span><span class="p">):</span>
+    <span class="n">do</span><span class="o">...</span>
+<span class="c"># bins_counts&lt;=samples_counts</span>
+</pre></div>
+
+
+<h2 id="32">3.2. 不平衡数据问题 怎么处理</h2>
+<p>XGBoost中的官方文档(https://xgboost.readthedocs.io/en/latest/parameter.html)大致这么说的：<br />
+对于一些case，比如：广告点击日志，数据集极不平衡。这会影响xgboost模型的训练，有两个方法来改进它。<br />
+1. 如果你关心的预测的ranking order（AUC)：<br />
+   1. 通过<code>scale_pos_weight</code>来平衡正负类的权重 ，只对目标函数为<code>binary:logistic</code> 有效<br />
+   2. 使用AUC进行评估</p>
+<ol>
+<li>如果你关心的是预测的正确率： </li>
+<li>这种情形下，不能再平衡（re-balance）数据集 </li>
+<li>将参数<code>max_delta_step</code>设置到一个有限的数（比如：1）可以获得效果提升.</li>
+</ol>
+<p>此外 有人<a href="https://stats.stackexchange.com/questions/243207/what-is-the-proper-usage-of-scale-pos-weight-in-xgboost-for-imbalanced-datasets">建议</a>:<br />
+All the documentation says that is should be:</p>
+<div class="hlcode"><pre><span class="n">scale_pos_weight</span> <span class="o">=</span> <span class="n">count</span><span class="p">(</span><span class="n">negative</span> <span class="n">examples</span><span class="p">)</span><span class="o">/</span><span class="n">count</span><span class="p">(</span><span class="n">Positive</span> <span class="n">examples</span><span class="p">)</span>
+</pre></div>
+
+
+<p>In practice, that works pretty well, but if your dataset is extremely unbalanced I'd recommend using something more conservative like:</p>
+<div class="hlcode"><pre><span class="n">scale_pos_weight</span> <span class="o">=</span> <span class="n">sqrt</span><span class="p">(</span><span class="n">count</span><span class="p">(</span><span class="n">negative</span> <span class="n">examples</span><span class="p">)</span><span class="o">/</span><span class="n">count</span><span class="p">(</span><span class="n">Positive</span> <span class="n">examples</span><span class="p">))</span> 
+</pre></div>
+
+
+<p>This is useful to limit the effect of a multiplication of positive examples by a very high weight.</p>
+<h2 id="33">3.3. 如何控制模型复杂度</h2>
+<p><code>max_depth</code><br />
+<code>gamma</code><br />
+<code>alpha</code><br />
+<code>lambda</code><br />
+<code>min_child_weight</code></p>
+<h2 id="34">3.4. 如何增加随机性</h2>
+<p><code>sample</code>: 行采样、列采样<br />
+<code>eta(learning rate)</code><br />
+<code>max_depth</code></p>
+<h1 id="4">4. 参考资料</h1>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>xgboost 参数 https://github.com/dmlc/xgboost/blob/master/doc/parameter.rst&#160;<a class="footnote-backref" href="#fnref:1" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:2">
+<p>xgboost 中文https://www.bookstack.cn/read/xgboost-doc-zh/docs-5.md&#160;<a class="footnote-backref" href="#fnref:2" rev="footnote" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn:3">
+<p><a href="https://www.analyticsvidhya.com/blog/2016/03/complete-guide-parameter-tuning-xgboost-with-codes-python/">Complete Guide to Parameter Tuning in XGBoost with codes in Python<br />
+</a>&#160;<a class="footnote-backref" href="#fnref:3" rev="footnote" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

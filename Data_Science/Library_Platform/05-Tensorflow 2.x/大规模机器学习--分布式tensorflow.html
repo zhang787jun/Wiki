@@ -1,0 +1,385 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Tensorflow2.x--分布式Tensorflow - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-05-Tensorflow 2.x">05-Tensorflow 2.x</a>&nbsp;»&nbsp;Tensorflow2.x--分布式Tensorflow</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Tensorflow2.x--分布式Tensorflow</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-tfdistributestrategy">1. 使用 tf.distribute.Strategy</a><ul>
+<li><a href="#11-overview">1.1. 概要Overview</a></li>
+<li><a href="#12">1.2. 分布式策略</a><ul>
+<li><a href="#121">1.2.1. 主要支持策略</a></li>
+<li><a href="#122-mirroredstrategy-">1.2.2. MirroredStrategy--单机多卡</a></li>
+<li><a href="#123-multiworkermirroredstrategy-all-reduce">1.2.3. MultiWorkerMirroredStrategy--多机多卡 all-reduce</a></li>
+<li><a href="#124-centralstoragestrategy">1.2.4. CentralStorageStrategy</a><ul>
+<li><a href="#1241-mirroredstrategy">1.2.4.1. 注意--与MirroredStrategy的区别</a></li>
+<li><a href="#1242-mirroredstrategy-centralstoragestrategy">1.2.4.2. 选择 MirroredStrategy/ CentralStorageStrategy?</a></li>
+</ul>
+</li>
+<li><a href="#125-parameterserverstrategy">1.2.5. ParameterServerStrategy</a></li>
+</ul>
+</li>
+<li><a href="#_1">使用</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1-tfdistributestrategy">1. 使用 tf.distribute.Strategy</h1>
+<h2 id="11-overview">1.1. 概要Overview</h2>
+<p><code>tf.distribute.Strategy</code> 是TensorFlow的一个用于进行 多GPU/多设备/多TPU 分布式训练的API。</p>
+<p>使用这个API，可以以最小的改动实现分布式训练。</p>
+<p><code>tf.distribute.Strategy</code> 设计的3个原则:</p>
+<ul>
+<li>易用 Easy to use and support multiple user segments, including researchers, ML engineers, etc.</li>
+<li>高效Provide good performance out of the box.</li>
+<li>策略切换容易 Easy switching between strategies.</li>
+</ul>
+<p><code>tf.distribute.Strategy</code> 配合Keras使用效果更好。</p>
+<p><code>tf.distribute.Strategy</code> 支持<a href="../tutorials/eager/tf_function.ipynb"><code>tf.function</code></a>.模式进行编程开放，同时适用于模型训练和推理。</p>
+<p>可以以很少的改动使用 <code>tf.distribute.Strategy</code></p>
+<h2 id="12">1.2. 分布式策略</h2>
+<p><code>tf.distribute.Strategy</code> 试图覆盖大部分的分布式训练的案例，这些案例的维度包括：</p>
+<ol>
+<li>覆盖异步/同步训练（<em>Synchronous vs asynchronous training</em>）</li>
+<li>覆盖大部分硬件平台</li>
+</ol>
+<p>异步/同步训练 是基于数据并行策略训练的方式</p>
+<ul>
+<li>In sync training, all workers train over different slices of input data in sync, and aggregating gradients at each step. </li>
+<li>In async training, all workers are independently training over the input data and updating variables asynchronously. Typically sync training is supported via all-reduce and async through parameter server architecture.</li>
+</ul>
+<h3 id="121">1.2.1. 主要支持策略</h3>
+<ol>
+<li>MirroredStrategy</li>
+<li>TPUStrategy</li>
+<li>MultiWorkerMirroredStrategy</li>
+<li>CentralStorageStrategy   </li>
+<li>ParameterServerStrategy</li>
+<li>OneDeviceStrategy</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th align="left">Training API</th>
+<th align="left">MirroredStrategy</th>
+<th align="left">TPUStrategy</th>
+<th align="left">MultiWorkerMirroredStrategy</th>
+<th align="left">CentralStorageStrategy</th>
+<th align="left">ParameterServerStrategy</th>
+<th align="left">OneDeviceStrategy</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left"><strong>Keras API</strong></td>
+<td align="left">Supported</td>
+<td align="left">Experimental support</td>
+<td align="left">Experimental support</td>
+<td align="left">Experimental support</td>
+<td align="left">Supported planned post 2.0</td>
+<td align="left">Supported</td>
+</tr>
+<tr>
+<td align="left"><strong>Custom training loop</strong></td>
+<td align="left">Experimental support</td>
+<td align="left">Experimental support</td>
+<td align="left">Support planned post 2.0</td>
+<td align="left">Support planned post 2.0</td>
+<td align="left">No support yet</td>
+<td align="left">Supported</td>
+</tr>
+<tr>
+<td align="left"><strong>Estimator API</strong></td>
+<td align="left">Limited Support</td>
+<td align="left">Not supported</td>
+<td align="left">Limited Support</td>
+<td align="left">Limited Support</td>
+<td align="left">Limited Support</td>
+<td align="left">Limited Support</td>
+</tr>
+</tbody>
+</table>
+<h3 id="122-mirroredstrategy-">1.2.2. MirroredStrategy--单机多卡</h3>
+<p><img alt="" src="https://pic4.zhimg.com/80/v2-7b05382a7a62e3664ebc83f1272ea9e3_720w.jpg" /></p>
+<p><img alt="" src="https://theaisummer.com/static/72f7634fe4cc7d260ba081bdb345e7bb/0012b/multi-gpu-system.png" /></p>
+<p><strong>特点</strong><br />
+in-graph replication with synchronous</p>
+<p>MirroredStrategy是一种支持<strong>多张GPU</strong>在<strong>同一个机器</strong>上的同步训练方法。在训练开始时，Mirrored会在每张卡上复制一份模型，</p>
+<p>每个显卡会收到tf.data.Dataset传来的数据，独立计算梯度，然后采用all-reduce的方法进行同步更新。多个显卡在通信时默认使用Nvidia NCCL进行。</p>
+<p>我们可以深入MirroredStrategy的实现了解一下。基本上所有的distributed strategy都是通过某些collective ops和cross device ops进行数据通讯。MirroredStrategy也是如此，它是这样选择cross device ops的：</p>
+<div class="hlcode"><pre><span class="n">strategy</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">distribute</span><span class="o">.</span><span class="n">MirroredStrategy</span><span class="p">()</span>
+
+<span class="k">with</span> <span class="n">strategy</span><span class="o">.</span><span class="n">scope</span><span class="p">():</span>
+   <span class="n">model</span><span class="o">.</span><span class="n">fit</span> <span class="p">()</span>
+   <span class="o">....</span>
+</pre></div>
+
+
+<h3 id="123-multiworkermirroredstrategy-all-reduce">1.2.3. MultiWorkerMirroredStrategy--多机多卡 all-reduce</h3>
+<p><img alt="" src="https://pic4.zhimg.com/80/v2-7b05382a7a62e3664ebc83f1272ea9e3_720w.jpg" /></p>
+<p><img alt="" src="https://picture.iczhiku.com/weixin/weixin16080120396692.png" /></p>
+<p><code>tf.distribute.experimental.MultiWorkerMirroredStrategy</code>与MirroredStrategy非常类似，都在每一个device上存储一份模型的备份，进行同步的分布式训练。</p>
+<p>该策略采用CollectiveOps作为多个worker之间通讯的操作。所谓的collective op是Tensorflow自己实现的根据当前硬件环境，网络结构，和Tensor大小自动采用最佳算法进行all-reduce的计算操作。一个collective op的实现逻辑十分简单</p>
+<div class="hlcode"><pre><span class="k">if</span> <span class="p">(</span><span class="n">CanProceedWithCompute</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">col_exec</span><span class="p">,</span> <span class="n">done</span><span class="p">))</span> <span class="p">{</span>
+<span class="n">col_exec</span><span class="o">-&gt;</span><span class="n">ExecuteAsync</span><span class="p">(</span>
+   <span class="n">c</span><span class="p">,</span> <span class="n">col_params_</span><span class="p">,</span> <span class="n">GetCollectiveKey</span><span class="p">(</span><span class="n">c</span><span class="p">),</span> <span class="n">actual_done</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>c是当前op的计算状态，col_exec是Tensorflow根据系统情况选择的collective executor，所有的all reduce，boardcast和receive操作都有collective executor去执行。</p>
+<p>该策略目前也实现了很多优化，比如将很多个小tensor的all reduce操作变成几个大tensor的all reduce操作，以及在开发当中的采用最新NCCL 2.0进行通讯的操作，具体可以参见Issue 24505。可以看出Tensorflow分布式训练在被吐槽很多次后，感受到了来自Pytorch，Horovod的压力，在努力的提升自己。</p>
+<p>最后，关于MultiWorkerMirroredStrategy的配置，有两点需要注意。</p>
+<p>一点是collective ops的策略选择，目前支持CollectiveCommunication.RING，采用与Horovod类似的ring-based通讯策略。另一个是CollectiveCommunication.NCCL，采用Nvidia NCCL进行通讯，在启动策略时可以传入参数指定：</p>
+<div class="hlcode"><pre><span class="n">multiworker_strategy</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">distribute</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">MultiWorkerMirroredStrategy</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">distribute</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">CollectiveCommunication</span><span class="o">.</span><span class="n">NCCL</span><span class="p">)</span>
+</pre></div>
+
+
+<p>CollectiveCommunication.AUTO defers the choice to the runtime.</p>
+<p>另一个需要注意的是关于TF_CONFIG的设置，该策略并不需要指定Parameter server，只需要一系列worker即可，其配置如下：</p>
+<div class="hlcode"><pre>   <span class="n">TF_CONFIG</span> <span class="o">=</span> <span class="p">{</span>
+   <span class="s">&#39;cluster&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&#39;worker&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&#39;worker1:port1&#39;</span><span class="p">,</span> <span class="s">&#39;worker2:port2&#39;</span><span class="p">,</span> <span class="s">&#39;worker3:port3&#39;</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+   <span class="p">},</span>
+   <span class="s">&#39;task&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;worker&#39;</span><span class="p">,</span> <span class="s">&#39;index&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+   <span class="p">})</span>
+</pre></div>
+
+
+<p>目前该API尚处于实验阶段。如果在代码中通过MultiWorkerMirroredStrategy指定使用All-Reduce架构，则分布式提交时，TF_CONFIG环境变量中的cluster就不需要ps类型的节点了，例如：</p>
+<div class="hlcode"><pre><span class="n">TF_CONFIG</span><span class="o">=</span><span class="s">&#39;{</span>
+   <span class="s">&quot;cluster&quot;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&quot;worker&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;host1:2222&quot;</span><span class="p">,</span> <span class="s">&quot;host2:2222&quot;</span><span class="p">,</span> <span class="s">&quot;host3:2222&quot;</span><span class="p">]</span>
+   <span class="p">},</span>
+   <span class="s">&quot;task&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;work&quot;</span><span class="p">,</span> <span class="s">&quot;index&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+<span class="p">}</span><span class="s">&#39;</span>
+
+
+
+<span class="n">strategy</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">distribute</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">MultiWorkerMirroredStrategy</span><span class="p">()</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">RunConfig</span><span class="p">(</span>
+   <span class="n">train_distribute</span><span class="o">=</span><span class="n">strategy</span><span class="p">,</span> <span class="n">eval_distribute</span><span class="o">=</span><span class="n">strategy</span><span class="p">)</span>
+<span class="n">regressor</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">LinearRegressor</span><span class="p">(</span>
+   <span class="n">feature_columns</span><span class="o">=</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">feature_column</span><span class="o">.</span><span class="n">numeric_column</span><span class="p">(</span><span class="s">&#39;feats&#39;</span><span class="p">)],</span>
+   <span class="n">optimizer</span><span class="o">=</span><span class="s">&#39;SGD&#39;</span><span class="p">,</span>
+   <span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+</pre></div>
+
+
+<p>tf.keras例子</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+<span class="kn">import</span> <span class="nn">tensorflow_datasets</span> <span class="kn">as</span> <span class="nn">tfds</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="n">num_epochs</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">batch_size_per_replica</span> <span class="o">=</span> <span class="mi">64</span>
+<span class="n">learning_rate</span> <span class="o">=</span> <span class="mf">0.001</span>
+
+<span class="n">num_workers</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&#39;TF_CONFIG&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span>
+   <span class="s">&#39;cluster&#39;</span><span class="p">:</span> <span class="p">{</span>
+      <span class="s">&#39;worker&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;localhost:20000&quot;</span><span class="p">,</span> <span class="s">&quot;localhost:20001&quot;</span><span class="p">]</span>
+   <span class="p">},</span>
+   <span class="s">&#39;task&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s">&#39;type&#39;</span><span class="p">:</span> <span class="s">&#39;worker&#39;</span><span class="p">,</span> <span class="s">&#39;index&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+<span class="p">})</span>
+<span class="n">strategy</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">distribute</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">MultiWorkerMirroredStrategy</span><span class="p">()</span>
+<span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size_per_replica</span> <span class="o">*</span> <span class="n">num_workers</span>
+
+<span class="k">def</span> <span class="nf">resize</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">label</span><span class="p">):</span>
+   <span class="n">image</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">image</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">[</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">])</span> <span class="o">/</span> <span class="mf">255.0</span>
+   <span class="k">return</span> <span class="n">image</span><span class="p">,</span> <span class="n">label</span>
+
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">tfds</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s">&quot;cats_vs_dogs&quot;</span><span class="p">,</span> <span class="n">split</span><span class="o">=</span><span class="n">tfds</span><span class="o">.</span><span class="n">Split</span><span class="o">.</span><span class="n">TRAIN</span><span class="p">,</span> <span class="n">as_supervised</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">resize</span><span class="p">)</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="mi">1024</span><span class="p">)</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="n">batch_size</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">strategy</span><span class="o">.</span><span class="n">scope</span><span class="p">():</span>
+   <span class="n">model</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">applications</span><span class="o">.</span><span class="n">MobileNetV2</span><span class="p">()</span>
+   <span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+      <span class="n">optimizer</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">optimizers</span><span class="o">.</span><span class="n">Adam</span><span class="p">(</span><span class="n">learning_rate</span><span class="o">=</span><span class="n">learning_rate</span><span class="p">),</span>
+      <span class="n">loss</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">losses</span><span class="o">.</span><span class="n">sparse_categorical_crossentropy</span><span class="p">,</span>
+      <span class="n">metrics</span><span class="o">=</span><span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">metrics</span><span class="o">.</span><span class="n">sparse_categorical_accuracy</span><span class="p">]</span>
+   <span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="n">num_epochs</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="124-centralstoragestrategy">1.2.4. CentralStorageStrategy</h3>
+<p><code>tf.distribute.experimental.CentralStorageStrategy</code>  <br />
+也执行同步训练，但是变量不会被镜像，而是放在CPU上。各操作(operation)在本地GPU之间复制进行。如果只有一个GPU，变量和操作都会放在GPU上。</p>
+<p><img alt="" src="https://tse2-mm.cn.bing.net/th/id/OIP.ymuwRWOecXOsUP1g25ewgAHaFF?pid=ImgDet&amp;rs=1" /></p>
+<p><img alt="" src="https://pic4.zhimg.com/80/v2-ed1e40774fe67adb535321df99dc991f_1440w.jpg" /><br />
+单机多卡是指单台服务器有多块GPU设备。假设一台机器上有4块GPU，单机多GPU的训练过程如下：</p>
+<ol>
+<li>在单机单GPU的训练中，数据是一个batch一个batch的训练。 在单机多GPU中，数据一次处理4个batch(假设是4个GPU训练）， 每个GPU处理一个batch的数据计算。</li>
+<li>变量，或者说参数，保存在CPU上。数据由CPU分发给4个GPU，在GPU上完成计算，得到每个批次要更新的梯度</li>
+<li>在CPU上收集完4个GPU上要更新的梯度，计算一下平均梯度，然后更新。<br />
+循环进行上面步骤</li>
+</ol>
+<blockquote>
+<p><strong>注意</strong>: 该策略是 <strong>实验性的</strong> ，因为我们正在对它进行改进，使他能在更多场景下工作. 敬请期待此API的变化</p>
+</blockquote>
+<p>synchronous 同步训练.<br />
+变量不进行复制和分发，</p>
+<div class="hlcode"><pre><span class="c"># Create a CentralStorageStrategy by:</span>
+
+<span class="n">central_storage_strategy</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">distribute</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">CentralStorageStrategy</span><span class="p">()</span>
+</pre></div>
+
+
+<p>这会创建一个 CentralStorageStrategy 实例使用所有可见的CPU和GPU。在更新应用到变量之前，不同副本上变量的更新将会汇总。</p>
+<h4 id="1241-mirroredstrategy">1.2.4.1. 注意--与MirroredStrategy的区别</h4>
+<p>If you use 4 GPUs, MirroredStrategy <code>will create 4 variables instead of "my_var" variable, one on each GPU</code>. However each variable will have the same value, because they are always updated in the same way. So the variable updates happen in sync on all the GPUs.</p>
+<p>In case of the CentralStorageStrategy, only one variable is created for "my_var", in the host (CPU) memory. The updates only happen in one place.</p>
+<h4 id="1242-mirroredstrategy-centralstoragestrategy">1.2.4.2. 选择 MirroredStrategy/ CentralStorageStrategy?</h4>
+<p>依据：<br />
+1. 节点的物理拓扑结构<br />
+2. CPU-GPU 通信速度与GPU-GPU 通信速度比较<br />
+   1. 若 GPU-GPU 比 CPU-GPU 快 MirroredStrategy好<br />
+   2. 一般情况下CPU和GPU通信代价大，不建议使用CentralStorageStrategy</p>
+<p>Which one is better probably depends on the computer's topology and how fast CPU-GPU communication is compared with GPU-GPU. <br />
+If the GPUs can communicate fast with each other, MirroredStrategy may be more efficient. But I'd benchmark it to be sure.</p>
+<h3 id="125-parameterserverstrategy">1.2.5. ParameterServerStrategy</h3>
+<p><strong>Note</strong>：ParameterServerStrategy是Tensorflow最初的分布式训练方法。</p>
+<p><img alt="" src="https://pic4.zhimg.com/80/v2-1416837956874bb92c719aca09634a17_720w.jpg" /></p>
+<p>ParameterServerStrategy 由若干个parameter servers和若干个worker servers构成，parameter servers用于存储参数，worker servers用于计算。</p>
+<div class="hlcode"><pre><span class="n">ps_strategy</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">distribute</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">ParameterServerStrategy</span><span class="p">()</span>
+</pre></div>
+
+
+<p>ParameterServerStrategy 在训练过程中worker servers会和不同的parameter servers沟通获得参数，然后计算，向parameter servers传递参数的梯度。配置一个这样的训练环境非常简单，只需要在程序运行时设置好环境变量TF_CONFIG，需要注意的是需要给分布式集群里每一个机子不同的task。</p>
+<div class="hlcode"><pre><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s">&quot;TF_CONFIG&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">dumps</span><span class="p">({</span>
+  <span class="s">&quot;cluster&quot;</span><span class="p">:</span> <span class="p">{</span>
+    <span class="s">&quot;worker&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;host1:port&quot;</span><span class="p">,</span> <span class="s">&quot;host2:port&quot;</span><span class="p">,</span> <span class="s">&quot;host3:port&quot;</span><span class="p">],</span>
+    <span class="s">&quot;ps&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s">&quot;host4:port&quot;</span><span class="p">,</span> <span class="s">&quot;host5:port&quot;</span><span class="p">]</span>
+  <span class="p">},</span>
+  <span class="s">&quot;task&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s">&quot;type&quot;</span><span class="p">:</span> <span class="s">&quot;worker&quot;</span><span class="p">,</span> <span class="s">&quot;index&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">}</span>
+<span class="p">})</span>
+</pre></div>
+
+
+<p>同时，ParameterServerStrategy还有比较神奇的功能，它可以通过传入num_gpus_per_worker在一个worker上进行多GPU的同步计算，然后不同worker之间进行异步计算。但是由于单一worker上多GPU并没有利用NCCL进行通讯，而是直接将结果发送到CPU，所以效率非常低下。</p>
+<div class="hlcode"><pre><span class="n">strategy</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">distribute</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">ParameterServerStrategy</span><span class="p">()</span>
+<span class="n">run_config</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">RunConfig</span><span class="p">(</span>
+    <span class="n">experimental_distribute</span><span class="o">.</span><span class="n">train_distribute</span><span class="o">=</span><span class="n">strategy</span><span class="p">)</span>
+<span class="n">estimator</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">Estimator</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">run_config</span><span class="p">)</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">estimator</span><span class="o">.</span><span class="n">train_and_evaluate</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span><span class="o">...</span><span class="p">)</span>
+ 
+</pre></div>
+
+
+<h2 id="_1">使用</h2>
+<div class="hlcode"><pre><span class="n">strategy</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">distribute</span><span class="o">.</span><span class="n">MirroredStrategy</span><span class="p">()</span>
+
+<span class="k">with</span> <span class="n">strategy</span><span class="o">.</span><span class="n">scope</span><span class="p">():</span>
+   <span class="c"># 1. build model</span>
+   <span class="n">model</span><span class="o">=</span><span class="n">get_model</span><span class="p">()</span>
+
+   <span class="c"># 2. compile modle</span>
+
+   <span class="n">model</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+   <span class="c"># 3. fit model </span>
+   <span class="n">model</span><span class="o">.</span><span class="n">fit</span> <span class="p">()</span>
+   <span class="o">....</span>
+</pre></div>
+
+
+<h1 id="2">2. 参考资料</h1>
+<ol>
+<li><a href="https://picture.iczhiku.com/weixin/message1608012039669.html">机器之心：TensorFlow 2.4来了：上线对分布式训练和混合精度的新功能支持<br />
+</a></li>
+</ol>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>
