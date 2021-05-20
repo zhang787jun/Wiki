@@ -1,5 +1,5 @@
 ---
-title: "[应用]基于openssl的CA签发全流程"
+title: "[应用]基于OpenSSL的CA签发全流程"
 layout: page
 date: 2099-06-02 00:00
 ---

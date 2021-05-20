@@ -16,6 +16,7 @@ Keras的applications模块中就提供了带有预训练权重的深度学习模
 keras应用模块applications，以MobileNet为例说明：
 
 #-----------------------------------构建模型------------------------------------
+```python
 from keras.applications.mobilenet import MobileNet
 from keras.layers import Input, Reshape, AvgPool2D,\
         Dropout, Conv2D, Softmax, BatchNormalization, Activation
@@ -67,3 +68,4 @@ model.compile(optimizer=sgd, loss="categorical_crossentropy")
 ## 训练
 model.fit(...)
 获取各层名称的方法：
+```

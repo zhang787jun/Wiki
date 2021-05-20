@@ -1,5 +1,5 @@
 ---
-title: "Keras Layer 常见网络层"
+title: "Keras Layer--常见网络层"
 layout: page
 date: 2099-06-02 00:00
 ---
@@ -92,5 +92,27 @@ class Linear(keras.layers.Layer):
 
     def call(self, inputs):
         return tf.matmul(inputs, self.w) + self.b
+
+
+
+
+class Linear(keras.layers.Layer):
+    def __init__(self, units=32, input_dim=32):
+        super(Linear, self).__init__()
+        w_init = tf.random_normal_initializer()
+        # 注意涉及权重层需要在此处声明 
+        self.w = tf.Variable(
+            initial_value=w_init(shape=(input_dim, units), dtype="float32"),
+            trainable=True,
+        )
+        #
+        b_init = tf.zeros_initializer()
+        self.b = tf.Variable(
+            initial_value=b_init(shape=(units,), dtype="float32"), trainable=True
+        )
+
+    def call(self, inputs):
+        return tf.matmul(inputs, self.w) + self.b
+
 
 ```

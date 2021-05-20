@@ -303,4 +303,6 @@ Found more than one metagraph event per run. Overwriting the metagraph with the 
 summary_writer1 = tf.summary.FileWriter('./log/train', sess.graph)
 summary_writer2 = tf.summary.FileWriter('./log/test')
 ```
+# 参考资料
 
+https://tensorflow.google.cn/tensorboard/get_started?hl=zh-cn

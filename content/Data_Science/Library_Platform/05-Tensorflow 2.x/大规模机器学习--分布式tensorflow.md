@@ -10,7 +10,8 @@ tag: Tensorflow,框架,AI,
 # 1. 使用 tf.distribute.Strategy
 ## 1.1. 概要Overview
 
-`tf.distribute.Strategy`是TensorFlow的一个用于进行多GPU/多设备/多TPU 分布式训练的API。  
+`tf.distribute.Strategy` 是TensorFlow的一个用于进行 多GPU/多设备/多TPU 分布式训练的API。
+
 使用这个API，可以以最小的改动实现分布式训练。
 
 
@@ -61,9 +62,9 @@ tag: Tensorflow,框架,AI,
 
 
 ![](https://theaisummer.com/static/72f7634fe4cc7d260ba081bdb345e7bb/0012b/multi-gpu-system.png)
-特点
 
 
+**特点**
 in-graph replication with synchronous
 
 MirroredStrategy是一种支持**多张GPU**在**同一个机器**上的同步训练方法。在训练开始时，Mirrored会在每张卡上复制一份模型，
@@ -72,7 +73,15 @@ MirroredStrategy是一种支持**多张GPU**在**同一个机器**上的同步�
 
 我们可以深入MirroredStrategy的实现了解一下。基本上所有的distributed strategy都是通过某些collective ops和cross device ops进行数据通讯。MirroredStrategy也是如此，它是这样选择cross device ops的：
 
+```python
 
+strategy = tf.distribute.MirroredStrategy()
+
+with strategy.scope():
+   model.fit ()
+   ....
+
+```
 
 
 ### 1.2.3. MultiWorkerMirroredStrategy--多机多卡 all-reduce
@@ -271,7 +280,27 @@ tf.estimator.train_and_evaluate(estimator,...)
 ```
 
 
+## 使用
 
+
+```python
+strategy = tf.distribute.MirroredStrategy()
+
+with strategy.scope():
+   # 1. build model
+   model=get_model()
+
+   # 2. compile modle
+
+   model.compile(...)
+
+   # 3. fit model 
+   model.fit ()
+   ....
+
+
+
+```
 
 # 2. 参考资料
 

@@ -49,47 +49,51 @@
 <li><a href="#421-raw-decode">4.2.1. Raw decode 全局最优值求解</a></li>
 <li><a href="#422-best-path-decoding-greedy-decode">4.2.2. Best path decoding (Greedy decode 贪心搜索)</a></li>
 <li><a href="#423-beam-search-decoding">4.2.3. Beam search decoding</a><ul>
-<li><a href="#_1">基础版本</a></li>
-<li><a href="#1-beam-search-with-character-lm">改进版本1-  Beam search with character-LM</a></li>
+<li><a href="#4231">4.2.3.1. 基础版本</a></li>
+<li><a href="#4232-1-beam-search-with-character-lm">4.2.3.2. 改进版本1-  Beam search with character-LM</a></li>
 </ul>
 </li>
-<li><a href="#425-token-passing">4.2.5. Token passing</a></li>
-<li><a href="#426-prefix-beam-decode">4.2.6. prefix beam decode</a></li>
+<li><a href="#424-token-passing">4.2.4. Token passing</a></li>
+<li><a href="#425-prefix-beam-decode">4.2.5. prefix beam decode</a></li>
 </ul>
 </li>
 </ul>
 </li>
 <li><a href="#5">5. 实践</a><ul>
-<li><a href="#51-tensorflow">5.1. Tensorflow</a></li>
-<li><a href="#52-keres">5.2. Keres</a></li>
-<li><a href="#53-pytourch">5.3. Pytourch</a></li>
+<li><a href="#51-tensorflow">5.1. Tensorflow</a><ul>
+<li><a href="#512-sparsetensor">5.1.2. 生成 SparseTensor</a></li>
+<li><a href="#513-sparsetensor-densetensor">5.1.3. SparseTensor 转 DenseTensor</a></li>
+<li><a href="#514-ctc_loss">5.1.4. ctc_loss 函数介绍</a></li>
 </ul>
 </li>
-<li><a href="#ctc-loss">%% CTC loss</a></li>
+<li><a href="#52-keras">5.2. Keras</a></li>
+<li><a href="#53-pytorch">5.3. Pytorch</a></li>
+</ul>
+</li>
 <li><a href="#6">6. 参考资料</a></li>
 </ul>
 </div>
 <h1 id="1-ctc">1. CTC 是什么</h1>
 <p>CTC 的全称是<code>Connectionist Temporal Classification</code>。</p>
 <h1 id="2">2. 使用场景?</h1>
-<p>这个方法主要是解决神经网络label 和output <strong>不对齐的问题</strong>（Alignment problem）。</p>
+<p>这个方法主要是解决神经网络 label 和output <strong>不对齐的问题</strong>（Alignment problem）。</p>
 <h1 id="3">3. 原理</h1>
 <p>CTC是借鉴了隐马尔科夫模型(Hidden Markov Nodel)的Forward-Backward算法思路，是利用动态规划的思路计算CTC-Loss及其导数的。</p>
 <h2 id="31-softmax">3.1. Softmax 之后</h2>
 <h1 id="4">4. 关键</h1>
 <h2 id="41-ctc-loss">4.1. CTC Loss</h2>
 <h3 id="411">4.1.1. 基本步骤</h3>
-<p>训练神经网络需要计算<code>loss function</code> ， 与其他常见的<code>loss function</code>不同，计算<strong>CTC loss</strong>需要2步：<br />
+<p>训练神经网络需要计算<code>loss function</code>，与其他常见的<code>loss function</code>不同，计算<strong>CTC loss</strong>需要2步：<br />
 1. 计算所有可能的序列组合的概率和</p>
 <blockquote>
-<p>We first need to sum over probabilities of all possible alignments of the text present in the image.<br />
-2. 取负对数<br />
-Then take the negative logarithm of this to calculate the loss.</p>
+<p>We first need to sum over probabilities of all possible alignments of the text present in the image.</p>
 </blockquote>
-<div class="hlcode"><pre>
-</pre></div>
-
-
+<ol>
+<li>取负对数<blockquote>
+<p>Then take the negative logarithm of this to calculate the loss.</p>
+</blockquote>
+</li>
+</ol>
 <h2 id="42-ctc-decoder">4.2. CTC decoder</h2>
 <p>在推理阶段，需要 <code>CTC decoder</code>从神经网络的输出获得文本。<br />
 训练和的 Nw 可以用来预测新的样本输入对应的输出字符串，这涉及到解码。<br />
@@ -123,7 +127,7 @@ $$3^3=27$$</p>
 <p><strong>缺点</strong><br />
 这个方法最大的缺点是忽略了一个输出可能对应多个对齐(alignments)方式。虽然单个路径可能分数很高，但是这样的方法不能保证一定会找到最大概率的sequence。</p>
 <h3 id="423-beam-search-decoding">4.2.3. Beam search decoding</h3>
-<h4 id="_1">基础版本</h4>
+<h4 id="4231">4.2.3.1. 基础版本</h4>
 <p><strong>基本步骤</strong></p>
 <p>1)(2). Then, the algorithm iterates over all time-steps of the NN output matrix (3–15). At each time-step, only the best scoring beams from the previous time-step are kept (4). The beam width (BW) specifies the number of beams to keep. For each of these beams, the score at the current time-step is calculated (8). Further, each beam is extended by all possible characters from the alphabet (10) and again, a score is calculated (11). After the last time-step, the best beam is returned as a result (16).</p>
 <ol>
@@ -138,14 +142,16 @@ the list of beams is initialized with an empty beam (line 1) and a corresponding
 </li>
 </ol>
 <p>Beam Search是寻找全局最优值和Greedy Search在查找时间和模型精度的一个折中。一个简单的beam search在每个时间片计算所有可能假设的概率，并从中选出最高的几个作为一组。然后再从这组假设的基础上产生概率最高的几个作为一组假设，依次进行，直到达到最后一个时间片。</p>
-<h4 id="1-beam-search-with-character-lm">改进版本1-  Beam search with character-LM</h4>
+<h4 id="4232-1-beam-search-with-character-lm">4.2.3.2. 改进版本1-  Beam search with character-LM</h4>
 <p>时间复杂度 <code>O(T·BW·C·log(BW·C))</code></p>
-<h3 id="425-token-passing">4.2.5. Token passing</h3>
+<h3 id="424-token-passing">4.2.4. Token passing</h3>
 <p>Token passing: “A random number”. This algorithm uses a dictionary and word-LM. It searches for the most probable sequence of dictionary words in the NN output. But it can’t handle arbitrary character sequences (numbers, punctuation marks) like “: 1234.”.</p>
-<h3 id="426-prefix-beam-decode">4.2.6. prefix beam decode</h3>
+<h3 id="425-prefix-beam-decode">4.2.5. prefix beam decode</h3>
 <p>Top-path is (1, 2), after many-to-one map, the path is (1, 2) which is same from top-path in raw decode, and the score is 0.12 which is lower than score in raw decode. So, obviously, prefix beam decode is better than greedy decode and beam decode. And the reason why score is lower than score in raw decode is that I set the beamSize be 2, if beamSize=3, the score will 0.2178, which is same with the score in raw decode.</p>
-<p><sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup><sup id="fnref:2"><a class="footnote-ref" href="#fn:2" rel="footnote">2</a></sup></p>
+<p><sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup><sup id="fnref:2"><a class="footnote-ref" href="#fn:2" rel="footnote">3</a></sup></p>
 <h1 id="5">5. 实践</h1>
+<p>TF和keras 都提供了CTC的解决方案<br />
+最终我是用keras.backend.ctc_batch_cost 做的。但是也把tf.nn.ctc_loss 的解读放前面。</p>
 <h2 id="51-tensorflow">5.1. Tensorflow</h2>
 <div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ctc_loss</span><span class="p">(</span>
     <span class="n">labels</span><span class="p">,</span>
@@ -156,16 +162,37 @@ the list of beams is initialized with an empty beam (line 1) and a corresponding
     <span class="n">ignore_longer_outputs_than_inputs</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
     <span class="n">time_major</span><span class="o">=</span><span class="bp">True</span>
 <span class="p">)</span>
+
+
+<span class="c"># labels：int32 类型的稀疏向量</span>
+<span class="c"># inputs：3维的float向量，如果time_major为默认的，那么其形状为[max_time, batch_size, num_classes]，把LSTM输出的第0维和第1维换一下即可。另外，如同TensorFlow源码解读之greedy search及beam search中所讲的那样，输入值是经过logit处理的变量。</span>
+<span class="c"># sequence_length：是一个int32列表，维度为 batch_size，里面每个值的大小为系列的长度。</span>
 </pre></div>
 
 
-<p>labels：int32 类型的稀疏向量<br />
-inputs：3维的float向量，如果time_major为默认的，那么其形状为[max_time, batch_size, num_classes]，把LSTM输出的第0维和第1维换一下即可。另外，如同TensorFlow源码解读之greedy search及beam search中所讲的那样，输入值是经过logit处理的变量。<br />
-sequence_length：是一个int32列表，维度为 batch_size，里面每个值的大小为系列的长度。</p>
-<p>一、SparseTensor 类介绍<br />
-稀疏矩阵： 当密集矩阵中大部分的数都是 0 的时候，就可以用一种更好的存储方式（只将矩阵中不为 0 的）<br />
-class tf.SparseTensor(indices, values, dense_shape)<br />
-输入参数：</p>
+<div class="hlcode"><pre><span class="sb">``</span><span class="err">`</span><span class="n">python</span>
+<span class="c">#%% CTC loss</span>
+
+<span class="k">def</span> <span class="nf">ctc_loss</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
+
+    <span class="n">y_true</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">time_step_len</span><span class="p">))</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">time_step_len</span><span class="p">,</span> <span class="n">NUM_CHARACTERS</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="p">)</span>
+    <span class="c">#</span>
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">ctc_batch_cost</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">90</span><span class="p">],</span> <span class="p">[</span><span class="mi">150</span><span class="p">]]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">150</span><span class="p">],</span> <span class="p">[</span><span class="mi">20</span><span class="p">]]))</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cp">###  5.1.1. SparseTensor 类介绍</span>
+<span class="err">`稀疏矩阵`：</span> <span class="err">当密集矩阵中大部分的数都是</span> <span class="mi">0</span> <span class="err">的时候，就可以用一种更好的存储方式（只将矩阵中不为</span> <span class="mi">0</span> <span class="err">的）</span>
+<span class="err">```</span><span class="n">python</span> 
+<span class="n">class</span> <span class="n">tf</span><span class="p">.</span><span class="n">SparseTensor</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">dense_shape</span><span class="p">)</span>
+</pre></div>
+
+
+<p>输入参数：</p>
 <p>indices： 指定 Sparse Tensor 中非 0 值的索引，是一个 2D 的 int64 张量，形状为[N, ndims]，其中 N 为非 0 值的维数，ndims 为 dense_shape 的维数<br />
 values： 指定 Sparse Tensor 索引处的值，是 一个1D 张量，维数为[N]<br />
 dense_shape： 指定 Sparse Tensor 的形状，是一个 1D 的 int64 张量，维数为[ndims]，代表原来密集矩阵的形状<br />
@@ -178,51 +205,32 @@ dense_shape<br />
 喂数据(tf.sparse_placeholder)：</p>
 <p>sp = tf.sparse_placeholder(tf.int64)<br />
 sess.run(xxx, feed_dict={sp: (indices, values, dense_shape)})<br />
-代码示例<br />
-import tensorflow as tf</p>
-<p>a = tf.SparseTensor(indices=[[0, 0], [1, 2]], values=[1, 2], dense_shape=[3, 4])<br />
-[[1, 0, 0, 0]<br />
- [0, 0, 2, 0]<br />
- [0, 0, 0, 0]]</p>
-<p>with tf.Session() as sess:<br />
-    b = sess.run(a)<br />
-    print(b)<br />
-    print(b.indices)<br />
-    print(b.values)<br />
-    print(b.dense_shape)</p>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>SparseTensorValue(indices=array([[0, 0], [1, 2]], dtype=int64), values=array([1, 2]), dense_shape=array([3, 4], dtype=int64))</p>
-<p>[[0 0]<br />
-    [1 2]]<br />
-[1 2]<br />
-[3 4]<br />
-1<br />
-2<br />
-3<br />
-4<br />
-5<br />
-6<br />
-7<br />
-8<br />
-9<br />
-10<br />
-11<br />
-12<br />
-13<br />
-14<br />
-15<br />
-16<br />
-17<br />
-18<br />
-19<br />
-20<br />
-二、生成 SparseTensor<br />
-TensorFlow 中没有现成的函数，可以自己封装起来，以备不时之需。</p>
-</blockquote>
-</blockquote>
-</blockquote>
+代码示例</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">SparseTensor</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">dense_shape</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+ <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+ <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
+
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">indices</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">dense_shape</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span><span class="n">SparseTensorValue</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int64</span><span class="p">),</span> <span class="n">values</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span> <span class="n">dense_shape</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int64</span><span class="p">))</span>
+
+<span class="o">&gt;&gt;&gt;</span><span class="p">[[</span><span class="mi">0</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]]</span>
+<span class="o">&gt;&gt;&gt;</span><span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span><span class="p">[</span><span class="mi">3</span> <span class="mi">4</span><span class="p">]</span>
+</pre></div>
+
+
+<h3 id="512-sparsetensor">5.1.2. 生成 SparseTensor</h3>
+<p>TensorFlow 中没有现成的函数，可以自己封装起来，以备不时之需。</p>
 <div class="hlcode"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
 
@@ -250,9 +258,12 @@ TensorFlow 中没有现成的函数，可以自己封装起来，以备不时之
 </pre></div>
 
 
-<p>三、SparseTensor 转 DenseTensor<br />
-tf.sparse_tensor_to_dense(sp_input, default_value=0, validate_indices=True, name=None)<br />
-输入参数：</p>
+<h3 id="513-sparsetensor-densetensor">5.1.3. SparseTensor 转 DenseTensor</h3>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">sparse_tensor_to_dense</span><span class="p">(</span><span class="n">sp_input</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">validate_indices</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+
+
+<p>输入参数：</p>
 <p>sp_input： 输入的 SparseTensor<br />
 default_value： Scalar value to set for indices not specified in sp_input，默认为 0<br />
 validate_indices： A boolean value. If True, indices are checked to make sure they are sorted in lexicographic order and that there are no repeats in indices<br />
@@ -275,10 +286,13 @@ validate_indices： A boolean value. If True, indices are checked to make sure t
 </pre></div>
 
 
-<p>四、ctc_loss 函数介绍<br />
-处理输出标签和真实标签之间的损失，解决输出标签数和真实标签数不对齐的问题</p>
-<p>tf.nn.ctc_loss(labels, inputs, sequence_length, preprocess_collapse_repeated=False, ctc_merge_repeated=True, ignore_longer_outputs_than_inputs=False, time_major=True)<br />
-输入参数：</p>
+<h3 id="514-ctc_loss">5.1.4. ctc_loss 函数介绍</h3>
+<p>处理输出标签和真实标签之间的损失，解决输出标签数和真实标签数不对齐的问题</p>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ctc_loss</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">sequence_length</span><span class="p">,</span> <span class="n">preprocess_collapse_repeated</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">ctc_merge_repeated</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">ignore_longer_outputs_than_inputs</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">time_major</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+
+
+<p>输入参数：</p>
 <p>labels: 是一个 int32 类型的稀疏张量（SparseTensor）， labels.indices[i, :] == [b, t] 表示 labels.values[i] 保存着(batch b, time t)的 id，labels.values[i] must take on values in [0, num_labels)<br />
 inputs: （常用变量 logits 表示）经过 RNN 后输出的标签预测值，是一个 3D 浮点 Tensor，当 time_major=True(默认)时形状为：(max_time * batch_size * num_classes)，否则形状为：batch_size * max_time * num_classes，ctc_loss will perform the softmax operation for you<br />
 sequence_length: 1-D int32 vector, size 为 [batch_size]，vector 中的每个值表示序列的长度，形如 [max_time_step,…,max_time_step] ，此 sequence_length 和用在 dynamic_rnn 中的 sequence_length 是一致的， 用来表示 rnn 的哪些输出不是 pad 的.<br />
@@ -286,16 +300,41 @@ preprocess_collapse_repeated: 是否需要预处理，将重复的 label 合并�
 ctc_merge_repeated: 默认为 True<br />
 输出：</p>
 <p>A 1-D float Tensor, size [batch], containing the negative log probabilities，同样也需要对 ctc_loss 求均值。</p>
-<h2 id="52-keres">5.2. Keres</h2>
+<h2 id="52-keras">5.2. Keras</h2>
+<p>keras.backend.ctc_batch_cost实际上也是用tf做的后端，贴上官方文档。<br />
+https://www.tensorflow.org/api_docs/python/tf/keras/backend/ctc_batch_cost<br />
+https://keras.io/backend/#ctc_batch_cost</p>
+<div class="hlcode"><pre><span class="n">loss</span><span class="o">=</span><span class="n">keras</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">ctc_batch_cost</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">input_length</span><span class="p">,</span> <span class="n">label_length</span><span class="p">)</span>
+
+<span class="c"># y_true: tensor (samples, max_string_length) containing the truth labels.</span>
+<span class="c"># y_pred: tensor (samples, time_steps, num_categories) containing the prediction, or output of the softmax.</span>
+
+<span class="c"># input_length: tensor (samples, 1) containing the sequence length for each batch item in y_pred.</span>
+<span class="c"># label_length: tensor (samples, 1) containing the sequence length for each batch item in y_true.</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">tensorflow</span> <span class="kn">import</span>  <span class="n">keras</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="n">y_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">],])</span>                                   <span class="c"># (2, 3)</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">to_categorical</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]]),</span> <span class="mi">6</span><span class="p">)</span>     <span class="c"># (2, 3, 6)</span>
+
+
+<span class="n">input_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">]])</span>                                            <span class="c"># (2, 1)</span>
+<span class="n">label_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">]])</span>                                            <span class="c"># (2, 1)</span>
+<span class="n">cost</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">ctc_batch_cost</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">input_length</span><span class="p">,</span> <span class="n">label_length</span><span class="p">)</span> <span class="c"># (2,1)</span>
+</pre></div>
+
+
 <p>The ctc_code implementation in Tensorflow's backend is this one: tensorflow.org/api_docs/python/tf/keras/backend/ctc_decode which is different from tf.nn.ctc_beam_search_decoder – GPhilo Jan 25 '18 at 14:56<br />
 @GPhilo Exactly, that's the first link in the post. However, if using the option greedy=False, following the code here we will finally reach tf.nn.ctc_beam_search_decoder, as far as I understand. – user1578793 Jan 25 '18 at 15:13<br />
 You're right, I got confused by the different import (the script has from tensorflow.python.ops import ctc_ops as ctc) and I thought it called directly the underlying C++ code wrapper, but I see now that tf.nn.ctc_beam_search_decoder is implemented in that python file. – GPhilo Jan 25 '18 at 15:16 <br />
 1<br />
 It looks like there's no dictionary functionality fully implemented as of this date. See github.com/tensorflow/tensorflow/issues/12356 for info on how to implement it yourself. – bivouac0 Feb 3 '18 at 16:11</p>
 <p>https://stackoverflow.com/questions/48445751/keras-constrained-dictionary-search-with-ctc-decode</p>
-<h2 id="53-pytourch">5.3. Pytourch</h2>
-<p>2.TF和keras 都提供了CTC的解决方案<br />
-最终我是用keras.backend.ctc_batch_cost 做的。但是也把tf.nn.ctc_loss 的解读放前面。</p>
+<h2 id="53-pytorch">5.3. Pytorch</h2>
 <p>我们用一个简单的例子贯穿我们的调试。</p>
 <p>batch 有2个sample。<br />
 输入输出必定为3个时间片time_frame。<br />
@@ -310,29 +349,22 @@ batch_y 的形状为 （batch_size, time_frame），输入是用数字标记的�
 <p>2.1 tf.nn.ctc_loss<br />
 官方文档：<br />
 https://www.tensorflow.org/api_docs/python/tf/nn/ctc_loss?hl=en</p>
-<p>tf.nn.ctc_loss(<br />
-    labels,<br />
-    logits,<br />
-    label_length,<br />
-    logit_length,<br />
-    logits_time_major=True,<br />
-    unique=None,<br />
-    blank_index=None,<br />
-    name=None<br />
-)<br />
-1<br />
-2<br />
-3<br />
-4<br />
-5<br />
-6<br />
-7<br />
-8<br />
-9<br />
-10<br />
-其中最重要的是<br />
-labels: tensor of shape [batch_size, max_label_seq_length] or SparseTensor<br />
-注意这个是SparseTensor，所以要先想办法把输入的dense转为SparseTensor 不然会报错。keras 有给一个tf.keras.backend.ctc_label_dense_to_sparse() 但是我在尝试的时候各种迷之错误，以后再补充。</p>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ctc_loss</span><span class="p">(</span>
+    <span class="n">labels</span><span class="p">,</span>
+    <span class="n">logits</span><span class="p">,</span>
+    <span class="n">label_length</span><span class="p">,</span>
+    <span class="n">logit_length</span><span class="p">,</span>
+    <span class="n">logits_time_major</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">unique</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+    <span class="n">blank_index</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="bp">None</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<p>其中最重要的是<br />
+labels: tensor of shape [batch_size, max_label_seq_length] or SparseTensor</p>
+<p>注意这个是SparseTensor，所以要先想办法把输入的dense转为SparseTensor 不然会报错。keras 有给一个tf.keras.backend.ctc_label_dense_to_sparse() 但是我在尝试的时候各种迷之错误，以后再补充。</p>
 <p>logits: tensor of shape [frames, batch_size, num_labels], if logits_time_major == False, shape is [batch_size, frames, num_labels].</p>
 <p>label_length: tensor of shape [batch_size], None if labels is SparseTensor Length of reference label sequence in labels.</p>
 <p>logit_length: tensor of shape [batch_size] Length of input sequence in logits.</p>
@@ -342,39 +374,38 @@ logit 是每个frame中的各个label 的概率，一般是网络最后一层sof
 而实际上也是用tf做的后端，贴上官方文档。<br />
 https://www.tensorflow.org/api_docs/python/tf/keras/backend/ctc_batch_cost<br />
 https://keras.io/backend/#ctc_batch_cost</p>
-<p>keras.backend.ctc_batch_cost(y_true, y_pred, input_length, label_length)<br />
-1<br />
-y_true: tensor (samples, max_string_length) containing the truth labels.<br />
-y_pred: tensor (samples, time_steps, num_categories) containing the prediction, or output of the softmax.<br />
-input_length: tensor (samples, 1) containing the sequence length for each batch item in y_pred.<br />
-label_length: tensor (samples, 1) containing the sequence length for each batch item in y_true.</p>
+<div class="hlcode"><pre><span class="n">keras</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">ctc_batch_cost</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">input_length</span><span class="p">,</span> <span class="n">label_length</span><span class="p">)</span>
+
+<span class="n">y_true</span><span class="p">:</span> <span class="n">tensor</span> <span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">max_string_length</span><span class="p">)</span> <span class="n">containing</span> <span class="n">the</span> <span class="n">truth</span> <span class="n">labels</span><span class="o">.</span>
+<span class="n">y_pred</span><span class="p">:</span> <span class="n">tensor</span> <span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="n">time_steps</span><span class="p">,</span> <span class="n">num_categories</span><span class="p">)</span> <span class="n">containing</span> <span class="n">the</span> <span class="n">prediction</span><span class="p">,</span> <span class="ow">or</span> <span class="n">output</span> <span class="n">of</span> <span class="n">the</span> <span class="n">softmax</span><span class="o">.</span>
+
+<span class="n">input_length</span><span class="p">:</span> <span class="n">tensor</span> <span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="n">containing</span> <span class="n">the</span> <span class="n">sequence</span> <span class="n">length</span> <span class="k">for</span> <span class="n">each</span> <span class="n">batch</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">y_pred</span><span class="o">.</span>
+<span class="n">label_length</span><span class="p">:</span> <span class="n">tensor</span> <span class="p">(</span><span class="n">samples</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="n">containing</span> <span class="n">the</span> <span class="n">sequence</span> <span class="n">length</span> <span class="k">for</span> <span class="n">each</span> <span class="n">batch</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">y_true</span><span class="o">.</span>
+</pre></div>
+
+
 <p>需要注意的是</p>
 <p>y_true里面是数字标记的tensor<br />
 y_pred 里面是每个frame 各个class的概率。<br />
 另外，第三个参数input_length 是y_pred的每个sample的序列长度，而最后一个参数label_length才是y_true的序列长度。并不是1-3，2-4， 而是1-4，2-3.<br />
 如果我们用keras 做快速的建模的话，明显keras.backend.ctc_batch_cost 比tf的封装程度高些。可以省很多麻烦。所以用这个。</p>
 <p>按照我们上面的例子，简单地写个小程序测试一下，可以通过。需要注意的是我comment的每个输入的形状。这个例子应该能够给予非常直观理解。</p>
-<p>import keras<br />
-import tensorflow as tf<br />
-import numpy as np</p>
-<p>y_true = np.array([[4, 2, 1], [2, 3, 0]])                                    # (2, 3)<br />
-y_pred = keras.utils.to_categorical(np.array([[4, 1, 3], [1, 2, 4]]), 5)     # (2, 3, 5)</p>
-<p>input_length = np.array([[2], [2]])                                         # (2, 1)<br />
-label_length = np.array([[2], [2]])                                         # (2, 1)</p>
-<p>cost = keras.backend.ctc_batch_cost(y_true, y_pred, input_length, label_length)<br />
-1<br />
-2<br />
-3<br />
-4<br />
-5<br />
-6<br />
-7<br />
-8<br />
-9<br />
-10<br />
-11<br />
-12<br />
-另一个问题需要注意的是，根据理论我们知道，y_pred 的序列长度必须要大于y_label的序列长度，也就是说input_length中的每个item 要大过label_length中的对应item，否则会报错。这是CTC的原理决定的。（另外，想想语音识别任务，label可能是句子中的英文字母，而y_pred 则是每一帧的音素预测，帧数明显是多于字母数的。 ）</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">keras</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="n">y_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>                                    <span class="c"># (2, 3)</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">to_categorical</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]]),</span> <span class="mi">5</span><span class="p">)</span>     <span class="c"># (2, 3, 5)</span>
+
+
+<span class="n">input_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">]])</span>                                         <span class="c"># (2, 1)</span>
+<span class="n">label_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">]])</span>                                         <span class="c"># (2, 1)</span>
+
+<span class="n">cost</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">ctc_batch_cost</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">input_length</span><span class="p">,</span> <span class="n">label_length</span><span class="p">)</span>
+</pre></div>
+
+
+<p>另一个问题需要注意的是，根据理论我们知道，y_pred 的序列长度必须要大于y_label的序列长度，也就是说input_length中的每个item 要大过label_length中的对应item，否则会报错。这是CTC的原理决定的。（另外，想想语音识别任务，label可能是句子中的英文字母，而y_pred 则是每一帧的音素预测，帧数明显是多于字母数的。 ）</p>
 <ol>
 <li>keras.backend.ctc_batch_cost调试错误<br />
 3.1 基本文档没讲的注意点。关于模型的null label<br />
@@ -412,24 +443,9 @@ label_length = np.array([[2], [2]])                                         # (2
 我是在keras 中专门把ctc_loss 封装成一个loss来训练的。也就是自定义一个loss 函数如果没有reshape 的话，tf.nn.ctc_loss 会迷之报错。就是这个错误卡了我4天。最后终于在把y_true ，y_pred print出来后发现它们的形状没有指定。于是用reshape指定形状才把draft程序调过。</p>
 <p>所有的由tf.keras.backend.ctc_label_dense_to_sparse，和tf.nn.ctc_loss 出的错误。比如下面两个，都可以由先按上面所说确定正确的输入形状，然后用 tf.reshape() 指定形状调过。</p>
 <p>Shape (?,  ?) must have rank 1</p>
-<p>ValueError: Shape must be rank 0 but is rank 1 for '<br />
-1<br />
-2<br />
-3<br />
-示例的keras loss 如下。这也是一个draft</p>
-<h1 id="ctc-loss">%% CTC loss</h1>
-<p>def ctc_loss(y_true, y_pred):</p>
-<div class="hlcode"><pre><span class="n">print</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
-<span class="n">print</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
-
-<span class="n">y_true</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">time_step_len</span><span class="p">))</span>
-<span class="n">y_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">time_step_len</span><span class="p">,</span> <span class="n">NUM_CHARACTERS</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="p">)</span>
-
-<span class="cp">#</span>
-<span class="k">return</span> <span class="n">tf</span><span class="p">.</span><span class="n">keras</span><span class="p">.</span><span class="n">backend</span><span class="p">.</span><span class="n">ctc_batch_cost</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">90</span><span class="p">],</span> <span class="p">[</span><span class="mi">150</span><span class="p">]]),</span> <span class="n">np</span><span class="p">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">150</span><span class="p">],</span> <span class="p">[</span><span class="mi">20</span><span class="p">]]))</span>
-</pre></div>
-
-
+<p>ValueError: Shape must be rank 0 but is rank 1 for </p>
+<p>示例的keras loss 如下。这也是一个draft</p>
+<p><sup id="fnref:3"><a class="footnote-ref" href="#fn:3" rel="footnote">2</a></sup></p>
 <h1 id="6">6. 参考资料</h1>
 <div class="footnote">
 <hr />
@@ -437,8 +453,11 @@ label_length = np.array([[2], [2]])                                         # (2
 <li id="fn:1">
 <p>Connectionist Temporal Classification - Labeling Unsegmented Sequence Data with Recurrent Neural Networks: Graves et al., 2006 <a href="http://www.cs.toronto.edu/~graves/icml_2006.pdf">(pdf)</a>&#160;<a class="footnote-backref" href="#fnref:1" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
 </li>
+<li id="fn:3">
+<p>https://theailearner.com/2019/05/29/connectionist-temporal-classificationctc/&#160;<a class="footnote-backref" href="#fnref:3" rev="footnote" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
 <li id="fn:2">
-<p><a href="https://blog.csdn.net/JackyTintin/article/details/79425866">CSDN: CTC 原理及实现</a>&#160;<a class="footnote-backref" href="#fnref:2" rev="footnote" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+<p><a href="https://blog.csdn.net/JackyTintin/article/details/79425866">CSDN: CTC 原理及实现</a>&#160;<a class="footnote-backref" href="#fnref:2" rev="footnote" title="Jump back to footnote 3 in the text">&#8617;</a></p>
 </li>
 </ol>
 </div>

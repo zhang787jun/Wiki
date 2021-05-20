@@ -11,6 +11,9 @@
 		},
 		{
 			"path": "../../../../Temporal_Relational_Stock_Ranking"
+		},
+		{
+			"path": "../../../../github/qlib"
 		}
 	],
 	"settings": {}

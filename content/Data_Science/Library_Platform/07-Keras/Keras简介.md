@@ -30,8 +30,6 @@ Keras is an API designed for human beings, not machines.
 TensorFlow is a free and open-source software library for data flow and differentiable programming across a range of tasks
 
 
-
-
 # 2. 编程模式
 
 三步法：
@@ -88,7 +86,7 @@ model.fit(X_train,Y_train,batch_size=200,epochs=50,shuffle=True,verbose=0,valida
 model.evaluate(X_test, Y_test, batch_size=200, verbose=0)
 ```
 
-其中构建模型 可以使用加法模式。
+其中构建模型可以使用加法模式。
 
 # 3. 构建模型的方式
 

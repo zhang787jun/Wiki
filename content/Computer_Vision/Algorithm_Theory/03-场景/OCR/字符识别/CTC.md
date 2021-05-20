@@ -10,27 +10,24 @@ CTC 的全称是`Connectionist Temporal Classification`。
 
 # 2. 使用场景?
 
-这个方法主要是解决神经网络label 和output **不对齐的问题**（Alignment problem）。
+这个方法主要是解决神经网络 label 和output **不对齐的问题**（Alignment problem）。
 
 # 3. 原理
+
 CTC是借鉴了隐马尔科夫模型(Hidden Markov Nodel)的Forward-Backward算法思路，是利用动态规划的思路计算CTC-Loss及其导数的。
 
 ## 3.1. Softmax 之后
-
- 
 
 # 4. 关键
 
 ## 4.1. CTC Loss
 ### 4.1.1. 基本步骤
-训练神经网络需要计算`loss function` ， 与其他常见的`loss function`不同，计算**CTC loss**需要2步：
+训练神经网络需要计算`loss function`，与其他常见的`loss function`不同，计算**CTC loss**需要2步：
 1. 计算所有可能的序列组合的概率和
    > We first need to sum over probabilities of all possible alignments of the text present in the image.
+
 2. 取负对数
    > Then take the negative logarithm of this to calculate the loss.
-```
-
-```
 
 
 
@@ -75,7 +72,7 @@ output = tf.edit_distance(hypothesis, truth, normalize=True, name='edit_distance
 
 ### 4.2.3. Beam search decoding
 
-#### 基础版本
+#### 4.2.3.1. 基础版本
 
 **基本步骤**
 
@@ -92,14 +89,14 @@ output = tf.edit_distance(hypothesis, truth, normalize=True, name='edit_distance
 Beam Search是寻找全局最优值和Greedy Search在查找时间和模型精度的一个折中。一个简单的beam search在每个时间片计算所有可能假设的概率，并从中选出最高的几个作为一组。然后再从这组假设的基础上产生概率最高的几个作为一组假设，依次进行，直到达到最后一个时间片。
 
 
-#### 改进版本1-  Beam search with character-LM
+#### 4.2.3.2. 改进版本1-  Beam search with character-LM
 
 时间复杂度 `O(T·BW·C·log(BW·C))`
-### 4.2.5. Token passing
+### 4.2.4. Token passing
 
 Token passing: “A random number”. This algorithm uses a dictionary and word-LM. It searches for the most probable sequence of dictionary words in the NN output. But it can’t handle arbitrary character sequences (numbers, punctuation marks) like “: 1234.”.
 
-### 4.2.6. prefix beam decode
+### 4.2.5. prefix beam decode
 Top-path is (1, 2), after many-to-one map, the path is (1, 2) which is same from top-path in raw decode, and the score is 0.12 which is lower than score in raw decode. So, obviously, prefix beam decode is better than greedy decode and beam decode. And the reason why score is lower than score in raw decode is that I set the beamSize be 2, if beamSize=3, the score will 0.2178, which is same with the score in raw decode.
 
 
@@ -112,6 +109,10 @@ Top-path is (1, 2), after many-to-one map, the path is (1, 2) which is same from
 
 
 # 5. 实践 
+
+TF和keras 都提供了CTC的解决方案
+最终我是用keras.backend.ctc_batch_cost 做的。但是也把tf.nn.ctc_loss 的解读放前面。
+
 
 ## 5.1. Tensorflow
 
@@ -127,17 +128,41 @@ tf.nn.ctc_loss(
     ignore_longer_outputs_than_inputs=False,
     time_major=True
 )
+
+
+# labels：int32 类型的稀疏向量
+# inputs：3维的float向量，如果time_major为默认的，那么其形状为[max_time, batch_size, num_classes]，把LSTM输出的第0维和第1维换一下即可。另外，如同TensorFlow源码解读之greedy search及beam search中所讲的那样，输入值是经过logit处理的变量。
+# sequence_length：是一个int32列表，维度为 batch_size，里面每个值的大小为系列的长度。
+
 ```
 
 
-labels：int32 类型的稀疏向量
-inputs：3维的float向量，如果time_major为默认的，那么其形状为[max_time, batch_size, num_classes]，把LSTM输出的第0维和第1维换一下即可。另外，如同TensorFlow源码解读之greedy search及beam search中所讲的那样，输入值是经过logit处理的变量。
-sequence_length：是一个int32列表，维度为 batch_size，里面每个值的大小为系列的长度。
 
 
-一、SparseTensor 类介绍
-稀疏矩阵： 当密集矩阵中大部分的数都是 0 的时候，就可以用一种更好的存储方式（只将矩阵中不为 0 的）
+```python 
+
+```python
+#%% CTC loss
+
+def ctc_loss(y_true, y_pred):
+
+    print(y_true)
+    print(y_pred)
+    
+    y_true = tf.reshape(y_true, (BATCH_SIZE, time_step_len))
+    y_pred = tf.reshape(y_pred, (BATCH_SIZE, time_step_len, NUM_CHARACTERS+1) )
+    #
+    return tf.keras.backend.ctc_batch_cost(y_true, y_pred, np.array([[90], [150]]), np.array([[150], [20]]))
+
+```
+
+```
+
+###  5.1.1. SparseTensor 类介绍
+`稀疏矩阵`： 当密集矩阵中大部分的数都是 0 的时候，就可以用一种更好的存储方式（只将矩阵中不为 0 的）
+```python 
 class tf.SparseTensor(indices, values, dense_shape)
+```
 输入参数：
 
 indices： 指定 Sparse Tensor 中非 0 值的索引，是一个 2D 的 int64 张量，形状为[N, ndims]，其中 N 为非 0 值的维数，ndims 为 dense_shape 的维数
@@ -156,6 +181,7 @@ dense_shape
 sp = tf.sparse_placeholder(tf.int64)
 sess.run(xxx, feed_dict={sp: (indices, values, dense_shape)})
 代码示例
+```python
 import tensorflow as tf
 
 a = tf.SparseTensor(indices=[[0, 0], [1, 2]], values=[1, 2], dense_shape=[3, 4])
@@ -176,28 +202,12 @@ with tf.Session() as sess:
     [1 2]]
 >>>[1 2]
 >>>[3 4]
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-二、生成 SparseTensor
+
+```
+### 5.1.2. 生成 SparseTensor
+
 TensorFlow 中没有现成的函数，可以自己封装起来，以备不时之需。
+
 ```python 
 import numpy as np
 import tensorflow as tf
@@ -226,8 +236,10 @@ def sparse_tuple_from(sequences, dtype=np.int32):
 
 ```
 
-三、SparseTensor 转 DenseTensor
+### 5.1.3. SparseTensor 转 DenseTensor
+```python
 tf.sparse_tensor_to_dense(sp_input, default_value=0, validate_indices=True, name=None)
+```
 输入参数：
 
 sp_input： 输入的 SparseTensor
@@ -253,10 +265,12 @@ with tf.Session() as sess:
  [ 5 -1 -1 -1 -1]]
 ```
 
-四、ctc_loss 函数介绍
+### 5.1.4. ctc_loss 函数介绍
 处理输出标签和真实标签之间的损失，解决输出标签数和真实标签数不对齐的问题
 
+```python
 tf.nn.ctc_loss(labels, inputs, sequence_length, preprocess_collapse_repeated=False, ctc_merge_repeated=True, ignore_longer_outputs_than_inputs=False, time_major=True)
+```
 输入参数：
 
 labels: 是一个 int32 类型的稀疏张量（SparseTensor）， labels.indices[i, :] == [b, t] 表示 labels.values[i] 保存着(batch b, time t)的 id，labels.values[i] must take on values in [0, num_labels)
@@ -268,7 +282,34 @@ ctc_merge_repeated: 默认为 True
 
 A 1-D float Tensor, size [batch], containing the negative log probabilities，同样也需要对 ctc_loss 求均值。
 
-## 5.2. Keres
+## 5.2. Keras
+keras.backend.ctc_batch_cost实际上也是用tf做的后端，贴上官方文档。
+https://www.tensorflow.org/api_docs/python/tf/keras/backend/ctc_batch_cost
+https://keras.io/backend/#ctc_batch_cost
+
+```python
+loss=keras.backend.ctc_batch_cost(y_true, y_pred, input_length, label_length)
+
+# y_true: tensor (samples, max_string_length) containing the truth labels.
+# y_pred: tensor (samples, time_steps, num_categories) containing the prediction, or output of the softmax.
+
+# input_length: tensor (samples, 1) containing the sequence length for each batch item in y_pred.
+# label_length: tensor (samples, 1) containing the sequence length for each batch item in y_true.
+```
+```python
+from tensorflow import  keras
+import tensorflow as tf
+import numpy as np
+
+y_true = np.array([[4, 2, 1], [2, 3, 0],])                                   # (2, 3)
+y_pred = keras.utils.to_categorical(np.array([[4, 1, 3], [1, 2, 4]]), 6)     # (2, 3, 6)
+
+
+input_length = np.array([[2], [2]])                                            # (2, 1)
+label_length = np.array([[2], [2]])                                            # (2, 1)
+cost = keras.backend.ctc_batch_cost(y_true, y_pred, input_length, label_length) # (2,1)
+
+```
 
 
 
@@ -280,9 +321,12 @@ It looks like there's no dictionary functionality fully implemented as of this d
 
 
 https://stackoverflow.com/questions/48445751/keras-constrained-dictionary-search-with-ctc-decode
-## 5.3. Pytourch 
-2.TF和keras 都提供了CTC的解决方案
-最终我是用keras.backend.ctc_batch_cost 做的。但是也把tf.nn.ctc_loss 的解读放前面。
+
+
+## 5.3. Pytorch 
+
+
+
 
 我们用一个简单的例子贯穿我们的调试。
 
@@ -302,6 +346,7 @@ batch_y 的形状为 （batch_size, time_frame），输入是用数字标记的�
 官方文档：
 https://www.tensorflow.org/api_docs/python/tf/nn/ctc_loss?hl=en
 
+```python 
 tf.nn.ctc_loss(
     labels,
     logits,
@@ -312,18 +357,13 @@ tf.nn.ctc_loss(
     blank_index=None,
     name=None
 )
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
+
+```
+
 其中最重要的是
 labels: tensor of shape [batch_size, max_label_seq_length] or SparseTensor
+
+
 注意这个是SparseTensor，所以要先想办法把输入的dense转为SparseTensor 不然会报错。keras 有给一个tf.keras.backend.ctc_label_dense_to_sparse() 但是我在尝试的时候各种迷之错误，以后再补充。
 
 logits: tensor of shape [frames, batch_size, num_labels], if logits_time_major == False, shape is [batch_size, frames, num_labels].
@@ -340,12 +380,17 @@ logit 是每个frame中的各个label 的概率，一般是网络最后一层sof
 https://www.tensorflow.org/api_docs/python/tf/keras/backend/ctc_batch_cost
 https://keras.io/backend/#ctc_batch_cost
 
+```python
 keras.backend.ctc_batch_cost(y_true, y_pred, input_length, label_length)
-1
+
 y_true: tensor (samples, max_string_length) containing the truth labels.
 y_pred: tensor (samples, time_steps, num_categories) containing the prediction, or output of the softmax.
+
 input_length: tensor (samples, 1) containing the sequence length for each batch item in y_pred.
 label_length: tensor (samples, 1) containing the sequence length for each batch item in y_true.
+
+```
+
 
 需要注意的是
 
@@ -356,6 +401,7 @@ y_pred 里面是每个frame 各个class的概率。
 
 按照我们上面的例子，简单地写个小程序测试一下，可以通过。需要注意的是我comment的每个输入的形状。这个例子应该能够给予非常直观理解。
 
+```python 
 import keras
 import tensorflow as tf
 import numpy as np
@@ -368,21 +414,11 @@ input_length = np.array([[2], [2]])                                         # (2
 label_length = np.array([[2], [2]])                                         # (2, 1)
 
 cost = keras.backend.ctc_batch_cost(y_true, y_pred, input_length, label_length)
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
+```
+
 另一个问题需要注意的是，根据理论我们知道，y_pred 的序列长度必须要大于y_label的序列长度，也就是说input_length中的每个item 要大过label_length中的对应item，否则会报错。这是CTC的原理决定的。（另外，想想语音识别任务，label可能是句子中的英文字母，而y_pred 则是每一帧的音素预测，帧数明显是多于字母数的。 ）
 
-3. keras.backend.ctc_batch_cost调试错误
+1. keras.backend.ctc_batch_cost调试错误
 3.1 基本文档没讲的注意点。关于模型的null label
  (0) Invalid argument: Saw a non-null label (index >= num_classes - 1) following a null label, batch: 0 num_classes: 28 labels: 24,22,9,17,3,24,4,26,26,21,18,11,10,7,21,8,7,6,20,17,11,4,13,7,20,23,16,27,17,0,22,22,0,4,2,17,11,21,3,26,11,27,5,21,10,19,12,1,14,3 labels seen so far: 24,22,9,17,3,24,4,26,26,21,18,11,10,7,21,8,7,6,20,17,11,4,13,7,20,23,16
 	 [[{{node loss_4/time_distributed_45_loss/CTCLoss}}]]
@@ -430,29 +466,17 @@ cost = keras.backend.ctc_batch_cost(y_true, y_pred, input_length, label_length)
 
 Shape (?,  ?) must have rank 1
 
-ValueError: Shape must be rank 0 but is rank 1 for '
-1
-2
-3
+ValueError: Shape must be rank 0 but is rank 1 for 
+
+
 示例的keras loss 如下。这也是一个draft
 
-#%% CTC loss
-
-def ctc_loss(y_true, y_pred):
-
-    print(y_true)
-    print(y_pred)
-    
-    y_true = tf.reshape(y_true, (BATCH_SIZE, time_step_len))
-    y_pred = tf.reshape(y_pred, (BATCH_SIZE, time_step_len, NUM_CHARACTERS+1) )
-    
-    #
-    return tf.keras.backend.ctc_batch_cost(y_true, y_pred, np.array([[90], [150]]), np.array([[150], [20]]))
+[^3]
 # 6. 参考资料
 
 [^1]: Connectionist Temporal Classification - Labeling Unsegmented Sequence Data with Recurrent Neural Networks: Graves et al., 2006 [(pdf)](http://www.cs.toronto.edu/~graves/icml_2006.pdf)
 
-[^2]: https://theailearner.com/2019/05/29/connectionist-temporal-classificationctc/
+[^3]: https://theailearner.com/2019/05/29/connectionist-temporal-classificationctc/
 
 [^2]: [CSDN: CTC 原理及实现](https://blog.csdn.net/JackyTintin/article/details/79425866)
 

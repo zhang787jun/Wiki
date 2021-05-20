@@ -52,6 +52,11 @@
 </ul>
 </li>
 <li><a href="#33-ssh-keygen-">3.3. ssh-keygen--用于生成安全的密钥</a></li>
+<li><a href="#34-scp">3.4. scp</a><ul>
+<li><a href="#-">复制:本地--&gt;远端</a></li>
+<li><a href="#-_1">复制:远程--&gt;本地</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#4">4. 案例</a><ul>
@@ -82,31 +87,29 @@ Linux 及其他非 Windows 系统的管理员使用此类工具跨平台管理�
 </pre></div>
 
 
-<blockquote>
 <p>官网:https://www.openssh.com/<br />
 Github:https://github.com/PowerShell/openssh-portable/tree/v8.1.0.0</p>
-</blockquote>
 <h2 id="11">1.1. 特色与组成</h2>
 <p>SSH 基于客户端-服务器体系结构，用户在其中工作的系统是客户端，所管理的远程系统是服务器。 OpenSSH 包含一系列组件和工具，用于提供一种安全且简单的远程系统管理方法，其中包括：<br />
-1. <code>sshd.exe</code>，它是远程所管理的系统上必须运行的 SSH 服务器组件<br />
-2. <code>ssh.exe</code>，它是在用户的本地系统上运行的 SSH 客户端组件<br />
-3. <code>sftp.exe</code>，这是提供安全文件传输协议的服务，通过 SSH 运行<br />
-4. <code>scp.exe</code> 是在 SSH 上运行的文件复制实用工具</p>
-<ol>
-<li><code>ssh-keygen.exe</code>，为 SSH 生成、管理和转换身份验证密钥</li>
-<li><code>ssh-agent.exe</code>，存储用于公钥身份验证的私钥</li>
-<li><code>ssh-add.exe</code>，将私钥添加到服务器允许的列表中</li>
-<li><code>ssh-keyscan.exe</code>，帮助从许多主机收集公用 SSH 主机密钥</li>
-</ol>
+1. <code>sshd</code>，它是远程所管理的系统上必须运行的 SSH 服务器组件<br />
+2. <code>ssh</code>，它是在用户的本地系统上运行的 SSH 客户端组件<br />
+3. <code>sftp</code>，这是提供安全文件传输协议的服务，通过 SSH 运行<br />
+4. <code>scp</code> ，是在 SSH 上运行的文件复制实用工具<br />
+5. <code>ssh-keygen</code>，为 SSH 生成、管理和转换身份验证密钥<br />
+6. <code>ssh-agent</code>，存储用于公钥身份验证的私钥<br />
+7. <code>ssh-add</code>，将私钥添加到服务器允许的列表中<br />
+8. <code>ssh-keyscan</code>，帮助从许多主机收集公用 SSH 主机密钥</p>
 <h2 id="12-ssh">1.2. SSH协议</h2>
-<p>SSH是一种网络协议</p>
-<p>Secure Shell（安全外壳协议，简称SSH）是一种加密的网络传输协议，可在不安全的网络中为网络服务提供安全的传输环境[1]。</p>
+<p>SSH是一种网络协议<br />
+Secure Shell（安全外壳协议，简称SSH）是一种加密的网络传输协议，可在不安全的网络中为网络服务提供安全的传输环境。</p>
 <p>SSH协议框架中最主要的部分是三个协议：</p>
-<p>传输层协议（The Transport Layer Protocol）：传输层协议提供服务器认证，数据机密性，信息完整性等的支持。<br />
-用户认证协议（The User Authentication Protocol）：用户认证协议为服务器提供客户端的身份鉴别。<br />
-连接协议（The Connection Protocol）：连接协议将加密的信息隧道复用成若干个逻辑通道，提供给更高层的应用协议使用。<br />
-同时还有为许多高层的网络安全应用协议提供扩展的支持。</p>
-<p>各种高层应用协议可以相对地独立于SSH基本体系之外，并依靠这个基本框架，通过连接协议使用SSH的安全机制。</p>
+<ol>
+<li><code>传输层协议（The Transport Layer Protocol）</code>：传输层协议提供服务器认证，数据机密性，信息完整性等的支持。</li>
+<li><code>用户认证协议（The User Authentication Protocol）</code>：用户认证协议为服务器提供客户端的身份鉴别。</li>
+<li><code>连接协议（The Connection Protocol）</code>：连接协议将加密的信息隧道复用成若干个逻辑通道，提供给更高层的应用协议使用。</li>
+</ol>
+<p>同时还有为许多高层的网络安全应用协议提供扩展的支持。<br />
+各种高层应用协议可以相对地独立于SSH基本体系之外，并依靠这个基本框架，通过连接协议使用SSH的安全机制。</p>
 <h2 id="13-sshssl">1.3. ssh和ssl的联系和区别</h2>
 <p>ssh：Secure Shell，安全Shell，是一个软件，处于应用层旨在取代明文通信的telnet；对应的开源实现程序是openssh。 </p>
 <p>ssl：Secure Sockets Layer，安全套接字层，是一个协议，处于传输层之上应用层之下用于协商密钥；对应的开源实现库是openssl。</p>
@@ -173,6 +176,62 @@ Github:https://github.com/PowerShell/openssh-portable/tree/v8.1.0.0</p>
 
 
 <h2 id="33-ssh-keygen-">3.3. ssh-keygen--用于生成安全的密钥</h2>
+<h2 id="34-scp">3.4. scp</h2>
+<p>scp都是在本地操作,因此需要指明远端的信息,其实scp本质上也是基于ssh的,因此同样使用-i指定公钥.</p>
+<p>需要注意的是scp有如下使用限制:<br />
+1. 如果远程服务器防火墙有为scp命令设置了指定的端口，我们需要使用-P参数来设置命令的端口号<br />
+2. 使用scp命令要确保使用的用户具有可读取远程服务器相应文件的权限，否则scp命令是无法起作用的。<br />
+用法:</p>
+<h3 id="-">复制:本地--&gt;远端</h3>
+<p><strong>复制文件</strong></p>
+<div class="hlcode"><pre><span class="err">#</span> <span class="nx">复制文件</span>
+<span class="nx">scp</span> <span class="o">&lt;</span><span class="nx">local_file</span><span class="o">&gt;</span> <span class="nx">remote_username</span><span class="p">@</span><span class="nx">remote_ip</span><span class="p">:</span><span class="nx">remote_folder</span>
+<span class="nx">scp</span> <span class="o">&lt;</span><span class="nx">local_file</span><span class="o">&gt;</span> <span class="nx">remote_username</span><span class="p">@</span><span class="nx">remote_ip</span><span class="p">:</span><span class="nx">remote_file</span>
+<span class="nx">scp</span> <span class="o">&lt;</span><span class="nx">local_file</span><span class="o">&gt;</span> <span class="nx">remote_ip</span><span class="p">:</span><span class="nx">remote_folder</span>
+<span class="nx">scp</span> <span class="o">&lt;</span><span class="nx">local_file</span><span class="o">&gt;</span> <span class="nx">remote_ip</span><span class="p">:</span><span class="nx">remote_file</span>
+<span class="nx">scp</span> <span class="o">&lt;</span><span class="nx">local_file</span><span class="o">&gt;</span> <span class="nx">host_alias</span><span class="p">:</span><span class="nx">remote_folder</span>
+<span class="nx">scp</span> <span class="o">&lt;</span><span class="nx">local_file</span><span class="o">&gt;</span> <span class="nx">host_alias</span><span class="p">:</span><span class="nx">remote_file</span>
+</pre></div>
+
+
+<p>第1,2个指定了用户名，命令执行后需要再输入密码，第1个仅指定了远程的目录，文件名字不变，第2个指定了文件名</p>
+<p>第3,4个没有指定用户名，命令执行后需要输入用户名和密码，第3个仅指定了远程的目录，文件名字不变，第4个指定了文件名</p>
+<p>第5,6个使用了ssh中设置的连接别名.</p>
+<p><strong>复制文件夹</strong></p>
+<div class="hlcode"><pre><span class="cp"># 复制文件夹</span>
+<span class="n">scp</span> <span class="o">-</span><span class="n">r</span> <span class="n">local_folder</span> <span class="n">remote_username</span><span class="err">@</span><span class="n">remote_ip</span><span class="o">:</span><span class="n">remote_folder</span>
+<span class="n">scp</span> <span class="o">-</span><span class="n">r</span> <span class="n">local_folder</span> <span class="n">remote_ip</span><span class="o">:</span><span class="n">remote_folder</span>
+<span class="n">scp</span> <span class="o">-</span><span class="n">r</span> <span class="n">local_folder</span> <span class="n">host_alias</span><span class="o">:</span><span class="n">remote_folder</span>
+</pre></div>
+
+
+<p>第1个指定了用户名，命令执行后需要再输入密码<br />
+第2个没有指定用户名，命令执行后需要输入用户名和密码<br />
+第3个使用了ssh中设置的连接别名</p>
+<h3 id="-_1">复制:远程--&gt;本地</h3>
+<p>从远程复制到本地，只要将从本地复制到远程的命令的后2个参数调换顺序即可</p>
+<div class="hlcode"><pre><span class="n">scp</span> <span class="o">-</span><span class="n">r</span> <span class="n">remote_username</span><span class="err">@</span><span class="n">remote_ip</span><span class="o">:</span><span class="n">remote_folder</span> <span class="n">local_folder</span>
+</pre></div>
+
+
+<p>参数说明:</p>
+<p>-1： 强制scp命令使用协议ssh1<br />
+-2： 强制scp命令使用协议ssh2<br />
+-4： 强制scp命令只使用IPv4寻址<br />
+-6： 强制scp命令只使用IPv6寻址<br />
+-B： 使用批处理模式（传输过程中不询问传输口令或短语）<br />
+-C： 允许压缩。（将-C标志传递给ssh，从而打开压缩功能）<br />
+-p：保留原文件的修改时间，访问时间和访问权限。<br />
+-q： 不显示传输进度条。<br />
+-r： 递归复制整个目录。<br />
+-v：详细方式显示输出。scp和ssh(1)会显示出整个过程的调试信息。这些信息用于调试连接，验证和配置问题。<br />
+-c cipher： 以cipher将数据传输进行加密，这个选项将直接传递给ssh。<br />
+-F ssh_config： 指定一个替代的ssh配置文件，此参数直接传递给ssh。<br />
+-i identity_file： 从指定文件中读取传输时使用的密钥文件，此参数直接传递给ssh。<br />
+-l limit： 限定用户所能使用的带宽，以Kbit/s为单位。<br />
+-o ssh_option： 如果习惯于使用ssh_config(5)中的参数传递方式，<br />
+-P port：注意是大写的P, port是指定数据传输用到的端口号<br />
+-S program： 指定加密传输时所使用的程序。此程序必须能够理解ssh(1)的选项。</p>
 <h1 id="4">4. 案例</h1>
 <h2 id="41">4.1. 远程服务器的免密登入</h2>
 <p>将<code>客户端</code>生成的公钥写入<code>指定远程服务器</code>的<strong>指定用户</strong>授权清单里面</p>

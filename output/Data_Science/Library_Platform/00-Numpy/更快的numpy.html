@@ -45,7 +45,10 @@
 <li><a href="#2-numpy">2. 用好numpy</a></li>
 <li><a href="#3-numpy">3. 更小的numpy</a></li>
 <li><a href="#4">4. 测试</a></li>
-<li><a href="#5">5. 连续内存</a></li>
+<li><a href="#5">5. 连续内存</a><ul>
+<li><a href="#c-order-vs-fortran-order">C order vs Fortran order</a></li>
+</ul>
+</li>
 <li><a href="#6">6. 参考资料</a></li>
 </ul>
 </div>
@@ -239,10 +242,13 @@
 
 
 <h1 id="5">5. 连续内存</h1>
-<p>np.ascontiguousarray<br />
-ascontiguousarray函数将一个内存不连续存储的数组转换为内存连续存储的数组，使得运行速度更快。</p>
-<p>C order vs Fortran order<br />
-C order 指的是行优先的顺序（Row-major Order)，即内存中同行的元素存在一起，<br />
+<div class="hlcode"><pre><span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">()</span>
+</pre></div>
+
+
+<p>ascontiguousarray函数将一个内存不连续存储的数组转换为内存连续存储的数组，使得运行速度更快。</p>
+<h2 id="c-order-vs-fortran-order">C order vs Fortran order</h2>
+<p>C order 指的是行优先的顺序（Row-major Order)，即内存中同行的元素存在一起，<br />
 Fortran Order则指的是列优先的顺序（Column-major Order)，即内存中同列的元素存在一起。<br />
 Pascal, C，C++，Python都是行优先存储的，而Fortran，MatLab是列优先存储的。</p>
 <p>Contiguous array<br />
@@ -257,78 +263,88 @@ arr是 C order 的，在内存是行优先的。如果想要向下移动一列�
 这时，arr.T变成了Fortran order，因为相邻列中的元素在内存中是相邻存储的。</p>
 <p>从性能上来说，获取内存中相邻的地址比不相邻的地址速度要快很多（从RAM读取一个数值的时候可以连着一起读一块地址中的数值，并且可以保存在Cache中），这意味着对连续数组的操作会快很多。</p>
 <p>由于arr是C连续的，因此对其进行行操作比进行列操作速度要快。通常来说</p>
-<p>np.sum(arr, axis=1) # 按行求和<br />
+<p><code>np.sum(arr, axis=1)</code># 按行求和<br />
 会比</p>
-<p>np.sum(arr, axis=0) # 按列求和<br />
+<p><code>np.sum(arr, axis=0)</code># 按列求和<br />
 稍微快些。<br />
 同理，在arr.T上，列操作比行操作会快些。</p>
-<p>使用 np.ascontiguousarray()<br />
+<p>使用 <code>np.ascontiguousarray()</code><br />
 Numpy中，随机初始化的数组默认都是C连续的。</p>
 <p>经过不规则的slice操作，则会改变连续性，可能会变成既不是C连续，也不是Fortran连续的。</p>
 <p>可以通过数组的.flags属性，查看一个数组是C连续还是Fortran连续的</p>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>import numpy as np<br />
-arr = np.arange(12).reshape(3, 4)<br />
-arr.flags<br />
-    C_CONTIGUOUS : True<br />
-    F_CONTIGUOUS : False<br />
-    OWNDATA : False<br />
-    WRITEABLE : True<br />
-    ALIGNED : True<br />
-    WRITEBACKIFCOPY : False<br />
-    UPDATEIFCOPY : False<br />
-从输出可以看到数组arr是C连续的。<br />
+<div class="hlcode"><pre><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">12</span><span class="p">)</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">arr</span><span class="o">.</span><span class="n">flags</span>
+    <span class="n">C_CONTIGUOUS</span> <span class="p">:</span> <span class="bp">True</span>
+    <span class="n">F_CONTIGUOUS</span> <span class="p">:</span> <span class="bp">False</span>
+    <span class="n">OWNDATA</span> <span class="p">:</span> <span class="bp">False</span>
+    <span class="n">WRITEABLE</span> <span class="p">:</span> <span class="bp">True</span>
+    <span class="n">ALIGNED</span> <span class="p">:</span> <span class="bp">True</span>
+    <span class="n">WRITEBACKIFCOPY</span> <span class="p">:</span> <span class="bp">False</span>
+    <span class="n">UPDATEIFCOPY</span> <span class="p">:</span> <span class="bp">False</span>
+</pre></div>
+
+
+<p>从输出可以看到数组arr是C连续的。<br />
 对arr进行按列的slice操作，不改变每行的值，则还是C连续的：</p>
-<p>arr<br />
-array([[ 0,  1,  2,  3],<br />
-        [ 4,  5,  6,  7],<br />
-        [ 8,  9, 10, 11]])<br />
-arr1 = arr[:2, :]<br />
-arr1<br />
-array([[ 0,  1,  2,  3],<br />
-        [ 4,  5,  6,  7]])<br />
-arr1.flags<br />
-    C_CONTIGUOUS : True<br />
-    F_CONTIGUOUS : False<br />
-    OWNDATA : False<br />
-    WRITEABLE : True<br />
-    ALIGNED : True<br />
-    WRITEBACKIFCOPY : False<br />
-    UPDATEIFCOPY : False<br />
-如果进行在行上的slice，则会改变连续性，成为既不C连续，也不Fortran连续的：</p>
-<p>arr1 = arr[:, 1:3]<br />
-arr1.flags<br />
-    C_CONTIGUOUS : False<br />
-    F_CONTIGUOUS : False<br />
-    OWNDATA : False<br />
-    WRITEABLE : True<br />
-    ALIGNED : True<br />
-    WRITEBACKIFCOPY : False<br />
-    UPDATEIFCOPY : False<br />
-此时利用ascontiguousarray函数，可以将其变为连续的：</p>
-<p>arr2 = np.ascontiguousarray(arr1)<br />
-arr2.flags<br />
-    C_CONTIGUOUS : True<br />
-    F_CONTIGUOUS : False<br />
-    OWNDATA : True<br />
-    WRITEABLE : True<br />
-    ALIGNED : True<br />
-    WRITEBACKIFCOPY : False<br />
-    UPDATEIFCOPY : False<br />
-参考<br />
-从Numpy中的ascontiguousarray说起 - 知乎<br />
-Numpy文档</p>
-</blockquote>
-</blockquote>
-</blockquote>
+<div class="hlcode"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">arr</span>
+<span class="n">array</span><span class="p">([[</span> <span class="mi">0</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">2</span><span class="p">,</span>  <span class="mi">3</span><span class="p">],</span>
+        <span class="p">[</span> <span class="mi">4</span><span class="p">,</span>  <span class="mi">5</span><span class="p">,</span>  <span class="mi">6</span><span class="p">,</span>  <span class="mi">7</span><span class="p">],</span>
+        <span class="p">[</span> <span class="mi">8</span><span class="p">,</span>  <span class="mi">9</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">11</span><span class="p">]])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">arr1</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[:</span><span class="mi">2</span><span class="p">,</span> <span class="p">:]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">arr1</span>
+<span class="n">array</span><span class="p">([[</span> <span class="mi">0</span><span class="p">,</span>  <span class="mi">1</span><span class="p">,</span>  <span class="mi">2</span><span class="p">,</span>  <span class="mi">3</span><span class="p">],</span>
+        <span class="p">[</span> <span class="mi">4</span><span class="p">,</span>  <span class="mi">5</span><span class="p">,</span>  <span class="mi">6</span><span class="p">,</span>  <span class="mi">7</span><span class="p">]])</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">arr1</span><span class="o">.</span><span class="n">flags</span>
+    <span class="n">C_CONTIGUOUS</span> <span class="p">:</span> <span class="bp">True</span>
+    <span class="n">F_CONTIGUOUS</span> <span class="p">:</span> <span class="bp">False</span>
+    <span class="n">OWNDATA</span> <span class="p">:</span> <span class="bp">False</span>
+    <span class="n">WRITEABLE</span> <span class="p">:</span> <span class="bp">True</span>
+    <span class="n">ALIGNED</span> <span class="p">:</span> <span class="bp">True</span>
+    <span class="n">WRITEBACKIFCOPY</span> <span class="p">:</span> <span class="bp">False</span>
+    <span class="n">UPDATEIFCOPY</span> <span class="p">:</span> <span class="bp">False</span>
+</pre></div>
+
+
+<p>如果进行在行上的slice，则会改变连续性，成为既不C连续，也不Fortran连续的：</p>
+<div class="hlcode"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">arr1</span> <span class="o">=</span> <span class="n">arr</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">arr1</span><span class="o">.</span><span class="n">flags</span>
+    <span class="n">C_CONTIGUOUS</span> <span class="p">:</span> <span class="bp">False</span>
+    <span class="n">F_CONTIGUOUS</span> <span class="p">:</span> <span class="bp">False</span>
+    <span class="n">OWNDATA</span> <span class="p">:</span> <span class="bp">False</span>
+    <span class="n">WRITEABLE</span> <span class="p">:</span> <span class="bp">True</span>
+    <span class="n">ALIGNED</span> <span class="p">:</span> <span class="bp">True</span>
+    <span class="n">WRITEBACKIFCOPY</span> <span class="p">:</span> <span class="bp">False</span>
+    <span class="n">UPDATEIFCOPY</span> <span class="p">:</span> <span class="bp">False</span>
+</pre></div>
+
+
+<p>此时利用ascontiguousarray函数，可以将其变为连续的：</p>
+<div class="hlcode"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">arr2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ascontiguousarray</span><span class="p">(</span><span class="n">arr1</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">arr2</span><span class="o">.</span><span class="n">flags</span>
+    <span class="n">C_CONTIGUOUS</span> <span class="p">:</span> <span class="bp">True</span>
+    <span class="n">F_CONTIGUOUS</span> <span class="p">:</span> <span class="bp">False</span>
+    <span class="n">OWNDATA</span> <span class="p">:</span> <span class="bp">True</span>
+    <span class="n">WRITEABLE</span> <span class="p">:</span> <span class="bp">True</span>
+    <span class="n">ALIGNED</span> <span class="p">:</span> <span class="bp">True</span>
+    <span class="n">WRITEBACKIFCOPY</span> <span class="p">:</span> <span class="bp">False</span>
+    <span class="n">UPDATEIFCOPY</span> <span class="p">:</span> <span class="bp">False</span>
+</pre></div>
+
+
+<p>参考</p>
+<p><sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup>\<br />
+<sup id="fnref:2"><a class="footnote-ref" href="#fn:2" rel="footnote">2</a></sup></p>
 <h1 id="6">6. 参考资料</h1>
 <div class="footnote">
 <hr />
 <ol>
 <li id="fn:1">
 <p>How To Make Your Pandas Loop 71803 Times Faster https://towardsdatascience.com/how-to-make-your-pandas-loop-71-803-times-faster-805030df4f06&#160;<a class="footnote-backref" href="#fnref:1" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:2">
+<p><a href="https://zhuanlan.zhihu.com/p/59767914">知乎:从Numpy中的ascontiguousarray说起 - <br />
+Numpy文档</a>&#160;<a class="footnote-backref" href="#fnref:2" rev="footnote" title="Jump back to footnote 2 in the text">&#8617;</a></p>
 </li>
 </ol>
 </div>

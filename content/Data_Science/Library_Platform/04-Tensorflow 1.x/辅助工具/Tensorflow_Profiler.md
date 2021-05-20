@@ -173,7 +173,7 @@ Profiler.advise(options={})
 
 ### 1.3. protobuf格式的数据结构对象
 我们注意到Profiler 运行是输出ProtocolMessage格式统计数据，tf.profile中定义了4种 数结构
-```
+```python
 class AdviceProto：ProtocolMessage
 
 class GraphNodeProto：ProtocolMessage
@@ -185,8 +185,8 @@ class OpLogProto：ProtocolMessage
 ### 1.4. 评估器的选项设置
 评估器的选项设置options通过字典完成，
 
-tf.profiler.profile中的options可选项为：
-```
+`tf.profiler.profile`中的`options`可选项为：
+```shell
 -max_depth 4       命名空间的深度阈值，超过该阈值的分支不予展示
 -min_bytes 0       展示占用内存超过该阈值的OP
 -min_micros 10       展示耗时超过该阈值的OP
@@ -248,7 +248,8 @@ ProfileOptionBuilder.float_operation()
 2. stdout ： 标准输出设备打印。
 3. pprof file: 输出pprof的文件格式，再用pprof工具查看。
 4. file: 输出到普通的文本文件。
-``` 
+
+```python
 ProfileOptionBuilder.with_pprof_output(pprof_file="./xxx.pb.gz.") # 生成一个pprof profile gzip file.
 ProfileOptionBuilder.with_stdout_output() # c++ std out Print the result to stdout.
 ProfileOptionBuilder.with_timeline_output(timeline_file="./xxx.json") #生成一个json 文件
@@ -294,7 +295,7 @@ ProfileOptionBuilder.with_min_float_operations(min_float_ops)
 ```python
 ProfileOptionBuilder.with_min_parameters(min_params)
 ```
-仅显示不超过'min_params'参数的profiler节点。
+仅显示不超过`min_params`参数的profiler节点。
 
 #### 1.4.4. 评估器选项构建器-构建
 ```python
@@ -315,14 +316,15 @@ type(profile_opt_dict)
 #### 1.5.1. 浮点运算次数 flop
 ```python
 def get_flops(model):
-        run_meta = tf.RunMetadata()
-        opts = tf.profiler.ProfileOptionBuilder.float_operation()
+    run_meta = tf.RunMetadata()
+    opts = tf.profiler.ProfileOptionBuilder.float_operation()
 
-        # We use the Keras session graph in the call to the profiler.
-        flop = tf.profiler.profile(graph=K.get_session().graph,
-                                        run_meta=run_meta, cmd='op', options=opts)
+    # We use the Keras session graph in the call to the profiler.
+    flop = tf.profiler.profile(graph=K.get_session().graph,
+                                    run_meta=run_meta, cmd='op', options=opts)
 
-        return flop.total_float_ops  # Prints the "flop" of the model.
+    return flop.total_float_ops  
+    # Prints the "flop" of the model.
 ```
 #### 1.5.2. 总参数量
 ```python
@@ -480,7 +482,7 @@ python ui.py --profile_context_path=/path/to/your/profile.context
 使用即时编译
 注意: 为了支持 XLA（加速线性代数），TensorFlow 必须从源文件编译。
 
-为什么使用即时编译？
+### 为什么使用即时编译？
 TensorFlow / XLA 即时编译器通过 XLA 编译和运行 TensorFlow 图的各个部分。与标准的 TensorFlow 实现相比，XLA 的好处是可以将多个运算符（内核融合）融合到少量的编译内核中。与 TensorFlow 逐个运行操作相比，融合运算能减少对**内存带宽**的要求，同时提升性能。
 
 通过 XLA 运行 TensorFlow 图
@@ -499,11 +501,14 @@ TensorFlow / XLA 即时编译器通过 XLA 编译和运行 TensorFlow 图的各�
 
 通过将 global_jit_level 设置成tf.OptimizerOptions.ON_1，并在会话初始化阶段传入配置，就可以在会话层开启即时编译。
 
-# 4. 配置开启即时编译
+
+```python
+#  配置开启即时编译
 config = tf.ConfigProto()
 config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1
 
 sess = tf.Session(config=config)
+```
 注意：在会话层开启即时编译将不会导致为 CPU 编译操作。CPU 运算的即时编译必须通过下面描述的手动方法开启，原因在于 CPU 后端是单线程的。
 
 手动开启
@@ -521,8 +526,10 @@ _XlaCompile 属性目前是以最佳的方式支持的。如果一个操作无�
 将操作加载到 XLA 设备中
 通过 XLA 执行计算的另一种方法是将操作载入到特定的 XLA 设备上。这个方法通常只用于测试。有效设备包括 XLA_CPU 或 XLA_GPU。
 
+```python
 with tf.device("/job:localhost/replica:0/task:0/device:XLA_GPU:0"):
   output = tf.add(input1, input2)
+```
 不同于标准 CPU 和 GPU 设备上的即时编译，这些设备在传输到设备上和关闭设备时，会生成一个数据副本。额外的拷贝导致在同一个图模型中混合使用 XLA 和 TensorFlow 操作的开销变得很大。
 
 教程
@@ -559,9 +566,6 @@ pipeline start, before inline]: /tmp/hlo_graph_0.dot
 
 dot -Tpng hlo_graph_80.dot -o hlo_graph_80.png
 结果如下图：
-
-
-
 
 
 

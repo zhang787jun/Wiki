@@ -1,22 +1,23 @@
 ---
-title: "Keras Model "
+title: "Keras Model--模型层"
 layout: page
 date: 2099-06-02 00:00
 ---
 
 [TOC]
 
-# 自定义Model 
 
 
-## 函数式API（Fucntional API）
 
+
+# 1. 构建模型
+
+## 1.1. 函数式编程 (Torch 模式)
 本文代码基于 tensorflow2.0 python 3.7
 `tf.keras.Sequential` 模型是层的简单堆叠，无法表示任意模型。
-```python
+```python 
 import tensorflow as tf
-from tensorflow import keras
-
+ 
 inputs = tf.keras.Input(shape=(128,))  # 构建一个输入张量
 x = layers.Dense(256, activation='relu')(inputs)
 x = layers.Dense(512, activation='relu')(x)
@@ -24,13 +25,14 @@ x = layers.Dense(128, activation='relu')(x)
 x = layers.Dense(64, activation='relu')(x)
 predictions = tf.nn.layers.Dense(10, activation='softmax')(x)
 model = tf.keras.Model(inputs=inputs, outputs=predictions)
-# 编译模型
-model.compile(optimizer=tf.train.RMSPropOptimizer(0.001),
-              loss='categorical_crossentropy',
-              metrics=['accuracy'])
-model.fit(data, labels, batch_size=32, epochs=5)
+
+model = tf.keras.Model(inputs=inputs, outputs=outputs)
+
 ```
-## 模型子类化—实现自定义模型
+## 1.2. 序列模型（加法模式）
+
+
+## 1.3. 模型子类化—实现自定义模型
 
 "模型子类化"就是自己实现一个类来继承Model类，构建一个Model类的子类，
 
@@ -147,5 +149,52 @@ if __name__ == "__main__":
 ```
 
 总结：一般情况下，简单的应用可以直接使用函数式API编程，对于复杂的网络的定义和训练可以使用类继承的方式，这样的代码逻辑和封装性较好
+
+
+
+
+
+### 1.4. 持久化
+
+子类化模型**不能**以`.h5 格式`保存模型，只能以tensorflow 格式保存
+
+```python
+model.save("...",save_model="tf")
+```
+
+Saving the model to HDF5 format requires the model to be a Functional model or a Sequential model. It does not work for subclassed models, because such models are defined via the body of a Python method, which isn't safely serializable.
+
+#  编译模型
+
+
+```python 
+def compile(optimizer,
+            loss=None,
+            metrics=None,
+            loss_weights=None,
+            sample_weight_mode=None,
+             weighted_metrics=None,
+             target_tensors=None,
+              **kwargs):
+
+```
+
+
+# 训练模型 
+
+
+```
+model.fit( X_train, Y_train,
+            batch_size=batch_size, nb_epoch=nb_epoch,
+            verbose=1,
+            validation_data=(X_test, Y_test),
+            callbacks=[history,model_checkpoint,TensorBoard(log_dir=r"./mytensotboard",
+                        histogram_freq=1,update_freq="ba
+
+```
+
+## 使用tensorboard
+
+
 
 

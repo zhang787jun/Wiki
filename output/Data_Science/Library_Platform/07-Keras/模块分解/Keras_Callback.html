@@ -1,0 +1,151 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Keras Layer--常见网络层 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Data_Science">Data_Science</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-07-Keras">07-Keras</a>&nbsp;»&nbsp;<a href="/Wiki/#-模块分解">模块分解</a>&nbsp;»&nbsp;Keras Layer--常见网络层</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Keras Layer--常见网络层</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#_1">参考资料</a></li>
+<li><a href="#modelcheckpoint">ModelCheckpoint</a></li>
+<li><a href="#tensorboard">TensorBoard</a></li>
+</ul>
+</div>
+<h1 id="_1">参考资料</h1>
+<p>https://keras.io/zh/callbacks/#modelcheckpoint</p>
+<h1 id="modelcheckpoint">ModelCheckpoint</h1>
+<div class="hlcode"><pre><span class="n">keras</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">ModelCheckpoint</span><span class="p">(</span><span class="n">filepath</span><span class="p">,</span> <span class="n">monitor</span><span class="o">=</span><span class="s">&#39;val_loss&#39;</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">save_best_only</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">save_weights_only</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;auto&#39;</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+
+<p>在每个训练期之后保存模型。</p>
+<p>filepath 可以包括命名格式选项，可以由 epoch 的值和 logs 的键（由 on_epoch_end 参数传递）来填充。</p>
+<p>例如：如果 filepath 是 weights.{epoch:02d}-{val_loss:.2f}.hdf5， 那么模型被保存的的文件名就会有训练轮数和验证损失。</p>
+<p>参数说明</p>
+<ul>
+<li><code>filepath</code>: str，保存模型的路径。</li>
+<li><code>monitor</code>: 被监测的数据。</li>
+<li><code>verbose</code>: 详细信息模式，0 或者 1 。</li>
+<li><code>save_best_only</code>: 如果 <code>save_best_only=True</code>， 被监测数据的最佳模型就不会被覆盖。</li>
+<li><code>mode</code>: {auto, min, max} 的其中之一。 如果 save_best_only=True，那么是否覆盖保存文件的决定就取决于被监测数据的最大或者最小值。 对于 val_acc，模式就会是 max，而对于 val_loss，模式就需要是 min，等等。 在 auto 模式中，方向会自动从被监测的数据的名字中判断出来。</li>
+<li><code>save_weights_only</code>: 如果 True，那么只有模型的权重会被保存 (model.save_weights(filepath))， 否则的话，整个模型会被保存 (model.save(filepath))。</li>
+<li><code>period</code>: 每个检查点之间的间隔（训练轮数）</li>
+</ul>
+<h1 id="tensorboard">TensorBoard</h1>
+<div class="hlcode"><pre><span class="n">keras</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">TensorBoard</span><span class="p">(</span>
+    <span class="n">log_dir</span><span class="o">=</span><span class="s">&#39;./logs&#39;</span><span class="p">,</span> <span class="n">histogram_freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">write_graph</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">write_grads</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">write_images</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">embeddings_freq</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">embeddings_layer_names</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">embeddings_metadata</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">embeddings_data</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">update_freq</span><span class="o">=</span><span class="s">&#39;epoch&#39;</span>
+    <span class="p">)</span>
+</pre></div>
+
+
+<p>TensorBoard 是由 Tensorflow 提供的一个可视化工具。</p>
+<p>这个回调函数为 Tensorboard 编写一个日志， 这样你可以可视化测试和训练的标准评估的动态图像， 也可以可视化模型中不同层的激活值直方图。</p>
+<p>如果你已经使用 pip 安装了 Tensorflow，你应该可以从命令行启动 Tensorflow：</p>
+<div class="hlcode"><pre><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span><span class="o">=/</span><span class="n">full_path_to_your_logs</span>
+</pre></div>
+
+
+<p>参数</p>
+<ul>
+<li><code>log_dir</code>: 用来保存被 TensorBoard 分析的日志文件的文件名。</li>
+<li><code>histogram_freq</code>: 对于模型中各个层计算激活值和模型权重直方图的频率（训练轮数中）。 如果设置成 0 ，直方图不会被计算。对于直方图可视化的验证数据（或分离数据）一定要明确的指出。</li>
+<li><code>write_graph</code>: 是否在 TensorBoard 中可视化图像。 如果 write_graph 被设置为 True，日志文件会变得非常大。</li>
+<li><code>write_grads</code>: 是否在 TensorBoard 中可视化梯度值直方图。 histogram_freq 必须要大于 0 。</li>
+<li><code>batch_size</code>: 用以直方图计算的传入神经元网络输入批的大小。</li>
+<li><code>write_images</code>: 是否在 TensorBoard 中将模型权重以图片可视化。</li>
+<li><code>embeddings_freq</code>: 被选中的嵌入层会被保存的频率（在训练轮中）。</li>
+<li><code>embeddings_layer_names</code>: 一个列表，会被监测层的名字。 如果是 None 或空列表，那么所有的嵌入层都会被监测。</li>
+<li><code>embeddings_metadata</code>: 一个字典，对应层的名字到保存有这个嵌入层元数据文件的名字。 查看 详情 关于元数据的数据格式。 以防同样的元数据被用于所用的嵌入层，字符串可以被传入。</li>
+<li><code>embeddings_data</code>: 要嵌入在 embeddings_layer_names 指定的层的数据。 Numpy 数组（如果模型有单个输入）或 Numpy 数组列表（如果模型有多个输入）。 Learn ore about embeddings。</li>
+<li><code>update_freq</code>: 'batch' 或 'epoch' 或 整数。当使用 'batch' 时，在每个 batch 之后将损失和评估值写入到 TensorBoard 中。同样的情况应用到 'epoch' 中。如果使用整数，例如 10000，这个回调会在每 10000 个样本之后将损失和评估值写入到 TensorBoard 中。注意，频繁地写入到 TensorBoard 会减缓你的训练。</li>
+</ul>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

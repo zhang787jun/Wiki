@@ -1,12 +1,10 @@
 ---
-title: "Keras 模型保存与加载"
+title: "Keras模型的保存与加载"
 layout: page
 date: 2099-06-02 00:00
 ---
 
 [TOC]
-
-
 
 ## 1. 模型需要保存什么
 1. 模型结构
