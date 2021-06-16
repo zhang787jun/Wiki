@@ -46,7 +46,6 @@
 </li>
 </ul>
 </li>
-<li><a href="#keras">keras</a></li>
 </ul>
 </div>
 <h1 id="_1">保存什么</h1>
@@ -93,27 +92,6 @@
 2. 它所保存的数据信息，例如数据类型，shape等（tensor.shape/tensor.dytpe）。</p>
 <h4 id="122">1.2.2. 参数信息</h4>
 <p>tf.Varibel </p>
-<h1 id="keras">keras</h1>
-<p>tensorflow </p>
-<div class="hlcode"><pre><span class="n">checkpoint_path</span> <span class="o">=</span> <span class="s">&quot;training_1/cp.ckpt&quot;</span>
-<span class="n">checkpoint_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">)</span>
-
-<span class="c"># 创建一个保存模型权重的回调</span>
-<span class="n">cp_callback</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">ModelCheckpoint</span><span class="p">(</span><span class="n">filepath</span><span class="o">=</span><span class="n">checkpoint_path</span><span class="p">,</span>
-                                                 <span class="n">save_weights_only</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
-                                                 <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-<span class="c"># 使用新的回调训练模型</span>
-<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_images</span><span class="p">,</span> 
-          <span class="n">train_labels</span><span class="p">,</span>  
-          <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
-          <span class="n">validation_data</span><span class="o">=</span><span class="p">(</span><span class="n">test_images</span><span class="p">,</span><span class="n">test_labels</span><span class="p">),</span>
-          <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">cp_callback</span><span class="p">])</span>  <span class="c"># 通过回调训练</span>
-
-<span class="c"># 这可能会生成与保存优化程序状态相关的警告。</span>
-<span class="c"># 这些警告（以及整个笔记本中的类似警告）</span>
-<span class="c"># 是防止过时使用，可以忽略。</span>
-</pre></div>
 </div>
 <div id="renote">
   <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>

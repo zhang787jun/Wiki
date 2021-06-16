@@ -94,6 +94,7 @@
 <li><a href="#41-gpu">4.1. 查看GPU</a></li>
 <li><a href="#42-nvidia-smi">4.2. nvidia-smi</a></li>
 <li><a href="#43-gpustat">4.3. gpustat</a></li>
+<li><a href="#44">4.4. 清空显存</a></li>
 </ul>
 </li>
 <li><a href="#5-gpu">5. GPU 软件相关</a><ul>
@@ -519,6 +520,19 @@
 
 
 <p><img alt="" src="/attach/images/2020-02-06-12-18-17.png" /></p>
+<h2 id="44">4.4. 清空显存</h2>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">torch</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">empty_cache</span><span class="p">()</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="err">#</span> <span class="nb">kill</span>
+<span class="nb">kill</span> <span class="o">-</span><span class="mi">9</span> <span class="o">&lt;</span><span class="nb">PID</span><span class="o">&gt;</span>
+<span class="err">#</span> <span class="nb">kill</span> <span class="nx">显卡涉及的进程</span>
+<span class="nx">sudo</span> <span class="nx">fuser</span> <span class="na">-v</span> <span class="p">/</span><span class="nx">dev</span><span class="p">/</span><span class="nx">nvidia</span><span class="o">*</span> <span class="o">|</span><span class="nx">awk</span> <span class="s1">&#39;{for(i=1;i&lt;=NF;i++)print &quot;kill -9 &quot; $i;}&#39;</span> <span class="o">|</span> <span class="nx">sudo</span> <span class="nx">sh</span>
+</pre></div>
+
+
 <h1 id="5-gpu">5. GPU 软件相关</h1>
 <h2 id="51-cuda">5.1. CUDA</h2>
 <h3 id="511-cuda">5.1.1. 什么是CUDA</h3>

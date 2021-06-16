@@ -14,8 +14,6 @@ TensorBoard 是Tensorflow的可视化结构管理工具，但是 Tensorflow 2.x 
 
 # Tensorflow 2.0 中使用 TensorBoard
 
-
-
 我们知道，在TensorFlow2.0中，训练一个神经网络模型主要有两种方式：
 
 1. 使用tf.keras模块的Model.fit()；

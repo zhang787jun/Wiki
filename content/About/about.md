@@ -15,21 +15,21 @@ Hello, 大家好！
 但纵使这里有这样那样的不足，还是很高兴有缘与您见面，欢迎指导、交流。
 
 
-![image](https://img.shields.io/badge/图学习-PyG-blue.svg)
-![image](https://img.shields.io/badge/NLP-Tensorflow-orange.svg)
-![image](https://img.shields.io/badge/推荐-Tensorflow,Xgboost-orange.svg)
-![image](https://img.shields.io/badge/推荐-Tensorflow-orange.svg)
-![image](https://img.shields.io/badge/时序-Tensorflow-orange.svg)
-![image](https://img.shields.io/badge/CV-Pytorch,OpenCV,Gst-blue.svg)
-![image](https://img.shields.io/badge/时序,IOT-TensorFlow,sklearn-orange.svg)
+**写作体会**
+
+斯博士说:"作者写书的目的绝对不是为了成就作者，而是为了成就每一位读者。" 
+优秀的写作是为了看的人更好的理解，要关注阅读者需要的输入什么，不是满足写作人的内容输出。
 
 
-**体会**
+很多作者在写作的时候，往往需要收集整理大量资料，然后把自己认为最重要最正确的精华呈现出来。但是！这样做的问题是，经过萃取的东西，一般读者是看不懂的。
 
-优秀的写作是为了看的人更好的理解，要关注阅读者需要的输入什么，不是满足写作人的内容输出
 
 很遗憾，相比于blog及专栏，这个wiki还真是更面向自我的一个空间。
 
+**有意思的图标**
+
+![image](https://img.shields.io/badge/图学习-PyG-blue.svg)
+✔️
 
 # 技术实现
 

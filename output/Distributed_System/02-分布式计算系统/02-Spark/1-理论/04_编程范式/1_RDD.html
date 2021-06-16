@@ -70,7 +70,7 @@
 <h2 id="21">2.1. 弹性数据分区</h2>
 <p>Partition：数据分区，是指的spark在计算过程中，生成的数据在计算空间内最小单元。即一个RDD数据集可以划分为多少个数据分区。同一份数据（RDD）的<strong>partition 大小不一</strong>，<strong>数量不定</strong>，是根据application里的算子和最初读入的数据分块数量决定的，这也是为什么叫“<strong>弹性</strong>分布式”数据集的原因之一。（在内存）</p>
 <p><img alt="" src="/attach/images/2019-10-14-16-59-16.png" /></p>
-<p><strong>如图所示</strong>RDD_1含有5个partition 分区（p1、p2、p3、p4、p5），分别存储在4个节点（Node1、node2、Node3、Node4）中。RDD_2含有3个分区（p1、p2、p3），分布在3个节点（Node1、Node2、Node3）中。</p>
+<p><strong>如图所示</strong> RDD_1 含有5个partition 分区（p1、p2、p3、p4、p5），分别存储在4个节点（Node1、node2、Node3、Node4）中。RDD_2含有3个分区（p1、p2、p3），分布在3个节点（Node1、Node2、Node3）中。</p>
 <p>RDD分区的一个分区原则是使得分区的个数尽量等于集群中的CPU核心（core）数目。</p>
 <p><strong>NOTE</strong><br />
 <strong>Partition与block</strong> <br />

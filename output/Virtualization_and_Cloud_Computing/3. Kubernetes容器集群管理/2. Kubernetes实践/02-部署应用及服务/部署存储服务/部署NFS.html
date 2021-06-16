@@ -1,0 +1,720 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>部署nfs-client-provisioner - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Virtualization_and_Cloud_Computing">Virtualization_and_Cloud_Computing</a>&nbsp;»&nbsp;<a href="/Wiki/#-3. Kubernetes容器集群管理">3. Kubernetes容器集群管理</a>&nbsp;»&nbsp;<a href="/Wiki/#-2. Kubernetes实践">2. Kubernetes实践</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-部署应用及服务">02-部署应用及服务</a>&nbsp;»&nbsp;<a href="/Wiki/#-部署存储服务">部署存储服务</a>&nbsp;»&nbsp;部署nfs-client-provisioner</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">部署nfs-client-provisioner</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 部署说明</a></li>
+<li><a href="#2">2. 部署步骤</a><ul>
+<li><a href="#21-nfs">2.1. 前提条件--开启nfs服务</a></li>
+<li><a href="#22">2.2. 处理授权问题</a><ul>
+<li><a href="#221-service-account">2.2.1. 创建Service Account</a></li>
+<li><a href="#222-cluster-role">2.2.2. 创建Cluster Role</a></li>
+<li><a href="#223-cluster-role-binding">2.2.3. 创建Cluster Role Binding</a></li>
+<li><a href="#224-role">2.2.4. 创建Role</a></li>
+<li><a href="#225-role-binding">2.2.5. 创建Role Binding</a></li>
+<li><a href="#226">2.2.6. 汇总</a></li>
+</ul>
+</li>
+<li><a href="#23">2.3. 处理存储问题</a><ul>
+<li><a href="#231-nfs-client-provisioner">2.3.1. 创建nfs-client-provisioner</a></li>
+<li><a href="#232-storageclass">2.3.2. 创建StorageClass</a></li>
+</ul>
+</li>
+<li><a href="#24-deployment">2.4. 创建 deployment</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 验证与使用</a><ul>
+<li><a href="#31-deployment">3.1. 验证deployment 部署情况</a></li>
+<li><a href="#32">3.2. 验证能否正常使用</a><ul>
+<li><a href="#321-storageclass">3.2.1. 通过storageClass 验证</a></li>
+<li><a href="#322">3.2.2. 直接使用</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4">4. 卸载</a></li>
+</ul>
+</div>
+<h1 id="1">1. 部署说明</h1>
+<p>Kubernetes集群中NFS类型的存储没有内置 Provisioner。但是您可以在集群中为NFS配置外部Provisioner。</p>
+<p><code>Nfs-client-provisioner</code>是一个开源的NFS 外部Provisioner，利用NFS Server为Kubernetes集群提供持久化存储，并且支持动态创建PV。但是nfs-client-provisioner本身不提供NFS，需要现有的NFS服务器提供存储。</p>
+<p><code>nfs-client-provisioner</code>在集群中以<strong>deployment</strong>的方式运行, <strong>副本数为1</strong>，以外部Provisioner在集群中运行；</p>
+<p>使用nfs-client-provisioner定义Storage Class时， Storage Class中的provisioner必须与nfs-client-provisioner 中定义的PROVISIONER_NAME相同；</p>
+<p>用户使用nfs-client-provisioner服务关联的StorageClass创建PVC时, nfs-client-provisioner在cfs文件系统中创建子目录, 初始化并创建PV；</p>
+<p>nfs-client-provisioner在NFS服务器上提供PV的命名格式：</p>
+<div class="hlcode"><pre><span class="cp">${</span><span class="n">namespace</span><span class="cp">}</span>-<span class="cp">${</span><span class="n">pvcName</span><span class="cp">}</span>-<span class="cp">${</span><span class="n">pvName</span><span class="cp">}</span>；
+</pre></div>
+
+
+<p>PV被删除后, nfs-client-provisioner会对pv子目录进行归档或者删除操作；</p>
+<p>nfs-client-provisioner在NFS服务器上归档PV的命名格式：</p>
+<div class="hlcode"><pre>archieved-<span class="cp">${</span><span class="n">namespace</span><span class="cp">}</span>-<span class="cp">${</span><span class="n">pvcName</span><span class="cp">}</span>-<span class="cp">${</span><span class="n">pvName</span><span class="cp">}</span> ；
+</pre></div>
+
+
+<p>每个nfs-client-provisioner deployment对应一个CFS 文件存储，如需在集群中关联多个CFS文件存储，请参考示例部署多个nfs-client-provisioner deployment。</p>
+<h1 id="2">2. 部署步骤</h1>
+<h2 id="21-nfs">2.1. 前提条件--开启nfs服务</h2>
+<ol>
+<li>一个节点搭建好 nfs-server (master)</li>
+<li>集群所有Node节点安装nfs客户端</li>
+<li><strong>指定挂载目录可用</strong></li>
+</ol>
+<h2 id="22">2.2. 处理授权问题</h2>
+<p>从Kubernetes 1.6 版本起，k8s系统默认启用RBAC策略<br />
+如果您的集群启用了RBAC，则必须授权provisioner。 </p>
+<p>详细部署说明参考下文。</p>
+<h3 id="221-service-account">2.2.1. 创建Service Account</h3>
+<p><strong>方法1</strong>：通过yaml 安装</p>
+<div class="hlcode"><pre><span class="o">&gt;&gt;&gt;</span>
+<span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span><span class="n">ServiceAccount</span><span class="p">.</span><span class="n">yml</span>
+<span class="nl">kind:</span> <span class="n">ServiceAccount</span>
+<span class="nl">apiVersion:</span> <span class="n">v1</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">ServiceAccount</span><span class="p">.</span><span class="n">yml</span>
+</pre></div>
+
+
+<p>Yaml文件如下</p>
+<div class="hlcode"><pre>
+</pre></div>
+
+
+<p><strong>方法2</strong>：使用命令行创建</p>
+<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">create</span> <span class="n">serviceaccount</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span> 
+</pre></div>
+
+
+<h3 id="222-cluster-role">2.2.2. 创建Cluster Role</h3>
+<div class="hlcode"><pre><span class="n">wget</span> <span class="n">https</span><span class="o">:</span><span class="c1">//kubernetes.s3.cn-north-1.jdcloud-oss.com/CFS/nfs-client-provisioner/ClusterRole.yml</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">ClusterRole</span><span class="p">.</span><span class="n">yml</span>
+<span class="cp"># 验证</span>
+<span class="n">kubectl</span> <span class="n">get</span>  <span class="n">ClusterRole</span> <span class="o">|</span><span class="n">grep</span> <span class="n">nfs</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span><span class="o">-</span><span class="n">runner</span>
+</pre></div>
+
+
+<p>Yaml文件说明：</p>
+<div class="hlcode"><pre><span class="l-Scalar-Plain">kind</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">ClusterRole</span>
+<span class="l-Scalar-Plain">apiVersion</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">rbac.authorization.k8s.io/v1</span>
+<span class="l-Scalar-Plain">metadata</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">nfs-client-provisioner-runner</span>
+<span class="l-Scalar-Plain">rules</span><span class="p-Indicator">:</span>
+  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">apiGroups</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;&quot;</span><span class="p-Indicator">]</span>
+    <span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;persistentvolumes&quot;</span><span class="p-Indicator">]</span>
+    <span class="l-Scalar-Plain">verbs</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;get&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;list&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;watch&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;create&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;delete&quot;</span><span class="p-Indicator">]</span>
+  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">apiGroups</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;&quot;</span><span class="p-Indicator">]</span>
+    <span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;persistentvolumeclaims&quot;</span><span class="p-Indicator">]</span>
+    <span class="l-Scalar-Plain">verbs</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;get&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;list&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;watch&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;update&quot;</span><span class="p-Indicator">]</span>
+  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">apiGroups</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;storage.k8s.io&quot;</span><span class="p-Indicator">]</span>
+    <span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;storageclasses&quot;</span><span class="p-Indicator">]</span>
+    <span class="l-Scalar-Plain">verbs</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;get&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;list&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;watch&quot;</span><span class="p-Indicator">]</span>
+  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">apiGroups</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;&quot;</span><span class="p-Indicator">]</span>
+    <span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;events&quot;</span><span class="p-Indicator">]</span>
+    <span class="l-Scalar-Plain">verbs</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;create&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;update&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;patch&quot;</span><span class="p-Indicator">]</span>
+</pre></div>
+
+
+<h3 id="223-cluster-role-binding">2.2.3. 创建Cluster Role Binding</h3>
+<div class="hlcode"><pre><span class="n">wget</span> <span class="n">https</span><span class="o">:</span><span class="c1">//kubernetes.s3.cn-north-1.jdcloud-oss.com/CFS/nfs-client-provisioner/ClusterRoleBinding.yml</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">ClusterRoleBinding</span><span class="p">.</span><span class="n">yml</span>
+
+<span class="cp"># 验证</span>
+<span class="n">kubectl</span> <span class="n">get</span>  <span class="n">ClusterRoleBinding</span> <span class="o">|</span><span class="n">grep</span> <span class="n">nfs</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">run</span><span class="o">-</span><span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+</pre></div>
+
+
+<p>Yaml文件说明</p>
+<div class="hlcode"><pre><span class="l-Scalar-Plain">kind</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">ClusterRoleBinding</span>
+<span class="l-Scalar-Plain">apiVersion</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">rbac.authorization.k8s.io/v1</span>
+<span class="l-Scalar-Plain">metadata</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">run-nfs-client-provisioner</span>
+<span class="l-Scalar-Plain">subjects</span><span class="p-Indicator">:</span>
+  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">kind</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">ServiceAccount</span>
+    <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">nfs-client-provisioner</span>
+    <span class="l-Scalar-Plain">namespace</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">default</span>
+<span class="l-Scalar-Plain">roleRef</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">kind</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">ClusterRole</span>
+  <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">nfs-client-provisioner-runner</span>
+  <span class="l-Scalar-Plain">apiGroup</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">rbac.authorization.k8s.io</span>
+</pre></div>
+
+
+<h3 id="224-role">2.2.4. 创建Role</h3>
+<div class="hlcode"><pre><span class="n">wget</span> <span class="n">https</span><span class="o">:</span><span class="c1">//kubernetes.s3.cn-north-1.jdcloud-oss.com/CFS/nfs-client-provisioner/Role.yml</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">Role</span><span class="p">.</span><span class="n">yml</span>
+
+<span class="n">kubectl</span> <span class="n">get</span>  <span class="n">Role</span> <span class="o">|</span><span class="n">grep</span> <span class="n">nfs</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">leader</span><span class="o">-</span><span class="n">locking</span><span class="o">-</span><span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+</pre></div>
+
+
+<p>Yaml文件说明：</p>
+<div class="hlcode"><pre><span class="l-Scalar-Plain">kind</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Role</span>
+<span class="l-Scalar-Plain">apiVersion</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">rbac.authorization.k8s.io/v1</span>
+<span class="l-Scalar-Plain">metadata</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">leader-locking-nfs-client-provisioner</span>
+<span class="l-Scalar-Plain">rules</span><span class="p-Indicator">:</span>
+  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">apiGroups</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;&quot;</span><span class="p-Indicator">]</span>
+    <span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;endpoints&quot;</span><span class="p-Indicator">]</span>
+    <span class="l-Scalar-Plain">verbs</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="s">&quot;get&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;list&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;watch&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;create&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;update&quot;</span><span class="p-Indicator">,</span> <span class="s">&quot;patch&quot;</span><span class="p-Indicator">]</span>
+</pre></div>
+
+
+<h3 id="225-role-binding">2.2.5. 创建Role Binding</h3>
+<div class="hlcode"><pre><span class="n">wget</span> <span class="n">https</span><span class="o">:</span><span class="c1">//kubernetes.s3.cn-north-1.jdcloud-oss.com/CFS/nfs-client-provisioner/RoleBinding.yml</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">RoleBinding</span><span class="p">.</span><span class="n">yml</span>
+
+<span class="n">kubectl</span> <span class="n">get</span>  <span class="n">RoleBinding</span> <span class="o">|</span><span class="n">grep</span> <span class="n">nfs</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">leader</span><span class="o">-</span><span class="n">locking</span><span class="o">-</span><span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+</pre></div>
+
+
+<p>Yaml文件说明：</p>
+<div class="hlcode"><pre><span class="n">kind</span><span class="o">:</span> <span class="n">RoleBinding</span>
+<span class="n">apiVersion</span><span class="o">:</span> <span class="n">rbac</span><span class="o">.</span><span class="na">authorization</span><span class="o">.</span><span class="na">k8s</span><span class="o">.</span><span class="na">io</span><span class="o">/</span><span class="n">v1</span>
+<span class="n">metadata</span><span class="o">:</span>
+  <span class="n">name</span><span class="o">:</span> <span class="n">leader</span><span class="o">-</span><span class="n">locking</span><span class="o">-</span><span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+<span class="n">subjects</span><span class="o">:</span>
+  <span class="o">-</span> <span class="n">kind</span><span class="o">:</span> <span class="n">ServiceAccount</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+    <span class="err">#</span> <span class="n">replace</span> <span class="k">with</span> <span class="kd">namespace</span> <span class="n">where</span> <span class="n">provisioner</span> <span class="k">is</span> <span class="n">deployed</span>
+<span class="n">roleRef</span><span class="o">:</span>
+  <span class="n">kind</span><span class="o">:</span> <span class="n">Role</span>
+  <span class="n">name</span><span class="o">:</span> <span class="n">leader</span><span class="o">-</span><span class="n">locking</span><span class="o">-</span><span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+  <span class="n">apiGroup</span><span class="o">:</span> <span class="n">rbac</span><span class="o">.</span><span class="na">authorization</span><span class="o">.</span><span class="na">k8s</span><span class="o">.</span><span class="na">io</span>
+</pre></div>
+
+
+<h3 id="226">2.2.6. 汇总</h3>
+<div class="hlcode"><pre><span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span><span class="n">nfs</span><span class="o">-</span><span class="n">rbac</span><span class="p">.</span><span class="n">yaml</span>
+<span class="nl">apiVersion:</span> <span class="n">v1</span>
+<span class="nl">kind:</span> <span class="n">ServiceAccount</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+  <span class="err">#</span> <span class="n">replace</span> <span class="n">with</span> <span class="n">namespace</span> <span class="n">where</span> <span class="n">provisioner</span> <span class="n">is</span> <span class="n">deployed</span>
+  <span class="nl">namespace:</span> <span class="n">nfs</span>        <span class="err">#根据实际环境设定</span><span class="n">namespace</span><span class="p">,</span><span class="err">下面类同</span>
+<span class="o">---</span>
+<span class="nl">kind:</span> <span class="n">ClusterRole</span>
+<span class="nl">apiVersion:</span> <span class="n">rbac</span><span class="p">.</span><span class="n">authorization</span><span class="p">.</span><span class="n">k8s</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">v1</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span><span class="o">-</span><span class="n">runner</span>
+<span class="nl">rules:</span>
+  <span class="o">-</span> <span class="n">apiGroups</span><span class="o">:</span> <span class="p">[</span><span class="s">&quot;&quot;</span><span class="p">]</span>
+    <span class="nl">resources:</span> <span class="p">[</span><span class="s">&quot;persistentvolumes&quot;</span><span class="p">]</span>
+    <span class="nl">verbs:</span> <span class="p">[</span><span class="s">&quot;get&quot;</span><span class="p">,</span> <span class="s">&quot;list&quot;</span><span class="p">,</span> <span class="s">&quot;watch&quot;</span><span class="p">,</span> <span class="s">&quot;create&quot;</span><span class="p">,</span> <span class="s">&quot;delete&quot;</span><span class="p">]</span>
+  <span class="o">-</span> <span class="n">apiGroups</span><span class="o">:</span> <span class="p">[</span><span class="s">&quot;&quot;</span><span class="p">]</span>
+    <span class="nl">resources:</span> <span class="p">[</span><span class="s">&quot;persistentvolumeclaims&quot;</span><span class="p">]</span>
+    <span class="nl">verbs:</span> <span class="p">[</span><span class="s">&quot;get&quot;</span><span class="p">,</span> <span class="s">&quot;list&quot;</span><span class="p">,</span> <span class="s">&quot;watch&quot;</span><span class="p">,</span> <span class="s">&quot;update&quot;</span><span class="p">]</span>
+  <span class="o">-</span> <span class="n">apiGroups</span><span class="o">:</span> <span class="p">[</span><span class="s">&quot;storage.k8s.io&quot;</span><span class="p">]</span>
+    <span class="nl">resources:</span> <span class="p">[</span><span class="s">&quot;storageclasses&quot;</span><span class="p">]</span>
+    <span class="nl">verbs:</span> <span class="p">[</span><span class="s">&quot;get&quot;</span><span class="p">,</span> <span class="s">&quot;list&quot;</span><span class="p">,</span> <span class="s">&quot;watch&quot;</span><span class="p">]</span>
+  <span class="o">-</span> <span class="n">apiGroups</span><span class="o">:</span> <span class="p">[</span><span class="s">&quot;&quot;</span><span class="p">]</span>
+    <span class="nl">resources:</span> <span class="p">[</span><span class="s">&quot;events&quot;</span><span class="p">]</span>
+    <span class="nl">verbs:</span> <span class="p">[</span><span class="s">&quot;create&quot;</span><span class="p">,</span> <span class="s">&quot;update&quot;</span><span class="p">,</span> <span class="s">&quot;patch&quot;</span><span class="p">]</span>
+<span class="o">---</span>
+<span class="nl">kind:</span> <span class="n">ClusterRoleBinding</span>
+<span class="nl">apiVersion:</span> <span class="n">rbac</span><span class="p">.</span><span class="n">authorization</span><span class="p">.</span><span class="n">k8s</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">v1</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">run</span><span class="o">-</span><span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+<span class="nl">subjects:</span>
+  <span class="o">-</span> <span class="n">kind</span><span class="o">:</span> <span class="n">ServiceAccount</span>
+    <span class="nl">name:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+    <span class="err">#</span> <span class="n">replace</span> <span class="n">with</span> <span class="n">namespace</span> <span class="n">where</span> <span class="n">provisioner</span> <span class="n">is</span> <span class="n">deployed</span>
+    <span class="nl">namespace:</span> <span class="n">nfs</span>
+<span class="nl">roleRef:</span>
+  <span class="nl">kind:</span> <span class="n">ClusterRole</span>
+  <span class="nl">name:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span><span class="o">-</span><span class="n">runner</span>
+  <span class="nl">apiGroup:</span> <span class="n">rbac</span><span class="p">.</span><span class="n">authorization</span><span class="p">.</span><span class="n">k8s</span><span class="p">.</span><span class="n">io</span>
+<span class="o">---</span>
+<span class="nl">kind:</span> <span class="n">Role</span>
+<span class="nl">apiVersion:</span> <span class="n">rbac</span><span class="p">.</span><span class="n">authorization</span><span class="p">.</span><span class="n">k8s</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">v1</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">leader</span><span class="o">-</span><span class="n">locking</span><span class="o">-</span><span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+    <span class="err">#</span> <span class="n">replace</span> <span class="n">with</span> <span class="n">namespace</span> <span class="n">where</span> <span class="n">provisioner</span> <span class="n">is</span> <span class="n">deployed</span>
+  <span class="nl">namespace:</span> <span class="n">nfs</span>
+<span class="nl">rules:</span>
+  <span class="o">-</span> <span class="n">apiGroups</span><span class="o">:</span> <span class="p">[</span><span class="s">&quot;&quot;</span><span class="p">]</span>
+    <span class="nl">resources:</span> <span class="p">[</span><span class="s">&quot;endpoints&quot;</span><span class="p">]</span>
+    <span class="nl">verbs:</span> <span class="p">[</span><span class="s">&quot;get&quot;</span><span class="p">,</span> <span class="s">&quot;list&quot;</span><span class="p">,</span> <span class="s">&quot;watch&quot;</span><span class="p">,</span> <span class="s">&quot;create&quot;</span><span class="p">,</span> <span class="s">&quot;update&quot;</span><span class="p">,</span> <span class="s">&quot;patch&quot;</span><span class="p">]</span>
+<span class="o">---</span>
+<span class="nl">kind:</span> <span class="n">RoleBinding</span>
+<span class="nl">apiVersion:</span> <span class="n">rbac</span><span class="p">.</span><span class="n">authorization</span><span class="p">.</span><span class="n">k8s</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">v1</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">leader</span><span class="o">-</span><span class="n">locking</span><span class="o">-</span><span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+<span class="nl">subjects:</span>
+  <span class="o">-</span> <span class="n">kind</span><span class="o">:</span> <span class="n">ServiceAccount</span>
+    <span class="nl">name:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+    <span class="err">#</span> <span class="n">replace</span> <span class="n">with</span> <span class="n">namespace</span> <span class="n">where</span> <span class="n">provisioner</span> <span class="n">is</span> <span class="n">deployed</span>
+    <span class="nl">namespace:</span> <span class="n">nfs</span>
+<span class="nl">roleRef:</span>
+  <span class="nl">kind:</span> <span class="n">Role</span>
+  <span class="nl">name:</span> <span class="n">leader</span><span class="o">-</span><span class="n">locking</span><span class="o">-</span><span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+  <span class="nl">apiGroup:</span> <span class="n">rbac</span><span class="p">.</span><span class="n">authorization</span><span class="p">.</span><span class="n">k8s</span><span class="p">.</span><span class="n">io</span>
+
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="n">nfs</span><span class="o">-</span><span class="n">rbac</span><span class="p">.</span><span class="n">yaml</span>
+</pre></div>
+
+
+<h2 id="23">2.3. 处理存储问题</h2>
+<h3 id="231-nfs-client-provisioner">2.3.1. 创建nfs-client-provisioner</h3>
+<p>k8s就相当于是一个nfs的客户端。如果上述的客户端挂载成功了，k8s的挂载也一定能挂载成功。</p>
+<p>需要提前明确的几个参数：</p>
+<ol>
+<li>RBAC文件的namespace</li>
+<li>NFS Server IP</li>
+<li>NFS挂载卷</li>
+<li><code>PROVISIONER_NAME</code></li>
+</ol>
+<div class="hlcode"><pre><span class="cp"># 1. 参考上面</span>
+<span class="cp"># 2. 需要查看</span>
+<span class="cp"># 3. </span>
+<span class="n">showmount</span> <span class="o">-</span><span class="n">e</span> <span class="o">&lt;</span><span class="n">nfs</span> <span class="n">server</span> <span class="n">IP</span><span class="o">&gt;</span>
+<span class="cp"># 4. </span>
+<span class="cp"># PROVISIONER_NAME 自定义</span>
+</pre></div>
+
+
+<p><strong>方案1</strong> </p>
+<div class="hlcode"><pre><span class="n">helm</span> <span class="n">repo</span> <span class="n">add</span> <span class="n">apphub</span> <span class="n">https</span><span class="o">:</span><span class="c1">//apphub.aliyuncs.com</span>
+
+<span class="n">helm</span> <span class="n">install</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span> \
+  <span class="o">--</span><span class="n">set</span> <span class="n">storageClass</span><span class="p">.</span><span class="n">name</span><span class="o">=</span><span class="n">nfs</span><span class="o">-</span><span class="n">client</span> \
+  <span class="o">--</span><span class="n">set</span> <span class="n">storageClass</span><span class="p">.</span><span class="n">defaultClass</span><span class="o">=</span><span class="nb">true</span> \
+  <span class="o">--</span><span class="n">set</span> <span class="n">nfs</span><span class="p">.</span><span class="n">server</span><span class="o">=</span><span class="mf">10.0.77.99</span> \
+  <span class="o">--</span><span class="n">set</span> <span class="n">nfs</span><span class="p">.</span><span class="n">path</span><span class="o">=/</span> \
+  <span class="n">apphub</span><span class="o">/</span><span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+</pre></div>
+
+
+<p><strong>方案2</strong><br />
+nfs-client-provisioner在集群中以deployment的方式运行，并且nfs-client-provisioner需要访问kube-api获取PVC对象的变化。</p>
+<div class="hlcode"><pre><span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span><span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span><span class="p">.</span><span class="n">yaml</span>
+<span class="nl">apiVersion:</span> <span class="n">apps</span><span class="o">/</span><span class="n">v1</span>
+<span class="nl">kind:</span> <span class="n">Deployment</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+  <span class="nl">labels:</span>
+    <span class="nl">app:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+  <span class="err">#</span> <span class="n">replace</span> <span class="n">with</span> <span class="n">namespace</span> <span class="n">where</span> <span class="n">provisioner</span> <span class="n">is</span> <span class="n">deployed</span>
+  <span class="nl">namespace:</span> <span class="k">default</span>   <span class="err">#与</span><span class="n">RBAC</span><span class="err">文件中的</span><span class="n">namespace</span><span class="err">保持一致</span>
+<span class="nl">spec:</span>
+  <span class="nl">replicas:</span> <span class="mi">1</span>
+  <span class="nl">selector:</span>
+    <span class="nl">matchLabels:</span>
+      <span class="nl">app:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+  <span class="nl">strategy:</span>
+    <span class="nl">type:</span> <span class="n">Recreate</span>
+  <span class="nl">selector:</span>
+    <span class="nl">matchLabels:</span>
+      <span class="nl">app:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+  <span class="nl">template:</span>
+    <span class="nl">metadata:</span>
+      <span class="nl">labels:</span>
+        <span class="nl">app:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+    <span class="nl">spec:</span>
+      <span class="nl">serviceAccountName:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+      <span class="nl">containers:</span>
+        <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+          <span class="nl">image:</span> <span class="n">quay</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">external_storage</span><span class="o">/</span><span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span><span class="o">:</span><span class="n">latest</span>
+          <span class="nl">volumeMounts:</span>
+            <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">root</span>
+              <span class="nl">mountPath:</span> <span class="o">/</span><span class="n">persistentvolumes</span>
+          <span class="nl">env:</span>
+            <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">PROVISIONER_NAME</span>
+              <span class="nl">value:</span> <span class="n">kubeflow</span><span class="o">/</span><span class="n">nfs</span>  <span class="err">#</span><span class="n">provisioner</span><span class="err">名称</span><span class="p">,</span><span class="err">请确保该名称与</span> <span class="n">nfs</span><span class="o">-</span><span class="n">StorageClass</span><span class="p">.</span><span class="n">yaml</span><span class="err">文件中的</span><span class="n">provisioner</span><span class="err">名称保持一致</span>
+            <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">NFS_SERVER</span>
+              <span class="nl">value:</span> <span class="mf">10.0.77.99</span>   <span class="err">#</span><span class="n">NFS</span> <span class="n">Server</span> <span class="n">IP</span><span class="err">地址</span>
+            <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">NFS_PATH</span>  
+              <span class="n">value</span><span class="o">:</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">nfs</span>    <span class="err">#</span><span class="n">NFS</span><span class="err">挂载卷</span>
+      <span class="nl">volumes:</span>
+        <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">root</span>
+          <span class="nl">nfs:</span>
+            <span class="nl">server:</span> <span class="mf">10.0.77.99</span>   <span class="err">#</span><span class="n">NFS</span> <span class="n">Server</span> <span class="n">IP</span><span class="err">地址</span>
+            <span class="nl">path:</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">nfs</span>      <span class="err">#</span><span class="n">NFS</span> <span class="err">挂载卷</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span><span class="p">.</span><span class="n">yaml</span>
+
+<span class="n">kubectl</span> <span class="n">get</span> <span class="n">deployment</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">NAME</span>                     <span class="n">DESIRED</span>   <span class="n">CURRENT</span>   <span class="n">UP</span><span class="o">-</span><span class="n">TO</span><span class="o">-</span><span class="n">DATE</span>   <span class="n">AVAILABLE</span>   <span class="n">AGE</span>
+<span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>   <span class="mi">1</span>         <span class="mi">1</span>         <span class="mi">1</span>            <span class="mi">1</span>           <span class="mi">42</span><span class="n">m</span>
+</pre></div>
+
+
+<h3 id="232-storageclass">2.3.2. 创建StorageClass</h3>
+<div class="hlcode"><pre><span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span> <span class="n">nfs</span><span class="o">-</span><span class="n">StorageClass</span><span class="p">.</span><span class="n">yaml</span>
+<span class="nl">apiVersion:</span> <span class="n">storage</span><span class="p">.</span><span class="n">k8s</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">v1</span>
+<span class="nl">kind:</span> <span class="n">StorageClass</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">kubeflow</span><span class="o">-</span><span class="n">nfs</span><span class="o">-</span><span class="n">storage</span>
+<span class="nl">provisioner:</span> <span class="n">kubeflow</span><span class="o">/</span><span class="n">nfs</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">nfs</span><span class="o">-</span><span class="n">StorageClass</span><span class="p">.</span><span class="n">yaml</span>
+
+<span class="cp"># 验证</span>
+<span class="n">kubectl</span> <span class="n">get</span> <span class="n">StorageClass</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">NAME</span>                             <span class="n">PROVISIONER</span>    <span class="n">AGE</span>
+<span class="n">kubeflow</span><span class="o">-</span><span class="n">nfs</span><span class="o">-</span><span class="n">storage</span> <span class="p">(</span><span class="k">default</span><span class="p">)</span>   <span class="n">kubeflow</span><span class="o">/</span><span class="n">nfs</span>   <span class="mi">3</span><span class="n">d15h</span>
+</pre></div>
+
+
+<h2 id="24-deployment">2.4. 创建 deployment</h2>
+<p>创建 <code>nfs-client-provisioner</code>的deployment<br />
+k8s中volume使用nfs类型</p>
+<div class="hlcode"><pre><span class="n">kind</span><span class="o">:</span> <span class="n">Deployment</span>
+<span class="n">apiVersion</span><span class="o">:</span> <span class="n">extensions</span><span class="o">/</span><span class="n">v1beta1</span>
+<span class="n">metadata</span><span class="o">:</span>
+  <span class="n">name</span><span class="o">:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+<span class="n">spec</span><span class="o">:</span>
+  <span class="n">replicas</span><span class="o">:</span> <span class="mi">1</span>
+  <span class="n">strategy</span><span class="o">:</span>
+    <span class="n">type</span><span class="o">:</span> <span class="n">Recreate</span>
+  <span class="n">template</span><span class="o">:</span>
+    <span class="n">metadata</span><span class="o">:</span>
+      <span class="n">labels</span><span class="o">:</span>
+        <span class="n">app</span><span class="o">:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+    <span class="n">spec</span><span class="o">:</span>
+      <span class="n">serviceAccountName</span><span class="o">:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+      <span class="n">containers</span><span class="o">:</span>
+        <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+          <span class="n">image</span><span class="o">:</span> <span class="n">registry</span><span class="o">.</span><span class="na">cn</span><span class="o">-</span><span class="n">hangzhou</span><span class="o">.</span><span class="na">aliyuncs</span><span class="o">.</span><span class="na">com</span><span class="sr">/open-ali/</span><span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span><span class="o">:</span><span class="n">latest</span>
+          <span class="n">imagePullPolicy</span><span class="o">:</span> <span class="n">IfNotPresent</span>
+          <span class="n">volumeMounts</span><span class="o">:</span>
+            <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">root</span>
+              <span class="n">mountPath</span><span class="o">:</span> <span class="o">/</span><span class="n">persistentvolumes</span>
+          <span class="n">env</span><span class="o">:</span>
+            <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">PROVISIONER_NAME</span>
+              <span class="n">value</span><span class="o">:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>         <span class="err">#</span><span class="n">PROVISIONER_NAME</span><span class="err">的</span><span class="n">Value</span><span class="err">值与</span><span class="n">StorageClass</span><span class="err">的</span><span class="n">Provisioner</span><span class="err">字段值必须保持一致，可以不要</span><span class="kd">namespace</span>
+            <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">NFS_SERVER</span>
+              <span class="n">value</span><span class="o">:</span> <span class="mf">172.18</span><span class="o">.</span><span class="mf">43.250</span>          <span class="err">#请使用文件存储的挂载目标</span><span class="n">IP</span><span class="err">地址替换</span>
+            <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">NFS_PATH</span>
+              <span class="n">value</span><span class="o">:</span> <span class="sr">/data/k8s/nfs   #请使用挂载目标支持的目录替换，默认挂载到/</span><span class="n">cfs</span><span class="err">目录</span>
+      <span class="n">volumes</span><span class="o">:</span>
+        <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">root</span>
+          <span class="n">nfs</span><span class="o">:</span>
+            <span class="n">server</span><span class="o">:</span> <span class="mf">172.18</span><span class="o">.</span><span class="mf">43.250</span>           <span class="err">#请使用文件存储的挂载目标</span><span class="n">IP</span><span class="err">地址替换</span>
+            <span class="n">path</span><span class="o">:</span> <span class="sr">/data/kubeflow-pv1   #请使用挂载目标支持的目录替换，默认挂载到/</span><span class="n">cfs</span><span class="err">目录</span>
+</pre></div>
+
+
+<p>Yaml文件说明：</p>
+<div class="hlcode"><pre><span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span> <span class="n">nfs</span><span class="o">-</span><span class="n">provisioner</span><span class="p">.</span><span class="n">yml</span>
+<span class="nl">kind:</span> <span class="n">Namespace</span>
+<span class="nl">apiVersion:</span> <span class="n">v1</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">nfs</span>
+<span class="o">---</span>
+<span class="nl">kind:</span> <span class="n">Deployment</span>
+<span class="nl">apiVersion:</span> <span class="n">extensions</span><span class="o">/</span><span class="n">v1beta1</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+  <span class="nl">namespace:</span> <span class="n">nfs</span>
+<span class="nl">spec:</span>
+  <span class="nl">replicas:</span> <span class="mi">1</span>
+  <span class="nl">strategy:</span>
+    <span class="nl">type:</span> <span class="n">Recreate</span>
+  <span class="nl">template:</span>
+    <span class="nl">metadata:</span>
+      <span class="nl">labels:</span>
+        <span class="nl">app:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+    <span class="nl">spec:</span>
+      <span class="nl">serviceAccountName:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+      <span class="nl">containers:</span>
+        <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+          <span class="nl">image:</span> <span class="n">registry</span><span class="p">.</span><span class="n">cn</span><span class="o">-</span><span class="n">hangzhou</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">open</span><span class="o">-</span><span class="n">ali</span><span class="o">/</span><span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span><span class="o">:</span><span class="n">latest</span>
+          <span class="nl">imagePullPolicy:</span> <span class="n">IfNotPresent</span>
+          <span class="nl">volumeMounts:</span>
+            <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">root</span>
+              <span class="nl">mountPath:</span> <span class="o">/</span><span class="n">persistentvolumes</span>
+          <span class="nl">env:</span>
+            <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">PROVISIONER_NAME</span>
+              <span class="nl">value:</span> <span class="n">my</span><span class="o">-</span><span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+            <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">NFS_SERVER</span>
+              <span class="nl">value:</span> <span class="mf">10.0.77.98</span>
+            <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">NFS_PATH</span>
+              <span class="nl">value:</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">nfs_data</span><span class="o">/</span>
+      <span class="nl">volumes:</span>
+        <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">root</span>
+          <span class="nl">nfs:</span>
+            <span class="nl">server:</span> <span class="mf">10.0.77.98</span>
+            <span class="nl">path:</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">nfs_data</span><span class="o">/</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">nfs</span><span class="o">-</span><span class="n">provisioner</span><span class="p">.</span><span class="n">yml</span> <span class="o">-</span><span class="n">n</span> <span class="n">nfs</span>
+</pre></div>
+
+
+<h1 id="3">3. 验证与使用</h1>
+<h2 id="31-deployment">3.1. 验证deployment 部署情况</h2>
+<div class="hlcode"><pre><span class="cp"># 验证</span>
+<span class="n">kubectl</span> <span class="n">get</span> <span class="n">deployment</span> <span class="o">-</span><span class="n">n</span> <span class="n">nfs</span>
+</pre></div>
+
+
+<h2 id="32">3.2. 验证能否正常使用</h2>
+<h3 id="321-storageclass">3.2.1. 通过storageClass 验证</h3>
+<ol>
+<li>创建 storageClass</li>
+</ol>
+<div class="hlcode"><pre><span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span>  <span class="n">test</span><span class="o">-</span><span class="n">storageclass</span><span class="p">.</span><span class="n">yaml</span>
+<span class="nl">apiVersion:</span> <span class="n">storage</span><span class="p">.</span><span class="n">k8s</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">v1</span>
+<span class="nl">kind:</span> <span class="n">StorageClass</span>
+<span class="nl">metadata:</span>
+  <span class="nl">annotations:</span>
+    <span class="n">storageclass</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">is</span><span class="o">-</span><span class="k">default</span><span class="o">-</span><span class="n">class</span><span class="o">:</span> <span class="err">&#39;</span><span class="nb">false</span><span class="err">&#39;</span>
+  <span class="nl">name:</span> <span class="n">test</span><span class="o">-</span><span class="n">storageclass</span>
+<span class="nl">provisioner:</span> <span class="n">my</span><span class="o">-</span><span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+<span class="nl">reclaimPolicy:</span> <span class="n">Delete</span>
+<span class="nl">volumeBindingMode:</span> <span class="n">Immediate</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">test</span><span class="o">-</span><span class="n">storageclass</span><span class="p">.</span><span class="n">yaml</span>
+</pre></div>
+
+
+<ol>
+<li>创建 PVC</li>
+</ol>
+<div class="hlcode"><pre><span class="cp"># 编写yaml</span>
+<span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span> <span class="n">test</span><span class="o">-</span><span class="n">claim</span><span class="p">.</span><span class="n">yaml</span>
+<span class="nl">kind:</span> <span class="n">PersistentVolumeClaim</span>
+<span class="nl">apiVersion:</span> <span class="n">v1</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">test</span><span class="o">-</span><span class="n">claim</span>
+  <span class="nl">namespace:</span> <span class="n">nfs</span>
+<span class="nl">spec:</span>
+  <span class="nl">storageClassName:</span> <span class="n">test</span><span class="o">-</span><span class="n">storageclass</span> <span class="err">#</span><span class="o">---</span><span class="err">需要与上面创建的</span><span class="n">storageclass</span><span class="err">的名称一致</span>
+  <span class="nl">accessModes:</span>
+    <span class="o">-</span> <span class="n">ReadWriteMany</span>
+  <span class="nl">resources:</span>
+    <span class="nl">requests:</span>
+      <span class="nl">storage:</span> <span class="mi">10</span><span class="n">Gi</span>
+<span class="n">EOF</span>
+<span class="cp">#创建PVC</span>
+<span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="n">test</span><span class="o">-</span><span class="n">claim</span><span class="p">.</span><span class="n">yaml</span> <span class="o">-</span><span class="n">n</span> <span class="n">nfs</span>
+<span class="cp">#查看创建的PV和PVC</span>
+<span class="n">kubectl</span> <span class="n">get</span> <span class="n">pvc</span> <span class="o">-</span><span class="n">n</span> <span class="n">nfs</span>
+<span class="o">&gt;&gt;&gt;</span>
+
+<span class="n">NAME</span>         <span class="n">STATUS</span>   <span class="n">VOLUME</span>                                     <span class="n">CAPACITY</span>   <span class="n">ACCESS</span> <span class="n">MODES</span>   <span class="n">STORAGECLASS</span>   <span class="n">AGE</span>
+<span class="n">test</span><span class="o">-</span><span class="n">claim</span>   <span class="n">Bound</span>    <span class="n">pvc</span><span class="o">-</span><span class="mf">593f241f</span><span class="o">-</span><span class="n">a75f</span><span class="o">-</span><span class="mi">459</span><span class="n">a</span><span class="o">-</span><span class="n">af18</span><span class="o">-</span><span class="n">a672e5090921</span>   <span class="mi">100</span><span class="n">Gi</span>      <span class="n">RWX</span>            <span class="n">nfs</span><span class="o">-</span><span class="n">storage</span>    <span class="mi">3</span><span class="n">s</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cp"># 编写yaml</span>
+<span class="n">cat</span> <span class="o">&gt;</span> <span class="n">test</span><span class="o">-</span><span class="n">pod</span><span class="p">.</span><span class="n">yaml</span> <span class="o">&lt;&lt;</span><span class="err">\</span><span class="n">EOF</span>
+<span class="nl">kind:</span> <span class="n">Pod</span>
+<span class="nl">apiVersion:</span> <span class="n">v1</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">test</span><span class="o">-</span><span class="n">pod</span>
+<span class="nl">spec:</span>
+  <span class="nl">containers:</span>
+  <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">test</span><span class="o">-</span><span class="n">pod</span>
+    <span class="nl">image:</span> <span class="n">busybox</span><span class="o">:</span><span class="n">latest</span>
+    <span class="nl">command:</span>
+      <span class="o">-</span> <span class="s">&quot;/bin/sh&quot;</span>
+    <span class="nl">args:</span>
+      <span class="o">-</span> <span class="s">&quot;-c&quot;</span>
+      <span class="o">-</span> <span class="s">&quot;touch /mnt/SUCCESS &amp;&amp; exit 0 || exit 1&quot;</span>
+    <span class="nl">volumeMounts:</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">pvc</span>
+        <span class="nl">mountPath:</span> <span class="s">&quot;/mnt&quot;</span>
+  <span class="nl">restartPolicy:</span> <span class="s">&quot;Never&quot;</span>
+  <span class="nl">volumes:</span>
+    <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">pvc</span>
+      <span class="nl">persistentVolumeClaim:</span>
+        <span class="nl">claimName:</span> <span class="n">test</span><span class="o">-</span><span class="n">claim</span>
+<span class="n">EOF</span>
+
+<span class="cp">#创建pod</span>
+<span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="n">test</span><span class="o">-</span><span class="n">pod</span><span class="p">.</span><span class="n">yaml</span> <span class="o">-</span><span class="n">n</span> <span class="n">kube</span><span class="o">-</span><span class="n">public</span>
+
+<span class="cp">#查看创建的pod</span>
+<span class="n">kubectl</span> <span class="n">get</span> <span class="n">pod</span> <span class="o">-</span><span class="n">o</span> <span class="n">wide</span> <span class="o">-</span><span class="n">n</span> <span class="n">kube</span><span class="o">-</span><span class="n">public</span>
+<span class="mo">01</span><span class="err">、进入</span> <span class="n">NFS</span> <span class="n">Server</span> <span class="err">服务器验证是否创建对应文件</span>
+<span class="err">进入</span> <span class="n">NFS</span> <span class="n">Server</span> <span class="err">服务器的</span> <span class="n">NFS</span> <span class="err">挂载目录，查看是否存在</span> <span class="n">Pod</span> <span class="err">中创建的文件：</span>
+
+<span class="err">$</span> <span class="n">cd</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">nfs</span><span class="o">/</span>
+<span class="err">$</span> <span class="n">ls</span>
+<span class="n">archived</span><span class="o">-</span><span class="n">kube</span><span class="o">-</span><span class="n">public</span><span class="o">-</span><span class="n">test</span><span class="o">-</span><span class="n">claim</span><span class="o">-</span><span class="n">pvc</span><span class="o">-</span><span class="mi">2</span><span class="n">dd4740d</span><span class="o">-</span><span class="n">f2d1</span><span class="o">-</span><span class="mf">4e88</span><span class="o">-</span><span class="n">a0fc</span><span class="o">-</span><span class="mi">383</span><span class="n">c00e37255</span>  <span class="n">kube</span><span class="o">-</span><span class="n">public</span><span class="o">-</span><span class="n">test</span><span class="o">-</span><span class="n">claim</span><span class="o">-</span><span class="n">pvc</span><span class="o">-</span><span class="n">ad304939</span><span class="o">-</span><span class="n">e75d</span><span class="o">-</span><span class="mf">414f</span><span class="o">-</span><span class="mi">81</span><span class="n">b5</span><span class="o">-</span><span class="mi">7586</span><span class="n">ef17db6c</span>
+<span class="n">archived</span><span class="o">-</span><span class="n">kube</span><span class="o">-</span><span class="n">public</span><span class="o">-</span><span class="n">test</span><span class="o">-</span><span class="n">claim</span><span class="o">-</span><span class="n">pvc</span><span class="o">-</span><span class="mf">593f241f</span><span class="o">-</span><span class="n">a75f</span><span class="o">-</span><span class="mi">459</span><span class="n">a</span><span class="o">-</span><span class="n">af18</span><span class="o">-</span><span class="n">a672e5090921</span>  <span class="n">kube</span><span class="o">-</span><span class="n">system</span><span class="o">-</span><span class="n">test1</span><span class="o">-</span><span class="n">claim</span><span class="o">-</span><span class="n">pvc</span><span class="o">-</span><span class="n">f84dc09c</span><span class="o">-</span><span class="n">b41e</span><span class="o">-</span><span class="mf">4e67</span><span class="o">-</span><span class="n">a239</span><span class="o">-</span><span class="n">b14f8d342efc</span>
+<span class="n">archived</span><span class="o">-</span><span class="n">kube</span><span class="o">-</span><span class="n">public</span><span class="o">-</span><span class="n">test</span><span class="o">-</span><span class="n">claim</span><span class="o">-</span><span class="n">pvc</span><span class="o">-</span><span class="n">b08b209d</span><span class="o">-</span><span class="n">c448</span><span class="o">-</span><span class="mi">4</span><span class="n">ce4</span><span class="o">-</span><span class="n">ab5c</span><span class="o">-</span><span class="mi">1</span><span class="n">bf37cc568e6</span>  <span class="n">pv001</span>
+<span class="k">default</span><span class="o">-</span><span class="n">test</span><span class="o">-</span><span class="n">claim</span><span class="o">-</span><span class="n">pvc</span><span class="o">-</span><span class="mf">4f</span><span class="mi">18</span><span class="n">ed06</span><span class="o">-</span><span class="mi">27</span><span class="n">cd</span><span class="o">-</span><span class="mi">465</span><span class="n">b</span><span class="o">-</span><span class="n">ac87</span><span class="o">-</span><span class="n">b2e0e9565428</span>               <span class="n">pv002</span>
+
+<span class="cp"># 可以看到已经生成 SUCCESS 该文件，并且可知通过 NFS Provisioner 创建的目录命名方式为 “namespace名称-pvc名称-pv名称”，pv 名称是随机字符串，所以每次只要不删除 PVC，那么 Kubernetes 中的与存储绑定将不会丢失，要是删除 PVC 也就意味着删除了绑定的文件夹，下次就算重新创建相同名称的 PVC，生成的文件夹名称也不会一致，因为 PV 名是随机生成的字符串，而文件夹命名又跟 PV 有关,所以删除 PVC 需谨慎。</span>
+</pre></div>
+
+
+<h3 id="322">3.2.2. 直接使用</h3>
+<p>k8s应用中volume可以使用nfs类型，k8s应用就相当于是一个nfs的客户端</p>
+<p>最好k8s集群和nfs服务端在一个vpc下（同一局域网内）。</p>
+<p>deployment的yaml文件大致如下</p>
+<div class="hlcode"><pre><span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span> <span class="n">test</span><span class="o">-</span><span class="n">deployment</span><span class="p">.</span><span class="n">yml</span>
+<span class="nl">kind:</span> <span class="n">Deployment</span>
+<span class="nl">apiVersion:</span> <span class="n">extensions</span><span class="o">/</span><span class="n">v1beta1</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">test</span><span class="o">-</span><span class="n">nginx</span><span class="o">-</span><span class="n">php7</span>
+  <span class="nl">namespace:</span> <span class="n">nfs</span>
+  <span class="nl">labels:</span>
+    <span class="nl">name:</span> <span class="n">nginx</span><span class="o">-</span><span class="n">php7</span>
+  <span class="nl">annotations:</span>
+    <span class="n">reloader</span><span class="p">.</span><span class="n">stakater</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="k">auto</span><span class="o">:</span> <span class="s">&quot;true&quot;</span>
+<span class="nl">spec:</span>
+  <span class="nl">replicas:</span> <span class="mi">2</span>
+  <span class="nl">strategy:</span>
+    <span class="nl">type:</span> <span class="n">RollingUpdate</span>
+    <span class="nl">rollingUpdate:</span>
+      <span class="nl">maxSurge:</span> <span class="mi">1</span>
+      <span class="nl">maxUnavailable:</span> <span class="mi">0</span>
+  <span class="nl">selector:</span>
+    <span class="nl">matchLabels:</span>
+      <span class="nl">name:</span> <span class="n">nginx</span><span class="o">-</span><span class="n">php7</span>
+  <span class="nl">template:</span>
+    <span class="nl">metadata:</span>
+      <span class="nl">labels:</span>
+        <span class="nl">name:</span> <span class="n">nginx</span><span class="o">-</span><span class="n">php7</span>
+    <span class="nl">spec:</span>
+      <span class="nl">containers:</span>
+        <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">nginx</span><span class="o">-</span><span class="n">php7</span>
+          <span class="nl">image:</span> <span class="n">harbor</span><span class="p">.</span><span class="n">maigengduo</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">laravel</span><span class="o">/</span><span class="n">nginx</span><span class="o">-</span><span class="n">php7</span><span class="o">:</span><span class="n">latest</span>
+          <span class="nl">ports:</span>
+            <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">http</span>
+              <span class="nl">containerPort:</span> <span class="mi">80</span>
+              <span class="nl">protocol:</span> <span class="n">TCP</span>
+          <span class="nl">imagePullPolicy:</span> <span class="n">Always</span>
+          <span class="nl">volumeMounts:</span>
+            <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">share</span>
+              <span class="nl">mountPath:</span> <span class="s">&quot;/data&quot;</span>
+      <span class="nl">restartPolicy:</span> <span class="n">Always</span>
+      <span class="nl">volumes:</span>
+        <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">share</span>
+          <span class="nl">nfs:</span>
+            <span class="nl">server:</span> <span class="mf">10.0.77.98</span>
+            <span class="nl">path:</span> <span class="s">&quot;/data/nfs_data/&quot;</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="n">test</span><span class="o">-</span><span class="n">deployment</span><span class="p">.</span><span class="n">yml</span>
+</pre></div>
+
+
+<p>在node节点上执行df -h命令</p>
+<div class="hlcode"><pre><span class="n">df</span> <span class="o">-</span><span class="n">h</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">Filesystem</span>                 <span class="n">Size</span>  <span class="n">Used</span> <span class="n">Avail</span> <span class="n">Use</span><span class="o">%</span> <span class="n">Mounted</span> <span class="n">on</span>
+<span class="n">devtmpfs</span>                   <span class="mi">858</span><span class="n">M</span>     <span class="mi">0</span>  <span class="mi">858</span><span class="n">M</span>   <span class="mi">0</span><span class="o">%</span> <span class="o">/</span><span class="n">dev</span>
+<span class="n">tmpfs</span>                      <span class="mi">868</span><span class="n">M</span>     <span class="mi">0</span>  <span class="mi">868</span><span class="n">M</span>   <span class="mi">0</span><span class="o">%</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">shm</span>
+<span class="n">tmpfs</span>                      <span class="mi">868</span><span class="n">M</span>  <span class="mf">2.6</span><span class="n">M</span>  <span class="mi">865</span><span class="n">M</span>   <span class="mi">1</span><span class="o">%</span> <span class="o">/</span><span class="n">run</span>
+<span class="n">tmpfs</span>                      <span class="mi">868</span><span class="n">M</span>     <span class="mi">0</span>  <span class="mi">868</span><span class="n">M</span>   <span class="mi">0</span><span class="o">%</span> <span class="o">/</span><span class="n">sys</span><span class="o">/</span><span class="n">fs</span><span class="o">/</span><span class="n">cgroup</span>
+<span class="mf">47.96.156.205</span><span class="o">:/</span><span class="n">k8s</span>   <span class="mi">40</span><span class="n">G</span>  <span class="mf">1.9</span><span class="n">G</span>   <span class="mi">36</span><span class="n">G</span>   <span class="mi">5</span><span class="o">%</span> <span class="o">/</span><span class="n">var</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">kubelet</span><span class="o">/</span><span class="n">pods</span><span class="o">/</span>
+<span class="mi">5784</span><span class="n">ab85</span><span class="o">-</span><span class="n">bf51</span><span class="o">-</span><span class="mi">11</span><span class="n">ea</span><span class="o">-</span><span class="n">b509</span><span class="o">-</span><span class="mf">00163e0</span><span class="n">e21a6</span><span class="o">/</span><span class="n">volumes</span><span class="o">/</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">~</span><span class="n">nfs</span><span class="o">/</span><span class="n">nfs</span><span class="o">-</span><span class="n">share</span>
+</pre></div>
+
+
+<p>可以看到pod的文件映射在主机的/var/lib/kubelet/pods/5784ab85-bf51-11ea-b509-00163e0e21a6/volumes/kubernetes.io~nfs/nfs-share目录下。</p>
+<p>多pod间共享存储<br />
+该deployment中replicas（副本集）为2，也就是会有2个pod。<br />
+在第一个pod内的/data目录写入数据时，在第二个pod内的/data目录下也会立即生成数据，pod1和pod2内/data目录下的数据永远是相同，俩个pod内的数据是共享的。</p>
+<h1 id="4">4. 卸载</h1>
+<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">delete</span> <span class="o">-</span><span class="n">f</span> <span class="n">nfs</span><span class="o">-</span><span class="n">provisioner</span><span class="p">.</span><span class="n">yml</span> <span class="o">-</span><span class="n">n</span> <span class="n">nfs</span>
+</pre></div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

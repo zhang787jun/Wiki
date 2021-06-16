@@ -21,7 +21,7 @@ Partition：数据分区，是指的spark在计算过程中，生成的数据在
 
 ![](/attach/images/2019-10-14-16-59-16.png)
 
-**如图所示**RDD_1含有5个partition 分区（p1、p2、p3、p4、p5），分别存储在4个节点（Node1、node2、Node3、Node4）中。RDD_2含有3个分区（p1、p2、p3），分布在3个节点（Node1、Node2、Node3）中。
+**如图所示** RDD_1 含有5个partition 分区（p1、p2、p3、p4、p5），分别存储在4个节点（Node1、node2、Node3、Node4）中。RDD_2含有3个分区（p1、p2、p3），分布在3个节点（Node1、Node2、Node3）中。
 
 RDD分区的一个分区原则是使得分区的个数尽量等于集群中的CPU核心（core）数目。
 

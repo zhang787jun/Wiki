@@ -13,6 +13,14 @@ https://linuxtools-rst.readthedocs.io/zh_CN/latest/index.html
 | ---: | -----------------------------: |
 | grep | 用于查找文件里符合条件的字符串 |
 
+
+## 查看版本
+
+```shell
+cat /proc/version 
+
+```
+
 ## 1.1. Ubuntu
 
 ### 1.1.1. 安装

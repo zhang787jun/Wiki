@@ -1,0 +1,288 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Arena--基于Kubeflow的简化命令工具（阿里） - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Virtualization_and_Cloud_Computing">Virtualization_and_Cloud_Computing</a>&nbsp;»&nbsp;<a href="/Wiki/#-3. Kubernetes容器集群管理">3. Kubernetes容器集群管理</a>&nbsp;»&nbsp;<a href="/Wiki/#-4. Kubernetes在高性能计算中的应用">4. Kubernetes在高性能计算中的应用</a>&nbsp;»&nbsp;<a href="/Wiki/#-1.Kubeflow">1.Kubeflow</a>&nbsp;»&nbsp;<a href="/Wiki/#-进阶工具">进阶工具</a>&nbsp;»&nbsp;Arena--基于Kubeflow的简化命令工具（阿里）</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Arena--基于Kubeflow的简化命令工具（阿里）</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 概述</a><ul>
+<li><a href="#11">1.1. 解决痛点</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 安装</a></li>
+<li><a href="#3">3. 基本使用</a><ul>
+<li><a href="#31">3.1. 查看版本</a></li>
+<li><a href="#311">3.1.1. 查看节点</a></li>
+<li><a href="#32">3.2. 提交作业</a></li>
+</ul>
+</li>
+<li><a href="#4">4. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1">1. 概述</h1>
+<p>Arena（阿里云Kubernetes深度学习工具）是一种命令行界面工具，可以很方便、快捷地运行和监控机器学习训练作业，并检查结果。它兼容多种深度学习框架，是kubeflow 的一个子项目</p>
+<p>简而言之， Arena 的目标是让数据科学家感觉自己就像是在一台机器上工作，而实际上还可以享受到 GPU 集群的强大力量。</p>
+<h2 id="11">1.1. 解决痛点</h2>
+<p>数据科学-&gt;需要集群计算-&gt;资源调度-&gt;虚拟化技术-&gt;容器技术-&gt;容器调度技术</p>
+<p>Docker-&gt;Kubernetres-&gt;KubeFlow</p>
+<p><strong>用户需要学习的路线图</strong></p>
+<table>
+<thead>
+<tr>
+<th>id</th>
+<th>Module</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Introduction</td>
+<td></td>
+</tr>
+<tr>
+<td>1</td>
+<td>Docker</td>
+<td>容器化</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Kubernetes</td>
+<td>集容器群</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Helm</td>
+<td>包管理</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Kubeflow</td>
+<td>基于k8s的数据科学计算.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>JupyterHub</td>
+<td></td>
+</tr>
+<tr>
+<td>6</td>
+<td>TFJob</td>
+<td></td>
+</tr>
+<tr>
+<td>7</td>
+<td>Distributed Tensorflow</td>
+<td></td>
+</tr>
+<tr>
+<td>8</td>
+<td>Hyperparameters Sweep with Helm</td>
+<td></td>
+</tr>
+<tr>
+<td>9</td>
+<td>Serving</td>
+<td></td>
+</tr>
+<tr>
+<td>10</td>
+<td>Going Further</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>现在Kubernetres社区最流行的深度学习解决方案是KubeFlow，Arena是不是又重新造了个轮子？KubeFlow是基于Kubernetes构建的可组合，便携式, 可扩展的机器学习技术栈，支持实现从JupyterHub模型开发，TFJob模型训练到TF-serving，Seldon预测端到端的解决方案。但是KubeFlow需要用户精通Kubernetes，比如写一个TFJob的部署yaml文件，这对于机器学习平台最主要的使用者---数据科学家来说是非常有挑战的事情。</p>
+<p>这与数据科学家的期望还有比较大的差距，数据科学家关心的是三件事：</p>
+<ol>
+<li>数据从哪里来</li>
+<li>如何运行机器学习的代码</li>
+<li>训练结果（模型和日志）如何查看</li>
+</ol>
+<p>数据科学家编写一些简单的脚本，在桌面机上运行机器学习代码，这是他们熟悉和喜欢的工作方式。但是利用桌面机进行模型训练，又会遇到由于硬盘空间有限导致处理数据量不足，无法使用分布式训练导致计算力受限等问题。</p>
+<p>为此我们开发了Arena，用一个命令行工具屏蔽所有底层资源、环境管理、任务调度和GPU调度分配的复杂性，它帮助数据科学家以一种简单熟悉的方式提交训练任务并且检查训练进展。数据科学家在调用Arena的时候可以指定数据来源，代码下载和是否使用TensorBoard查看训练效果。</p>
+<h1 id="2">2. 安装</h1>
+<p><strong>源码编译</strong></p>
+<div class="hlcode"><pre><span class="cp"># 1. GO</span>
+<span class="n">apt</span> <span class="n">get</span> <span class="n">install</span> <span class="n">golang</span><span class="o">-</span><span class="n">go</span>
+<span class="cp"># </span>
+<span class="n">GOPATH</span><span class="o">=</span><span class="s">&quot;/etc/src/go&quot;</span>
+<span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="err">$</span><span class="n">GOPATH</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">github</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">kubeflow</span>
+<span class="n">cd</span> <span class="err">$</span><span class="n">GOPATH</span><span class="o">/</span><span class="n">src</span><span class="o">/</span><span class="n">github</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">kubeflow</span>
+<span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="o">:</span><span class="c1">//github.com/kubeflow/arena.git</span>
+<span class="n">cd</span> <span class="n">arena</span>
+<span class="n">make</span>
+</pre></div>
+
+
+<p><strong>二进制包</strong></p>
+<div class="hlcode"><pre><span class="n">wget</span> <span class="n">https</span><span class="o">:</span><span class="c1">//github.com/AliyunContainerService/arena/archive/v0.2.0-rc.0.tar.gz</span>
+
+<span class="n">mkdir</span> <span class="o">~/</span><span class="n">tmp_dir</span>
+<span class="n">tar</span> <span class="o">-</span><span class="n">xzf</span> <span class="n">v0</span><span class="mf">.2.0</span><span class="o">-</span><span class="n">rc</span><span class="mf">.0</span><span class="p">.</span><span class="n">tar</span><span class="p">.</span><span class="n">gz</span> <span class="o">-</span><span class="n">C</span> <span class="o">~/</span><span class="n">tmp_dir</span>
+</pre></div>
+
+
+<h1 id="3">3. 基本使用</h1>
+<p><code>arena completion</code> - output shell completion code for the specified shell (bash or zsh)<br />
+<code>arena data</code> - manage data.<br />
+<code>arena delete</code> - delete a training job and its associated pods<br />
+<code>arena get</code> - display details of a training job<br />
+<code>arena list</code> - list all the training jobs<br />
+<code>arena logs</code> - print the logs for a task of the training job<br />
+<code>arena logviewer</code> - display Log Viewer URL of a training job<br />
+<code>arena prune</code> - prune history job<br />
+<code>arena serve</code> - Serve a job.<br />
+<code>arena submit</code> - Submit a job.<br />
+<code>arena top</code> - Display Resource (GPU) usage.<br />
+<code>arena version</code> - Print version information</p>
+<h2 id="31">3.1. 查看版本</h2>
+<div class="hlcode"><pre><span class="n">arena</span> <span class="n">version</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="nl">arena:</span> <span class="n">v0</span><span class="mf">.3.0</span><span class="o">+</span><span class="mf">37707f</span><span class="mi">2</span>
+  <span class="nl">BuildDate:</span> <span class="mi">2019</span><span class="o">-</span><span class="mi">12</span><span class="o">-</span><span class="mi">23</span><span class="n">T07</span><span class="o">:</span><span class="mo">01</span><span class="o">:</span><span class="mi">46</span><span class="n">Z</span>
+  <span class="nl">GitCommit:</span> <span class="mf">37707f</span><span class="mi">2</span><span class="n">d66441a9ce749c7936173623a95756aaa</span>
+  <span class="nl">GitTreeState:</span> <span class="n">clean</span>
+  <span class="nl">GoVersion:</span> <span class="n">go1</span><span class="mf">.10.4</span>
+  <span class="nl">Compiler:</span> <span class="n">gc</span>
+  <span class="nl">Platform:</span> <span class="n">linux</span><span class="o">/</span><span class="n">amd64</span>
+</pre></div>
+
+
+<h2 id="311">3.1.1. 查看节点</h2>
+<div class="hlcode"><pre><span class="nx">arena</span> <span class="nb">top</span> <span class="nx">node</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="nb">NAME</span>    <span class="nx">IPADDRESS</span>      <span class="nx">ROLE</span>    <span class="nb">STATUS</span>  <span class="nx">GPU</span><span class="p">(</span><span class="nx">Total</span><span class="p">)</span>  <span class="nx">GPU</span><span class="p">(</span><span class="nx">Allocated</span><span class="p">)</span>
+<span class="nx">master</span>  <span class="mf">172.24.195.42</span>  <span class="nx">master</span>  <span class="nb">ready</span>   <span class="mi">0</span>           <span class="mi">0</span>
+<span class="nx">node3</span>   <span class="mf">172.24.195.41</span>  <span class="o">&lt;</span><span class="kc">none</span><span class="o">&gt;</span>  <span class="nb">ready</span>   <span class="mi">0</span>           <span class="mi">0</span>
+<span class="o">-----------------------------------------------------------------------------------------</span>
+<span class="nx">Allocated</span><span class="p">/</span><span class="nx">Total</span> <span class="n">GPUs</span> <span class="k">In</span> <span class="nx">Cluster</span><span class="p">:</span>
+<span class="mi">0</span><span class="p">/</span><span class="nx">0</span> <span class="p">(</span><span class="mi">0</span><span class="o">%</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="32">3.2. 提交作业</h2>
+<p>2.现在，我们可以通过 arena 提交一个训练作业，本示例从 github 下载源代码</p>
+<div class="hlcode"><pre><span class="cp">#</span>
+<span class="n">arena</span> <span class="n">submit</span> <span class="n">tf</span> \
+             <span class="o">--</span><span class="n">name</span><span class="o">=</span><span class="n">tf</span><span class="o">-</span><span class="n">git</span> <span class="err">\</span> <span class="err">#</span> <span class="n">app</span> <span class="n">name</span>
+             <span class="o">--</span><span class="n">gpus</span><span class="o">=</span><span class="mi">1</span> <span class="err">\</span>  <span class="err">#</span> 
+             <span class="o">--</span><span class="n">image</span><span class="o">=</span><span class="n">tensorflow</span><span class="o">/</span><span class="n">tensorflow</span><span class="o">:</span><span class="mf">1.5.0</span><span class="o">-</span><span class="n">devel</span><span class="o">-</span><span class="n">gpu</span> \
+             <span class="o">--</span><span class="n">syncMode</span><span class="o">=</span><span class="n">git</span> \
+             <span class="o">--</span><span class="n">syncSource</span><span class="o">=</span><span class="n">https</span><span class="o">:</span><span class="c1">//github.com/cheyang/tensorflow-sample-code.git \</span>
+<span class="c1">             &quot;python code/tensorflow-sample-code/tfjob/docker/mnist/main.py --max_steps 10000 --data_dir=code/tensorflow-sample-code/data&quot;</span>
+<span class="n">configmap</span><span class="o">/</span><span class="n">tf</span><span class="o">-</span><span class="n">git</span><span class="o">-</span><span class="n">tfjob</span> <span class="n">created</span>
+<span class="n">configmap</span><span class="o">/</span><span class="n">tf</span><span class="o">-</span><span class="n">git</span><span class="o">-</span><span class="n">tfjob</span> <span class="n">labeled</span>
+<span class="n">tfjob</span><span class="p">.</span><span class="n">kubeflow</span><span class="p">.</span><span class="n">org</span><span class="o">/</span><span class="n">tf</span><span class="o">-</span><span class="n">git</span> <span class="n">created</span>
+<span class="n">INFO</span><span class="p">[</span><span class="mo">0000</span><span class="p">]</span> <span class="n">The</span> <span class="n">Job</span> <span class="n">tf</span><span class="o">-</span><span class="n">git</span> <span class="n">has</span> <span class="n">been</span> <span class="n">submitted</span> <span class="n">successfully</span>
+<span class="n">INFO</span><span class="p">[</span><span class="mo">0000</span><span class="p">]</span> <span class="n">You</span> <span class="n">can</span> <span class="n">run</span> <span class="err">`</span><span class="n">arena</span> <span class="n">get</span> <span class="n">tf</span><span class="o">-</span><span class="n">git</span> <span class="o">--</span><span class="n">type</span> <span class="n">tfjob</span><span class="err">`</span> <span class="n">to</span> <span class="n">check</span> <span class="n">the</span> <span class="n">job</span> <span class="n">status</span>
+</pre></div>
+
+
+<p>这会下载源代码，并将其解压缩到工作目录的 code/ 目录。默认的工作目录是 /root，您也可以使用 --workingDir 加以指定。</p>
+<p>如果您正在使用非公开 git 代码库，则可以使用以下命令：</p>
+<div class="hlcode"><pre><span class="n">arena</span> <span class="n">submit</span> <span class="n">tf</span> \
+             <span class="o">--</span><span class="n">name</span><span class="o">=</span><span class="n">tf</span><span class="o">-</span><span class="n">git</span> \
+             <span class="o">--</span><span class="n">gpus</span><span class="o">=</span><span class="mi">1</span> \
+             <span class="o">--</span><span class="n">image</span><span class="o">=</span><span class="n">tensorflow</span><span class="o">/</span><span class="n">tensorflow</span><span class="o">:</span><span class="mf">1.5.0</span><span class="o">-</span><span class="n">devel</span><span class="o">-</span><span class="n">gpu</span> \
+             <span class="o">--</span><span class="n">syncMode</span><span class="o">=</span><span class="n">git</span> \
+             <span class="o">--</span><span class="n">syncSource</span><span class="o">=</span><span class="n">https</span><span class="o">:</span><span class="c1">//github.com/cheyang/tensorflow-sample-code.git \</span>
+<span class="c1">             --env=GIT_SYNC_USERNAME=yourname \</span>
+<span class="c1">             --env=GIT_SYNC_PASSWORD=yourpwd \</span>
+<span class="c1">             &quot;python code/tensorflow-sample-code/tfjob/docker/mnist/main.py&quot;</span>
+</pre></div>
+
+
+<h1 id="4">4. 参考资料</h1>
+<p>[1] <a href="https://github.com/AliyunContainerService/arena/blob/master/README_cn.md">官方github资源</a></p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

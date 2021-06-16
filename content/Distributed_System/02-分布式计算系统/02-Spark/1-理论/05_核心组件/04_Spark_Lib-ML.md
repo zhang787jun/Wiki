@@ -7,9 +7,7 @@ date: 2099-06-02 00:00
 [TOC]
 # 1. 概要
 
-
-Apache Spark提供了一个名为MLlib的机器学习API。 PySpark也在Python中使用这个机器学习API。 它支持不同类型的算法，如下所述 -
-
+Apache Spark 提供了一个名为MLlib的机器学习API。 PySpark也在Python中使用这个机器学习API。 它支持不同类型的算法，如下所述
 1. mllib.classification - spark.mllib包支持二进制分类，多类分类和回归分析的各种方法。 分类中一些最流行的算法是Random Forest, Naive Bayes, Decision Tree等。
 
 2. mllib.clustering - 聚类是一种无监督的学习问题，您可以根据某些相似概念将实体的子集彼此分组。

@@ -6,12 +6,12 @@ date: 2099-06-02 00:00
 
 [TOC]
 
-## 1. 模型需要保存什么
+# 1. 模型需要保存什么
 1. 模型结构
 2. 模型参数
 3. 优化器参数
 
-### 1.1. 模型结构
+## 1.1. 模型结构
 
 1. 保存json文件
 ```python
@@ -25,7 +25,7 @@ with open("model.json", "w") as json_file:
 # save as YAML
 yaml_string = model.to_yaml()
 ```
-### 1.2. 模型参数
+## 1.2. 模型参数
 
 1. HDF5文件
 ```python
@@ -34,14 +34,14 @@ model.save_weights("model.h5")
 ```
 
 
-### 1.3. 优化器参数
+## 1.3. 优化器参数
 
-## 2. 模型以什么格式保存
-
-
+# 2. 模型以什么格式保存
 
 
-### 2.1. HDF5 格式是什么
+
+
+## 2.1. HDF5 格式是什么
 
 
 层级数据格式（Hierarchical Data Format：HDF）是设计用来**存储**和**组织**大量数据的一组**文件格式**。
@@ -71,8 +71,8 @@ weights的tensor保存在Dataset的value中，而每一集都会有attrs保存�
 
 
 
-
-## 3. 便捷保存
+# 3. 实践
+## 3.1. 模型保存
 
 ```python
 file_path=r"./model.h5"
@@ -80,15 +80,36 @@ file_path=r"./model.h5"
 model.save(file_path) #
 # case2 
 model.save_model(file_path) 
+
+# case3
+checkpoint_path = "training_1/cp.ckpt"
+checkpoint_dir = os.path.dirname(checkpoint_path)
+
+# 创建一个保存模型权重的回调
+cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
+                                                 save_weights_only=True,
+                                                 verbose=1)
+
+# 使用新的回调训练模型
+model.fit(train_images, 
+          train_labels,  
+          epochs=10,
+          validation_data=(test_images,test_labels),
+          callbacks=[cp_callback])  # 通过回调训练
+
+# 这可能会生成与保存优化程序状态相关的警告。
+# 这些警告（以及整个笔记本中的类似警告）
+# 是防止过时使用，可以忽略。
 ```
 
 
-## 1.4. 模型加载
+
+## 3.2. 模型加载
 
 
 
 
-### 1.4.1. 载入模型结构与权重
+### 3.2.1. 载入模型结构与权重
 
 ```python
 from keras.models import load_model
@@ -97,7 +118,7 @@ from keras.models import load_model
 model = load_model('model.h5')
 ```
 
-### 1.4.2. 加载权重
+### 3.2.2. 加载权重
 
 单独加载权重需要先构建网络
 
@@ -112,8 +133,8 @@ model = ResNet50()
 model.load_weights(r'\models\resnet50_weights_tf_dim_ordering_tf_kernels_v2.h5')
 ```
 
-# 2. 数据IO
+# 4. 数据IO
 
-# 3. 参考资料
+# 5. 参考资料
 
 [^HDF5]:[Wiki百科:HDF](https://zh.wikipedia.org/wiki/HDF)

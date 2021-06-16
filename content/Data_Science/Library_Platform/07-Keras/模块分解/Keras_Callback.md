@@ -1,15 +1,15 @@
 ---
-title: "Keras Layer--常见网络层"
+title: "Keras Callback"
 layout: page
 date: 2099-06-02 00:00
 ---
 
 [TOC]
 
-# 参考资料
+# 1. 参考资料
 https://keras.io/zh/callbacks/#modelcheckpoint
 
-#  ModelCheckpoint
+#  2. ModelCheckpoint
 ```python
 keras.callbacks.ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_only=False, save_weights_only=False, mode='auto', period=1)
 ```
@@ -31,7 +31,7 @@ filepath 可以包括命名格式选项，可以由 epoch 的值和 logs 的键�
 
 
 
-# TensorBoard
+# 3. TensorBoard
 ```python
 keras.callbacks.TensorBoard(
     log_dir='./logs', histogram_freq=0, batch_size=32, write_graph=True, write_grads=False, write_images=False, embeddings_freq=0, embeddings_layer_names=None, embeddings_metadata=None, embeddings_data=None, update_freq='epoch'

@@ -40,9 +40,11 @@
 </ul>
 </li>
 <li><a href="#2-spark-core">2. Spark Core 基本用法</a><ul>
-<li><a href="#201-rdds">2.0.1. 创建RDDs</a></li>
-<li><a href="#202-transformations">2.0.2. 应用transformations</a></li>
-<li><a href="#203-actions">2.0.3. 实现 actions</a></li>
+<li><a href="#21-rdds">2.1. 创建RDDs</a><ul>
+<li><a href="#211-transformations">2.1.1. 应用 transformations</a></li>
+<li><a href="#212-actions">2.1.2. 实现 actions</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#3">3. 实践</a><ul>
@@ -93,7 +95,7 @@
 3. 执行，Perform actions </p>
 <p>RDD，全称为 Resilient Distributed Datasets，是一个容错的、并行的数据结构，可以让用户显式地将数据存储到磁盘和内存中，并能控制数据的分区。</p>
 <p>RDD 是不可变Java虚拟机（JVM）对象的分布式集合。我们使用python时候，尤其要注意，python数据是存储在JVM对象中的 </p>
-<h3 id="201-rdds">2.0.1. 创建RDDs</h3>
+<h2 id="21-rdds">2.1. 创建RDDs</h2>
 <div class="hlcode"><pre><span class="c"># 1.SparkContext 类</span>
 <span class="k">class</span> <span class="nc">pyspark</span><span class="o">.</span><span class="n">SparkContext</span> <span class="p">(</span>
    <span class="n">master</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span>
@@ -148,7 +150,7 @@
 </pre></div>
 
 
-<h3 id="202-transformations">2.0.2. 应用transformations</h3>
+<h3 id="211-transformations">2.1.1. 应用 transformations</h3>
 <table>
 <thead>
 <tr>
@@ -235,7 +237,7 @@
 </tr>
 </tbody>
 </table>
-<h3 id="203-actions">2.0.3. 实现 actions</h3>
+<h3 id="212-actions">2.1.2. 实现 actions</h3>
 <table>
 <thead>
 <tr>

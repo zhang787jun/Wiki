@@ -182,6 +182,8 @@ rdd.repartiton(largerNumPartition).map(...)...
 [^2]
 
 # 2. 参考资料
+
 [^1]:  The Internals of Apache Spark--RDD shuffling
  https://jaceklaskowski.gitbooks.io/mastering-apache-spark/spark-rdd-shuffle.html
+
 [^2]: https://spark.apache.org/docs/latest/tuning.html

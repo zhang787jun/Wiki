@@ -47,30 +47,4 @@ Tensor中主要包含两类信息：
 
 tf.Varibel 
 
-# keras 
-
-tensorflow 
-
-```python
-
-checkpoint_path = "training_1/cp.ckpt"
-checkpoint_dir = os.path.dirname(checkpoint_path)
-
-# 创建一个保存模型权重的回调
-cp_callback = tf.keras.callbacks.ModelCheckpoint(filepath=checkpoint_path,
-                                                 save_weights_only=True,
-                                                 verbose=1)
-
-# 使用新的回调训练模型
-model.fit(train_images, 
-          train_labels,  
-          epochs=10,
-          validation_data=(test_images,test_labels),
-          callbacks=[cp_callback])  # 通过回调训练
-
-# 这可能会生成与保存优化程序状态相关的警告。
-# 这些警告（以及整个笔记本中的类似警告）
-# 是防止过时使用，可以忽略。
-```
-
 

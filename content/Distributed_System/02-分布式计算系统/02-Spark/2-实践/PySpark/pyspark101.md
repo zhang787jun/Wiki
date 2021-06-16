@@ -48,7 +48,7 @@ RDD，全称为 Resilient Distributed Datasets，是一个容错的、并行的�
 RDD 是不可变Java虚拟机（JVM）对象的分布式集合。我们使用python时候，尤其要注意，python数据是存储在JVM对象中的 
 
 
-### 2.0.1. 创建RDDs
+## 2.1. 创建RDDs
 ```python
 
 # 1.SparkContext 类
@@ -103,7 +103,7 @@ data_from_file = sc.textFile('/Users/drabast/Documents/PySpark_Data/VS14MORT.txt
 ## 4： Parallelize  range output  into 4 partitions 
 
 ```
-### 2.0.2. 应用transformations
+### 2.1.1. 应用 transformations
 
 
 
@@ -129,7 +129,7 @@ data_from_file = sc.textFile('/Users/drabast/Documents/PySpark_Data/VS14MORT.txt
 | coalesce(numPartitions)                              | Decrease the number of partitions in the RDD to numPartitions. Useful for running operations more efficiently after filtering down a large dataset.                                                                                                                                                                                                                                                                                                             |
 | repartition(numPartitions)                           | Reshuffle the data in the RDD randomly to create either more or fewer partitions and balance it across them. This always shuffles all data over the network.                                                                                                                                                                                                                                                                                                    |
 
-### 2.0.3. 实现 actions
+### 2.1.2. 实现 actions
 
 
 | Action                                    | Meaning                                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -276,9 +276,6 @@ kubectl cluster-info
 Kubernetes master is running at https://10.0.77.98:6443
 KubeDNS is running at https://10.0.77.98:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
 Metrics-server is running at https://10.0.77.98:6443/api/v1/namespaces/kube-system/services/https:metrics-server:/proxy
-
-
-
 ```
 
 

@@ -977,7 +977,7 @@ TensorFlow提供两个类帮助实现多线程，一个是`tf.train.Coordinator`
 
 下面简要介绍了设计输入流水线的最佳做法：
 
-1. 使用 prefetch 转换可将提供方和使用方的工作重叠。我们特别建议将 prefetch(n)（其中 n 是单步训练使用的 元素数/批次数）添加到输入流水线的末尾，以便将在 CPU 上执行的转换与在加速器上执行的训练重叠。
+1. 使用 prefetch 转换可将提供方和使用方的工作重叠。我们特别建议将 prefetch(n)（其中 n 是单步训练使用的 元素数/批次数）添加到**输入流水线的末尾**，以便将在 CPU 上执行的转换与在加速器上执行的训练重叠。
 ```python
 dataset.prefetch(buffer_size=tf.data.experimental.AUTOTUNE)
 ```

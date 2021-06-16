@@ -96,10 +96,12 @@
 <li><a href="#312">3.1.2. 集群</a></li>
 </ul>
 </li>
-<li><a href="#32-jit">3.2. JIT 编译</a></li>
+<li><a href="#32-jit">3.2. JIT 编译</a><ul>
+<li><a href="#_2">为什么使用即时编译？</a></li>
 </ul>
 </li>
-<li><a href="#4">4. 配置开启即时编译</a></li>
+</ul>
+</li>
 <li><a href="#5">5. 参考资料</a></li>
 </ul>
 </div>
@@ -549,8 +551,8 @@
 <h2 id="32-jit">3.2. JIT 编译</h2>
 <p>使用即时编译<br />
 注意: 为了支持 XLA（加速线性代数），TensorFlow 必须从源文件编译。</p>
-<p>为什么使用即时编译？<br />
-TensorFlow / XLA 即时编译器通过 XLA 编译和运行 TensorFlow 图的各个部分。与标准的 TensorFlow 实现相比，XLA 的好处是可以将多个运算符（内核融合）融合到少量的编译内核中。与 TensorFlow 逐个运行操作相比，融合运算能减少对<strong>内存带宽</strong>的要求，同时提升性能。</p>
+<h3 id="_2">为什么使用即时编译？</h3>
+<p>TensorFlow / XLA 即时编译器通过 XLA 编译和运行 TensorFlow 图的各个部分。与标准的 TensorFlow 实现相比，XLA 的好处是可以将多个运算符（内核融合）融合到少量的编译内核中。与 TensorFlow 逐个运行操作相比，融合运算能减少对<strong>内存带宽</strong>的要求，同时提升性能。</p>
 <p>通过 XLA 运行 TensorFlow 图<br />
 有两种方式通过 XLA 运行 TensorFlow 计算图：一是用 CPU 或 GPU 设备上的即时编译操作，二是把操作放到 XLA_CPU 或 XLA_GPU TensorFlow 设备上。将操作直接放到一个 TensorFlow XLA<br />
 设备上强制执行，因此这种方法主要用于测试。</p>
@@ -561,11 +563,15 @@ TensorFlow / XLA 即时编译器通过 XLA 编译和运行 TensorFlow 图的各�
 在会话层开启即时编译时，系统将尽可能把所有操作编译成 XLA 计算。每个 XLA 计算将被编译成单个或多个设备底层内核。</p>
 <p>受某些限制影响，如果图模型中有两个相邻的操作都要使用 XLA，它们将会被编译成单个 XLA 计算。</p>
 <p>通过将 global_jit_level 设置成tf.OptimizerOptions.ON_1，并在会话初始化阶段传入配置，就可以在会话层开启即时编译。</p>
-<h1 id="4">4. 配置开启即时编译</h1>
-<p>config = tf.ConfigProto()<br />
-config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON_1</p>
-<p>sess = tf.Session(config=config)<br />
-注意：在会话层开启即时编译将不会导致为 CPU 编译操作。CPU 运算的即时编译必须通过下面描述的手动方法开启，原因在于 CPU 后端是单线程的。</p>
+<div class="hlcode"><pre><span class="c">#  配置开启即时编译</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">ConfigProto</span><span class="p">()</span>
+<span class="n">config</span><span class="o">.</span><span class="n">graph_options</span><span class="o">.</span><span class="n">optimizer_options</span><span class="o">.</span><span class="n">global_jit_level</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">OptimizerOptions</span><span class="o">.</span><span class="n">ON_1</span>
+
+<span class="n">sess</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="n">config</span><span class="p">)</span>
+</pre></div>
+
+
+<p>注意：在会话层开启即时编译将不会导致为 CPU 编译操作。CPU 运算的即时编译必须通过下面描述的手动方法开启，原因在于 CPU 后端是单线程的。</p>
 <p>手动开启<br />
 对于单个或多个操作，可以手动开启即时编译，通过对运算进行标记以使用属性 _XlaCompile=true 来进行编译。最简单的方法就是通过在 tensorflow/contrib/compiler/jit.py<br />
 中定义的 tf.contrib.compiler.jit.experimental_jit_scope() 。<br />
@@ -581,9 +587,12 @@ config.graph_options.optimizer_options.global_jit_level = tf.OptimizerOptions.ON
 <p>_XlaCompile 属性目前是以最佳的方式支持的。如果一个操作无法编译，TensorFlow 将默认回退到常规实现。</p>
 <p>将操作加载到 XLA 设备中<br />
 通过 XLA 执行计算的另一种方法是将操作载入到特定的 XLA 设备上。这个方法通常只用于测试。有效设备包括 XLA_CPU 或 XLA_GPU。</p>
-<p>with tf.device("/job:localhost/replica:0/task:0/device:XLA_GPU:0"):<br />
-  output = tf.add(input1, input2)<br />
-不同于标准 CPU 和 GPU 设备上的即时编译，这些设备在传输到设备上和关闭设备时，会生成一个数据副本。额外的拷贝导致在同一个图模型中混合使用 XLA 和 TensorFlow 操作的开销变得很大。</p>
+<div class="hlcode"><pre><span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s">&quot;/job:localhost/replica:0/task:0/device:XLA_GPU:0&quot;</span><span class="p">):</span>
+  <span class="n">output</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">input1</span><span class="p">,</span> <span class="n">input2</span><span class="p">)</span>
+</pre></div>
+
+
+<p>不同于标准 CPU 和 GPU 设备上的即时编译，这些设备在传输到设备上和关闭设备时，会生成一个数据副本。额外的拷贝导致在同一个图模型中混合使用 XLA 和 TensorFlow 操作的开销变得很大。</p>
 <p>教程<br />
 这个教程涵盖了一个简单版的 MNIST softmax 训练模型。在会话层开启了即时编译，只支持 GPU。</p>
 <p>在开始本教程之前，先验证 LD_LIBRARY 环境变量或者 ldconfig 包含 $CUDA_ROOT/extras/CUPTI/lib64，其中包含 CUDA 分析工具接口库<br />

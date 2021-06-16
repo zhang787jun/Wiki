@@ -6,15 +6,13 @@ date: 2099-06-02 00:00
 
 [TOC]
 
-
-
-
-
 # 1. 构建模型
 
 ## 1.1. 函数式编程 (Torch 模式)
 本文代码基于 tensorflow2.0 python 3.7
 `tf.keras.Sequential` 模型是层的简单堆叠，无法表示任意模型。
+
+
 ```python 
 import tensorflow as tf
  
@@ -154,7 +152,7 @@ if __name__ == "__main__":
 
 
 
-### 1.4. 持久化
+### 1.3.1. 持久化
 
 子类化模型**不能**以`.h5 格式`保存模型，只能以tensorflow 格式保存
 
@@ -164,7 +162,7 @@ model.save("...",save_model="tf")
 
 Saving the model to HDF5 format requires the model to be a Functional model or a Sequential model. It does not work for subclassed models, because such models are defined via the body of a Python method, which isn't safely serializable.
 
-#  编译模型
+#  2. 编译模型
 
 
 ```python 
@@ -180,9 +178,9 @@ def compile(optimizer,
 ```
 
 
-# 训练模型 
+# 3. 训练模型 
 
-
+通过 Dataset 对象进行训练时，不支持参数 validation_split（从训练数据生成预留集），因为此功能需要为数据集样本编制索引的能力，而 Dataset API 通常无法做到这一点。
 ```
 model.fit( X_train, Y_train,
             batch_size=batch_size, nb_epoch=nb_epoch,
@@ -193,7 +191,7 @@ model.fit( X_train, Y_train,
 
 ```
 
-## 使用tensorboard
+## 3.1. 使用tensorboard
 
 
 

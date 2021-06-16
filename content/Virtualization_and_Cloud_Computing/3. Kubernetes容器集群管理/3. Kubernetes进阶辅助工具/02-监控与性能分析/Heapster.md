@@ -6,7 +6,7 @@ date: 2099-06-02 00:00
 
 [TOC]
 
-# 集成Heapster
+# 集成 Heapster
 Heapster是容器集群监控和性能分析工具，天然的支持Kubernetes和CoreOS。
 
 Heapster支持多种储存方式，本示例中使用influxdb，直接执行下列命令即可：

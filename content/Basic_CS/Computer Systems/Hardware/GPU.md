@@ -355,8 +355,21 @@ watch --color -n1 gpustat -cpu
 >>>
 ```
 ![](/attach/images/2020-02-06-12-18-17.png)
+## 4.4. 清空显存
+
+```python 
+import torch
+torch.cuda.empty_cache()
+
+```
+```shell
+# kill
+kill -9 <PID>
+# kill 显卡涉及的进程
+sudo fuser -v /dev/nvidia* |awk '{for(i=1;i<=NF;i++)print "kill -9 " $i;}' | sudo sh
 
 
+```
 
 # 5. GPU 软件相关
 ## 5.1. CUDA

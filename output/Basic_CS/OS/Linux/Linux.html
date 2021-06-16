@@ -35,6 +35,7 @@
 <div id="content">
   <div class="toc"><span class="toctitle">Table of Contents</span><ul>
 <li><a href="#1-linux">1. Linux 技能</a><ul>
+<li><a href="#_1">查看版本</a></li>
 <li><a href="#11-ubuntu">1.1. Ubuntu</a><ul>
 <li><a href="#111">1.1.1. 安装</a></li>
 <li><a href="#112-root">1.1.2. root用户管理</a></li>
@@ -63,7 +64,7 @@
 </ul>
 </li>
 <li><a href="#2">2. 常用命令</a></li>
-<li><a href="#_1">守护进程管理</a></li>
+<li><a href="#_2">守护进程管理</a></li>
 </ul>
 </div>
 <h1 id="1-linux">1. Linux 技能</h1>
@@ -83,6 +84,11 @@ https://linuxtools-rst.readthedocs.io/zh_CN/latest/index.html</p>
 </tr>
 </tbody>
 </table>
+<h2 id="_1">查看版本</h2>
+<div class="hlcode"><pre><span class="n">cat</span> <span class="o">/</span><span class="n">proc</span><span class="o">/</span><span class="n">version</span> 
+</pre></div>
+
+
 <h2 id="11-ubuntu">1.1. Ubuntu</h2>
 <h3 id="111">1.1.1. 安装</h3>
 <p>从科大镜像http://mirrors.ustc.edu.cn/ 下载 Ubuntu-16.04-x64</p>
@@ -428,7 +434,7 @@ RPM包安装的服务可以使用系统服务管理命令（service）来管理�
 </pre></div>
 
 
-<h1 id="_1">守护进程管理</h1>
+<h1 id="_2">守护进程管理</h1>
 <p>Systemd是一个系统管理守护进程、工具和库的集合，用于取代System V初始进程。Systemd的功能是用于集中管理和配置类UNIX系统。</p>
 <p>Systemctl是一个systemd工具，主要负责控制systemd系统和服务管理器。</p>
 </div>

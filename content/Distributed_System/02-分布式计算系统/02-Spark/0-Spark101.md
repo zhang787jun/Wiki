@@ -16,8 +16,8 @@ Apache Spark 是一个小巧玲珑的项目，由Berkeley大学的Matei为主的
 
 
 1. https://aiyanbo.gitbooks.io/spark-programming-guide-zh-cn/content/programming-guide/rdds/rdd-persistences.html
-2.https://intellipaat.com/blog/tutorial/spark-tutorial/spark-architecture/
-3.https://github.com/apache/spark
+2. https://intellipaat.com/blog/tutorial/spark-tutorial/spark-architecture/
+3. https://github.com/apache/spark
 
 
 

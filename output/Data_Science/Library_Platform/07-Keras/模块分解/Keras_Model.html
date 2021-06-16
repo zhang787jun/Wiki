@@ -38,14 +38,14 @@
 <li><a href="#11-torch">1.1. 函数式编程 (Torch 模式)</a></li>
 <li><a href="#12">1.2. 序列模型（加法模式）</a></li>
 <li><a href="#13">1.3. 模型子类化—实现自定义模型</a><ul>
-<li><a href="#14">1.4. 持久化</a></li>
+<li><a href="#131">1.3.1. 持久化</a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li><a href="#_1">编译模型</a></li>
-<li><a href="#_2">训练模型</a><ul>
-<li><a href="#tensorboard">使用tensorboard</a></li>
+<li><a href="#2">2. 编译模型</a></li>
+<li><a href="#3">3. 训练模型</a><ul>
+<li><a href="#31-tensorboard">3.1. 使用tensorboard</a></li>
 </ul>
 </li>
 </ul>
@@ -182,14 +182,14 @@
 
 
 <p>总结：一般情况下，简单的应用可以直接使用函数式API编程，对于复杂的网络的定义和训练可以使用类继承的方式，这样的代码逻辑和封装性较好</p>
-<h3 id="14">1.4. 持久化</h3>
+<h3 id="131">1.3.1. 持久化</h3>
 <p>子类化模型<strong>不能</strong>以<code>.h5 格式</code>保存模型，只能以tensorflow 格式保存</p>
 <div class="hlcode"><pre><span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="s">&quot;...&quot;</span><span class="p">,</span><span class="n">save_model</span><span class="o">=</span><span class="s">&quot;tf&quot;</span><span class="p">)</span>
 </pre></div>
 
 
 <p>Saving the model to HDF5 format requires the model to be a Functional model or a Sequential model. It does not work for subclassed models, because such models are defined via the body of a Python method, which isn't safely serializable.</p>
-<h1 id="_1">编译模型</h1>
+<h1 id="2">2. 编译模型</h1>
 <div class="hlcode"><pre><span class="k">def</span> <span class="nf">compile</span><span class="p">(</span><span class="n">optimizer</span><span class="p">,</span>
             <span class="n">loss</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
             <span class="n">metrics</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
@@ -201,7 +201,8 @@
 </pre></div>
 
 
-<h1 id="_2">训练模型</h1>
+<h1 id="3">3. 训练模型</h1>
+<p>通过 Dataset 对象进行训练时，不支持参数 validation_split（从训练数据生成预留集），因为此功能需要为数据集样本编制索引的能力，而 Dataset API 通常无法做到这一点。</p>
 <div class="hlcode"><pre><span class="n">model</span><span class="p">.</span><span class="n">fit</span><span class="p">(</span> <span class="n">X_train</span><span class="p">,</span> <span class="n">Y_train</span><span class="p">,</span>
             <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">nb_epoch</span><span class="o">=</span><span class="n">nb_epoch</span><span class="p">,</span>
             <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -211,7 +212,7 @@
 </pre></div>
 
 
-<h2 id="tensorboard">使用tensorboard</h2>
+<h2 id="31-tensorboard">3.1. 使用tensorboard</h2>
 </div>
 <div id="renote">
   <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>

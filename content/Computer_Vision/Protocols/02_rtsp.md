@@ -12,6 +12,10 @@ Real-Time Streaming Protocol.
 
 # RTSP in ffmeg
 RTSP is not technically a protocol handler in libavformat, it is a demuxer and muxer. The demuxer supports both normal RTSP (with data transferred over RTP; this is used by e.g. Apple and Microsoft) and Real-RTSP (with data transferred over RDT).
+
+
+
+
 ##  编码器muxer
 The muxer can be used to send a stream using RTSP ANNOUNCE to a server supporting it (currently Darwin Streaming Server and Mischa Spiegelmock’s RTSP server).
 

@@ -106,21 +106,19 @@ hadoop-hive-roadmap</li>
 <p>hive-architect-2</p>
 <p>通过上图的思路，我们可以统一企业内部各种应用对于Hive的依赖，并且当人员素质升高后，有可以剥离Hive，用更优秀的底层解决方案来替换，如果封装的接口的不变，甚至替换Hive时业务使用都不知道，我们已经替换了Hive。</p>
 <p>这个过程是需要经历的，也是有意义的。当我在考虑构建Hadoop分析工具时，以Hive作为Hadoop访问接口是最有效的。</p>
-<p>3). 有关Hive的运维：<br />
-因为Hive是基于Hadoop构建的，简单地说就是一套Hadoop的访问接口，Hive本身并没有太多的东西，所以运维上面我们注意下面几个问题就行了。</p>
-<ol>
-<li>使用单独的数据库存储元数据</li>
-<li>定义合理的表分区和键</li>
-<li>设置合理的bucket数据量</li>
-<li>进行表压缩</li>
-<li>定义外部表使用规范</li>
-<li>合理的控制Mapper, Reducer数量</li>
-<li>Hive的使用案例<br />
-已经整理成文章的案例</li>
-</ol>
-<p>Hive安装及使用攻略<br />
+<p>3). 有关Hive的运维：</p>
+<p>因为Hive是基于Hadoop构建的，简单地说就是一套Hadoop的访问接口，Hive本身并没有太多的东西，所以运维上面我们注意下面几个问题就行了。<br />
+1. 使用单独的数据库存储元数据<br />
+2. 定义合理的表分区和键<br />
+3. 设置合理的bucket数据量<br />
+4. 进行表压缩<br />
+5. 定义外部表使用规范<br />
+6. 合理的控制Mapper, Reducer数量<br />
+4. Hive的使用案例</p>
+<p>已经整理成文章的案例<br />
+Hive安装及使用攻略<br />
 Hive导入10G数据的测试<br />
-R利剑NoSQL系列文章 之 Hive<br />
+R利剑NoSQL系列文章之Hive<br />
 用RHive从历史数据中提取逆回购信息</p>
 <p>参考资料 </p>
 <p>http://blog.fens.me/hadoop-hive-roadmap/</p>
