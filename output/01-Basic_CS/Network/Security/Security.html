@@ -1,0 +1,214 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>01-[概念]安全与算法 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#01-Basic_CS">01-Basic_CS</a>&nbsp;»&nbsp;<a href="/Wiki/#-Network">Network</a>&nbsp;»&nbsp;<a href="/Wiki/#-Security">Security</a>&nbsp;»&nbsp;01-[概念]安全与算法</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">01-[概念]安全与算法</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 安全问题</a></li>
+<li><a href="#2">2. 密码学基础</a><ul>
+<li><a href="#21">2.1. 哈希函数</a></li>
+<li><a href="#22">2.2. 共享密钥（对称加密）</a></li>
+<li><a href="#23">2.3. 公开密钥（非对称加密）</a></li>
+<li><a href="#24">2.4. 混合加密</a></li>
+<li><a href="#25-herman">2.5. 迪菲Herman 加密</a></li>
+<li><a href="#26">2.6. 消息验证码</a></li>
+<li><a href="#27">2.7. 数字签名</a></li>
+<li><a href="#28">2.8. 数字证书</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 实践与应用</a><ul>
+<li><a href="#31-uuid">3.1. uuid</a><ul>
+<li><a href="#311-uuid1">3.1.1. uuid1——基于时间戳</a></li>
+<li><a href="#312-uuid2dce">3.1.2. uuid2——基于分布式计算环境DCE</a></li>
+<li><a href="#313-uuid3md5">3.1.3. uuid3——基于名字的MD5散列值</a></li>
+<li><a href="#314-uuid4">3.1.4. uuid4——基于随机数</a></li>
+<li><a href="#315-uuid5sha-1">3.1.5. uuid5——基于名字的SHA-1散列值</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4">4. 公钥/私钥</a></li>
+<li><a href="#5-ca">5. CA 证书</a><ul>
+<li><a href="#51-ca">5.1. 根CA</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="1">1. 安全问题</h1>
+<p>数据传输的4个安全问题 <br />
+| No. | 问题     | 解决方案            |<br />
+| --- | -------- | ------------------- |<br />
+| 1   | 窃听     | 加密                |<br />
+| 2   | 假冒     | 数字签名/消息认证码 |<br />
+| 3   | 篡改     | 数字签名/消息认证码 |<br />
+| 4   | 事后否认 | 数字签名            |</p>
+<h1 id="2">2. 密码学基础</h1>
+<h2 id="21">2.1. 哈希函数</h2>
+<h2 id="22">2.2. 共享密钥（对称加密）</h2>
+<h2 id="23">2.3. 公开密钥（非对称加密）</h2>
+<h2 id="24">2.4. 混合加密</h2>
+<h2 id="25-herman">2.5. 迪菲Herman 加密</h2>
+<h2 id="26">2.6. 消息验证码</h2>
+<h2 id="27">2.7. 数字签名</h2>
+<h2 id="28">2.8. 数字证书</h2>
+<h1 id="3">3. 实践与应用</h1>
+<h2 id="31-uuid">3.1. uuid</h2>
+<p>UID含义是通用唯一识别码 (Universally Unique Identifier)，这是一个软件建构的标准，也是被开源软件基金会 (Open Software Foundation, OSF) 的组织在分布式计算环境 (Distributed Computing Environment, DCE) 领域的一部份。<br />
+uuid是指在一台机器上生成的数字，它保证对在同一时空中的所有机器都是唯一的。</p>
+<h3 id="311-uuid1">3.1.1. uuid1——基于时间戳</h3>
+<p>由MAC地址、当前<strong>时间戳</strong>、<strong>随机数</strong>生成。可以保证全球范围内的唯一性，<br />
+但MAC的使用同时带来安全性问题，局域网中可以使用IP来代替MAC。</p>
+<h3 id="312-uuid2dce">3.1.2. uuid2——基于分布式计算环境DCE</h3>
+<p>算法与uuid1相同，不同的是把<strong>时间戳</strong>的前4位置换为POSIX的UID。实际中很少用到该方法。<br />
+（Python中没有这个内置函数）</p>
+<h3 id="313-uuid3md5">3.1.3. uuid3——基于名字的MD5散列值</h3>
+<p>通过计算<strong>名字</strong>和<strong>命名空间</strong>的MD5散列值得到，保证了同一命名空间中不同名字的唯一性，和不同命名空间的唯一性，但同一命名空间的同一名字生成相同的uuid。    </p>
+<h3 id="314-uuid4">3.1.4. uuid4——基于随机数</h3>
+<p>由伪随机数得到，有一定的重复概率，该概率可以计算出来。</p>
+<h3 id="315-uuid5sha-1">3.1.5. uuid5——基于名字的SHA-1散列值</h3>
+<p>算法与uuid3相同，不同的是使用<code>Secure Hash Algorithm 1</code> 算法</p>
+<p><strong>示例</strong></p>
+<div class="hlcode"><pre><span class="o">&gt;&gt;&gt;</span> <span class="kn">import</span> <span class="nn">uuid</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c"># make a UUID based on the host ID and current time</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">a</span><span class="o">=</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid1</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">a</span>
+<span class="n">UUID</span><span class="p">(</span><span class="s">&#39;a8098c1a-f86e-11da-bd1a-00112444be1e&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span><span class="nb">type</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="o">&lt;</span><span class="k">class</span> <span class="err">&#39;</span><span class="nc">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="s">&#39;&gt;</span>
+<span class="o">&gt;&gt;&gt;</span><span class="nb">dir</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+<span class="n">a</span><span class="o">.</span><span class="n">int</span>
+<span class="n">a</span><span class="o">.</span><span class="n">hex</span>
+<span class="o">...</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c"># make a UUID using an MD5 hash of a namespace UUID and a name</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid3</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">NAMESPACE_DNS</span><span class="p">,</span> <span class="s">&#39;python.org&#39;</span><span class="p">)</span>
+<span class="n">UUID</span><span class="p">(</span><span class="s">&#39;6fa459ea-ee8a-3ca4-894e-db77e160355e&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c"># make a random UUID</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+<span class="n">UUID</span><span class="p">(</span><span class="s">&#39;16fd2706-8baf-433b-82eb-8c7fada847da&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c"># make a UUID using a SHA-1 hash of a namespace UUID and a name</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid5</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">NAMESPACE_DNS</span><span class="p">,</span> <span class="s">&#39;python.org&#39;</span><span class="p">)</span>
+<span class="n">UUID</span><span class="p">(</span><span class="s">&#39;886313e1-3b8a-5372-9b90-0c9aee199e5d&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c"># make a UUID from a string of hex digits (braces and hyphens ignored)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">x</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span><span class="s">&#39;{00010203-0405-0607-0809-0a0b0c0d0e0f}&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c"># convert a UUID to a string of hex digits in standard form</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="s">&#39;00010203-0405-0607-0809-0a0b0c0d0e0f&#39;</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c"># get the raw 16 bytes of the UUID</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">x</span><span class="o">.</span><span class="n">bytes</span>
+<span class="s">&#39;</span><span class="se">\x00\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f</span><span class="s">&#39;</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="c"># make a UUID from a 16-byte string</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">uuid</span><span class="o">.</span><span class="n">UUID</span><span class="p">(</span><span class="nb">bytes</span><span class="o">=</span><span class="n">x</span><span class="o">.</span><span class="n">bytes</span><span class="p">)</span>
+<span class="n">UUID</span><span class="p">(</span><span class="s">&#39;00010203-0405-0607-0809-0a0b0c0d0e0f&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<h1 id="4">4. 公钥/私钥</h1>
+<h1 id="5-ca">5. CA 证书</h1>
+<p>核心作用：<strong>认证（开证明）</strong></p>
+<p>你有钱，谁能证明？<br />
+银行人员 <br />
+银行行长 </p>
+<h2 id="51-ca">5.1. 根CA</h2>
+<p><code>只要这个公钥说的话我都无条件相信</code>。的机构</p>
+<p><img alt="" src="../../../../../attach/images/2019-12-13-21-10-07.png" /></p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

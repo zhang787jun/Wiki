@@ -54,14 +54,14 @@
 <h1 id="1-nvidia-docker-10">1. nvidia-docker 1.0</h1>
 <p>第一代nvidia-docker 1.0实现了对docker client的封装，并在容器启动时，将必要的GPU device和libraries挂载到容器中。</p>
 <h2 id="11-nvidia-docker">1.1. nvidia-docker 存在的问题</h2>
-<p>但是这种设计的方式高度的与docker运行耦合，缺乏灵活性。</p>
+<p>完善容器运行时对GPU的支持。如: 自动的获取用户层面的NVIDIA Driver libraries, NVIDIA kernel modules, device ordering等。<br />
+但是这种设计的方式高度的与docker运行耦合，缺乏灵活性。</p>
 <p>存在的缺陷具体如下:</p>
 <ol>
 <li>设计高度与docker耦合，不支持其它的容器运行时。如: LXC, CRI-O及未来可能会增加的容器运行时。</li>
 <li>不能更好的利用docker生态的其它工具。如: docker compose。</li>
 <li>不能将GPU作为调度系统的一种资源来进行灵活的调度。</li>
 </ol>
-<p>完善容器运行时对GPU的支持。如: 自动的获取用户层面的NVIDIA Driver libraries, NVIDIA kernel modules, device ordering等。</p>
 <p>基于上面描述的这些弊端，NVIDIA开始了对下一代容器运行时的设计: nvidia-docker2.0。</p>
 <h1 id="2-nvidia-docker-20">2. nvidia-docker 2.0</h1>
 <p>nvidia-docker 2.0 的实现机制</p>

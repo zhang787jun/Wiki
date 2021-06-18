@@ -1,0 +1,675 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Spark on k8s - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#Distributed_System">Distributed_System</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-分布式计算系统">02-分布式计算系统</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-Spark">02-Spark</a>&nbsp;»&nbsp;<a href="/Wiki/#-2-实践">2-实践</a>&nbsp;»&nbsp;<a href="/Wiki/#-部署">部署</a>&nbsp;»&nbsp;Spark on k8s</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Spark on k8s</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 概述</a><ul>
+<li><a href="#11-spark-on-k8s">1.1. Spark on K8S 的几种模式</a><ul>
+<li><a href="#111-standalone">1.1.1. Standalone</a><ul>
+<li><a href="#1111">1.1.1.1. 特点</a></li>
+</ul>
+</li>
+<li><a href="#112-kubernetes-native">1.1.2. Kubernetes Native</a><ul>
+<li><a href="#1121">1.1.2.1. 特点</a></li>
+<li><a href="#1122">1.1.2.2. 架构设计</a></li>
+</ul>
+</li>
+<li><a href="#113-spark-operator">1.1.3. Spark Operator</a></li>
+</ul>
+</li>
+<li><a href="#12">1.2. 对比</a></li>
+<li><a href="#13-spark-submitspark-operator">1.3. 选择  Spark Submit/Spark Operator？</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 安装与配置</a><ul>
+<li><a href="#21-spark-standalone">2.1. Spark standalone</a><ul>
+<li><a href="#211-helm">2.1.1. Helm</a></li>
+<li><a href="#212-hardway">2.1.2. Hardway</a><ul>
+<li><a href="#2121-namespace">2.1.2.1. 创建Namespace</a></li>
+<li><a href="#2122-masterwork">2.1.2.2. 安装核心：master与Work</a></li>
+<li><a href="#2123">2.1.2.3. 可选</a><ul>
+<li><a href="#21231-spark-ui">2.1.2.3.1. Spark UI</a></li>
+<li><a href="#21232-jupyter-pysparknotebook">2.1.2.3.2. jupyter-pyspark(Notebook)</a></li>
+<li><a href="#21233-zeppelin-notebook">2.1.2.3.3. Zeppelin (Notebook)</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#213">2.1.3. 验证</a></li>
+</ul>
+</li>
+<li><a href="#22-kubernetes-native">2.2. Kubernetes Native</a><ul>
+<li><a href="#2201">2.2.0.1. 更新配置</a></li>
+<li><a href="#221">2.2.1. 删除</a></li>
+</ul>
+</li>
+<li><a href="#23-spark-operator">2.3. Spark Operator</a><ul>
+<li><a href="#231-helm">2.3.1. Helm</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#3">3. 连接与使用</a></li>
+<li><a href="#4">4. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1">1. 概述</h1>
+<p><strong>Why Spark on Kubernetes</strong><br />
+Spark can run on clusters managed by Kubernetes. This feature makes use of native Kubernetes scheduler that has been added to Spark. Kubernetes offers some powerful benefits as a resource manager for Big Data applications, but comes with its own complexities.</p>
+<p>It is using custom resource definitions and operators as a means to extend the Kubernetes API. So far, it has open-sourced operators for Spark and Apache Flink, and is working on more.</p>
+<p>Here are three primary benefits to using Kubernetes as a resource manager:</p>
+<p>Unified management — Getting away from two cluster management interfaces if your organization already is using Kubernetes elsewhere.<br />
+Ability to isolate jobs — You can move models and ETL pipelines from dev to production without the headaches of dependency management.<br />
+Resilient infrastructure — You don’t worry about sizing and building the cluster, manipulating Docker files or Kubernetes networking configurations.</p>
+<h2 id="11-spark-on-k8s">1.1. Spark on K8S 的几种模式</h2>
+<p><strong>区分</strong></p>
+<p>Spark主要有4种运行模型：<br />
+1. Spark on Standalone <br />
+2. Spark on Mesos<br />
+3. Spark on Yarn<br />
+4. Spark on k8s<br />
+   1. Spark on k8s--Standalone<br />
+   2. Spark on k8s--Kubernetes Native<br />
+   3. Spark on k8s--Spark Operator</p>
+<h3 id="111-standalone">1.1.1. Standalone</h3>
+<p>Standalone：在 K8S 启动一个长期运行的集群，所有 Job 都通过 spark-submit 向这个集群提交</p>
+<h4 id="1111">1.1.1.1. 特点</h4>
+<p>简而言之，spark standalone on kubernetes 有如下几个缺点：</p>
+<ol>
+<li>无法对于多租户做隔离，每个用户都想给 pod 申请 node 节点可用的最大的资源。</li>
+<li>Spark 的 master／worker 本来不是设计成使用 kubernetes 的资源调度，这样会存在两层的资源调度问题，不利于与 kuberentes 集成。</li>
+</ol>
+<h3 id="112-kubernetes-native">1.1.2. Kubernetes Native</h3>
+<p>Kubernetes Native：通过 spark-submit 直接向 K8S 的 API Server 提交，申请到资源后启动 Pod 做为 Driver 和 Executor 执行 Job，参考 http://spark.apache.org/docs/2.4.6/running-on-kubernetes.html</p>
+<h4 id="1121">1.1.2.1. 特点</h4>
+<p>使用 kubernetes 原生调度的 spark on kubernetes 是对原有的 spark on yarn 革命性的改变，主要表现在以下几点：</p>
+<ol>
+<li><strong>Kubernetes 原生调度</strong>：不再需要二层调度，直接使用 kubernetes 的资源调度功能，跟其他应用共用整个 kubernetes 管理的资源池；</li>
+<li><strong>资源隔离，粒度更细</strong>：原先 yarn 中的 queue 在 spark on kubernetes 中已不存在，取而代之的是 kubernetes 中原生的 namespace，可以为每个用户分别指定一个 namespace，限制用户的资源 quota；</li>
+<li><strong>细粒度</strong>的资源分配：可以给每个 spark 任务指定资源限制，实际指定多少资源就使用多少资源，因为没有了像 yarn 那样的二层调度（圈地式的），所以可以更高效和细粒度的使用资源；</li>
+<li><strong>监控</strong>的变革：因为做到了细粒度的资源分配，所以可以对用户提交的每一个任务做到资源使用的监控，从而判断用户的资源使用情况，所有的 metric 都记录在数据库中，甚至可以为每个用户的每次任务提交计量；</li>
+<li><strong>日志</strong>的变革：用户不再通过 yarn 的 web 页面来查看任务状态，而是通过 pod 的 log 来查看，可将所有的 kuberentes 中的应用的日志等同看待收集起来，然后可以根据标签查看对应应用的日志；</li>
+</ol>
+<p>spark 可以调用 kubernetes API 获取集群资源和调度</p>
+<h4 id="1122">1.1.2.2. 架构设计</h4>
+<p>要实现 kubernetes native spark 需要为 spark 提供一个集群外部的 manager 可以用来跟 kubernetes API 交互。</p>
+<p>使用 kubernetes 原生调度的 spark 的基本设计思路是<br />
+1. 将 spark 的 driver 和 executor 都放在 kubernetes 的 pod 中运行，<br />
+2. 另外还有两个附加的组件：ResourceStagingServer 和 KubernetesExternalShuffleService。</p>
+<p>Spark driver 其实可以运行在 kubernetes 集群内部（cluster mode）可以运行在外部（client mode），executor 只能运行在集群内部，当有 spark 作业提交到 kubernetes 集群上时，调度器后台将会为 executor pod 设置如下属性：</p>
+<p>使用我们预先编译好的包含 kubernetes 支持的 spark 镜像，然后调用 CoarseGrainedExecutorBackend main class 启动 JVM。<br />
+调度器后台为 executor pod 的运行时注入环境变量，例如各种 JVM 参数，包括用户在 spark-submit 时指定的那些参数。<br />
+Executor 的 CPU、内存限制根据这些注入的环境变量保存到应用程序的 SparkConf 中。<br />
+可以在配置中指定 spark 运行在指定的 namespace 中。</p>
+<h3 id="113-spark-operator">1.1.3. Spark Operator</h3>
+<p><img alt="" src="https://raw.githubusercontent.com/GoogleCloudPlatform/spark-on-k8s-operator/master/docs/architecture-diagram.png" /><br />
+首先需要理解 Spark Operator 的基础镜像是 Spark 的镜像，主要原因是 Spark Operator 会在容器中调用 spark-submit 命令来执行 Spark 任务。所以所有的 Spark Jars 等依赖在部署了 Spark Operator 的时候就已经确定了。</p>
+<p>那么在 Spark on Kubernetes 的架构里，spark-submit 具体做了什么呢？其实在 spark-submit 主要是根据用户提交的脚本，按照各种 conf，来配置了 Driver Pod，包括 Pod 需要挂载的 Volume 等等，最后通过 k8s 的 Java Client，向 Kubernetes 的 ApiServer 发送构建 Driver Pod 的请求，然后后面的事情，spark-submit 一般就不管了，然后如何装配 Executor Pod，就由 Driver 来控制了。</p>
+<p>Spark Operator：安装 Spark Operator，然后定义 spark-app.yaml，再执行 kubectl apply -f spark-app.yaml，这种申明式 API 和调用方式是 K8S 的典型应用方式，参考 https://github.com/GoogleCloudPlatform/spark-on-k8s-operator</p>
+<h2 id="12">1.2. 对比</h2>
+<p>前者是spark社区支持k8s这种资源管理框架而引入的k8s client的实现<br />
+后者是k8s社区为了支持spark而开发的一种operator</p>
+<table>
+<thead>
+<tr>
+<th>区别</th>
+<th>spark on k8s</th>
+<th>spark on k8s operator</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>社区支持</td>
+<td>spark社区</td>
+<td>GoogleCloudPlatform非官方支持</td>
+</tr>
+<tr>
+<td>版本要求</td>
+<td>spark&gt;=2.3,</td>
+<td>Kubernetes&gt;=1.6</td>
+</tr>
+<tr>
+<td>安装</td>
+<td>按照官网安装，需要k8s pod的create list edit delete权限，且需要自己编译源码进行镜像的构建，构建过程繁琐</td>
+<td>需要k8s admin安装incubator/sparkoperator，需要pod create list edit delete的权限</td>
+</tr>
+<tr>
+<td>使用</td>
+<td>直接spark submit提交，如:下面code 1,支持client和cluster模式，spark on k8s</td>
+<td>通过yaml配置文件形式提交，支持client和cluster模式，提交如code2，具体参数参考spark operator configuration</td>
+</tr>
+<tr>
+<td>优点</td>
+<td>符合sparker的方式进行任务提交，对于习惯了spark的使用者来说，使用起来更顺手</td>
+<td>k8s配置文件方式提交任务，复用性强</td>
+</tr>
+<tr>
+<td>缺点</td>
+<td>运行完后driver的资源不会自动释放</td>
+<td>运行完后driver的资源不会自动释放</td>
+</tr>
+<tr>
+<td>实现方式</td>
+<td>对于spark提交方式来说，无论是client提交还是cluster提交，都是继承SparkApplication。以client提交，子类则是JavaMainApplication,该方式以反射运行,对于k8s任务来分析,clusterManager为KubernetesClusterManager,该方式和向yarn提交任务的方式没什么区别;以cluster方式提交,对于k8s任务来说,spark程序的入口为KubernetesClientApplication，client端会建立clusterIp为None的service，executor跟该service进行rpc，如任务的提交的交互，且会建立以driver-conf-map后缀的configMap，该configMap在建立spark driver pod的时候，以volumn挂载的形式被引用,而该文件的内容最终在driver提交任务的时候以--properties-file形式提交给spark driver，从而spark.driver.host等配置项就传输给了driver，与此同时也会建立以-hadoop-config为后缀的configMap，可是 k8s 镜像怎么区分是运行executor还是driver的呢？一切都在dockerfile(具体构建的时候根据hadoop和kerbeors环境的不一样进行区别配置)和entrypoint中,其中shell中是区分driver和executor的;</td>
+<td>采用k8s CRD Controller的机制，自定义CRD,根据operator SDK,监听对应的增删改查event，如监听到对应的CRD的创建事件，则根据对应yaml文件配置项，建立pod，进行spark任务的提交，具体的实现，可参考spark on k8s operator design,具体以cluster和client模式提交的原理和spark on k8s一致,因为镜像复用的是spark的官方镜像</td>
+</tr>
+</tbody>
+</table>
+<h2 id="13-spark-submitspark-operator">1.3. 选择  Spark Submit/Spark Operator？</h2>
+<p><code>spark-submit</code> Spark 原生，方便与Apache AirFlow, Apache Livy等流任务工具使用。<br />
+Since spark-submit is built into Apache Spark, it’s easy to use and has well-documented configuration options. It is particularly well-suited for submitting Spark jobs in an isolated manner in development or production, and it allows you to build your own tooling around it if that serves your purposes. You could use it to integrate directly with a job flow tool (e.g. Apache AirFlow, Apache Livy). Although easy to use, spark-submit lacks functionalities like supporting basic operations for job management.</p>
+<p>If you want to manage your Spark jobs with one tool in a declarative way with some unique management and monitoring features, the Operator is the best available solution. You can manage your Spark Jobs by GitOps workflows like the Fluxcd does. It saves you effort in monitoring the status of jobs, looking for logs, and keeping track of job versions. This last point is especially crucial if you have a lot of users and many jobs run in your cluster at any given time.</p>
+<h1 id="2">2. 安装与配置</h1>
+<h2 id="21-spark-standalone">2.1. Spark standalone</h2>
+<p>参考资料</p>
+<p>https://jimmysong.io/kubernetes-handbook/usecases/spark-standalone-on-kubernetes.html</p>
+<h3 id="211-helm">2.1.1. Helm</h3>
+<div class="hlcode"><pre><span class="n">helm</span> <span class="n">repo</span> <span class="n">add</span> <span class="n">gradiant</span> <span class="n">https</span><span class="o">:</span><span class="c1">//gradiant.github.io/charts</span>
+
+<span class="n">helm</span> <span class="n">install</span> <span class="o">--</span><span class="n">name</span> <span class="n">spark</span><span class="o">-</span><span class="n">standalone</span> <span class="n">gradiant</span><span class="o">/</span><span class="n">spark</span><span class="o">-</span><span class="n">standalone</span>
+</pre></div>
+
+
+<h3 id="212-hardway">2.1.2. Hardway</h3>
+<h4 id="2121-namespace">2.1.2.1. 创建Namespace</h4>
+<div class="hlcode"><pre><span class="cp"># 1. 创建k8s  Namespace ,并命名为spark-cluster</span>
+<span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span> <span class="n">namespace</span><span class="o">-</span><span class="n">spark</span><span class="o">-</span><span class="n">cluster</span><span class="p">.</span><span class="n">yaml</span>
+<span class="nl">apiVersion:</span> <span class="n">v1</span>
+<span class="nl">kind:</span> <span class="n">Namespace</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="s">&quot;spark-cluster&quot;</span>
+  <span class="nl">labels:</span>
+    <span class="nl">name:</span> <span class="s">&quot;spark-cluster&quot;</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">namespace</span><span class="o">-</span><span class="n">spark</span><span class="o">-</span><span class="n">cluster</span><span class="p">.</span><span class="n">yaml</span>
+</pre></div>
+
+
+<h4 id="2122-masterwork">2.1.2.2. 安装核心：master与Work</h4>
+<p>master与work 都用的同一个镜像，使用了不同的命令</p>
+<div class="hlcode"><pre><span class="cp"># 2. 创建k8s  ReplicationController</span>
+<span class="cp">## master-controller</span>
+<span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span> <span class="n">spark</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="n">controller</span><span class="p">.</span><span class="n">yaml</span>
+<span class="nl">kind:</span> <span class="n">ReplicationController</span>
+<span class="nl">apiVersion:</span> <span class="n">v1</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">spark</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="n">controller</span>
+  <span class="nl">namespace:</span> <span class="n">spark</span><span class="o">-</span><span class="n">cluster</span>
+<span class="nl">spec:</span>
+  <span class="nl">replicas:</span> <span class="mi">1</span>
+  <span class="nl">selector:</span>
+    <span class="nl">component:</span> <span class="n">spark</span><span class="o">-</span><span class="n">master</span>
+  <span class="nl">template:</span>
+    <span class="nl">metadata:</span>
+      <span class="nl">labels:</span>
+        <span class="nl">component:</span> <span class="n">spark</span><span class="o">-</span><span class="n">master</span>
+    <span class="nl">spec:</span>
+      <span class="nl">containers:</span>
+        <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">spark</span><span class="o">-</span><span class="n">master</span>
+          <span class="nl">image:</span> <span class="n">registry</span><span class="p">.</span><span class="n">cn</span><span class="o">-</span><span class="n">hangzhou</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">google_containers</span><span class="o">/</span><span class="n">spark</span><span class="o">:</span><span class="mf">1.5.2</span><span class="n">_v1</span>
+          <span class="nl">command:</span> <span class="p">[</span><span class="s">&quot;/start-master&quot;</span><span class="p">]</span>
+          <span class="nl">ports:</span>
+            <span class="o">-</span> <span class="n">containerPort</span><span class="o">:</span> <span class="mi">7077</span>
+            <span class="o">-</span> <span class="n">containerPort</span><span class="o">:</span> <span class="mi">8080</span>
+          <span class="nl">resources:</span>
+            <span class="nl">requests:</span>
+              <span class="nl">cpu:</span> <span class="mi">100</span><span class="n">m</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">spark</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="n">controller</span><span class="p">.</span><span class="n">yaml</span>
+<span class="cp"># 3. 创建k8s  服务Service ,并命名为spark-master</span>
+<span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span> <span class="n">spark</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="n">service</span><span class="p">.</span><span class="n">yaml</span>
+<span class="nl">kind:</span> <span class="n">Service</span>
+<span class="nl">apiVersion:</span> <span class="n">v1</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">spark</span><span class="o">-</span><span class="n">master</span>
+  <span class="nl">namespace:</span> <span class="n">spark</span><span class="o">-</span><span class="n">cluster</span>
+<span class="nl">spec:</span>
+  <span class="nl">ports:</span>
+    <span class="o">-</span> <span class="n">port</span><span class="o">:</span> <span class="mi">7077</span>
+      <span class="nl">targetPort:</span> <span class="mi">7077</span>
+      <span class="nl">name:</span> <span class="n">spark</span>
+    <span class="o">-</span> <span class="n">port</span><span class="o">:</span> <span class="mi">8080</span>
+      <span class="nl">targetPort:</span> <span class="mi">8080</span>
+      <span class="nl">name:</span> <span class="n">http</span>
+  <span class="nl">selector:</span>
+    <span class="nl">component:</span> <span class="n">spark</span><span class="o">-</span><span class="n">master</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">spark</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="n">service</span><span class="p">.</span><span class="n">yaml</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span><span class="n">spark</span><span class="o">-</span><span class="n">worker</span><span class="o">-</span><span class="n">controller</span><span class="p">.</span><span class="n">yaml</span>
+<span class="nl">kind:</span> <span class="n">ReplicationController</span>
+<span class="nl">apiVersion:</span> <span class="n">v1</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">spark</span><span class="o">-</span><span class="n">worker</span><span class="o">-</span><span class="n">controller</span>
+  <span class="nl">namespace:</span> <span class="n">spark</span><span class="o">-</span><span class="n">cluster</span>
+<span class="nl">spec:</span>
+  <span class="nl">replicas:</span> <span class="mi">2</span>
+  <span class="nl">selector:</span>
+    <span class="nl">component:</span> <span class="n">spark</span><span class="o">-</span><span class="n">worker</span>
+  <span class="nl">template:</span>
+    <span class="nl">metadata:</span>
+      <span class="nl">labels:</span>
+        <span class="nl">component:</span> <span class="n">spark</span><span class="o">-</span><span class="n">worker</span>
+    <span class="nl">spec:</span>
+      <span class="nl">containers:</span>
+        <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">spark</span><span class="o">-</span><span class="n">worker</span>
+          <span class="nl">image:</span> <span class="n">registry</span><span class="p">.</span><span class="n">cn</span><span class="o">-</span><span class="n">hangzhou</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">google_containers</span><span class="o">/</span><span class="n">spark</span><span class="o">:</span><span class="mf">1.5.2</span><span class="n">_v1</span>
+          <span class="nl">command:</span> <span class="p">[</span><span class="s">&quot;/start-worker&quot;</span><span class="p">]</span>
+          <span class="nl">ports:</span>
+            <span class="o">-</span> <span class="n">containerPort</span><span class="o">:</span> <span class="mi">8081</span>
+          <span class="nl">resources:</span>
+            <span class="nl">requests:</span>
+              <span class="nl">cpu:</span> <span class="mi">100</span><span class="n">m</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">spark</span><span class="o">-</span><span class="n">worker</span><span class="o">-</span><span class="n">controller</span><span class="p">.</span><span class="n">yaml</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">get</span> <span class="n">svc</span> <span class="o">-</span><span class="n">n</span> <span class="n">spark</span><span class="o">-</span><span class="n">cluster</span>
+</pre></div>
+
+
+<h4 id="2123">2.1.2.3. 可选</h4>
+<h5 id="21231-spark-ui">2.1.2.3.1. Spark UI</h5>
+<div class="hlcode"><pre><span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span><span class="n">spark</span><span class="o">-</span><span class="n">ui</span><span class="o">-</span><span class="n">proxy</span><span class="o">-</span><span class="n">controller</span><span class="p">.</span><span class="n">yaml</span>
+<span class="nl">kind:</span> <span class="n">ReplicationController</span>
+<span class="nl">apiVersion:</span> <span class="n">v1</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">spark</span><span class="o">-</span><span class="n">ui</span><span class="o">-</span><span class="n">proxy</span><span class="o">-</span><span class="n">controller</span>
+  <span class="nl">namespace:</span> <span class="n">spark</span><span class="o">-</span><span class="n">cluster</span>
+<span class="nl">spec:</span>
+  <span class="nl">replicas:</span> <span class="mi">1</span>
+  <span class="nl">selector:</span>
+    <span class="nl">component:</span> <span class="n">spark</span><span class="o">-</span><span class="n">ui</span><span class="o">-</span><span class="n">proxy</span>
+  <span class="nl">template:</span>
+    <span class="nl">metadata:</span>
+      <span class="nl">labels:</span>
+        <span class="nl">component:</span> <span class="n">spark</span><span class="o">-</span><span class="n">ui</span><span class="o">-</span><span class="n">proxy</span>
+    <span class="nl">spec:</span>
+      <span class="nl">containers:</span>
+        <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">spark</span><span class="o">-</span><span class="n">ui</span><span class="o">-</span><span class="n">proxy</span>
+          <span class="nl">image:</span> <span class="n">elsonrodriguez</span><span class="o">/</span><span class="n">spark</span><span class="o">-</span><span class="n">ui</span><span class="o">-</span><span class="n">proxy</span><span class="o">:</span><span class="mf">1.0</span>
+          <span class="nl">ports:</span>
+            <span class="o">-</span> <span class="n">containerPort</span><span class="o">:</span> <span class="mi">80</span>
+          <span class="nl">resources:</span>
+            <span class="nl">requests:</span>
+              <span class="nl">cpu:</span> <span class="mi">100</span><span class="n">m</span>
+          <span class="nl">args:</span>
+            <span class="o">-</span> <span class="n">spark</span><span class="o">-</span><span class="n">master</span><span class="o">:</span><span class="mi">8080</span>
+          <span class="nl">livenessProbe:</span>
+              <span class="nl">httpGet:</span>
+                <span class="nl">path:</span> <span class="o">/</span>
+                <span class="nl">port:</span> <span class="mi">80</span>
+              <span class="nl">initialDelaySeconds:</span> <span class="mi">120</span>
+              <span class="nl">timeoutSeconds:</span> <span class="mi">5</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">spark</span><span class="o">-</span><span class="n">ui</span><span class="o">-</span><span class="n">proxy</span><span class="o">-</span><span class="n">controller</span><span class="p">.</span><span class="n">yaml</span>
+
+<span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span><span class="n">spark</span><span class="o">-</span><span class="n">ui</span><span class="o">-</span><span class="n">proxy</span><span class="o">-</span><span class="n">service</span><span class="p">.</span><span class="n">yaml</span>
+<span class="nl">kind:</span> <span class="n">Service</span>
+<span class="nl">apiVersion:</span> <span class="n">v1</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">spark</span><span class="o">-</span><span class="n">ui</span><span class="o">-</span><span class="n">proxy</span>
+  <span class="nl">namespace:</span> <span class="n">spark</span><span class="o">-</span><span class="n">cluster</span>
+<span class="nl">spec:</span>
+  <span class="nl">ports:</span>
+    <span class="o">-</span> <span class="n">port</span><span class="o">:</span> <span class="mi">80</span>
+      <span class="nl">targetPort:</span> <span class="mi">80</span>
+      <span class="nl">nodePort:</span> <span class="mi">30080</span>
+  <span class="nl">selector:</span>
+    <span class="nl">component:</span> <span class="n">spark</span><span class="o">-</span><span class="n">ui</span><span class="o">-</span><span class="n">proxy</span>
+  <span class="nl">type:</span> <span class="n">NodePort</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">spark</span><span class="o">-</span><span class="n">ui</span><span class="o">-</span><span class="n">proxy</span><span class="o">-</span><span class="n">service</span><span class="p">.</span><span class="n">yaml</span>
+</pre></div>
+
+
+<h5 id="21232-jupyter-pysparknotebook">2.1.2.3.2. jupyter-pyspark(Notebook)</h5>
+<div class="hlcode"><pre><span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span><span class="n">jupyter</span><span class="o">-</span><span class="n">controller</span><span class="p">.</span><span class="n">yaml</span>
+<span class="nl">apiVersion:</span> <span class="n">apps</span><span class="o">/</span><span class="n">v1</span>
+<span class="nl">kind:</span> <span class="n">Deployment</span>
+<span class="nl">metadata:</span>
+  <span class="nl">namespace:</span> <span class="n">spark</span>
+  <span class="nl">name:</span> <span class="n">my</span><span class="o">-</span><span class="n">notebook</span><span class="o">-</span><span class="n">deployment</span>
+  <span class="nl">labels:</span>
+    <span class="nl">app:</span> <span class="n">my</span><span class="o">-</span><span class="n">notebook</span>
+<span class="nl">spec:</span>
+  <span class="nl">replicas:</span> <span class="mi">1</span>
+  <span class="nl">selector:</span>
+    <span class="nl">matchLabels:</span>
+      <span class="nl">app:</span> <span class="n">my</span><span class="o">-</span><span class="n">notebook</span>
+  <span class="nl">template:</span>
+    <span class="nl">metadata:</span>
+      <span class="nl">labels:</span>
+        <span class="nl">app:</span> <span class="n">my</span><span class="o">-</span><span class="n">notebook</span>
+    <span class="nl">spec:</span>
+      <span class="nl">serviceAccountName:</span> <span class="n">spark</span>
+      <span class="nl">containers:</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">my</span><span class="o">-</span><span class="n">notebook</span>
+        <span class="nl">image:</span> <span class="n">jupyter</span><span class="o">/</span><span class="n">pyspark</span><span class="o">-</span><span class="n">notebook</span>
+        <span class="nl">ports:</span>
+          <span class="o">-</span> <span class="n">containerPort</span><span class="o">:</span> <span class="mi">8888</span>
+        <span class="nl">volumeMounts:</span>
+          <span class="o">-</span> <span class="n">mountPath</span><span class="o">:</span> <span class="o">/</span><span class="n">root</span><span class="o">/</span><span class="n">data</span>
+            <span class="nl">name:</span> <span class="n">my</span><span class="o">-</span><span class="n">notebook</span><span class="o">-</span><span class="n">pv</span>
+        <span class="nl">workingDir:</span> <span class="o">/</span><span class="n">root</span>
+        <span class="nl">resources:</span>
+          <span class="nl">limits:</span>
+            <span class="nl">memory:</span> <span class="mi">2</span><span class="n">Gi</span>
+      <span class="nl">volumes:</span>
+        <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">my</span><span class="o">-</span><span class="n">notebook</span><span class="o">-</span><span class="n">pv</span>
+          <span class="nl">persistentVolumeClaim:</span>
+            <span class="nl">claimName:</span> <span class="n">my</span><span class="o">-</span><span class="n">notebook</span><span class="o">-</span><span class="n">pvc</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">jupyter</span><span class="o">-</span><span class="n">controller</span><span class="p">.</span><span class="n">yaml</span>
+
+<span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span><span class="n">jupyter</span><span class="o">-</span><span class="n">service</span><span class="p">.</span><span class="n">yaml</span>
+<span class="nl">apiVersion:</span> <span class="n">v1</span>
+<span class="nl">kind:</span> <span class="n">Service</span>
+<span class="nl">metadata:</span>
+  <span class="nl">namespace:</span> <span class="n">spark</span>
+  <span class="nl">name:</span> <span class="n">my</span><span class="o">-</span><span class="n">notebook</span><span class="o">-</span><span class="n">deployment</span>
+<span class="nl">spec:</span>
+  <span class="nl">selector:</span>
+    <span class="nl">app:</span> <span class="n">my</span><span class="o">-</span><span class="n">notebook</span>
+  <span class="nl">ports:</span>
+    <span class="o">-</span> <span class="n">protocol</span><span class="o">:</span> <span class="n">TCP</span>
+      <span class="nl">port:</span> <span class="mi">29413</span>
+  <span class="nl">clusterIP:</span> <span class="n">None</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">jupyter</span><span class="o">-</span><span class="n">service</span><span class="p">.</span><span class="n">yaml</span>
+</pre></div>
+
+
+<h5 id="21233-zeppelin-notebook">2.1.2.3.3. Zeppelin (Notebook)</h5>
+<div class="hlcode"><pre><span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span><span class="n">zeppelin</span><span class="o">-</span><span class="n">controller</span><span class="p">.</span><span class="n">yaml</span>
+<span class="nl">kind:</span> <span class="n">ReplicationController</span>
+<span class="nl">apiVersion:</span> <span class="n">v1</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">zeppelin</span><span class="o">-</span><span class="n">controller</span>
+  <span class="nl">namespace:</span> <span class="n">spark</span><span class="o">-</span><span class="n">cluster</span>
+<span class="nl">spec:</span>
+  <span class="nl">replicas:</span> <span class="mi">1</span>
+  <span class="nl">selector:</span>
+    <span class="nl">component:</span> <span class="n">zeppelin</span>
+  <span class="nl">template:</span>
+    <span class="nl">metadata:</span>
+      <span class="nl">labels:</span>
+        <span class="nl">component:</span> <span class="n">zeppelin</span>
+    <span class="nl">spec:</span>
+      <span class="nl">containers:</span>
+        <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">zeppelin</span>
+          <span class="nl">image:</span> <span class="n">registry</span><span class="p">.</span><span class="n">cn</span><span class="o">-</span><span class="n">hangzhou</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">google_containers</span><span class="o">/</span><span class="n">zeppelin</span><span class="o">:</span><span class="n">v0</span><span class="mf">.5.6</span><span class="n">_v1</span>
+          <span class="nl">ports:</span>
+            <span class="o">-</span> <span class="n">containerPort</span><span class="o">:</span> <span class="mi">8080</span>
+          <span class="nl">resources:</span>
+            <span class="nl">requests:</span>
+              <span class="nl">cpu:</span> <span class="mi">100</span><span class="n">m</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">zeppelin</span><span class="o">-</span><span class="n">controller</span><span class="p">.</span><span class="n">yaml</span>
+
+<span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span><span class="n">zeppelin</span><span class="o">-</span><span class="n">service</span><span class="p">.</span><span class="n">yaml</span>
+<span class="nl">kind:</span> <span class="n">Service</span>
+<span class="nl">apiVersion:</span> <span class="n">v1</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">zeppelin</span>
+  <span class="nl">namespace:</span> <span class="n">spark</span><span class="o">-</span><span class="n">cluster</span>
+<span class="nl">spec:</span>
+  <span class="nl">ports:</span>
+    <span class="o">-</span> <span class="n">port</span><span class="o">:</span> <span class="mi">80</span>
+      <span class="nl">targetPort:</span> <span class="mi">8080</span>
+      <span class="nl">nodePort:</span> <span class="mi">30081</span>
+  <span class="nl">selector:</span>
+    <span class="nl">component:</span> <span class="n">zeppelin</span>
+  <span class="nl">type:</span> <span class="n">NodePort</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">zeppelin</span><span class="o">-</span><span class="n">service</span><span class="p">.</span><span class="n">yaml</span>
+</pre></div>
+
+
+<h3 id="213">2.1.3. 验证</h3>
+<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">exec</span> <span class="o">-</span><span class="n">it</span> <span class="err">$</span><span class="p">(</span><span class="n">kubectl</span> <span class="n">get</span> <span class="n">pods</span> <span class="o">-</span><span class="n">n</span> <span class="n">spark</span><span class="o">-</span><span class="n">cluster</span><span class="o">|</span> <span class="n">grep</span> <span class="s">&quot;zeppelin-controller&quot;</span><span class="o">|</span> <span class="n">awk</span> <span class="err">&#39;</span><span class="p">{</span><span class="n">print</span> <span class="err">$</span><span class="mi">1</span> <span class="p">}</span><span class="err">&#39;</span><span class="p">)</span>  <span class="o">-</span><span class="n">n</span> <span class="n">spark</span><span class="o">-</span><span class="n">cluster</span> <span class="n">pyspark</span>
+</pre></div>
+
+
+<h2 id="22-kubernetes-native">2.2. Kubernetes Native</h2>
+<p><img alt="" src="https://blog.duyet.net/static/df48f5c54c028a38957574f7bd9213d6/338ac/livy-spark-k8s.webp" /></p>
+<div class="hlcode"><pre><span class="n">helm</span> <span class="n">repo</span> <span class="n">add</span> <span class="n">microsoft</span> <span class="n">https</span><span class="o">:</span><span class="c1">//microsoft.github.io/charts/repo/</span>
+
+<span class="n">helm</span> <span class="n">install</span> <span class="n">my</span><span class="o">-</span><span class="n">spark</span> <span class="n">microsoft</span><span class="o">/</span><span class="n">spark</span> <span class="o">--</span><span class="n">version</span> <span class="mf">1.0.4</span> <span class="o">--</span><span class="n">namespace</span> <span class="n">spark</span><span class="o">-</span><span class="n">on</span><span class="o">-</span><span class="n">k8s</span><span class="o">-</span><span class="n">native</span>
+
+<span class="cp"># 成功后显示</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="nl">NAME:</span> <span class="n">my</span><span class="o">-</span><span class="n">spark</span>
+<span class="n">LAST</span> <span class="n">DEPLOYED</span><span class="o">:</span> <span class="n">Thu</span> <span class="n">Jun</span> <span class="mi">17</span> <span class="mi">17</span><span class="o">:</span><span class="mi">26</span><span class="o">:</span><span class="mi">28</span> <span class="mi">2021</span>
+<span class="nl">NAMESPACE:</span> <span class="n">spark</span><span class="o">-</span><span class="n">on</span><span class="o">-</span><span class="n">k8s</span><span class="o">-</span><span class="n">native</span>
+<span class="nl">STATUS:</span> <span class="n">deployed</span>
+<span class="nl">REVISION:</span> <span class="mi">1</span>
+<span class="nl">NOTES:</span>
+<span class="mf">1.</span> <span class="n">Get</span> <span class="n">the</span> <span class="n">Spark</span> <span class="n">URL</span> <span class="n">to</span> <span class="n">visit</span> <span class="n">by</span> <span class="n">running</span> <span class="n">these</span> <span class="n">commands</span> <span class="n">in</span> <span class="n">the</span> <span class="n">same</span> <span class="n">shell</span><span class="o">:</span>
+
+  <span class="nl">NOTE:</span> <span class="n">It</span> <span class="n">may</span> <span class="n">take</span> <span class="n">a</span> <span class="n">few</span> <span class="n">minutes</span> <span class="k">for</span> <span class="n">the</span> <span class="n">LoadBalancer</span> <span class="n">IP</span> <span class="n">to</span> <span class="n">be</span> <span class="n">available</span><span class="p">.</span>
+  <span class="n">You</span> <span class="n">can</span> <span class="n">watch</span> <span class="n">the</span> <span class="n">status</span> <span class="n">of</span> <span class="n">by</span> <span class="n">running</span> <span class="err">&#39;</span><span class="n">kubectl</span> <span class="n">get</span> <span class="n">svc</span> <span class="o">--</span><span class="n">namespace</span> <span class="n">spark</span><span class="o">-</span><span class="n">on</span><span class="o">-</span><span class="n">k8s</span><span class="o">-</span><span class="n">native</span> <span class="o">-</span><span class="n">w</span> <span class="n">my</span><span class="o">-</span><span class="n">spark</span><span class="o">-</span><span class="n">webui</span><span class="err">&#39;</span>
+
+  <span class="n">export</span> <span class="n">SPARK_SERVICE_IP</span><span class="o">=</span><span class="err">$</span><span class="p">(</span><span class="n">kubectl</span> <span class="n">get</span> <span class="n">svc</span> <span class="o">--</span><span class="n">namespace</span> <span class="n">spark</span><span class="o">-</span><span class="n">on</span><span class="o">-</span><span class="n">k8s</span><span class="o">-</span><span class="n">native</span> <span class="n">my</span><span class="o">-</span><span class="n">spark</span><span class="o">-</span><span class="n">webui</span> <span class="o">-</span><span class="n">o</span> <span class="n">jsonpath</span><span class="o">=</span><span class="err">&#39;</span><span class="p">{.</span><span class="n">status</span><span class="p">.</span><span class="n">loadBalancer</span><span class="p">.</span><span class="n">ingress</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">ip</span><span class="p">}</span><span class="err">&#39;</span><span class="p">)</span>
+  <span class="n">echo</span> <span class="n">http</span><span class="o">:</span><span class="c1">//$SPARK_SERVICE_IP:8080</span>
+
+<span class="mf">2.</span> <span class="n">Get</span> <span class="n">the</span> <span class="n">Zeppelin</span> <span class="n">URL</span> <span class="n">to</span> <span class="n">visit</span> <span class="n">by</span> <span class="n">running</span> <span class="n">these</span> <span class="n">commands</span> <span class="n">in</span> <span class="n">the</span> <span class="n">same</span> <span class="n">shell</span><span class="o">:</span>
+
+  <span class="nl">NOTE:</span> <span class="n">It</span> <span class="n">may</span> <span class="n">take</span> <span class="n">a</span> <span class="n">few</span> <span class="n">minutes</span> <span class="k">for</span> <span class="n">the</span> <span class="n">LoadBalancer</span> <span class="n">IP</span> <span class="n">to</span> <span class="n">be</span> <span class="n">available</span><span class="p">.</span>
+  <span class="n">You</span> <span class="n">can</span> <span class="n">watch</span> <span class="n">the</span> <span class="n">status</span> <span class="n">of</span> <span class="n">by</span> <span class="n">running</span> <span class="err">&#39;</span><span class="n">kubectl</span> <span class="n">get</span> <span class="n">svc</span> <span class="o">--</span><span class="n">namespace</span> <span class="n">spark</span><span class="o">-</span><span class="n">on</span><span class="o">-</span><span class="n">k8s</span><span class="o">-</span><span class="n">native</span> <span class="o">-</span><span class="n">w</span> <span class="n">my</span><span class="o">-</span><span class="n">spark</span><span class="o">-</span><span class="n">zeppelin</span><span class="err">&#39;</span>
+
+  <span class="n">export</span> <span class="n">ZEPPELIN_SERVICE_IP</span><span class="o">=</span><span class="err">$</span><span class="p">(</span><span class="n">kubectl</span> <span class="n">get</span> <span class="n">svc</span> <span class="o">--</span><span class="n">namespace</span> <span class="n">spark</span><span class="o">-</span><span class="n">on</span><span class="o">-</span><span class="n">k8s</span><span class="o">-</span><span class="n">native</span> <span class="n">my</span><span class="o">-</span><span class="n">spark</span><span class="o">-</span><span class="n">zeppelin</span> <span class="o">-</span><span class="n">o</span> <span class="n">jsonpath</span><span class="o">=</span><span class="err">&#39;</span><span class="p">{.</span><span class="n">status</span><span class="p">.</span><span class="n">loadBalancer</span><span class="p">.</span><span class="n">ingress</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">ip</span><span class="p">}</span><span class="err">&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p>利用如下命令查看 Spark 的 release 和 service。</p>
+<div class="hlcode"><pre><span class="n">helm</span> <span class="n">list</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="cp"># 安装完成后为空</span>
+</pre></div>
+
+
+<h4 id="2201">2.2.0.1. 更新配置</h4>
+<p>通过上面的 URL，可以在浏览器上看到 Spark 的 Web UI，上面显示 worker 实例当前为 3 个。</p>
+<p>接下来，我们将利用如下命令，使用 Helm 对 Spark 应用做升级，将 worker 实例数量从 3 个变更为 4 个。请注意参数名称是大小写敏感的。</p>
+<div class="hlcode"><pre><span class="n">helm</span> <span class="n">upgrade</span> <span class="n">my</span><span class="o">-</span><span class="n">spark</span> <span class="o">--</span><span class="n">set</span> <span class="s">&quot;Worker.Replicas=2&quot;</span> <span class="o">--</span><span class="n">set</span> <span class="s">&quot;Worker.Cpu=10000m&quot;</span>  <span class="n">microsoft</span><span class="o">/</span><span class="n">spark</span> <span class="o">-</span><span class="n">n</span> <span class="n">spark</span><span class="o">-</span><span class="n">on</span><span class="o">-</span><span class="n">k8s</span><span class="o">-</span><span class="n">native</span>
+
+
+
+<span class="o">&gt;&gt;&gt;</span>
+<span class="cp"># 得到如下结果</span>
+<span class="n">Release</span> <span class="s">&quot;myspark&quot;</span> <span class="n">has</span> <span class="n">been</span> <span class="n">upgraded</span><span class="p">.</span> <span class="n">Happy</span> <span class="n">Helming</span><span class="o">!</span>
+<span class="n">LAST</span> <span class="n">DEPLOYED</span><span class="o">:</span> <span class="n">Mon</span> <span class="n">Nov</span> <span class="mi">20</span> <span class="mi">19</span><span class="o">:</span><span class="mi">27</span><span class="o">:</span><span class="mi">29</span> <span class="mi">2017</span>
+<span class="nl">NAMESPACE:</span> <span class="k">default</span>
+<span class="nl">STATUS:</span> <span class="n">DEPLOYED</span>
+</pre></div>
+
+
+<p>...<br />
+利用如下命令查看 Spark 新增的 Pod，并等待其状态变为 Running。</p>
+<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">get</span> <span class="n">pod</span> <span class="o">-</span><span class="n">n</span>  <span class="n">spark</span><span class="o">-</span><span class="n">on</span><span class="o">-</span><span class="n">k8s</span><span class="o">-</span><span class="n">native</span>
+</pre></div>
+
+
+<p>在浏览器上刷新 Spark 的 Web UI，可以看到此时 worker 数量已经变为 4 个。</p>
+<h3 id="221">2.2.1. 删除</h3>
+<p>如需彻底删除 Spark 应用，可输入如下命令。</p>
+<div class="hlcode"><pre><span class="n">helm</span> <span class="n">delete</span> <span class="o">--</span><span class="n">purge</span> <span class="n">myspark</span>
+</pre></div>
+
+
+<h2 id="23-spark-operator">2.3. Spark Operator</h2>
+<h3 id="231-helm">2.3.1. Helm</h3>
+<div class="hlcode"><pre><span class="cp"># The easiest way to install the Kubernetes Operator for Apache Spark is to use the Helm chart</span>
+<span class="n">helm</span> <span class="n">repo</span> <span class="n">add</span> <span class="n">incubator</span> <span class="n">http</span><span class="o">:</span><span class="c1">//mirror.azure.cn/kubernetes/charts-incubator/</span>
+<span class="n">helm</span> <span class="n">repo</span> <span class="n">update</span>
+<span class="n">helm</span> <span class="n">install</span> <span class="n">stable</span><span class="o">/</span><span class="n">sparkoperator</span> <span class="o">--</span><span class="n">generate</span><span class="o">-</span><span class="n">name</span> <span class="o">--</span><span class="n">namespace</span> <span class="n">spark</span><span class="o">-</span><span class="n">operato</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">helm</span> <span class="n">repo</span> <span class="n">add</span> <span class="n">jahstreet</span> <span class="n">https</span><span class="o">:</span><span class="c1">//jahstreet.github.io/helm-charts</span>
+<span class="n">helm</span> <span class="n">repo</span> <span class="n">update</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="n">namespace</span> <span class="n">livy</span>
+<span class="n">helm</span> <span class="n">upgrade</span> <span class="o">--</span><span class="n">install</span> <span class="n">livy</span> <span class="o">--</span><span class="n">namespace</span> <span class="n">livy</span> <span class="n">jahstreet</span><span class="o">/</span><span class="n">livy</span> \
+    <span class="o">--</span><span class="n">set</span> <span class="n">rbac</span><span class="p">.</span><span class="n">create</span><span class="o">=</span><span class="nb">true</span> <span class="err">#</span> <span class="n">If</span> <span class="n">you</span> <span class="n">are</span> <span class="n">running</span> <span class="n">RBAC</span><span class="o">-</span><span class="n">enabled</span> <span class="n">Kubernetes</span> <span class="n">cluster</span>
+<span class="n">kubectl</span> <span class="n">get</span> <span class="n">pods</span> <span class="o">--</span><span class="n">namespace</span> <span class="n">livy</span> <span class="o">-</span><span class="n">w</span>
+<span class="cp"># Wait until Pod `livy-0` moves to Running state</span>
+</pre></div>
+
+
+<h1 id="3">3. 连接与使用</h1>
+<p>Check that your deployment is running:</p>
+<div class="hlcode"><pre><span class="err">$</span> <span class="nx">kubectl</span> <span class="nb">get</span> <span class="kc">all</span> <span class="na">-n</span> <span class="nx">spark</span>
+<span class="nb">NAME</span>                                          <span class="nb">READY</span>   <span class="nb">STATUS</span>    <span class="nx">RESTARTS</span>   <span class="nx">AGE</span>
+<span class="nx">pod</span><span class="p">/</span><span class="nx">my</span><span class="na">-notebook-deployment</span><span class="o">-</span><span class="mi">7</span><span class="nx">bf574447c</span><span class="na">-pdn2q</span>   <span class="mi">1</span><span class="p">/</span><span class="nx">1</span>     <span class="nb">Running</span>   <span class="mi">0</span>          <span class="mi">19</span><span class="nb">s</span>
+<span class="nb">NAME</span>                             <span class="k">TYPE</span>        <span class="nx">CLUSTER</span><span class="na">-IP</span>   <span class="nx">EXTERNAL</span><span class="na">-IP</span>   <span class="nb">PORT</span><span class="p">(</span><span class="nb">S</span><span class="p">)</span>     <span class="nx">AGE</span>
+<span class="nx">service</span><span class="p">/</span><span class="nx">my</span><span class="na">-notebook-deployment</span>   <span class="nx">ClusterIP</span>   <span class="kc">None</span>         <span class="o">&lt;</span><span class="kc">none</span><span class="o">&gt;</span>        <span class="mi">29413</span><span class="p">/</span><span class="nx">TCP</span>   <span class="mi">19</span><span class="nb">s</span>
+<span class="nb">NAME</span>                                     <span class="nb">READY</span>   <span class="nb">UP</span><span class="na">-TO-DATE</span>   <span class="nx">AVAILABLE</span>   <span class="nx">AGE</span>
+<span class="nx">deployment.apps</span><span class="p">/</span><span class="nx">my</span><span class="na">-notebook-deployment</span>   <span class="mi">1</span><span class="p">/</span><span class="nx">1</span>     <span class="mi">1</span>            <span class="mi">1</span>           <span class="mi">19</span><span class="nb">s</span>
+<span class="nb">NAME</span>                                                <span class="nx">DESIRED</span>   <span class="nx">CURRENT</span>   <span class="nb">READY</span>   <span class="nx">AGE</span>
+<span class="nx">replicaset.apps</span><span class="p">/</span><span class="nx">my</span><span class="na">-notebook-deployment</span><span class="o">-</span><span class="mi">7</span><span class="nx">bf574447c</span>   <span class="mi">1</span>         <span class="mi">1</span>         <span class="mi">1</span>       <span class="mi">19</span><span class="nb">s</span>
+</pre></div>
+
+
+<p>And now port-forward to 8888 so you can login into Jupyter:</p>
+<div class="hlcode"><pre><span class="err">$</span> <span class="n">kubectl</span> <span class="n">port</span><span class="o">-</span><span class="n">forward</span> <span class="o">-</span><span class="n">n</span> <span class="n">spark</span> <span class="n">deployment</span><span class="p">.</span><span class="n">apps</span><span class="o">/</span><span class="n">my</span><span class="o">-</span><span class="n">notebook</span><span class="o">-</span><span class="n">deployment</span> <span class="mi">8888</span><span class="o">:</span><span class="mi">8888</span>
+<span class="n">Forwarding</span> <span class="n">from</span> <span class="mf">127.0.0.1</span><span class="o">:</span><span class="mi">8888</span> <span class="o">-&gt;</span> <span class="mi">8888</span>
+<span class="n">Forwarding</span> <span class="n">from</span> <span class="p">[</span><span class="o">::</span><span class="mi">1</span><span class="p">]</span><span class="o">:</span><span class="mi">8888</span> <span class="o">-&gt;</span> <span class="mi">8888</span>
+<span class="n">Now</span> <span class="n">you</span> <span class="n">should</span> <span class="n">be</span> <span class="n">able</span> <span class="n">to</span> <span class="n">point</span> <span class="n">your</span> <span class="n">favorite</span> <span class="n">browser</span> <span class="n">to</span> <span class="n">http</span><span class="o">:</span><span class="c1">//localhost:8888 and log into Jupyter (if you used my image as a reference the password is ‘jupyter’ else you will need to copy/paste the generated auth token displayed in the container’s log file).</span>
+</pre></div>
+
+
+<p>Light It!<br />
+Start a new Python3 notebook and type the following in a cell:</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">pyspark</span> <span class="kn">import</span> <span class="n">SparkContext</span><span class="p">,</span> <span class="n">SparkConf</span>
+<span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="kn">import</span> <span class="n">SparkSession</span>
+<span class="c"># Create Spark config for our Kubernetes based cluster manager</span>
+<span class="n">sparkConf</span> <span class="o">=</span> <span class="n">SparkConf</span><span class="p">()</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">setMaster</span><span class="p">(</span><span class="s">&quot;k8s://https://kubernetes.default.svc.cluster.local:443&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">setAppName</span><span class="p">(</span><span class="s">&quot;spark&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.kubernetes.container.image&quot;</span><span class="p">,</span> <span class="s">&quot;pidocker-docker-registry.default.svc.cluster.local:5000/my-spark-py:v2.4.4&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.kubernetes.namespace&quot;</span><span class="p">,</span> <span class="s">&quot;spark&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.executor.instances&quot;</span><span class="p">,</span> <span class="s">&quot;7&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.executor.cores&quot;</span><span class="p">,</span> <span class="s">&quot;2&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.driver.memory&quot;</span><span class="p">,</span> <span class="s">&quot;512m&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.executor.memory&quot;</span><span class="p">,</span> <span class="s">&quot;512m&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.kubernetes.pyspark.pythonVersion&quot;</span><span class="p">,</span> <span class="s">&quot;3&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.kubernetes.authenticate.driver.serviceAccountName&quot;</span><span class="p">,</span> <span class="s">&quot;spark&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.kubernetes.authenticate.serviceAccountName&quot;</span><span class="p">,</span> <span class="s">&quot;spark&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.driver.port&quot;</span><span class="p">,</span> <span class="s">&quot;29413&quot;</span><span class="p">)</span>
+<span class="n">sparkConf</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="s">&quot;spark.driver.host&quot;</span><span class="p">,</span> <span class="s">&quot;my-notebook-deployment.spark.svc.cluster.local&quot;</span><span class="p">)</span>
+<span class="c"># Initialize our Spark cluster, this will actually</span>
+<span class="c"># generate the worker nodes.</span>
+<span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span><span class="o">.</span><span class="n">builder</span><span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="n">conf</span><span class="o">=</span><span class="n">sparkConf</span><span class="p">)</span><span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+<span class="n">sc</span> <span class="o">=</span> <span class="n">spark</span><span class="o">.</span><span class="n">sparkContext</span>
+</pre></div>
+
+
+<h1 id="4">4. 参考资料</h1>
+<ol>
+<li>
+<p><a href="https://blog.duyet.net/2020/05/spark-on-k8s.html">3 ways to run Spark on Kubernetes<br />
+</a></p>
+</li>
+<li>
+<p><a href="https://spark.apache.org/docs/latest/running-on-kubernetes.html">spark官方 running-on-kubernetes</a></p>
+</li>
+<li>https://jimmysong.io/kubernetes-handbook/usecases/spark-standalone-on-kubernetes.html</li>
+</ol>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

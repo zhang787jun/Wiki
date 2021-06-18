@@ -49,6 +49,10 @@
 <li><a href="#226">2.2.6. 版本查看</a></li>
 </ul>
 </li>
+<li><a href="#docker-composeyaml">docker-compose.yaml 文件</a><ul>
+<li><a href="#_1">环境遍历</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li><a href="#4">4. 参考文献</a></li>
@@ -238,6 +242,13 @@ up<br />
 格式为 <code>docker-compose version</code>。<br />
 打印版本信息。</li>
 </ul>
+<h2 id="docker-composeyaml">docker-compose.yaml 文件</h2>
+<h3 id="_1">环境遍历</h3>
+<div class="hlcode"><pre>volumes:
+    - <span class="cp">${</span><span class="n">QLIB_DATA</span><span class="cp">}</span>:/nfsshare
+</pre></div>
+
+
 <h1 id="4">4. 参考文献</h1>
 <ol>
 <li>本文链接：https://deepzz.com/post/dockerfile-best-practices.html</li>

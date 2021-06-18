@@ -199,6 +199,14 @@ up
 
 
 
+## docker-compose.yaml 文件
+
+### 环境遍历
+
+```yml
+volumes:
+	- ${QLIB_DATA}:/nfsshare
+```
 # 4. 参考文献
 
 1. 本文链接：https://deepzz.com/post/dockerfile-best-practices.html

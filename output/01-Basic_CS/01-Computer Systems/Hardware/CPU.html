@@ -1,0 +1,285 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>算力核心-CPU - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#01-Basic_CS">01-Basic_CS</a>&nbsp;»&nbsp;<a href="/Wiki/#-01-Computer Systems">01-Computer Systems</a>&nbsp;»&nbsp;<a href="/Wiki/#-Hardware">Hardware</a>&nbsp;»&nbsp;算力核心-CPU</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">算力核心-CPU</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-cpu">1. CPU概念</a></li>
+<li><a href="#2-cpu">2. CPU 结构</a><ul>
+<li><a href="#21">2.1. 控制单元</a></li>
+<li><a href="#22">2.2. 运算单元</a><ul>
+<li><a href="#221">2.2.1. 插槽</a></li>
+<li><a href="#222">2.2.2. 核</a></li>
+<li><a href="#223">2.2.3. 超线程技术</a></li>
+<li><a href="#224-cpu">2.2.4. 逻辑CPU数量</a></li>
+</ul>
+</li>
+<li><a href="#23">2.3. 存储单元</a><ul>
+<li><a href="#231-cache">2.3.1. 高速缓存Cache</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#3">3. 关键概念</a><ul>
+<li><a href="#31">3.1. 指令集</a><ul>
+<li><a href="#311">3.1.1. 背景</a></li>
+</ul>
+</li>
+<li><a href="#32">3.2. 虚拟化问题</a></li>
+</ul>
+</li>
+<li><a href="#4-cpu">4. CPU 相关工具</a><ul>
+<li><a href="#41-cpu">4.1. 查看CPU信息</a></li>
+<li><a href="#42">4.2. 处理器识别实用程序</a></li>
+</ul>
+</li>
+<li><a href="#5">5. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1-cpu">1. CPU概念</h1>
+<p>中央处理器（英文Central Processing Unit，CPU）是一台计算机的运算核心和控制核心。</p>
+<h1 id="2-cpu">2. CPU 结构</h1>
+<p><img alt="" src="../../../attach/images/2020-07-18-10-04-08.png" /></p>
+<h2 id="21">2.1. 控制单元</h2>
+<h2 id="22">2.2. 运算单元</h2>
+<h3 id="221">2.2.1. 插槽</h3>
+<ul>
+<li>[ ] <code>socket</code> : 插槽、插口</li>
+<li>[x] <code>sockets/number of sockets</code> : 主板上CPU插口的数量，指的是整个主板上物理CPU的个数。</li>
+</ul>
+<h3 id="222">2.2.2. 核</h3>
+<ul>
+<li>[ ] <code>Core</code> : 核 ，就是平时说的核，双核、四核等。</li>
+<li>[x] <code>Cores</code> ：核数，又称为运算核心数，是指每个CPU上的核数。</li>
+</ul>
+<p><code>Cores=sockets * Cores per socket</code></p>
+<p>$$总核数 = 物理CPU个数 \times  每颗物理CPU的核数$$</p>
+<h3 id="223">2.2.3. 超线程技术</h3>
+<ul>
+<li>[ ] <code>超线程技术（HT, Hyper-Threading）</code> : 也成为<code>CPU虚拟化技术</code>，是在一个实体CPU中提供多个逻辑线程的技术。</li>
+<li>[x] <code>Thread(s) per core</code> : 单核线程数，指的是每个CPU核的线程数。</li>
+</ul>
+<p>一般来说，没有超线程技术的CPU，单核线程数=1，对于Intel 的新开发CPU ，单核线程数=2。<sup id="fnref:超线程"><a class="footnote-ref" href="#fn:超线程" rel="footnote">1</a></sup></p>
+<p><code>Thread(s) per core=2</code></p>
+<p><strong>示例</strong>：</p>
+<p>4核8线程：即物理核心是4个，但是从计算机的角度来看，被虚拟为了8个核心。</p>
+<h3 id="224-cpu">2.2.4. 逻辑CPU数量</h3>
+<ul>
+<li>[x] <code>CPU(s)</code>: 逻辑CPU数量</li>
+</ul>
+<p><code>CPU(s)=Socket(s)* Core(s) per socket * Thread(s) per core</code></p>
+<p>$$总逻辑CPU数 = 物理CPU个数 \times 每颗物理CPU的核数 \times 超线程数$$</p>
+<h2 id="23">2.3. 存储单元</h2>
+<h3 id="231-cache">2.3.1. 高速缓存Cache</h3>
+<p>Cache，即高速缓存，是介于CPU和内存之间的高速小容量存储器。在金字塔式存储体系中它位于自顶向下的第二层，仅次于CPU寄存器。其容量远小于内存，但速度却可以接近CPU的频率。<br />
+当CPU发出内存访问请求时，会先查看 Cache 内是否有请求数据: <br />
+1. 如果存在（命中），则直接返回该数据；<br />
+2. 如果不存在（失效），再去访问内存 —— 先把内存中的相应数据载入缓存，再将其返回处理器。</p>
+<p>提供<code>高速缓存</code>的目的是让数据访问的速度适应CPU的处理速度，通过<strong>减少访问内存的次数来提高数据存取的速度</strong>。</p>
+<p>Cache 技术所依赖的原理是<code>程序执行与数据访问的局部性原理</code>，这种局部性表现在两个方面：<br />
+1. <code>时间局部性</code>：如果程序中的某条指令一旦执行，不久以后该指令可能再次执行，如果某数据被访问过，不久以后该数据可能再次被访问。<br />
+2. <code>空间局部性</code>：一旦程序访问了某个存储单元，在不久之后，其附近的存储单元也将被访问，即程序在一段时间内所访问的地址，可能集中在一定的范围之内，这是因为指令或数据通常是顺序存放的。</p>
+<p>时间局部性是通过将近来使用的指令和数据保存到Cache中实现。空间局部性通常是使用较大的高速缓存，并将 预取机制 集成到高速缓存控制逻辑中来实现。</p>
+<h1 id="3">3. 关键概念</h1>
+<h2 id="31">3.1. 指令集</h2>
+<h3 id="311">3.1.1. 背景</h3>
+<ul>
+<li>[ ] <code>指令集</code> ：存储在CPU内部，对CPU运算进行指导和优化的硬程序。</li>
+</ul>
+<p>拥有这些指令集，CPU就可以更高效地运行。</p>
+<p>Intel主要有 [x86，EM64T，MMX，SSE，SSE2，SSE3，SSSE3 (Super SSE3)，SSE4A，SSE4.1，SSE4.2，AVX，AVX2，AVX-512，VMX] <strong>（时间排序）</strong> 等指令集。</p>
+<p>AMD主要是x86，x86-64，3D-Now!指令集。</p>
+<table>
+<thead>
+<tr>
+<th align="left">厂家</th>
+<th align="left">指令集</th>
+<th align="left">说明</th>
+<th align="left"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Intel</td>
+<td align="left">SSE2</td>
+<td align="left">Streaming SIMD Extensions</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">Intel</td>
+<td align="left">AVX</td>
+<td align="left">高级矢量扩展,Intel Advanced Vector Extensions (Intel AVX)</td>
+<td align="left">AVX引入了融合乘法累加（FMA）运算，加速了线性代数计算，即点积，矩阵乘法，卷积</td>
+</tr>
+</tbody>
+</table>
+<h2 id="32">3.2. 虚拟化问题</h2>
+<p><strong><code>虚拟化</code></strong> 就是由位于下层的软件模块，根据上层的软件模块的期待，抽象（虚拟）出一个虚拟的软件或硬件模块，使上一层软件直接运行在这个与自己期待完全一致的虚拟环境上。</p>
+<p>CPU 虚拟化 主要指 intel 的 VT-x 和 AMD 的 AMD-V 为主的硬件辅助的 CPU 虚拟化技术</p>
+<p>其中，Intel VT 包括 VT-x （支持 CPU 虚拟化）、EPT（支持内存虚拟化）和 VT-d（支持 I/O 虚拟化）</p>
+<p>VMM 全称是 Virtual Machine Monitor，虚拟机监控系统，也叫 Hypervisor，是虚拟化层的具体实现。主要是<strong><code>以软件的方式，实现一套和物理主机环境完全一样的虚拟环境</code></strong>，物理主机有的所有资源，包括 CPU、内存、网络 IO、设备 IO等等</p>
+<p>KVM 是一种硬件辅助的虚拟化技术，支持 Intel VT-x 和 AMD-v 技术，怎么知道 CPU 是否支持 KVM 虚拟化呢？可以通过如下命令查看：</p>
+<p>CPU 是否支持虚拟化关系到是否能使用docker 等虚拟化工具 </p>
+<h1 id="4-cpu">4. CPU 相关工具</h1>
+<h2 id="41-cpu">4.1. 查看CPU信息</h2>
+<p><strong>Linux</strong></p>
+<div class="hlcode"><pre><span class="n">lscpu</span> 
+<span class="o">&gt;&gt;&gt;</span>
+<span class="nl">Architecture:</span>        <span class="n">x86_64</span>
+<span class="n">CPU</span> <span class="n">op</span><span class="o">-</span><span class="n">mode</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">:</span>      <span class="mi">32</span><span class="o">-</span><span class="n">bit</span><span class="p">,</span> <span class="mi">64</span><span class="o">-</span><span class="n">bit</span>
+<span class="n">Byte</span> <span class="n">Order</span><span class="o">:</span>          <span class="n">Little</span> <span class="n">Endian</span>
+<span class="n">CPU</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">:</span>              <span class="mi">8</span>
+<span class="n">On</span><span class="o">-</span><span class="n">line</span> <span class="n">CPU</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="n">list</span><span class="o">:</span> <span class="mi">0</span><span class="o">-</span><span class="mi">7</span>
+<span class="n">Thread</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="n">per</span> <span class="n">core</span><span class="o">:</span>  <span class="mi">2</span>
+<span class="n">Core</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="n">per</span> <span class="n">socket</span><span class="o">:</span>  <span class="mi">4</span>
+<span class="n">Socket</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="o">:</span>           <span class="mi">1</span>
+<span class="n">Vendor</span> <span class="n">ID</span><span class="o">:</span>           <span class="n">GenuineIntel</span>
+<span class="n">CPU</span> <span class="n">family</span><span class="o">:</span>          <span class="mi">6</span>
+<span class="nl">Model:</span>               <span class="mi">158</span>
+<span class="n">Model</span> <span class="n">name</span><span class="o">:</span>          <span class="n">Intel</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="n">Core</span><span class="p">(</span><span class="n">TM</span><span class="p">)</span> <span class="n">i7</span><span class="o">-</span><span class="mi">7700</span> <span class="n">CPU</span> <span class="err">@</span> <span class="mf">3.60</span><span class="n">GHz</span>
+<span class="nl">Stepping:</span>            <span class="mi">9</span>
+<span class="n">CPU</span> <span class="n">MHz</span><span class="o">:</span>             <span class="mf">3600.000</span>
+<span class="n">CPU</span> <span class="n">max</span> <span class="n">MHz</span><span class="o">:</span>         <span class="mf">3600.0000</span>
+<span class="nl">BogoMIPS:</span>            <span class="mf">7200.00</span>
+<span class="nl">Virtualization:</span>      <span class="n">VT</span><span class="o">-</span><span class="n">x</span>
+<span class="n">Hypervisor</span> <span class="n">vendor</span><span class="o">:</span>   <span class="n">Windows</span> <span class="n">Subsystem</span> <span class="k">for</span> <span class="n">Linux</span>
+<span class="n">Virtualization</span> <span class="n">type</span><span class="o">:</span> <span class="n">container</span>
+</pre></div>
+
+
+<p><strong>说明</strong><br />
+Family（系列）<br />
+系列标识可用来确定处理器属于那一代产品。如：<br />
+ - 6系列（第六代）的intel处理器包括 Pentium Pro、Pentium II、Pentium II Xeon、Pentium III和Pentium III Xeon处理器。<br />
+ - 5系列（第五代）包括Pentium处理器和采用 MMX技术的Pentium处理器。<br />
+ - AMD的6系列实际指有K7系列CPU，有DURON和ATHION两大类。最新一代的INTEL Pentium 4系列处理器（包括相同核心的Celerom处理器）的系列值为“F”</p>
+<p><strong>Windows下</strong>：<br />
+在cmd命令中输入<code>wmic</code>，然后在出现的新窗口中输入<code>cpu get *</code></p>
+<div class="hlcode"><pre><span class="n">wmic</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="nl">wmic:</span><span class="n">root</span><span class="err">\</span><span class="n">cli</span><span class="o">&gt;</span>
+
+<span class="n">cpu</span> <span class="n">get</span> <span class="n">Name</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">Intel</span><span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="n">Core</span><span class="p">(</span><span class="n">TM</span><span class="p">)</span> <span class="n">i7</span><span class="o">-</span><span class="mi">7700</span> <span class="n">CPU</span> <span class="err">@</span> <span class="mf">3.60</span><span class="n">GHz</span>
+<span class="cp"># 表示物理CPU的名称，共有1个。</span>
+
+<span class="n">cpu</span> <span class="n">get</span> <span class="n">NumberOfCores</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">NumberOfCores</span>
+<span class="mi">4</span>
+<span class="cp"># 表示CPU核心数</span>
+
+<span class="n">cpu</span> <span class="n">get</span> <span class="n">NumberOfLogicalProcessors</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">NumberOfLogicalProcessors</span>
+<span class="mi">8</span>
+<span class="cp"># 表示CPU逻辑核数。当有超线程时，比如2，逻辑核数=核心数*2</span>
+</pre></div>
+
+
+<p><img alt="" src="../../../attach/images/2019-10-08-14-44-50.png" /></p>
+<h2 id="42">4.2. 处理器识别实用程序</h2>
+<p>使用 <strong>英特尔® 处理器识别实用程序</strong> 产看 intel 系列 CPU 数据</p>
+<p>https://www.intel.cn/content/www/cn/zh/support/products/5982/processors/processor-utilities-and-programs/intel-processor-identification-utility.html</p>
+<h1 id="5">5. 参考资料</h1>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:超线程">
+<p><a href="https://www.zhihu.com/question/55984133">知乎:为什么 Intel 的超线程技术是一个核两条线程，而不是更多？</a>&#160;<a class="footnote-backref" href="#fnref:超线程" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

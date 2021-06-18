@@ -13,7 +13,7 @@ NVIDIA于2016年开始设计NVIDIA-Docker已便于容器使用NVIDIA GPUs。
 第一代nvidia-docker 1.0实现了对docker client的封装，并在容器启动时，将必要的GPU device和libraries挂载到容器中。
 
 ## 1.1. nvidia-docker 存在的问题
-
+完善容器运行时对GPU的支持。如: 自动的获取用户层面的NVIDIA Driver libraries, NVIDIA kernel modules, device ordering等。
 但是这种设计的方式高度的与docker运行耦合，缺乏灵活性。
 
 存在的缺陷具体如下:
@@ -22,7 +22,7 @@ NVIDIA于2016年开始设计NVIDIA-Docker已便于容器使用NVIDIA GPUs。
 2. 不能更好的利用docker生态的其它工具。如: docker compose。
 3. 不能将GPU作为调度系统的一种资源来进行灵活的调度。
 
-完善容器运行时对GPU的支持。如: 自动的获取用户层面的NVIDIA Driver libraries, NVIDIA kernel modules, device ordering等。
+
 
 基于上面描述的这些弊端，NVIDIA开始了对下一代容器运行时的设计: nvidia-docker2.0。
 
