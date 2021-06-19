@@ -7,7 +7,7 @@ date: 2099-06-02 00:00
 [TOC]
 # 1. 概述
 
-**Why Spark on Kubernetes**
+## 1.1. Why Spark on Kubernetes
 Spark can run on clusters managed by Kubernetes. This feature makes use of native Kubernetes scheduler that has been added to Spark. Kubernetes offers some powerful benefits as a resource manager for Big Data applications, but comes with its own complexities.
 
 It is using custom resource definitions and operators as a means to extend the Kubernetes API. So far, it has open-sourced operators for Spark and Apache Flink, and is working on more.
@@ -17,7 +17,7 @@ Here are three primary benefits to using Kubernetes as a resource manager:
 Unified management — Getting away from two cluster management interfaces if your organization already is using Kubernetes elsewhere.
 Ability to isolate jobs — You can move models and ETL pipelines from dev to production without the headaches of dependency management.
 Resilient infrastructure — You don’t worry about sizing and building the cluster, manipulating Docker files or Kubernetes networking configurations.
-## 1.1. Spark on K8S 的几种模式
+## 1.2. Spark on K8S 的几种模式
 
 **区分**
 
@@ -31,10 +31,10 @@ Spark主要有4种运行模型：
    3. Spark on k8s--Spark Operator
 
 
-### 1.1.1. Standalone
+### 1.2.1. Standalone
 Standalone：在 K8S 启动一个长期运行的集群，所有 Job 都通过 spark-submit 向这个集群提交
 
-#### 1.1.1.1. 特点
+#### 1.2.1.1. 特点
 
 
 简而言之，spark standalone on kubernetes 有如下几个缺点：
@@ -42,10 +42,10 @@ Standalone：在 K8S 启动一个长期运行的集群，所有 Job 都通过 sp
 1. 无法对于多租户做隔离，每个用户都想给 pod 申请 node 节点可用的最大的资源。
 2. Spark 的 master／worker 本来不是设计成使用 kubernetes 的资源调度，这样会存在两层的资源调度问题，不利于与 kuberentes 集成。
 
-### 1.1.2. Kubernetes Native
+### 1.2.2. Kubernetes Native
 Kubernetes Native：通过 spark-submit 直接向 K8S 的 API Server 提交，申请到资源后启动 Pod 做为 Driver 和 Executor 执行 Job，参考 http://spark.apache.org/docs/2.4.6/running-on-kubernetes.html
 
-#### 1.1.2.1. 特点
+#### 1.2.2.1. 特点
 使用 kubernetes 原生调度的 spark on kubernetes 是对原有的 spark on yarn 革命性的改变，主要表现在以下几点：
 
 1. **Kubernetes 原生调度**：不再需要二层调度，直接使用 kubernetes 的资源调度功能，跟其他应用共用整个 kubernetes 管理的资源池；
@@ -57,7 +57,7 @@ Kubernetes Native：通过 spark-submit 直接向 K8S 的 API Server 提交，�
 
 spark 可以调用 kubernetes API 获取集群资源和调度
 
-#### 1.1.2.2. 架构设计
+#### 1.2.2.2. 架构设计
 
 
 要实现 kubernetes native spark 需要为 spark 提供一个集群外部的 manager 可以用来跟 kubernetes API 交互。
@@ -74,7 +74,7 @@ Spark driver 其实可以运行在 kubernetes 集群内部（cluster mode）可�
 Executor 的 CPU、内存限制根据这些注入的环境变量保存到应用程序的 SparkConf 中。
 可以在配置中指定 spark 运行在指定的 namespace 中。
 
-### 1.1.3. Spark Operator
+### 1.2.3. Spark Operator
 ![](https://raw.githubusercontent.com/GoogleCloudPlatform/spark-on-k8s-operator/master/docs/architecture-diagram.png)
 首先需要理解 Spark Operator 的基础镜像是 Spark 的镜像，主要原因是 Spark Operator 会在容器中调用 spark-submit 命令来执行 Spark 任务。所以所有的 Spark Jars 等依赖在部署了 Spark Operator 的时候就已经确定了。
 
@@ -84,23 +84,27 @@ Executor 的 CPU、内存限制根据这些注入的环境变量保存到应用�
 
 Spark Operator：安装 Spark Operator，然后定义 spark-app.yaml，再执行 kubectl apply -f spark-app.yaml，这种申明式 API 和调用方式是 K8S 的典型应用方式，参考 https://github.com/GoogleCloudPlatform/spark-on-k8s-operator
 
-## 1.2. 对比
+
+
+
+## 1.3. 选择  Spark Submit/Spark Operator？
+
+
 
 
 前者是spark社区支持k8s这种资源管理框架而引入的k8s client的实现
 后者是k8s社区为了支持spark而开发的一种operator
 
-区别|spark on k8s|spark on k8s operator
---|--|--
-社区支持|spark社区|GoogleCloudPlatform非官方支持
-版本要求|spark>=2.3,|Kubernetes>=1.6|spark>2.3,Kubernetes>=1.13
-安装|按照官网安装，需要k8s pod的create list edit delete权限，且需要自己编译源码进行镜像的构建，构建过程繁琐|需要k8s admin安装incubator/sparkoperator，需要pod create list edit delete的权限
-使用|直接spark submit提交，如:下面code 1,支持client和cluster模式，spark on k8s|通过yaml配置文件形式提交，支持client和cluster模式，提交如code2，具体参数参考spark operator configuration
-优点|符合sparker的方式进行任务提交，对于习惯了spark的使用者来说，使用起来更顺手|k8s配置文件方式提交任务，复用性强
-缺点|运行完后driver的资源不会自动释放|运行完后driver的资源不会自动释放
-实现方式|对于spark提交方式来说，无论是client提交还是cluster提交，都是继承SparkApplication。以client提交，子类则是JavaMainApplication,该方式以反射运行,对于k8s任务来分析,clusterManager为KubernetesClusterManager,该方式和向yarn提交任务的方式没什么区别;以cluster方式提交,对于k8s任务来说,spark程序的入口为KubernetesClientApplication，client端会建立clusterIp为None的service，executor跟该service进行rpc，如任务的提交的交互，且会建立以driver-conf-map后缀的configMap，该configMap在建立spark driver pod的时候，以volumn挂载的形式被引用,而该文件的内容最终在driver提交任务的时候以--properties-file形式提交给spark driver，从而spark.driver.host等配置项就传输给了driver，与此同时也会建立以-hadoop-config为后缀的configMap，可是 k8s 镜像怎么区分是运行executor还是driver的呢？一切都在dockerfile(具体构建的时候根据hadoop和kerbeors环境的不一样进行区别配置)和entrypoint中,其中shell中是区分driver和executor的;|采用k8s CRD Controller的机制，自定义CRD,根据operator SDK,监听对应的增删改查event，如监听到对应的CRD的创建事件，则根据对应yaml文件配置项，建立pod，进行spark任务的提交，具体的实现，可参考spark on k8s operator design,具体以cluster和client模式提交的原理和spark on k8s一致,因为镜像复用的是spark的官方镜像
+| 区别     | spark on k8s                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 | spark on k8s operator                                                                                                                                                                                                                                                                                       |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 社区支持 | spark社区                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | GoogleCloudPlatform非官方支持                                                                                                                                                                                                                                                                               |
+| 版本要求 | spark>=2.3,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  | Kubernetes>=1.6                                                                                                                                                                                                                                                                                             | spark>2.3,Kubernetes>=1.13 |
+| 安装     | 按照官网安装，需要k8s pod的create list edit delete权限，且需要自己编译源码进行镜像的构建，构建过程繁琐                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       | 需要k8s admin安装incubator/sparkoperator，需要pod create list edit delete的权限                                                                                                                                                                                                                             |
+| 使用     | 直接spark submit提交，如:下面code 1,支持client和cluster模式，spark on k8s                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    | 通过yaml配置文件形式提交，支持client和cluster模式，提交如code2，具体参数参考spark operator configuration                                                                                                                                                                                                    |
+| 优点     | 符合sparker的方式进行任务提交，对于习惯了spark的使用者来说，使用起来更顺手                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   | k8s配置文件方式提交任务，复用性强                                                                                                                                                                                                                                                                           |
+| 缺点     | 运行完后driver的资源不会自动释放                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             | 运行完后driver的资源不会自动释放                                                                                                                                                                                                                                                                            |
+| 实现方式 | 对于spark提交方式来说，无论是client提交还是cluster提交，都是继承SparkApplication。以client提交，子类则是JavaMainApplication,该方式以反射运行,对于k8s任务来分析,clusterManager为KubernetesClusterManager,该方式和向yarn提交任务的方式没什么区别;以cluster方式提交,对于k8s任务来说,spark程序的入口为KubernetesClientApplication，client端会建立clusterIp为None的service，executor跟该service进行rpc，如任务的提交的交互，且会建立以driver-conf-map后缀的configMap，该configMap在建立spark driver pod的时候，以volumn挂载的形式被引用,而该文件的内容最终在driver提交任务的时候以--properties-file形式提交给spark driver，从而spark.driver.host等配置项就传输给了driver，与此同时也会建立以-hadoop-config为后缀的configMap，可是 k8s 镜像怎么区分是运行executor还是driver的呢？一切都在dockerfile(具体构建的时候根据hadoop和kerbeors环境的不一样进行区别配置)和entrypoint中,其中shell中是区分driver和executor的; | 采用k8s CRD Controller的机制，自定义CRD,根据operator SDK,监听对应的增删改查event，如监听到对应的CRD的创建事件，则根据对应yaml文件配置项，建立pod，进行spark任务的提交，具体的实现，可参考spark on k8s operator design,具体以cluster和client模式提交的原理和spark on k8s一致,因为镜像复用的是spark的官方镜像 |
 
-## 1.3. 选择  Spark Submit/Spark Operator？
 
 `spark-submit` Spark 原生，方便与Apache AirFlow, Apache Livy等流任务工具使用。
 Since spark-submit is built into Apache Spark, it’s easy to use and has well-documented configuration options. It is particularly well-suited for submitting Spark jobs in an isolated manner in development or production, and it allows you to build your own tooling around it if that serves your purposes. You could use it to integrate directly with a job flow tool (e.g. Apache AirFlow, Apache Livy). Although easy to use, spark-submit lacks functionalities like supporting basic operations for job management.
@@ -135,6 +139,34 @@ metadata:
     name: "spark-cluster"
 EOF
 kubectl create -f namespace-spark-cluster.yaml
+
+```
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spark-standalone-deployment
+  namespace: spark-cluster
+spec:
+  replicas: 1
+  selector:
+    component: spark-master
+  template:
+    metadata:
+      labels:
+        component: spark-master
+    spec:
+      containers:
+        - name: spark-master
+          image: registry.cn-hangzhou.aliyuncs.com/google_containers/spark:1.5.2_v1
+          command: ["/start-master"]
+          ports:
+            - containerPort: 7077
+            - containerPort: 8080
+          resources:
+            requests:
+              cpu: 100m
 
 ```
 
@@ -389,14 +421,11 @@ spec:
 EOF
 kubectl create -f zeppelin-service.yaml
 ```
-###  2.1.3. 验证
-```shell
-kubectl exec -it $(kubectl get pods -n spark-cluster| grep "zeppelin-controller"| awk '{print $1 }')  -n spark-cluster pyspark
-```
+
 
 ## 2.2. Kubernetes Native
 
-![](https://blog.duyet.net/static/df48f5c54c028a38957574f7bd9213d6/338ac/livy-spark-k8s.webp)
+![](https://uploads-ssl.webflow.com/5e724862760345325327026c/5fbae8ae2dc21a51c921f054_Apache%20Spark%20Architecture%20on%20Kubernetes%20Wireframe%20by%20Data%20Mechanics%20Smaller.png)
 ```shell
 
 helm repo add microsoft https://microsoft.github.io/charts/repo/
@@ -434,39 +463,8 @@ helm list
 >>>
 # 安装完成后为空
 
-
 ```
 
-#### 2.2.0.1. 更新配置
-通过上面的 URL，可以在浏览器上看到 Spark 的 Web UI，上面显示 worker 实例当前为 3 个。
-
-接下来，我们将利用如下命令，使用 Helm 对 Spark 应用做升级，将 worker 实例数量从 3 个变更为 4 个。请注意参数名称是大小写敏感的。
-
-```shell
-helm upgrade my-spark --set "Worker.Replicas=2" --set "Worker.Cpu=10000m"  microsoft/spark -n spark-on-k8s-native
-
-
-
->>>
-# 得到如下结果
-Release "myspark" has been upgraded. Happy Helming!
-LAST DEPLOYED: Mon Nov 20 19:27:29 2017
-NAMESPACE: default
-STATUS: DEPLOYED
-```
-...
-利用如下命令查看 Spark 新增的 Pod，并等待其状态变为 Running。
-
-```shell
-kubectl get pod -n  spark-on-k8s-native
-```
-在浏览器上刷新 Spark 的 Web UI，可以看到此时 worker 数量已经变为 4 个。
-### 2.2.1. 删除
-如需彻底删除 Spark 应用，可输入如下命令。
-
-```shell 
-helm delete --purge myspark
-```
 
 ## 2.3. Spark Operator
 
@@ -491,6 +489,21 @@ helm upgrade --install livy --namespace livy jahstreet/livy \
 kubectl get pods --namespace livy -w
 # Wait until Pod `livy-0` moves to Running state
 ```
+
+
+## 2.4. 更新配置
+
+```shell
+helm upgrade my-spark --set "Worker.Replicas=2" --set "Worker.Cpu=10000m"  microsoft/spark -n spark-on-k8s-native
+
+>>>
+# 得到如下结果
+Release "myspark" has been upgraded. Happy Helming!
+LAST DEPLOYED: Mon Nov 20 19:27:29 2017
+NAMESPACE: default
+STATUS: DEPLOYED
+```
+
 # 3. 连接与使用
 
 Check that your deployment is running:
@@ -540,9 +553,76 @@ sparkConf.set("spark.driver.host", "my-notebook-deployment.spark.svc.cluster.loc
 spark = SparkSession.builder.config(conf=sparkConf).getOrCreate()
 sc = spark.sparkContext
 ```
+# 4. 测试
 
 
-# 4. 参考资料
+##  4.1. 验证
+```shell
+kubectl exec -it $(kubectl get pods -n spark-cluster| grep "zeppelin-controller"| awk '{print $1 }')  -n spark-cluster pyspark
+```
+## 4.2. 提交hello world
+
+
+```shell
+
+apiVersion: "sparkoperator.k8s.io/v1beta2"
+kind: SparkApplication
+metadata:
+  name: spark-pi
+  namespace: default
+spec:
+  type: Scala
+  mode: cluster
+  image: "registry.aliyuncs.com/acs/spark-pi:ack-2.4.5-latest"
+  imagePullPolicy: Always
+  mainClass: org.apache.spark.examples.SparkPi
+  mainApplicationFile: "local:///opt/spark/examples/jars/spark-examples_2.11-2.4.5.jar"
+  sparkVersion: "2.4.5"
+  restartPolicy:
+    type: Never
+  driver:
+    cores: 2
+    coreLimit: "2"
+    memory: "3g"
+    memoryOverhead: "1g"
+    labels:
+      version: 2.4.5
+    serviceAccount: spark
+    annotations:
+      k8s.aliyun.com/eci-kube-proxy-enabled: 'true'
+      k8s.aliyun.com/eci-image-cache: "true"
+    tolerations:
+    - key: "virtual-kubelet.io/provider"
+      operator: "Exists"
+  executor:
+    cores: 2
+    instances: 1
+    memory: "3g"
+    memoryOverhead: "1g"
+    labels:
+      version: 2.4.5
+    annotations:
+      k8s.aliyun.com/eci-kube-proxy-enabled: 'true'
+      k8s.aliyun.com/eci-image-cache: "true"
+    tolerations:
+    - key: "virtual-kubelet.io/provider"
+      operator: "Exists"
+
+```
+
+```shell
+export SPARK_SERVICE_IP=$(kubectl get svc --namespace spark-on-k8s spark-webui -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+echo http://$SPARK_SERVICE_IP:8080
+```
+# 5. 卸载
+
+如需彻底删除 Spark 应用，可输入如下命令。
+
+```shell 
+helm delete --purge myspark
+```
+
+# 6. 参考资料
 
 1. [3 ways to run Spark on Kubernetes
 ](https://blog.duyet.net/2020/05/spark-on-k8s.html)
