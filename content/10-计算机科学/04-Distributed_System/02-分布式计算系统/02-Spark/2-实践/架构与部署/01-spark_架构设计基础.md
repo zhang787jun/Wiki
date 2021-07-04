@@ -44,3 +44,11 @@ Cluster Manager 集群管理器（团队领导 ）
 ## 2.3. Executor
 Executor：执行器（打工仔）
 为某个应用Application运行在worker node上的一个进程
+
+
+```
+executor 数量 = spark.cores.max/spark.executor.cores
+```
+spark.cores.max 是指你的spark程序需要的总核数
+spark.executor.cores 是指每个executor需要的核数
+

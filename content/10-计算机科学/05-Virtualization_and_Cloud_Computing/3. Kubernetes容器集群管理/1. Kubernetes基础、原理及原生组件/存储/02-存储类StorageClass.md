@@ -103,17 +103,16 @@ StorageOS|✓|StorageOS
 
 # 3. StorageClass 操作
 
-## 3.1. 创建 StorageClass
+## 3.1. 创建 SC
 
 
-你只需要根据自己的需求,编写YAML文件即可,然后使用kubectl create命令执行即可
-
+1. azure-file
 ```shell
 cat << EOF >StorageClass.yaml
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: azurefile
+  name: azurefile-sc
 provisioner: kubernetes.io/azure-file
 mountOptions:
   - dir_mode=0777
@@ -124,7 +123,33 @@ parameters:
   skuName: Standard_LRS
 EOF
 kubectl create -f StorageClass.yaml
-# 一旦创建了对象就不能对其更新。
+# kubectl delete -f StorageClass.yaml
+# 一旦创建了对象就不能对其更新
+```
+
+
+Standard_LRS - 标准本地冗余存储 (LRS)
+Standard_GRS - 标准异地冗余存储 (GRS)
+Standard_ZRS - 标准区域冗余存储 (ZRS)
+Standard_RAGRS - 标准读取访问异地冗余存储 (RA-GRS)
+Premium_LRS - 高级本地冗余存储 (LRS)
+Premium_ZRS - 高级区域冗余存储 (ZRS)
+
+2. azure-disk
+```shell
+cat << EOF > StorageClass.yaml
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: azuredisk-sc
+provisioner: kubernetes.io/azure-disk
+reclaimPolicy: Retain
+parameters:
+  storageaccounttype: Premium_LRS
+  kind: Managed
+EOF
+kubectl apply -f StorageClass.yaml 
+# kubectl delete -f StorageClass.yaml 
 ```
 
 
@@ -169,27 +194,6 @@ EOF
 kubectl apply -f test-claim.yaml
 ``` 
 
-# 4. 实例
-
-
-
-## 4.1. Azure
-
-```yaml
-kind: StorageClass
-apiVersion: storage.k8s.io/v1
-metadata:
-  name: azurefile
-provisioner: kubernetes.io/azure-file
-mountOptions:
-  - dir_mode=0777
-  - file_mode=0777
-  - uid=1000
-  - gid=1000
-parameters:
-  skuName: Standard_LRS
-
-```
 
 # 5. 参考资料
 

@@ -13,12 +13,13 @@ DataFrame is a **new API** for Apache Spark. It is basically a **distributed**, 
 
 在Spark 中， DataFrame 是以RDD 为基础的 **分布式**数据集。类似传统数据库里面的二维数据表
 
+
+
 ```
 DataFrame（表）= Schema（表结构） + Data（表数据）
-
 ```
 
-
+与RDD最大的不同在于，RDD仅仅是一条条数据的集合，并不了解每一条数据的内容是怎样的，而DataFrame明确的了解每一条数据有几个命名字段组成，即可以形象地理解为RDD是一条条数据组成的一维表，而DataFrame是每一行数据都有共同清晰的列划分的二维表。概念上来说，它和关系型数据库的表或者R和Python中dataframe等价，只不过DataFrame在底层实现了更多优化。
 ## 1.2. 什么是 Dataset
 `Dataset`: 分布式的数据集合。
 
@@ -113,7 +114,6 @@ df = spark.createDataFrame(rdd, person_type)
 
 ### 2.1.2. 从外部读取
 
-#### 2.1.2.1. 文件系统
 ```python
 # 1. 指定文件格式 
 # 每一行就是一个Row，默认的列名是Value
@@ -139,6 +139,17 @@ df = spark.sql("SELECT * FROM customer").show()
 ## Mysql sql
 df = spark.read.format("jdbc").options(url="jdbc:mysql://1.1.1.1:3306/test",driver="com.mysql.jdbc.Driver",dbtable="(SELECT * FROM yourtable) tmp",user="username",password="password").load()
 
+## postgres sql
+sql="(select id from public.obsidian_bill) t"
+spark_df = spark.read \
+    .format("jdbc") \
+    .option("url", "jdbc:postgresql://1.1.1.1:5432/database-name") \
+    .option("dbtable",sql) \
+    .option("user", "username") \
+    .option("password", "my-password") \
+    .option("driver", "org.postgresql.Driver") \
+    .option("numPartitions", "24")\
+    .load()
 
 
 
@@ -261,16 +272,68 @@ df.toPandas()
 
 
 ## 2.8. 持久化
-```python 
+
+### 2.8.1. 保存为文件
+```python
+# parquet
 df.write.save("nameAndCity.parquet")
+# csv
+df.write.mode("overwrite").options(header="true").csv("nameAndCity.csv")
+# json
 df.write.save("namesAndAges.json",format="json")
 ```
+### 2.8.2. 保存到数据库
+```python 
 
+# hive
+## 打开动态分区
+spark.sql("set hive.exec.dynamic.partition.mode = nonstrict")
+spark.sql("set hive.exec.dynamic.partition=true")
+
+# 使用普通的hive-sql写入分区表
+spark.sql("""
+    insert overwrite table ai.da_aipurchase_dailysale_hive 
+    partition (saledate) 
+    select productid, propertyid, processcenterid, saleplatform, sku, poa, salecount, saledate 
+    from szy_aipurchase_tmp_szy_dailysale distribute by saledate
+    """)
+
+# 或者使用每次重建分区表的方式
+jdbcDF.write.mode("overwrite").partitionBy("saledate").insertInto("ai.da_aipurchase_dailysale_hive")
+jdbcDF.write.saveAsTable("ai.da_aipurchase_dailysale_hive", None, "append", partitionBy='saledate')
+
+# 不写分区表，只是简单的导入到hive表
+jdbcDF.write.saveAsTable("ai.da_aipurchase_dailysale_for_ema_predict", None, "overwrite", None)
+
+# 写到mysql
+## 会自动对齐字段，也就是说，spark_df 的列不一定要全部包含MySQL的表的全部列才行
+
+## overwrite 清空表再导入
+spark_df.write.mode("overwrite").format("jdbc").options(
+    url='jdbc:mysql://127.0.0.1',
+    user='root',
+    password='123456',
+    dbtable="test.test",
+    batchsize="1000",
+).save()
+
+## append 追加方式
+spark_df.write.mode("append").format("jdbc").options(
+    url='jdbc:mysql://127.0.0.1',
+    user='root',
+    password='123456',
+    dbtable="test.test",
+    batchsize="1000",
+).save()
+
+```
+### 2.8.3. 缓存
 cache()
 使用默认存储级别（MEMORY_AND_DISK）持久保存DataFrame。
 
-traffic.cache()
-
+```python
+df.cache()
+```
 # 3. 参考资料 
 
 1. 强烈推荐 https://s3.amazonaws.com/assets.datacamp.com/blog_assets/PySpark_SQL_Cheat_Sheet_Python.pdf

@@ -16,16 +16,19 @@ Apache Spark 是一个小巧玲珑的项目，美国加州大学伯克利分校�
 Spark具有如下几个主要特点：
 1. 运行速度快：Spark使用先进的有向无环图（Directed Acyclic Graph,DAG）执行引擎，以支持循环数据流与内存计算，基于内存的执行速度可比HadoopMapReduce快上百倍，基于磁盘的执行速度也能快十倍；
 2. 容易使用：Spark支持使用Scala、Java、Python和R语言进行编程，简洁的API设计有助于用户轻松构建并行程序，并且可以通过Spark Shell进行交互式编程；
-3. 通用性：Spark提供了完整而强大的技
+3. 通用性：Spark提供了完整而强大的技术
 
-# 2. 优秀的参考资料
+# 2. 参考资料
 自己的OneNote笔记 
 
 OneDriver
 《图解Spark》
    
-1. https://aiyanbo.gitbooks.io/spark-programming-guide-zh-cn/content/programming-guide/rdds/rdd-persistences.html
-2. https://intellipaat.com/blog/tutorial/spark-tutorial/spark-architecture/
-3. https://github.com/apache/spark
+1. [Spark 编程指南简体中文版](https://aiyanbo.gitbooks.io/spark-programming-guide-zh-cn/content/index.html)
+2. [强烈推荐: 一张图看PySpark - SQL Basics](https://s3.amazonaws.com/assets.datacamp.com/blog_assets/PySpark_SQL_Cheat_Sheet_Python.pdf)
+   
+3. https://intellipaat.com/blog/tutorial/spark-tutorial/spark-architecture/
+4. https://github.com/apache/spark
+5. https://sparkbyexamples.com/spark/spark-performance-tuning/#coalesce
 
 

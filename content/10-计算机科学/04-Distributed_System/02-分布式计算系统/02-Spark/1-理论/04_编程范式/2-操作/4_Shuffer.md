@@ -29,8 +29,6 @@ Shuffling 是在stages之间传递数据的过程
 2. `shuffle read`
    下游stage做reduce task，每个reduce task通过网络拉取上游stage中所有map task的指定分区结果数据，该过程叫做shuffle read
 
-
-
 Shuffle涉及到`磁盘IO`(shuffle中间结果落地)、`CPU计算`（数据序列化计算)、`网络IO`(跨节点数据传输)。
 
 **Shuffle的内存压力**
@@ -48,7 +46,6 @@ Shuffle操作会占用大量的堆内存，在传输data之前或者之后，都
 **Shuffle操作会在磁盘上生成大量的中间文件**，并且在RDD不再被使用并且被垃圾回收之前，这些文件都将被一直保留。因为lineage(血统,DAG图)要被重新计算的话，就不会再次shuffle了。如果保留RDD的引用或者垃圾回收不频繁，那么Spark会占用大量的磁盘空间。
 文件目录可由`spark.local.dir`配置。
 
-我们可以在Spark的配置指南中配置各种参数
 
 ## 1.2. 原理
 ### 1.2.1. 发展进程
@@ -186,4 +183,4 @@ rdd.repartiton(largerNumPartition).map(...)...
 [^1]:  The Internals of Apache Spark--RDD shuffling
  https://jaceklaskowski.gitbooks.io/mastering-apache-spark/spark-rdd-shuffle.html
 
-[^2]: https://spark.apache.org/docs/latest/tuning.html
+[^2]:  Spark官方 https://spark.apache.org/docs/latest/tuning.html

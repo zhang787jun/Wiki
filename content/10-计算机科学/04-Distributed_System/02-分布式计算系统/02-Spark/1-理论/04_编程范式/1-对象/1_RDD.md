@@ -7,7 +7,7 @@ date: 2099-06-02 00:00
 
 # 1. 什么是RDD
 
-RDD，全称为 Resilient Distributed Datasets（弹性分布式数据集），是一个**容错的**、**并行**的数据结构，可以让用户显式地将数据存储到磁盘和内存中，并能控制数据的分区，是一个无序的列表（ JVM对象），是不可变、**只读的**，**被分区**的数据集
+RDD，全称为 Resilient Distributed Datasets（弹性分布式数据集），是一个**容错的**、**并行**的数据结构，可以让用户显式地将数据存储到磁盘和内存中，并能控制数据的分区，是一个无序的列表（Java虚拟机，JVM对象），是**不可变**、**只读的**，**被分区**的数据集
 
 <img src=https://pic2.zhimg.com/80/v2-149271b4ceab4c4ba7b1712b014d8a60_hd.jpg>
 
@@ -30,9 +30,7 @@ RDD分区的一个分区原则是使得分区的个数尽量等于集群中的CP
 **Partition与block** 
 hdfs中的block是分布式存储的最小单元，类似于盛放文件的盒子，一个文件可能要占多个盒子，但一个盒子里的内容只可能来自同一份文件。假设block设置为128M，你的文件是250M，那么这份文件占3个block（128+128+2）。这样的设计虽然会有一部分磁盘空间的浪费，但是整齐的block大小，便于快速找到、读取对应的内容。（p.s. 考虑到hdfs冗余设计，默认三份拷贝，实际上3*3=9个block的物理空间。）
 
-spark中的partition 是弹性分布式数据集RDD的最小单元，RDD是由分布在各个节点上的partition 组成的。partition 是指的spark在计算过程中，生成的数据在计算空间内最小单元，同一份数据（RDD）的partition 大小不一，数量不定，是根据application里的算子和最初读入的数据分块数量决定的，这也是为什么叫“弹性分布式”数据集的原因之一。
-
-
+spark中的partition 是弹性分布式数据集RDD的最小单元，RDD是由分布在各个节点上的partition 组成的。partition 是指的spark在计算过程中，生成的数据在计算空间内最小单元，同一份数据（RDD）的partition 大小不一，数量不定，是根据application里的算子和最初读入的数据分块数量决定的，这也是为什么叫**弹性分布式**数据集的原因之一。
 
 | HDFS block                    | RDD partition                                      |
 | ----------------------------- | -------------------------------------------------- |
@@ -41,67 +39,74 @@ spark中的partition 是弹性分布式数据集RDD的最小单元，RDD是由�
 | block是有冗余的、不会轻易丢失 | partition（RDD）没有冗余设计、丢失之后重新计算得到 |
 
 
+
+### 2.1.1. 数据分区方式
+Spark包含3种数据分区方式：
+1. HashPartitioner（哈希分区）
+2. RangePartitioner（范围分区）
+3. 自定义分区
+
+
 ## 2.2. 粗粒度
 
 不能进行细粒度操作（对数据集中某一条数据进行修改），修改是针对整个数据集的。
 
 ## 2.3. 只读
-如下图所示，RDD是只读的，要想改变RDD中的数据，只能在现有的RDD基础上创建新的RDD。
+RDD是只读的，要想改变RDD中的数据，只能在现有的RDD基础上创建新的RDD。
 
 ## 2.4. 依赖
 
+RDDs通过操作算子进行转换，转换得到的新RDD包含了从其他RDDs衍生所必需的信息，RDDs之间维护着这种血缘关系，也称之为依赖。
 
-RDDs通过操作算子进行转换，转换得到的新RDD包含了从其他RDDs衍生所必需的信息，RDDs之间维护着这种血缘关系，也称之为依赖。如下图所示，依赖包括两种，一种是窄依赖，RDDs之间分区是一一对应的，另一种是宽依赖，下游RDD的每个分区与上游RDD(也称之为父RDD)的每个分区都有关，是多对多的关系。
+如下图所示，依赖包括两种，一种是窄依赖，RDDs之间分区是一一对应的，另一种是宽依赖，下游RDD的每个分区与上游RDD(也称之为父RDD)的每个分区都有关，是多对多的关系。
 
 ![](/attach/images/2019-10-14-16-46-08.png)
 
-
-
-
 如果用户没有要求Spark cache该RDD的结果，那么这个过程占用的内存是很小的，一个元素处理完毕后就落地或扔掉了（概念上如此，实现上有buffer），并不会长久地占用内存。只有在用户要求Spark cache该RDD，且storage level要求在内存中cache时，Iterator计算出的结果才会被保留，通过cache manager放入内存池。
 
-
-
 总体而言，如果父RDD的一个分区只被一个子RDD的一个分区所使用就是窄依赖，否则就是宽依赖。窄依赖典型的操作包括map、filter、union等，宽依赖典型的操作包括groupByKey、sortByKey等。对于连接（join）操作，可以分为两种情况。
-（1）对输入进行协同划分，属于窄依赖（如图9-10(a)所示）。所谓协同划分（co-partitioned）是指多个父RDD的某一分区的所有“键（key）”，落在子RDD的同一个分区内，不会产生同一个父RDD的某一分区，落在子RDD的两个分区的情况。
-（2）对输入做非协同划分，属于宽依赖，如图9-10(b)所示。
+1. 对输入进行协同划分，属于窄依赖。所谓协同划分（co-partitioned）是指多个父RDD的某一分区的所有“键（key）”，落在子RDD的同一个分区内，不会产生同一个父RDD的某一分区，落在子RDD的两个分区的情况。
+2. 对输入做非协同划分，属于宽依赖。
 对于窄依赖的RDD，可以以流水线的方式计算所有父分区，不会造成网络之间的数据混合。对于宽依赖的RDD，则通常伴随着Shuffle操作，即首先需要计算好所有父分区数据，然后在节点之间进行Shuffle。
 
 
 
 ## 2.5. 可缓存
-如果在应用程序中多次使用同一个RDD，可以将该RDD缓存起来，该RDD只有在第一次计算的时候会根据血缘关系得到分区的数据，在后续其他地方用到该RDD的时候，会直接从缓存处取而不用再根据血缘关系计算，这样就加速后期的重用。如下图所示，RDD-1经过一系列的转换后得到RDD-n并保存到hdfs，RDD-1在这一过程中会有个中间结果，如果将其缓存到内存，那么在随后的RDD-1转换到RDD-m这一过程中，就不会计算其之前的RDD-0了。
+如果在应用程序中多次使用同一个RDD，可以将该RDD缓存起来，该RDD只有在第一次计算的时候会根据血缘关系得到分区的数据，在后续其他地方用到该RDD的时候，会直接从缓存处取而不用再根据血缘关系计算，这样就加速后期的重用。
 
+如下图所示，RDD-1经过一系列的转换后得到RDD-n并保存到hdfs，RDD-1在这一过程中会有个中间结果，如果将其缓存到内存，那么在随后的RDD-1转换到RDD-m这一过程中，就不会计算其之前的RDD-0了。
+![](https://img-blog.csdnimg.cn/20190122191551656.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L2xpdXBpbnlhbmc=,size_16,color_FFFFFF,t_70)
 
 ## 2.6. 支持容错机制--checkpointing
 
-RDD 对容错的支持
-支持容错通常采用两种方式：数据复制或日志记录。对于以数据为中心的系统而言，这两种方式都非常昂贵，因为它需要跨集群网络拷贝大量数据，毕竟带宽的数据远远低于内存。
+**背景**
+支持容错通常采用两种方式：
+1. 数据复制
+2. 日志记录
+   
+对于以数据为中心的系统而言，这两种方式都非常昂贵，因为它需要跨集群网络拷贝大量数据，毕竟带宽的数据远远低于内存。
 
-RDD 天生是支持容错的。首先，它自身是一个不变的 (immutable) 数据集，其次，它能够记住构建它的操作图（Graph of Operation），因此当执行任务的 Worker 失败时，完全可以通过操作图获得之前执行的操作，进行重新计算。由于无需采用 replication 方式支持容错，很好地降低了跨网络的数据传输成本。
+RDD 天生是支持容错的。首先，它自身是一个**不变的 (immutable)** 数据集，其次，它能够记住构建它的操作图（Graph of Operation），因此当执行任务的 Worker 失败时，完全可以通过操作图获得之前执行的操作，进行重新计算。由于无需采用 replication 方式支持容错，很好地降低了跨网络的数据传输成本。
 
 不过，在某些场景下，Spark 也需要利用记录日志的方式来支持容错。例如，在 Spark Streaming 中，针对数据进行 update 操作，或者调用 Streaming 提供的 window 操作时，就需要恢复执行过程的中间状态。此时，需要通过 Spark 提供的 checkpoint 机制，以支持操作能够从 checkpoint 得到恢复。
 
-针对 RDD 的 wide dependency，最有效的容错方式同样还是采用 checkpoint 机制。不过，似乎 Spark 的最新版本仍然没有引入 auto checkpointing 机制。
-
-因为checkpoint后的RDD不需要知道它的父RDDs了，它可以从checkpoint处拿到数据。
+针对 RDD 的 `wide dependency`，最有效的容错方式同样还是采用 checkpoint 机制。
 
 
-
+不过，似乎 Spark 的最新版本仍然没有引入 `auto checkpointing`机制。因为checkpoint后的RDD不需要知道它的父RDDs了，它可以从checkpoint处拿到数据。
 # 3. RDD 的分析
 
 ## 3.1. 存储情况
 
 rdd里的元素是怎么存储的，它们占用多少存储空间？
 
-关于rdd的元素怎么存储，spark里面实现了好几种不同类型的rdd，
+关于rdd的元素怎么存储，spark里面实现了好几种不同类型的rdd。
 
-如最常见的MapPartitionsRDD，它处理map,filter,mapPartition等不引起shuffle的算子；
-再如ShuffledRDD它由shuffle操作生成的；
-像GraphX里面的VertexRDD、EdgeRDD和TripletRDD，它们是分区内构建了大量索引得rdd。
+如最常见的MapPartitionsRDD，它处理 map,filter,mapPartition 等不引起shuffle的算子；
+
+再如ShuffledRDD它由shuffle操作生成的；像GraphX里面的VertexRDD、EdgeRDD和TripletRDD，它们是分区内构建了大量索引得rdd。
 
 不同的rdd拥有不同的元素存储机制，这些机制由rdd具体的分区对象来实现。关于rdd分区对象的存储方式，由于内容过多，这里不便介绍。
-
 
 
 ```shell
@@ -125,25 +130,21 @@ rdd里的元素是怎么存储的，它们占用多少存储空间？
 
 1M与1G元素规模的结果吻合的太好了，以至于我都有不敢相信，可是测试出来的结果就是这样的，这也证明spark在数据规模可扩展性方面真是太完美了。
 
-关于每条元素的存储开销，若元素是Java对象存储，那么每条元素至少会带入18自己额外开销，若以基本数据类型存储，则不会带入额外开销。 
+关于每条元素的存储开销，若元素是Java对象存储，那么每条元素至少会带入18自己额外开销，若以基本数据类型存储，则不会带入额外开销。
+
+
 测试结果有一些诡异的地方： 
 相同元素规模情况下，Int与Long占用空间相同，(Int, Int)与(Long, Long)不同，但(Int, Int, Int)与(Long, Long, Long)又相同。 
 1M Int净存储空间为4MB，但占用32MB空间，且占用空间一般呈整数样式。
 
 # 4. RDD 基本操作
+RDD主要有4类操作:
+1. **Creation** 创建操作
+2. **Transform** 转化操作：由一个RDD生成一个新的RDD(Dataset)。惰性求值。
+3. **Action** 行动操作：会对RDD(Dataset)计算出一个结果或者写到外部系统。会触发实际的计算。
+4. **Control** 控制操作
+进行RDD持久化，可以让RDD按照不用的存储策略保存在磁盘或者内存中，主要有`persist`、`cache`两个方法，实际上cache是使用persist的快捷方法，使用了默认的存储级别`MEMORY_ONLY`将RDD缓存在内存中
 
-
-
-RDD，全称为 Resilient Distributed Datasets，是一个容错的、并行的数据结构，可以让用户显式地将数据存储到磁盘和内存中，并能控制数据的分区。
-
-RDD 是不可变Java虚拟机（JVM）对象的分布式集合。我们使用python时候，尤其要注意，python数据是存储在JVM对象中的 
-
-
-
-RDD主要有2个操作。
-
-**Transform** 转化操作：由一个RDD生成一个新的RDD(Dataset)。惰性求值。
-**Action** 行动操作：会对RDD(Dataset)计算出一个结果或者写到外部系统。会触发实际的计算。
 Spark 会**惰性计算**这些RDD，只有第一次在一个行动操作中用到时才会真正计算。
 
 ```shell
@@ -209,12 +210,18 @@ data_from_file = sc.textFile('/Users/drabast/Documents/PySpark_Data/VS14MORT.txt
 
 ```
 
-## 4.2. 查看
+## 4.2. 查看基本信息
 
 ```python
+# 查看分区情况
 rdd.getNumPartitions()
+>>>
+4 
 
+# 查看存储等级
 rdd.getStorageLevel()
+>>>
+StorageLevel(True, False, False, False, 1)
 
 # DISK_ONLY = StorageLevel(True, False, False, False, 1)
 # DISK_ONLY_2 = StorageLevel(True, False, False, False, 2)

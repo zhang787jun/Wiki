@@ -252,48 +252,35 @@ volumeMounts:
 
 ```shell
 $ kubectl apply -f nfs-pvc-deploy.yaml
-
-```
+>>>
 Warning: kubectl apply should be used on resource created by either kubectl create --save-config or kubectl apply
 deployment.extensions "nfs-pvc" configured
 Warning: kubectl apply should be used on resource created by either kubectl create --save-config or kubectl apply
 service "nfs-pvc" configured
+```
+
 更新完后，我们再去看看 nfs 的数据共享目录：
 
 ```shell
-
 $ ls /data/k8s/
 index.html  nginxpvc-test
 $ ls /data/k8s/nginxpvc-test/
-
 ```
 
 ## 3.2. Azure file
 
+1. 创建密钥
+```shell
+kubectl create secret generic azure-storage-secret --from-literal=azurestorageaccountname=[account name] --from-literal=azurestorageaccountkey=[account key]
 
-Kubernetes Secret
-For the authentication to the file share a secret entry needs to be made within Kubernetes. The secret will contain a couple of properties:
+```
 
-Storage account name
-Storage access key
-Adding the secrets Kubernetes can be done via a yaml file or the kubectl command line.
 
-When using the yaml option encode the properties in base64. You can google for an online solution. I used: https://www.base64encode.net/ for example. 
 
-Command line
-
-1
-kubectl create secret generic storage-secret --from-literal=azurestorageaccountname=[storage name] --from-literal=azurestorageaccountkey=[account key]
-Yaml
-
-1
-2
-3
-4
-5
-6
-7
-8
+```shell
+# 注意base64
+cat << EOF > AzureSecret.yaml
+kind: StorageClass
 apiVersion: v1
 kind: Secret
 metadata:
@@ -302,40 +289,12 @@ type: Opaque
 data:
   azurestorageaccountname: [base64 account name]
   azurestorageaccountkey: [base64 account key]
-The yaml will needs to be applied to Kubernetes by using the command:
+EOF
+kubectl apply -f AzureSecret.yaml
+```
 
-1
-kubectl apply -f [filename]
-Kubernetes deployment
-For getting the container up and running we create a Kubernetes deployment that runs the container.
-
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
-11
-12
-13
-14
-15
-16
-17
-18
-19
-20
-21
-22
-23
-24
-25
-26
-27
+```shell
+cat << EOF > httpd.yaml
 apiVersion: apps/v1beta1
 kind: Deployment
 metadata:
@@ -360,30 +319,10 @@ spec:
       volumes:
       - name: azurefileshare
         azureFile:
-          secretName: storage-secret
-          shareName: storage
+          secretName: azure-storage-secret
+          shareName: test
           readOnly: false
-This deployment is a simple one that creates a single pod and attaches a volume to the mountPath: /usr/local/apache2/htdocs/
-
-The mountPath is the starting point for the apache web server meaning that everything that is placed on the file share will be exposed by the pod.
-
-The deployment needs to be applied by using the following command:
-
-1
-kubectl apply -f [kubernetes deployment file]
-Kubernetes service
-To get it externally available we have to take one more step. That step is configuring a Kubernetes service of the type “LoadBalancer”.
-
-1
-2
-3
-4
-5
-6
-7
-8
-9
-10
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -394,28 +333,12 @@ spec:
   - port: 80
   selector:
     app: webfile
-The service needs to be applied by using the command:
+EOF
+kubectl apply -f httpd.yaml
+```
 
-1
-kubectl apply -f [service deployment file]
-Applying the service should generate an external IP address. Checking if it is provisioned correctly you can look on the Kubernetes Dashboard:
 
-External Endpoint
-
-Or by running the following kubectl command:
-
-1
-kubectl get svc [service name]
-Kubectl output svc
-
-Result
-Opening the IP in the browser will result in an empty page. Uploading the sample html file named “index.html” will have the expected result.
-
-Result
-
- 
-
- 
-
-Posted in AzureTagged AKS, Azure, Kubernetes, Storage
+```shell
+kubectl get svc
+```
 

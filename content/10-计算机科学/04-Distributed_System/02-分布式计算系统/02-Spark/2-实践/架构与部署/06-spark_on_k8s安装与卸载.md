@@ -494,7 +494,7 @@ kubectl get pods --namespace livy -w
 ## 2.4. 更新配置
 
 ```shell
-helm upgrade my-spark --set "Worker.Replicas=2" --set "Worker.Cpu=10000m"  microsoft/spark -n spark-on-k8s-native
+helm upgrade my-spark --set "Worker.Replicas=4" --set "Worker.Cpu=6000m"  --set "Worker.Memory=30720Mi"  --set "Worker.DaemonMemory=10g"  --set "Worker.ExecutorMemory=20g" microsoft/spark -n spark-on-k8s-native
 
 >>>
 # 得到如下结果

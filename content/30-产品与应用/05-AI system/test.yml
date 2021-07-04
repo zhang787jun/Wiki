@@ -1,0 +1,182 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: img-search-server
+  namespace: image-search
+  labels:
+    app: img-search-server
+spec:
+  selector:
+    matchLabels:
+      app: img-search-server
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: img-search-server
+    spec:
+      containers:
+        - name: img-search-server
+          image: vkcontainer.azurecr.cn/zhangj414/milvus-img-search-server:1.0
+          env:
+            - name: DATA_PATH
+              value: /tmp/images-data
+            - name: MILVUS_HOST
+              value: "my-milvus.milvus.svc.cluster.local"
+            - name: MILVUS_PORT
+              value: "19530"
+            - name: MYSQL_HOST
+              value: "mysql-svc.image-search.svc.cluster.local"
+          volumes:
+            - name: volume-1 #共享存储卷名称 （volumes类型有很多种）
+              hostPath: /data/zhangj414/test_data1 #类型为hostPath的存储卷，表示挂载Pod所在宿主机的目录
+              path: /tmp/pic1 #Pod所在宿主机的目录，将被用于同期中mount的目录
+            - name: volume-2 #共享存储卷名称 （volumes类型有很多种）
+              hostPath: /data/zhangj414/test_data2 #类型为hostPath的存储卷，表示挂载Pod所在宿主机的目录
+              path: /tmp/pic2 #Pod所在宿主机的目录，将被用于同期中mount的目录
+
+      ports:
+        - name: api-port
+          containerPort: 5000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: img-search-client
+  namespace: image-search
+  labels:
+    app: img-search-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: img-search-client
+  template:
+    metadata:
+      labels:
+        app: img-search-client
+    spec:
+      containers:
+        - name: img-search-client
+          image: milvusbootcamp/img-search-client:1.0
+          type: NodePort
+          ports:
+            - name: web-port
+              containerPort: 80
+          env:
+            - name: API_URL
+              value: http://my-img-search-service-svc.image-search.svc.cluster.local:5000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: image-search
+  labels:
+    app: mysql
+spec:
+  selector:
+    matchLabels:
+      app: mysql
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:5.7
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: mysql-port
+              containerPort: 3306
+          env:
+            - name: MYSQL_ROOT_PASSWORD #  环境变量名
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-root-secret
+                  key: db-root-password
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: username
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-secret
+                  key: password
+          args: ["--default-authentication-plugin=mysql_native_password"]
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql-svc
+  namespace: image-search
+spec:
+  internalTrafficPolicy: Local
+  selector:
+    app: mysql
+  ports:
+    - name: mysql-port
+      protocol: TCP
+      port: 3306
+      targetPort: 3306
+
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-img-search-service-svc
+  namespace: image-search
+spec:
+  selector:
+    app: img-search-server
+  internalTrafficPolicy: Local
+  ports:
+    - name: api-port
+      port: 5000
+      protocol: TCP
+      targetPort: 5000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-img-search-client-svc
+  namespace: image-search
+spec:
+  selector:
+    app: img-search-client
+  ports:
+    - name: web-port
+      port: 80
+      protocol: TCP
+      targetPort: 80
+      nodePort: 31015
+  internalTrafficPolicy: Local
+  type: NodePort 
+
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-root-secret
+  namespace: image-search
+type: Opaque
+data:
+  # echo -n "rootpass" | base64
+  db-root-password: YWJjMTIzNDU2
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysql-secret
+  namespace: image-search
+type: Opaque
+data:
+  username: ZGJ1c2Vy
+  password: YWJjMTIzNDU2
