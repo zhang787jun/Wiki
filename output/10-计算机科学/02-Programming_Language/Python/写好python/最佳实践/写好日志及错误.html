@@ -1,0 +1,483 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Python--写好日志及错误 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#10-计算机科学">10-计算机科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-Programming_Language">02-Programming_Language</a>&nbsp;»&nbsp;<a href="/Wiki/#-Python">Python</a>&nbsp;»&nbsp;<a href="/Wiki/#-写好python">写好python</a>&nbsp;»&nbsp;<a href="/Wiki/#-最佳实践">最佳实践</a>&nbsp;»&nbsp;Python--写好日志及错误</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Python--写好日志及错误</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 写好日志</a><ul>
+<li><a href="#11">1.1. 目的</a></li>
+<li><a href="#12">1.2. 开发建议</a><ul>
+<li><a href="#121-log">1.2.1. 依据环境配置log等级</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#2-loguru">2. 优雅的工具--loguru</a><ul>
+<li><a href="#21">2.1. 安装</a></li>
+<li><a href="#22">2.2. 使用</a></li>
+</ul>
+</li>
+<li><a href="#3-logging">3. 日志工具--标准库logging</a><ul>
+<li><a href="#31">3.1. 输出日志的格式化</a></li>
+<li><a href="#32">3.2. 日志回滚</a></li>
+</ul>
+</li>
+<li><a href="#4-1">4. 错误1</a></li>
+<li><a href="#5">5. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1">1. 写好日志</h1>
+<h2 id="11">1.1. 目的</h2>
+<p>代码检查,debug,调优都只能让代码确保当时是可靠的,一些复杂的关联错误,也可能让这些测试呀debug呀失准,而只有日志才能长期的帮助我们监控项目的健壮性.</p>
+<h2 id="12">1.2. 开发建议</h2>
+<h3 id="121-log">1.2.1. 依据环境配置log等级</h3>
+<div class="hlcode"><pre><span class="err">在开发、测试、线上环境中使用不通的</span> <span class="n">logging</span> <span class="err">等级</span>
+
+<span class="err">```</span><span class="n">python</span>
+<span class="n">log_level</span> <span class="o">=</span> <span class="n">logging</span><span class="p">.</span><span class="n">INFO</span> <span class="k">if</span> <span class="n">conf</span><span class="p">.</span><span class="n">is_prod</span> <span class="k">else</span> <span class="n">logging</span><span class="p">.</span><span class="n">DEBUG</span>
+<span class="n">logging</span><span class="p">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">format</span><span class="o">=</span><span class="n">consts</span><span class="p">.</span><span class="n">LOG_FORMAT</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">log_level</span><span class="p">)</span>
+<span class="err">```</span>
+</pre></div>
+
+
+<p>应用在不同的环境（开发、测试、生产）中应该允许加载不同的配置，配置不同的行为。</p>
+<h1 id="2-loguru">2. 优雅的工具--loguru</h1>
+<h2 id="21">2.1. 安装</h2>
+<div class="hlcode"><pre><span class="n">pip</span> <span class="n">install</span> <span class="n">loguru</span>
+</pre></div>
+
+
+<h2 id="22">2.2. 使用</h2>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">loguru</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">remove</span><span class="p">()</span>
+<span class="n">logger</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="s">&quot;INFO&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<h1 id="3-logging">3. 日志工具--标准库logging</h1>
+<div class="hlcode"><pre><span class="c"># conf/__init__.py</span>
+<span class="k">class</span> <span class="nc">AppConfig</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">app_env</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s">&#39;APP_ENV&#39;</span><span class="p">,</span> <span class="s">&#39;development&#39;</span><span class="p">)</span>
+    <span class="n">is_prod</span> <span class="o">=</span> <span class="n">app_env</span> <span class="o">==</span> <span class="s">&#39;production&#39;</span>
+    <span class="n">is_dev</span> <span class="o">=</span> <span class="n">app_env</span> <span class="o">==</span> <span class="s">&#39;development&#39;</span>
+    <span class="n">is_testing</span> <span class="o">=</span> <span class="n">app_env</span> <span class="o">==</span> <span class="s">&#39;testing&#39;</span>
+
+    <span class="c"># 其余应用配置项</span>
+    <span class="o">...</span>
+
+<span class="n">conf</span> <span class="o">=</span> <span class="n">AppConfig</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">_load_config_by_env</span><span class="p">(</span><span class="n">env</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    不同环境加载不同的配置文件</span>
+<span class="sd">    配置目录结构：</span>
+<span class="sd">    conf/</span>
+<span class="sd">        __init__.py</span>
+<span class="sd">        development.py</span>
+<span class="sd">        production.py</span>
+<span class="sd">        testing.py</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">module</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="s">&#39;conf.{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">env</span><span class="p">))</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s">&#39;Config&#39;</span><span class="p">):</span>
+        <span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&#39;Not find {} config&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">env</span><span class="p">))</span>
+        <span class="k">return</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="s">&#39;Config&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;__&#39;</span><span class="p">):</span>
+            <span class="k">continue</span>
+        <span class="n">conf</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+                    <span class="n">format</span><span class="o">=</span><span class="s">&quot;</span><span class="si">%(asctime)s</span><span class="s"> </span><span class="si">%(name)s</span><span class="s"> </span><span class="si">%(levelname)s</span><span class="s"> </span><span class="si">%(message)s</span><span class="s">&quot;</span><span class="p">,</span>
+                   <span class="c">#注意月份和天数不要搞乱了，这里的格式化符与time模块相同</span>
+                    <span class="n">datefmt</span> <span class="o">=</span> <span class="s">&#39;%Y-%m-</span><span class="si">%d</span><span class="s">  %H:%M:%S %a&#39;</span><span class="err">，</span>   
+                  <span class="c">#有了filename参数就不会直接输出显示到控制台，而是直接写入文件</span>
+                    <span class="n">filename</span><span class="o">=</span><span class="s">r&quot;d:\test\test.log&quot;</span> 
+                    <span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s">&quot;msg1&quot;</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;msg2&quot;</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s">&quot;msg3&quot;</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;msg4&quot;</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s">&quot;msg5&quot;</span><span class="p">)</span>
+
+<span class="c"># 记录logging 同时打印</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">))</span>
+</pre></div>
+
+
+<p>在logging框架下首先我们需要初始化一个logger来处理log,之后通过添加handler,Formatter和config子属性来自定义我们的logger.</p>
+<p>level: 设置日志级别，默认为logging.WARNING</p>
+<p>stream: 指定将日志的输出流，可以指定输出到sys.stderr,sys.stdout或者文件，默认输出到sys.stderr，当stream和filename同时指定时，stream被忽略</p>
+<h2 id="31">3.1. 输出日志的格式化</h2>
+<p>日志是问题排查的主要信息来源，所以日志记录得好不好，很关键。</p>
+<div class="hlcode"><pre><span class="c"># 日志时间 - 日志级别 - 代码文件路径 - 行号 - 进程 ID - 线程名称 - 日志内容</span>
+<span class="n">LOG_FORMAT</span> <span class="o">=</span> <span class="s">&#39;</span><span class="si">%(asctime)-15s</span><span class="s"> - </span><span class="si">%(levelname)s</span><span class="s"> - </span><span class="si">%(pathname)s</span><span class="s"> - </span><span class="si">%(lineno)d</span><span class="s"> - </span><span class="si">%(process)d</span><span class="s"> - </span><span class="si">%(threadName)s</span><span class="s"> - </span><span class="si">%(message)s</span><span class="s">&#39;</span>
+</pre></div>
+
+
+<table>
+<thead>
+<tr>
+<th>元素</th>
+<th>格式化字符串</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>args</td>
+<td>不用格式化</td>
+<td>参数会是一个元组</td>
+</tr>
+<tr>
+<td>asctime</td>
+<td>%(asctime)s</td>
+<td>可读的时间</td>
+</tr>
+<tr>
+<td>created</td>
+<td>%(created)f</td>
+<td>记录的创建时间</td>
+</tr>
+<tr>
+<td>filename</td>
+<td>%(filename)s</td>
+<td>文件名</td>
+</tr>
+<tr>
+<td>funcName</td>
+<td>%(funcName)s</td>
+<td>函数名</td>
+</tr>
+<tr>
+<td>levelname</td>
+<td>%(levelname)s</td>
+<td>错误,警报等的名字</td>
+</tr>
+<tr>
+<td>levelno</td>
+<td>%(levelno)s</td>
+<td>错误,警报等,是预警等级</td>
+</tr>
+<tr>
+<td>lineno</td>
+<td>%(lineno)d</td>
+<td>报错行数</td>
+</tr>
+<tr>
+<td>module</td>
+<td>%(module)s</td>
+<td>报错模块</td>
+</tr>
+<tr>
+<td>msecs</td>
+<td>%(msecs)d</td>
+<td>毫秒级的出错时间</td>
+</tr>
+<tr>
+<td>message</td>
+<td>%(message)s</td>
+<td>错误信息</td>
+</tr>
+<tr>
+<td>name</td>
+<td>%(name)s</td>
+<td>log的名字</td>
+</tr>
+<tr>
+<td>pathname</td>
+<td>%(pathname)s</td>
+<td>报错文件所在path</td>
+</tr>
+<tr>
+<td>process</td>
+<td>%(process)d</td>
+<td>进程id</td>
+</tr>
+<tr>
+<td>processName</td>
+<td>%(processName)s</td>
+<td>进程名</td>
+</tr>
+<tr>
+<td>relativeCreated</td>
+<td>%(relativeCreated)d</td>
+<td>微秒级的报错时间</td>
+</tr>
+<tr>
+<td>thread</td>
+<td>%(thread)d</td>
+<td>线程id</td>
+</tr>
+<tr>
+<td>threadName</td>
+<td>%(threadName)s</td>
+<td>线程名</td>
+</tr>
+</tbody>
+</table>
+<h2 id="32">3.2. 日志回滚</h2>
+<p>日志也不是一直记录就好,也要考录时效性和存储空间的限制,回滚机制便是解决这个问题的</p>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">logging.handlers</span> <span class="kn">import</span> <span class="n">RotatingFileHandler</span>
+<span class="c">#定义一个RotatingFileHandler，最多备份5个日志文件，每个日志文件最大10M</span>
+<span class="n">Rthandler</span> <span class="o">=</span> <span class="n">RotatingFileHandler</span><span class="p">(</span><span class="s">&#39;src/myapp.log&#39;</span><span class="p">,</span> <span class="n">maxBytes</span><span class="o">=</span><span class="mi">10</span><span class="o">*</span><span class="mi">1024</span><span class="o">*</span><span class="mi">1024</span><span class="p">,</span><span class="n">backupCount</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">Rthandler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">)</span>
+<span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s">&#39;</span><span class="si">%(name)-12s</span><span class="s">: </span><span class="si">%(levelname)-8s</span><span class="s"> </span><span class="si">%(message)s</span><span class="s">&#39;</span><span class="p">)</span>
+<span class="n">Rthandler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s">&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">Rthandler</span><span class="p">)</span>
+<span class="mf">1.3</span><span class="o">.</span> <span class="err">几种</span><span class="n">handler</span>
+<span class="n">StreamHandler</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="err">流输出</span>
+
+<span class="n">FileHandler</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span> <span class="err">写入文件</span>
+
+<span class="n">WatchedFileHandler</span><span class="p">(</span><span class="n">filename</span><span class="p">[,</span> <span class="n">mode</span><span class="p">[,</span> <span class="n">encoding</span><span class="p">[,</span> <span class="n">delay</span><span class="p">]]])</span> <span class="err">监控</span><span class="n">log</span><span class="err">文件</span>
+
+<span class="n">RotatingFileHandler</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="s">&#39;a&#39;</span><span class="p">,</span> <span class="n">maxBytes</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">backupCount</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="err">轮替日志</span><span class="p">,</span><span class="err">根据日志文件的大小来循环</span>
+
+<span class="n">TimedRotatingFileHandler</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">when</span><span class="o">=</span><span class="s">&#39;h&#39;</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">backupCount</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">delay</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">utc</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">atTime</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="err">轮替日志</span><span class="p">,</span><span class="err">根据时间来循环</span><span class="p">,</span><span class="n">interval</span><span class="err">参数可选的值有</span><span class="p">:</span>
+
+<span class="s">&quot;S&quot;</span><span class="o">-</span><span class="n">Seconds</span>
+<span class="s">&#39;M&#39;</span><span class="o">-</span><span class="n">Minutes</span>
+<span class="s">&#39;H&#39;</span><span class="o">-</span><span class="n">Hours</span>
+<span class="s">&#39;D&#39;</span><span class="o">-</span><span class="n">Days</span>
+<span class="s">&#39;W0&#39;</span><span class="o">~</span><span class="s">&#39;W6&#39;</span><span class="o">-</span><span class="n">Weekday</span> <span class="p">(</span><span class="mi">0</span><span class="o">=</span><span class="n">Monday</span><span class="p">)</span>
+<span class="s">&#39;midnight&#39;</span><span class="o">-</span><span class="err">半夜循环</span>
+<span class="n">SocketHandler</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span> <span class="err">把</span><span class="n">log</span><span class="err">送到网上的</span><span class="n">socket</span>
+
+<span class="n">DatagramHandler</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span> <span class="err">把</span><span class="n">log</span><span class="err">送到网上的</span><span class="n">UDP</span> <span class="n">sockets</span>
+
+<span class="n">SysLogHandler</span><span class="p">(</span><span class="n">address</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;localhost&#39;</span><span class="p">,</span> <span class="n">SYSLOG_UDP_PORT</span><span class="p">),</span> <span class="n">facility</span><span class="o">=</span><span class="n">LOG_USER</span><span class="p">,</span> <span class="n">socktype</span><span class="o">=</span><span class="n">socket</span><span class="o">.</span><span class="n">SOCK_DGRAM</span><span class="p">)</span> <span class="n">log</span><span class="err">送到</span><span class="n">unix</span><span class="err">系统</span><span class="n">log</span>
+
+<span class="n">SMTPHandler</span><span class="p">(</span><span class="n">mailhost</span><span class="p">,</span> <span class="n">fromaddr</span><span class="p">,</span> <span class="n">toaddrs</span><span class="p">,</span> <span class="n">subject</span><span class="p">,</span> <span class="n">credentials</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">secure</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span> <span class="n">log</span><span class="err">送到电子邮箱</span>
+
+<span class="n">MemoryHandler</span><span class="p">(</span><span class="n">capacity</span><span class="p">,</span> <span class="n">flushLevel</span><span class="o">=</span><span class="n">ERROR</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="n">log</span><span class="err">存入内存</span>
+
+<span class="n">HTTPHandler</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">url</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s">&#39;GET&#39;</span><span class="p">,</span> <span class="n">secure</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">credentials</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">context</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span> <span class="n">log</span><span class="err">通过</span><span class="n">http</span><span class="err">网络送到服务器</span>
+</pre></div>
+
+
+<p>配置</p>
+<p>1.4. 使用.conf设置文件设置logging行为<br />
+当然可以在程序中设置log了,但为了改起来方便也可以写在别的文件中然后用config.fileConfig(path)来设置,配置文件的形式是这样:</p>
+<p>[loggers]<br />
+keys=root,simpleExample</p>
+<p>[handlers]<br />
+keys=consoleHandler</p>
+<p>[formatters]<br />
+keys=simpleFormatter</p>
+<p>[logger_root]<br />
+level=DEBUG<br />
+handlers=consoleHandler</p>
+<p>[logger_simpleExample]<br />
+level=DEBUG<br />
+handlers=consoleHandler<br />
+qualname=simpleExample<br />
+propagate=0</p>
+<p>[handler_consoleHandler]<br />
+class=StreamHandler<br />
+level=DEBUG<br />
+formatter=simpleFormatter<br />
+args=(sys.stdout,)</p>
+<p>[formatter_simpleFormatter]<br />
+format=%(asctime)s - %(name)s - %(levelname)s - %(message)s<br />
+datefmt=%a, %d %b %Y %H:%M:%S<br />
+要注意的是如果用这种方式那么,使用rotation file handler时，不要同时声明file handler，否则rotation发生时，doRollover 函数的os.rename 会报错(「另一个程序正在使用此文件，进程无法访问).当然,可以写另一个py文件专门用来初始化,要用的时候import进来就好了.</p>
+<h1 id="4-1">4. 错误<sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup></h1>
+<p>上面一种看起来比较晦涩难懂难以维护,更加pythonic的做法是使用字典进行配置</p>
+<p>import sys<br />
+import logging<br />
+import logging.config<br />
+LOGGING_CONFIG = dict(<br />
+    version=1,<br />
+    loggers={<br />
+        "&lt;模块&gt;":{<br />
+            "level": "INFO",<br />
+            "handlers": ["model_console"]<br />
+        },<br />
+        "&lt;服务&gt;": {<br />
+            "level": "INFO",<br />
+            "handlers": ["server_console"]<br />
+        }<br />
+    },<br />
+    handlers={<br />
+        "model_console": {<br />
+            "class": "logging.StreamHandler",<br />
+            "formatter": "model",<br />
+            "stream": sys.stdout<br />
+        },<br />
+        "server_console": {<br />
+            "class": "logging.StreamHandler",<br />
+            "formatter": "server",<br />
+            "stream": sys.stdout<br />
+        }<br />
+    },<br />
+    formatters={<br />
+        "model": {<br />
+            "format": "%(asctime)s :: %(name)s  :: %(levelname)s :: %(process)d :: "+<br />
+            "%(module)s - line %(lineno)d - funcname: %(funcName)s - params: %(params)s :: %(message)s",<br />
+            "datefmt": "[%Y-%m-%d %H:%M:%S %z]",<br />
+            "class": "logging.Formatter"<br />
+        },<br />
+        "server": {<br />
+            "format": "%(asctime)s :: %(name)s :: %(levelname)s :: %(host)s :: " +<br />
+                      "%(request)s :: %(message)s",<br />
+            "datefmt": "[%Y-%m-%d %H:%M:%S %z]",<br />
+            "class": "logging.Formatter"<br />
+        }<br />
+    }<br />
+)<br />
+logging.config.dictConfig(LOGGING_CONFIG)<br />
+model_logger = logging.getLogger('&lt;模块&gt;')<br />
+server_logger = logging.getLogger('&lt;服务&gt;')</p>
+<p>def a():<br />
+    model_logger.info("qwer",extra= dict(params = ["123",12]))<br />
+a()<br />
+[2018-06-06 17:35:01 +0800] :: &lt;模块&gt;  :: INFO :: 27392 :: <ipython-input-7-0aa5e3aa1d5b> - line 6 - funcname: a - params: ['123', 12] :: qwer<br />
+1.6. 结构化log<br />
+现在很多场景尤其是ELK体系下的log要求使用json格式.我们可以借助了第三方工具structlog用于结构化log数据</p>
+<p>结构化log需要配置两块:</p>
+<p>structlog部分需要配置<br />
+import structlog</p>
+<p>structlog.configure(<br />
+    processors=[<br />
+        structlog.stdlib.filter_by_level, # 判断是否接受某个level的log消息<br />
+        structlog.stdlib.add_logger_name, # 增加字段logger<br />
+        structlog.stdlib.add_log_level, #增加字段level<br />
+        structlog.stdlib.PositionalArgumentsFormatter(),<br />
+        structlog.processors.TimeStamper(fmt="iso"), #增加字段timestamp且使用iso格式输出<br />
+        structlog.processors.StackInfoRenderer(),<br />
+        structlog.processors.format_exc_info,# 捕获异常的栈信息<br />
+        structlog.processors.StackInfoRenderer(), # 详细栈信息<br />
+        structlog.processors.JSONRenderer() #json格式输出,第一个参数会被放入event字段<br />
+    ],<br />
+    context_class=dict,<br />
+    logger_factory=structlog.stdlib.LoggerFactory(),<br />
+    wrapper_class=structlog.stdlib.BoundLogger,<br />
+    cache_logger_on_first_use=True,<br />
+)<br />
+配置标准库的log<br />
+import logging<br />
+import sys<br />
+handler = logging.StreamHandler(sys.stdout)<br />
+root_logger = logging.getLogger()<br />
+root_logger.addHandler(handler)</p>
+<p>root_logger.setLevel(logging.INFO) # 设置最低log等级<br />
+之后使用structlog.get_logger构造logger,就可以使用它来输出结构化的log了</p>
+<p>log = structlog.get_logger("test")<br />
+log.info('hi', <strong 123="123" _xyz_:="'xyz':">{ 'xyz': 123 })<br />
+{"xyz": 123, "event": "hi", "logger": "test", "level": "info", "timestamp": "2019-04-28T15:23:15.399927Z"}<br />
+log.debug('hi', </strong>)<br />
+我们还可以使用structlog.processors.format_exc_info来自动捕获异常信息,使用structlog.processors.StackInfoRenderer()来获取栈信息</p>
+<p>try:<br />
+    assert False,"sdfaa"<br />
+except:<br />
+    log.error("error",exc_info=True,stack_info=True)<br />
+{"event": "error", "logger": "test", "level": "error", "timestamp": "2019-04-28T15:25:05.180099Z"</p>
+<h1 id="5">5. 参考资料</h1>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>Python 异常处理 https://www.runoob.com/python/python-exceptions.html&#160;<a class="footnote-backref" href="#fnref:1" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:2">
+<p>Python 日志 https://docs.python.org/zh-cn/3/howto/logging.html&#160;<a class="footnote-backref" href="#fnref:2" rev="footnote" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

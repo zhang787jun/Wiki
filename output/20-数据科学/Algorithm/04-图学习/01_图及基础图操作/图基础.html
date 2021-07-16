@@ -1,0 +1,191 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>1.图基础 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#20-数据科学">20-数据科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-Algorithm">Algorithm</a>&nbsp;»&nbsp;<a href="/Wiki/#-04-图学习">04-图学习</a>&nbsp;»&nbsp;<a href="/Wiki/#-01_图及基础图操作">01_图及基础图操作</a>&nbsp;»&nbsp;1.图基础</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">1.图基础</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 概念理解</a><ul>
+<li><a href="#11">1.1. 什么是图？</a></li>
+<li><a href="#12">1.2. 图具有的信息/属性</a></li>
+<li><a href="#13-">1.3. 图节点的概念补充--度、出度与入度</a></li>
+<li><a href="#14">1.4. 概念理解</a></li>
+<li><a href="#15">1.5. 图的基本分类</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 同构图与异构图</a><ul>
+<li><a href="#21">2.1. 同构图基本定义</a></li>
+<li><a href="#22">2.2. 异构图的定义</a></li>
+<li><a href="#23">2.3. 同构图与异构图的数学表示</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="1">1. 概念理解</h1>
+<h2 id="11">1.1. 什么是图？</h2>
+<p>用一张图表示<img alt="" src="https://ai-studio-static-online.cdn.bcebos.com/0c48a33b852149b7b1f8eba83d7abe1a705e0688ce434fb6a7b160f06beb4f57" /></p>
+<p>简单来说：图就是通过一些<strong>具有实际意义</strong>的节点和<strong>代表节点间关系</strong>的边组成的一个网状或非网状的结构。</p>
+<h2 id="12">1.2. 图具有的信息/属性</h2>
+<p><strong>①图具有以下基本的属性：</strong><br />
+</br><br />
+1. 节点--<strong>vertex</strong> （也译：顶点）  （平时描述可以用时<strong>node</strong>：节点，但代码中和公式中常出现<strong>v</strong>作为标识）<br />
+2. 边--<strong>edge</strong><br />
+<br></br><br />
+<strong>②此外，还包括节点与边各自的特征向量--即各自的特征信息：</strong><br></br><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1. 节点特征向量——<strong>node_feature</strong>  【通常由节点具有的特征构成，并且多个节点对应的特征向量组成当前网络的节点特征矩阵——shape:(node_num, per_node_feature_num)】<br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1. 边特征向量——<strong>edge_feature</strong>  【通常由节点与节点之间的边所具有的权重信息组成(通常为scalar：标量)，而多个边也会对应组成一个相应的边特征矩阵(或向量)——shape:(edge_num, 1)】<br />
+<br><br><br />
+<strong>③补充说明：</strong><br><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*：以上的定义在同构图或者异构图中均有意义，仅仅在描述中多了一个维度信息--类别。【具体在后边的异构图介绍部分说明】说明】</p>
+<h2 id="13-">1.3. 图节点的概念补充--度、出度与入度</h2>
+<p><code>度--【无向图和有向图都适用】</code>简单说来，就是指与当前vertex(顶点/节点)相关联的<strong>边的数目</strong>。;【如为有权图，那么度也表示这些<strong>边的权重和</strong>。】</p>
+<p><code>出度--【适用有向图】</code>即：以当前vertex为<strong>起点</strong>的所有邻近边的权重和（或者边数目）。</p>
+<p><code>入度--【适用有向图】</code>即：以当前vertex为<strong>终点</strong>的所有邻近边的权重和（或者边数目）。</p>
+<h2 id="14">1.4. 概念理解</h2>
+<p>给定一个网结构:<img alt="" src="https://ai-studio-static-online.cdn.bcebos.com/026add1f5d704cafadbc1bb789e392aa5a499c42db3d422b816796f2b327e448" /></p>
+<p><strong><h5>通过示例图可以知道：</h5></strong><br><br><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;0. 图类型: <strong>有向有权图</strong><br><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1. 节点数: 1~7，<strong>共7个节点</strong><br><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2. 边数: <strong>共8条边</strong>，每条边对应一个<strong>边关系</strong>（这里的边关系以及后文中可能出现的边关系均为——相应边的节点到节点表示:如:(1, 2):节点1到节点2的边）<br><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3. <strong>边权重均为1</strong> <br><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3. <strong>假设以节点5为例，计算它的入度与出度：</strong> <br><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <strong>入度：</strong> <br> <br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 7-&gt;5 and 4-&gt;5 =&gt; 入度为1 * 1 + 1 * 1 = 2 <br><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| <strong>出度：</strong> <br><br />
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5-&gt;6 =&gt; 出度为1 * 1=1<br><br />
+<br></p>
+<p><strong>思考</strong><br />
+类似节点5： 入度与出度相等的情况应该怎么考虑？对应实际生活中是什么情况？</p>
+<h2 id="15">1.5. 图的基本分类</h2>
+<ol>
+<li>
+<p>按方向性：有向图与无向图<br><br />
+    【有向图】<img alt="" src="https://ai-studio-static-online.cdn.bcebos.com/e27c75bea02549d4bbac8552944228a69180db31946a47e19063101bbfec74e9" /><br />
+   【无向图】<img alt="" src="https://ai-studio-static-online.cdn.bcebos.com/41c0ace513ea427d8491cefd3bf452bbefc3adf6f69e439180b3f01a721f6ff2" /><br />
+    <br>分类重心： <strong>边是否具有方向性</strong><br />
+<br></p>
+</li>
+<li>
+<p>按图中是否存在至少一个环/闭环：有环图与无环图<br><br />
+【有环图】<img alt="" src="https://ai-studio-static-online.cdn.bcebos.com/07fd21d89f414fbea73ce284994c94be6aac16944bf44aa4a9595232211f7e7e" /><br />
+【无环图】<img alt="" src="https://ai-studio-static-online.cdn.bcebos.com/e192e8da107b42ec895880ec8d3dd87f88eb801495134626b298c38245bc3411" /><br />
+<br>分类重心： <strong>图中是否存在环结构</strong> 如:有环图中：节点路线：1-&gt;2-&gt;3-&gt;1，回到给定的节点1，是一个环；而无环图中则没有这样的环结构<br />
+<br></p>
+</li>
+<li>
+<p>按边是否具有权重属性:有权图与无权图<br><br />
+【有权图】<img alt="" src="https://ai-studio-static-online.cdn.bcebos.com/45f41fddc0154562ad99ac0a81dcb307edbf5903d5034189a8723c4ce5fe76eb" /><br />
+【无权图】<img alt="" src="https://ai-studio-static-online.cdn.bcebos.com/075726dec15f4b96b44fa534b30d72cac8e19fd9bd644b609d8fed6fe45e1f6a" /><br />
+<br>分类重心： <strong>图中的边是否存在权重属性</strong> 如:有权图<br />
+<br></p>
+</li>
+<li>
+<p>按是否能够重映射：同构图与异构图<br><br />
+这里先简单说明一下分类，在后边异构图部分会继续展开。<br><br />
+分类重心: <strong>图中节点或边是否具有多个类型--有，为异构；无，同构。</strong><br></p>
+</li>
+</ol>
+<h1 id="2">2. 同构图与异构图</h1>
+<h2 id="21">2.1. 同构图基本定义</h2>
+<p>【图来源：PGL课程预习前置1】<br><br />
+简单来说就是：<strong>仅包含一种类型的节点与边的图结构。</strong><br />
+<br>【如图】<br />
+<img alt="" src="https://ai-studio-static-online.cdn.bcebos.com/e30c99de8ced4f8f8020e3d0d471ececd6dfdb2fa00e45f6a6d3b679f76d645d" /><br><br />
+假设颜色代表节点类型，这里的边和节点就都是唯一的类型了。</p>
+<h2 id="22">2.2. 异构图的定义</h2>
+<p>简单来说就是：<strong>包含至少两种类型的节点或边的图结构。</strong>【如图】<img alt="" src="https://ai-studio-static-online.cdn.bcebos.com/30656b103c7747e8b4300d59ab903a920e4e3af5be0047dfbd4c76c1a383c284" /><br />
+假设颜色代表节点类型，这里的节点就是两种类型了。</p>
+<h2 id="23">2.3. 同构图与异构图的数学表示</h2>
+<p>同构图：<code>G(V,E)</code> -- V-表示节点，E-表示边（关系）<br />
+异构图：<code>G(V, E, T)</code>  -- 相对同构图多了一个表示类别的维度</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

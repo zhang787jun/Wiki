@@ -1,0 +1,156 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Spark Lib--SQL  - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#10-计算机科学">10-计算机科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-04-Distributed_System">04-Distributed_System</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-分布式计算系统">02-分布式计算系统</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-Spark">02-Spark</a>&nbsp;»&nbsp;<a href="/Wiki/#-1-理论">1-理论</a>&nbsp;»&nbsp;<a href="/Wiki/#-05_核心组件">05_核心组件</a>&nbsp;»&nbsp;Spark Lib--SQL </div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Spark Lib--SQL </div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 基础概念</a><ul>
+<li><a href="#spark-sql">Spark SQL是什么</a></li>
+<li><a href="#sql">SQL不是什么</a></li>
+</ul>
+</li>
+<li><a href="#2-spark">2. 初始化Spark 任务</a></li>
+<li><a href="#_1">高效的从读取</a></li>
+</ul>
+</div>
+<h1 id="1">1. 基础概念</h1>
+<h2 id="spark-sql">Spark SQL是什么</h2>
+<p>Spark SQL 是用来处理结构化数据的模块。</p>
+<p>Spark SQL 是 Spark  中面向结构化数据处理的组件。Spark SQL 的目标是：让用户写更少的代码、让程序读取更少的数据、让优化器来负责对程序进行繁重的优化工作。总结起来就是：简单、高效。 </p>
+<h2 id="sql">SQL不是什么</h2>
+<p>Spark SQL 不是仅用来处理 SQL 请求的模块</p>
+<p>与基本RDD相比，Spark SQL提供了更多关于数据结构和计算方面的信息(在内部有优化效果)。通常通过SQL和Dataset API来和Spark SQL进行交互。</p>
+<p><code>SQL</code>: 进行SQL查询，从各种结构化数据源(Json, Hive, Parquet)读取数据。返回Dataset/DataFrame。</p>
+<p><code>Dataset</code>: 分布式的数据集合。</p>
+<p><code>DataFrame</code>：是一个组织有列名的Dataset。类似于关系型数据库中的表。<br />
+可以使用结构化数据文件、Hive表、外部数据库、RDD等创建。在Scala和Java中，DataFrame由Rows和Dataset组成。在Scala中，DataFrame只是Dataset[Row]的类型别名。在Java中，用Dataset表示DataFrame</p>
+<p>Spark SQL  提出了 schema RDD 和 DataFrame API，相比于基础的 RDD API，<br />
+schema RDD  及其后来的替代者 DataFrame  携带有将要处理的数据的元信息，如<br />
+列名和各个字段的类型。其可以简单地被看成是在内存中的一个数据表，Spark SQL <br />
+可以使用 DataFrame 携带的数据的元信息对执行过程进行针对性优化。在 Spark <br />
+SQL 中，来自关系型数据库、Hive、Json 文件等各种数据源的数据都会被转换成<br />
+DataFrame 来进行处理，DataFrame 实际上成为了 Spark SQL 与外界进行数据交换</p>
+<h1 id="2-spark">2. 初始化Spark 任务</h1>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">pyspark.sql</span> <span class="kn">import</span> <span class="n">SparkSession</span>
+
+<span class="n">spark</span> <span class="o">=</span> <span class="n">SparkSession</span> \
+    <span class="o">.</span><span class="n">builder</span> \
+    <span class="o">.</span><span class="n">appName</span><span class="p">(</span><span class="s">&quot;Python Spark SQL basic example&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">config</span><span class="p">(</span><span class="s">&quot;spark.some.config.option&quot;</span><span class="p">,</span> <span class="s">&quot;some-value&quot;</span><span class="p">)</span> \
+    <span class="o">.</span><span class="n">getOrCreate</span><span class="p">()</span>
+</pre></div>
+
+
+<h1 id="_1">高效的从读取</h1>
+<p>二、spark sql属性介绍</p>
+<p>1、dbtable：表名，可以是真实存在的关系表，也可以是通过查询语句 AS 出来的表。其实只要是在 SQL 语句里，FROM 后面能跟的语句用在 dbtable 属性都合法，其原理就是拼接 SQL 语句，dbtable 会填在 FROM 后面。</p>
+<p>2、numPartitions：读、写的最大分区数，也决定了开启数据库连接的数目。使用 numPartitions 有一点点限制， 如果指定了 numPartitions 大于1的值，但是没有指定分区规则，仍只有一个 task 去执行查询。</p>
+<p>3、partitionColumn, lowerBound, upperBound：指定读数据时的分区规则。要使用这三个参数，必须定义 numPartitions，而且这三个参数不能单独出现，要用就必须全部指定。而且 lowerBound, upperBound 不是过滤条件，只是用于决定分区跨度。在分区的时候，会根据 numPartitions 将 lowerBound 和 upperBound 拆分成，然后并行去执行查询。</p>
+<div class="hlcode"><pre><span class="cp"># 情况一：</span>
+<span class="k">if</span> <span class="n">partitionColumn</span> <span class="o">||</span> <span class="n">lowerBound</span> <span class="o">||</span> <span class="n">upperBound</span> <span class="o">||</span> <span class="n">numPartitions</span> <span class="err">有任意选项未指定，报错</span>
+<span class="cp"># 情况二：</span>
+<span class="k">if</span> <span class="n">numPartitions</span> <span class="o">==</span> <span class="mi">1</span> <span class="err">忽略这些选项，直接读取，返回一个分区</span>
+<span class="cp"># 情况三：</span>
+<span class="k">if</span> <span class="n">numPartitions</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="o">&amp;&amp;</span> <span class="n">lowerBound</span> <span class="o">&gt;</span> <span class="n">upperBound</span> <span class="err">报错</span>
+<span class="cp"># 情况四： </span>
+<span class="n">numPartitions</span> <span class="o">=</span> <span class="n">min</span><span class="p">(</span><span class="n">upperBound</span> <span class="o">-</span> <span class="n">lowerBound</span><span class="p">,</span> <span class="n">numPartitions</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">numPartitions</span> <span class="o">==</span> <span class="mi">1</span> <span class="err">同情况二</span>
+<span class="k">else</span> <span class="err">返回</span><span class="n">numPartitions</span><span class="err">个分区</span>
+<span class="n">delta</span> <span class="o">=</span> <span class="p">(</span><span class="n">upperBound</span> <span class="o">-</span> <span class="n">lowerBound</span><span class="p">)</span> <span class="o">/</span> <span class="n">numPartitions</span>
+<span class="err">分区</span><span class="mi">1</span><span class="err">数据条件：</span><span class="n">partitionColumn</span> <span class="o">&lt;=</span> <span class="n">lowerBound</span> <span class="o">+</span> <span class="n">delta</span> <span class="o">||</span> <span class="n">partitionColumn</span> <span class="n">is</span> <span class="n">null</span>
+<span class="err">分区</span><span class="mi">2</span><span class="err">数据条件：</span><span class="n">partitionColumn</span> <span class="o">&gt;</span> <span class="n">lowerBound</span> <span class="o">+</span> <span class="n">delta</span> <span class="o">&amp;&amp;</span> <span class="n">partitionColumn</span> <span class="o">&lt;=</span> <span class="n">lowerBound</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">delta</span>
+<span class="p">...</span>
+<span class="err">最后分区数据条件：</span><span class="n">partitionColumn</span> <span class="o">&gt;</span> <span class="n">lowerBound</span> <span class="o">+</span> <span class="n">n</span><span class="o">*</span><span class="n">delta</span>
+</pre></div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

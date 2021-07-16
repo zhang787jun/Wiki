@@ -1,0 +1,257 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Python--写好注释 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#10-计算机科学">10-计算机科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-Programming_Language">02-Programming_Language</a>&nbsp;»&nbsp;<a href="/Wiki/#-Python">Python</a>&nbsp;»&nbsp;<a href="/Wiki/#-写好python">写好python</a>&nbsp;»&nbsp;<a href="/Wiki/#-规范">规范</a>&nbsp;»&nbsp;Python--写好注释</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Python--写好注释</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 原则</a><ul>
+<li><a href="#11">1.1. 模块</a></li>
+<li><a href="#12">1.2. 函数</a></li>
+<li><a href="#13">1.3. 类</a></li>
+</ul>
+</li>
+<li><a href="#2-docstring-">2. docstring--官方工具</a><ul>
+<li><a href="#21">2.1. 作用</a></li>
+<li><a href="#22">2.2. 用法</a></li>
+<li><a href="#23">2.3. 注释风格</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 为了更加高效</a><ul>
+<li><a href="#31">3.1. 文档生成</a></li>
+<li><a href="#32-vscode-autodocstring">3.2. VScode--autoDocstring</a></li>
+<li><a href="#33-vscode-header">3.3. VScode--header</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="1">1. 原则</h1>
+<h2 id="11">1.1. 模块</h2>
+<p>通常模块也是要有docstring注释,用于在多人协作时记录一些元信息.</p>
+<p>模块简单说明:<br />
+1. Version 模块的版本<br />
+2. Author 模块的作者<br />
+3. Email 模块作者的邮箱<br />
+4. Copyright 模块的版权,包括日期和作者<br />
+5. License 模块的许可证样板<br />
+6. History 模块的跟新历史</p>
+<h2 id="12">1.2. 函数</h2>
+<blockquote>
+<p>做什么的，输入 ，输出</p>
+</blockquote>
+<p>一个函数必须要有文档字符串, 除非它满足以下条件:<br />
+1. 外部不可见<br />
+2. 非常短小<br />
+3. 简单明了</p>
+<h2 id="13">1.3. 类</h2>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">SampleClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;一个简单的类例子</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        likes_spam: 布尔型参数</span>
+<span class="sd">        eggs: int型参数</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">likes_spam</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Inits SampleClass with blah.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">likes_spam</span> <span class="o">=</span> <span class="n">likes_spam</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eggs</span> <span class="o">=</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">public_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Performs operation blah.&quot;&quot;&quot;</span>
+</pre></div>
+
+
+<h1 id="2-docstring-">2. docstring--官方工具</h1>
+<h2 id="21">2.1. 作用</h2>
+<p>python是一门高度自省的编程语言,每个对象都有一个<code>__doc__</code>字段用于保存一段自我描述的文本.这个文本可以：<br />
+1. 被<code>help()</code>内置函数截获;<br />
+2. 被标准库<code>pydoc</code>读出生成注释文档;<br />
+3. 被<code>doctest</code>解析用于做测试</p>
+<h2 id="22">2.2. 用法</h2>
+<p>在每个模块/类/函数的定义过程中,定义体内的第1行最开头开始如果使用3个引号("""或者''')的形式来构建一个字符串段,那么它就会被赋值给这个对象的 <code>__doc__</code> 字段,也就是这段字符串就是这个对象的docstring.</p>
+<p>它的第二行空行，第三行为函数的具体描述。</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">foo</span> <span class="p">(</span><span class="n">bar</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; this is func //第1行简述函数功能</span>
+<span class="sd">                    //第2行空行</span>
+<span class="sd">    haha           //第3行为函数的具体描述</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+
+
+<h2 id="23">2.3. 注释风格</h2>
+<p>我们的docstrings注释要简洁明了,并且最好符合大多数人的阅读习惯,这样才便于维护。</p>
+<div class="hlcode"><pre><span class="c"># Google 风格</span>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">bar</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;[summary]</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        bar ([type]): [description]</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        [type]: [description]</span>
+<span class="sd">    &quot;&quot;&quot;</span>  
+<span class="c"># Nunpy 风格</span>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">bar</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;[summary]</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    bar : [type]</span>
+<span class="sd">        [description]</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    [type]</span>
+<span class="sd">        [description]</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<span class="c"># sphinx 风格</span>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">bar</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;[summary]</span>
+
+<span class="sd">    :param brg_image: [description]</span>
+<span class="sd">    :type brg_image: [type]</span>
+<span class="sd">    :return: [description]</span>
+<span class="sd">    :rtype: [type]</span>
+<span class="sd">    &quot;&quot;&quot;</span>    
+
+<span class="c"># docblockr 风格</span>
+<span class="k">def</span> <span class="nf">foo</span><span class="p">(</span><span class="n">bar</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;[summary]</span>
+
+<span class="sd">    Arguments:</span>
+<span class="sd">        brg_image {[type]} -- [description]</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        [type] -- [description]</span>
+<span class="sd">    &quot;&quot;&quot;</span>        
+</pre></div>
+
+
+<h1 id="3">3. 为了更加高效</h1>
+<h2 id="31">3.1. 文档生成</h2>
+<p>无论代码写的如何,如果没有一个详细清晰的文档会让使用和维护变得非常困难,负责任的开发者应该尽量为自己的代码维护一份文档.python可以使用自带的文档生成器pydoc,它可以读取代码中的docstring,自动的生成文档.</p>
+<p>它的使用方式非常简单</p>
+<div class="hlcode"><pre><span class="nx">python</span> <span class="na">-m</span> <span class="nx">pydoc</span> <span class="o">&lt;</span><span class="nx">packagename</span><span class="o">&gt;</span>
+<span class="err">#</span> 
+<span class="na">-k</span> <span class="nx">查找关键字</span>
+<span class="na">-p</span> <span class="nx">用localhost打开网页版</span><span class="p">,</span><span class="nx">后面填端口号</span>
+<span class="na">-g</span> <span class="nx">GUI版</span>
+<span class="na">-w</span> <span class="nx">生成html文件</span>
+</pre></div>
+
+
+<h2 id="32-vscode-autodocstring">3.2. VScode--autoDocstring</h2>
+<p>这边推荐谷歌风格的注释规范. 如果使用vscode的话,有一个插件 <code>autoDocstring</code> 可以非常简单的创建符合各种风格的docstring模板,只需要在config中设置下"autoDocstring.docstringFormat": "google",即可.</p>
+<h2 id="33-vscode-header">3.3. VScode--header</h2>
+<p>左下角<code>设置</code>--&gt;<code>用户代码片段</code>--&gt;</p>
+<div class="hlcode"><pre><span class="p">{</span>
+    <span class="nt">&quot;HEADER&quot;</span><span class="p">:{</span>
+        <span class="nt">&quot;prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;header&quot;</span><span class="p">,</span>
+        <span class="nt">&quot;body&quot;</span><span class="p">:</span> <span class="p">[</span>
+        <span class="s2">&quot;#!/usr/bin/env python3&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;# -*- encoding: utf-8 -*-&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;&#39;&#39;&#39;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;@File    :   $TM_FILENAME&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;@Time    :   $CURRENT_YEAR/$CURRENT_MONTH/$CURRENT_DATE $CURRENT_HOUR:$CURRENT_MINUTE:$CURRENT_SECOND&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;@Author  :   张俊 B05GA68&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;@Version :   1.0&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;@Contact :   zhangj414@vanke.com&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;@License :   (C)Copyright 2020, onewo&quot;</span><span class="p">,</span>        
+        <span class="s2">&quot;&#39;&#39;&#39;&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;$0&quot;</span>
+    <span class="p">],</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

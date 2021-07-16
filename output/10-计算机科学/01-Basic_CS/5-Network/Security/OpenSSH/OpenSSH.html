@@ -1,0 +1,343 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>01-OpenSSH基础 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#10-计算机科学">10-计算机科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-01-Basic_CS">01-Basic_CS</a>&nbsp;»&nbsp;<a href="/Wiki/#-5-Network">5-Network</a>&nbsp;»&nbsp;<a href="/Wiki/#-Security">Security</a>&nbsp;»&nbsp;<a href="/Wiki/#-OpenSSH">OpenSSH</a>&nbsp;»&nbsp;01-OpenSSH基础</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">01-OpenSSH基础</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-openssh">1. OpenSSH 是什么？</a><ul>
+<li><a href="#11">1.1. 特色与组成</a></li>
+<li><a href="#12-ssh">1.2. SSH协议</a></li>
+<li><a href="#13-sshssl">1.3. ssh和ssl的联系和区别</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 安装</a><ul>
+<li><a href="#21-linux">2.1. Linux</a></li>
+<li><a href="#22-windwows">2.2. Windwows</a></li>
+</ul>
+</li>
+<li><a href="#3-openssh">3. OpenSSH实践</a><ul>
+<li><a href="#31-sshd">3.1. sshd</a></li>
+<li><a href="#32-ssh">3.2. ssh</a><ul>
+<li><a href="#321-ssh">3.2.1. ssh 掉线的问题</a></li>
+</ul>
+</li>
+<li><a href="#33-ssh-keygen-">3.3. ssh-keygen--用于生成安全的密钥</a></li>
+<li><a href="#34-scp">3.4. scp</a><ul>
+<li><a href="#-">复制:本地--&gt;远端</a></li>
+<li><a href="#-_1">复制:远程--&gt;本地</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4">4. 案例</a><ul>
+<li><a href="#41">4.1. 远程服务器的免密登入</a></li>
+<li><a href="#42-gitlab">4.2. gitlab</a></li>
+<li><a href="#43-github">4.3. github 免密使用</a></li>
+</ul>
+</li>
+<li><a href="#5">5. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1-openssh">1. OpenSSH 是什么？</h1>
+<blockquote>
+<p><a href="https://www.openssh.com">OpenSSH</a> is the premier connectivity <strong>tool</strong> for remote login with the SSH protocol</p>
+</blockquote>
+<p>OpenSSH 是安全 Shell (SSH) 工具的开放源代码版本，是一个软件。<br />
+Linux 及其他非 Windows 系统的管理员使用此类工具跨平台管理远程系统。</p>
+<div class="hlcode"><pre><span class="n">digraph</span> <span class="p">{</span>
+    <span class="n">subgraph</span>  <span class="n">cluster_3</span><span class="p">{</span>
+        <span class="n">label</span><span class="o">=</span><span class="s">&quot;OpenSSH&quot;</span>
+        <span class="n">subgraph</span>  <span class="n">cluster_3</span><span class="p">{</span>
+        <span class="n">label</span><span class="o">=</span><span class="s">&quot;OpenSSL&quot;</span>
+        <span class="s">&quot;SSLeay library&quot;</span><span class="p">[</span><span class="n">shape</span><span class="o">=</span><span class="n">box</span><span class="p">]</span>
+    <span class="p">}</span>
+
+    <span class="p">}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>官网:https://www.openssh.com/<br />
+Github:https://github.com/PowerShell/openssh-portable/tree/v8.1.0.0</p>
+<h2 id="11">1.1. 特色与组成</h2>
+<p>SSH 基于客户端-服务器体系结构，用户在其中工作的系统是客户端，所管理的远程系统是服务器。 OpenSSH 包含一系列组件和工具，用于提供一种安全且简单的远程系统管理方法，其中包括：<br />
+1. <code>sshd</code>，它是远程所管理的系统上必须运行的 SSH 服务器组件<br />
+2. <code>ssh</code>，它是在用户的本地系统上运行的 SSH 客户端组件<br />
+3. <code>sftp</code>，这是提供安全文件传输协议的服务，通过 SSH 运行<br />
+4. <code>scp</code> ，是在 SSH 上运行的文件复制实用工具<br />
+5. <code>ssh-keygen</code>，为 SSH 生成、管理和转换身份验证密钥<br />
+6. <code>ssh-agent</code>，存储用于公钥身份验证的私钥<br />
+7. <code>ssh-add</code>，将私钥添加到服务器允许的列表中<br />
+8. <code>ssh-keyscan</code>，帮助从许多主机收集公用 SSH 主机密钥</p>
+<h2 id="12-ssh">1.2. SSH协议</h2>
+<p>SSH是一种网络协议<br />
+Secure Shell（安全外壳协议，简称SSH）是一种加密的网络传输协议，可在不安全的网络中为网络服务提供安全的传输环境。</p>
+<p>SSH协议框架中最主要的部分是三个协议：</p>
+<ol>
+<li><code>传输层协议（The Transport Layer Protocol）</code>：传输层协议提供服务器认证，数据机密性，信息完整性等的支持。</li>
+<li><code>用户认证协议（The User Authentication Protocol）</code>：用户认证协议为服务器提供客户端的身份鉴别。</li>
+<li><code>连接协议（The Connection Protocol）</code>：连接协议将加密的信息隧道复用成若干个逻辑通道，提供给更高层的应用协议使用。</li>
+</ol>
+<p>同时还有为许多高层的网络安全应用协议提供扩展的支持。<br />
+各种高层应用协议可以相对地独立于SSH基本体系之外，并依靠这个基本框架，通过连接协议使用SSH的安全机制。</p>
+<h2 id="13-sshssl">1.3. ssh和ssl的联系和区别</h2>
+<p>ssh：Secure Shell，安全Shell，是一个软件，处于应用层旨在取代明文通信的telnet；对应的开源实现程序是openssh。 </p>
+<p>ssl：Secure Sockets Layer，安全套接字层，是一个协议，处于传输层之上应用层之下用于协商密钥；对应的开源实现库是openssl。</p>
+<table>
+<thead>
+<tr>
+<th>简写</th>
+<th>全称</th>
+<th>译名</th>
+<th>身份</th>
+<th>所处层</th>
+<th>目的</th>
+<th>加密算法</th>
+<th>开源实现</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ssh</td>
+<td>Secure Shell</td>
+<td>安全shell</td>
+<td>应用</td>
+<td>应用层</td>
+<td>取代telnet</td>
+<td>RSA</td>
+<td>openssh</td>
+<td></td>
+</tr>
+<tr>
+<td>ssl</td>
+<td>Secure Sockets Layer</td>
+<td>安全套接字层</td>
+<td>协议</td>
+<td>传输层之上应用层之下</td>
+<td>协商密钥</td>
+<td>协商得到对称密钥</td>
+<td>openssl</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h1 id="2">2. 安装</h1>
+<h2 id="21-linux">2.1. Linux</h2>
+<h2 id="22-windwows">2.2. Windwows</h2>
+<p>参考 <a href="https://docs.microsoft.com/zh-cn/windows-server/administration/openssh/openssh_install_firstuse">微软：安装适用于 Windows Server 2019 和 Windows 10 的 OpenSSH</a></p>
+<h1 id="3-openssh">3. OpenSSH实践</h1>
+<h2 id="31-sshd">3.1. sshd</h2>
+<h2 id="32-ssh">3.2. ssh</h2>
+<div class="hlcode"><pre><span class="n">ssh</span> <span class="n">username</span><span class="err">@</span><span class="n">servername</span> <span class="mi">22</span> 
+</pre></div>
+
+
+<h3 id="321-ssh">3.2.1. ssh 掉线的问题</h3>
+<div class="hlcode"><pre><span class="n">vim</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">ssh</span><span class="o">/</span><span class="n">sshd_config</span>
+
+<span class="o">&gt;&gt;&gt;</span>
+<span class="cp"># 找到ClientAliveInterval和ClientAliveCountMax ，去掉注释并修改</span>
+<span class="n">ClientAliveInterval</span> <span class="mi">30</span>
+<span class="n">ClientAliveCountMax</span> <span class="mi">86400</span>
+
+<span class="n">service</span> <span class="n">sshd</span> <span class="n">restart</span>
+</pre></div>
+
+
+<h2 id="33-ssh-keygen-">3.3. ssh-keygen--用于生成安全的密钥</h2>
+<h2 id="34-scp">3.4. scp</h2>
+<p>scp都是在本地操作,因此需要指明远端的信息,其实scp本质上也是基于ssh的,因此同样使用-i指定公钥.</p>
+<p>需要注意的是scp有如下使用限制:<br />
+1. 如果远程服务器防火墙有为scp命令设置了指定的端口，我们需要使用-P参数来设置命令的端口号<br />
+2. 使用scp命令要确保使用的用户具有可读取远程服务器相应文件的权限，否则scp命令是无法起作用的。<br />
+用法:</p>
+<h3 id="-">复制:本地--&gt;远端</h3>
+<p><strong>复制文件</strong></p>
+<div class="hlcode"><pre><span class="err">#</span> <span class="nx">复制文件</span>
+<span class="nx">scp</span> <span class="o">&lt;</span><span class="nx">local_file</span><span class="o">&gt;</span> <span class="nx">remote_username</span><span class="p">@</span><span class="nx">remote_ip</span><span class="p">:</span><span class="nx">remote_folder</span>
+<span class="nx">scp</span> <span class="o">&lt;</span><span class="nx">local_file</span><span class="o">&gt;</span> <span class="nx">remote_username</span><span class="p">@</span><span class="nx">remote_ip</span><span class="p">:</span><span class="nx">remote_file</span>
+<span class="nx">scp</span> <span class="o">&lt;</span><span class="nx">local_file</span><span class="o">&gt;</span> <span class="nx">remote_ip</span><span class="p">:</span><span class="nx">remote_folder</span>
+<span class="nx">scp</span> <span class="o">&lt;</span><span class="nx">local_file</span><span class="o">&gt;</span> <span class="nx">remote_ip</span><span class="p">:</span><span class="nx">remote_file</span>
+<span class="nx">scp</span> <span class="o">&lt;</span><span class="nx">local_file</span><span class="o">&gt;</span> <span class="nx">host_alias</span><span class="p">:</span><span class="nx">remote_folder</span>
+<span class="nx">scp</span> <span class="o">&lt;</span><span class="nx">local_file</span><span class="o">&gt;</span> <span class="nx">host_alias</span><span class="p">:</span><span class="nx">remote_file</span>
+</pre></div>
+
+
+<p>第1,2个指定了用户名，命令执行后需要再输入密码，第1个仅指定了远程的目录，文件名字不变，第2个指定了文件名</p>
+<p>第3,4个没有指定用户名，命令执行后需要输入用户名和密码，第3个仅指定了远程的目录，文件名字不变，第4个指定了文件名</p>
+<p>第5,6个使用了ssh中设置的连接别名.</p>
+<p><strong>复制文件夹</strong></p>
+<div class="hlcode"><pre><span class="cp"># 复制文件夹</span>
+<span class="n">scp</span> <span class="o">-</span><span class="n">r</span> <span class="n">local_folder</span> <span class="n">remote_username</span><span class="err">@</span><span class="n">remote_ip</span><span class="o">:</span><span class="n">remote_folder</span>
+<span class="n">scp</span> <span class="o">-</span><span class="n">r</span> <span class="n">local_folder</span> <span class="n">remote_ip</span><span class="o">:</span><span class="n">remote_folder</span>
+<span class="n">scp</span> <span class="o">-</span><span class="n">r</span> <span class="n">local_folder</span> <span class="n">host_alias</span><span class="o">:</span><span class="n">remote_folder</span>
+</pre></div>
+
+
+<p>第1个指定了用户名，命令执行后需要再输入密码<br />
+第2个没有指定用户名，命令执行后需要输入用户名和密码<br />
+第3个使用了ssh中设置的连接别名</p>
+<h3 id="-_1">复制:远程--&gt;本地</h3>
+<p>从远程复制到本地，只要将从本地复制到远程的命令的后2个参数调换顺序即可</p>
+<div class="hlcode"><pre><span class="n">scp</span> <span class="o">-</span><span class="n">r</span> <span class="n">remote_username</span><span class="err">@</span><span class="n">remote_ip</span><span class="o">:</span><span class="n">remote_folder</span> <span class="n">local_folder</span>
+</pre></div>
+
+
+<p>参数说明:</p>
+<p>-1： 强制scp命令使用协议ssh1<br />
+-2： 强制scp命令使用协议ssh2<br />
+-4： 强制scp命令只使用IPv4寻址<br />
+-6： 强制scp命令只使用IPv6寻址<br />
+-B： 使用批处理模式（传输过程中不询问传输口令或短语）<br />
+-C： 允许压缩。（将-C标志传递给ssh，从而打开压缩功能）<br />
+-p：保留原文件的修改时间，访问时间和访问权限。<br />
+-q： 不显示传输进度条。<br />
+-r： 递归复制整个目录。<br />
+-v：详细方式显示输出。scp和ssh(1)会显示出整个过程的调试信息。这些信息用于调试连接，验证和配置问题。<br />
+-c cipher： 以cipher将数据传输进行加密，这个选项将直接传递给ssh。<br />
+-F ssh_config： 指定一个替代的ssh配置文件，此参数直接传递给ssh。<br />
+-i identity_file： 从指定文件中读取传输时使用的密钥文件，此参数直接传递给ssh。<br />
+-l limit： 限定用户所能使用的带宽，以Kbit/s为单位。<br />
+-o ssh_option： 如果习惯于使用ssh_config(5)中的参数传递方式，<br />
+-P port：注意是大写的P, port是指定数据传输用到的端口号<br />
+-S program： 指定加密传输时所使用的程序。此程序必须能够理解ssh(1)的选项。</p>
+<h1 id="4">4. 案例</h1>
+<h2 id="41">4.1. 远程服务器的免密登入</h2>
+<p>将<code>客户端</code>生成的公钥写入<code>指定远程服务器</code>的<strong>指定用户</strong>授权清单里面</p>
+<div class="hlcode"><pre><span class="cp"># 方案1</span>
+<span class="n">ssh</span><span class="o">-</span><span class="n">copy</span><span class="o">-</span><span class="n">id</span> <span class="o">-</span><span class="n">i</span> <span class="n">id_rsa</span> <span class="n">root</span><span class="err">@</span><span class="mf">172.28.44.120</span>
+
+<span class="cp"># 方案2</span>
+<span class="n">scp</span> <span class="n">id_rsa</span><span class="p">.</span><span class="n">pub</span> <span class="n">root</span><span class="err">@</span><span class="n">xxx</span><span class="p">.</span><span class="n">xxx</span><span class="p">.</span><span class="n">xxx</span><span class="p">.</span><span class="n">xxx</span><span class="o">:/</span><span class="n">root</span>
+<span class="n">mkdir</span> <span class="o">~/</span><span class="p">.</span><span class="n">ssh</span>                <span class="err">#</span> <span class="err">如果不存在该文件夹需先创建，若已存在则忽略</span>
+<span class="n">cat</span> <span class="o">~/</span><span class="n">id_rsa</span><span class="p">.</span><span class="n">pub</span> <span class="o">&gt;&gt;</span> <span class="o">~/</span><span class="p">.</span><span class="n">ssh</span><span class="o">/</span><span class="n">authorized_keys</span>
+<span class="n">rm</span> <span class="o">~/</span><span class="n">id_rsa</span><span class="p">.</span><span class="n">pub</span>                 <span class="err">#</span> <span class="err">用完就可以删掉了</span>
+</pre></div>
+
+
+<h2 id="42-gitlab">4.2. gitlab</h2>
+<h2 id="43-github">4.3. github 免密使用</h2>
+<p>完成ssh-agent 服务的启动和 ssh-add 的私钥添加和管理后，<br />
+开 Terminal（终端）。输入以下内容：</p>
+<div class="hlcode"><pre><span class="err">$</span> <span class="n">ssh</span> <span class="o">-</span><span class="n">T</span> <span class="n">git</span><span class="err">@</span><span class="n">github</span><span class="p">.</span><span class="n">com</span>
+<span class="cp"># Attempts to ssh to GitHub</span>
+</pre></div>
+
+
+<p>您可能会看到类似如下的警告：</p>
+<div class="hlcode"><pre><span class="o">&gt;</span> <span class="n">The</span> <span class="n">authenticity</span> <span class="n">of</span> <span class="n">host</span> <span class="err">&#39;</span><span class="n">github</span><span class="p">.</span><span class="n">com</span> <span class="p">(</span><span class="n">IP</span> <span class="n">ADDRESS</span><span class="p">)</span><span class="err">&#39;</span> <span class="n">can</span><span class="err">&#39;</span><span class="n">t</span> <span class="n">be</span> <span class="n">established</span><span class="p">.</span>
+<span class="o">&gt;</span> <span class="n">RSA</span> <span class="n">key</span> <span class="n">fingerprint</span> <span class="n">is</span> <span class="n">SHA256</span><span class="o">:</span><span class="n">nThbg6kXUpJWGl7E1IGOCspRomTxdCARLviKw6E5SY8</span><span class="p">.</span>
+<span class="o">&gt;</span> <span class="n">Are</span> <span class="n">you</span> <span class="n">sure</span> <span class="n">you</span> <span class="n">want</span> <span class="n">to</span> <span class="k">continue</span> <span class="n">connecting</span> <span class="p">(</span><span class="n">yes</span><span class="o">/</span><span class="n">no</span><span class="p">)</span><span class="o">?</span>
+<span class="n">Verify</span> <span class="n">that</span> <span class="n">the</span> <span class="n">fingerprint</span> <span class="n">in</span> <span class="n">the</span> <span class="n">message</span> <span class="n">you</span> <span class="n">see</span> <span class="n">matches</span> <span class="n">GitHub</span><span class="err">&#39;</span><span class="n">s</span> <span class="n">RSA</span> <span class="n">public</span> <span class="n">key</span> <span class="n">fingerprint</span><span class="p">.</span> <span class="n">If</span> <span class="n">it</span> <span class="n">does</span><span class="p">,</span> <span class="n">then</span> <span class="n">type</span> <span class="n">yes</span><span class="o">:</span>
+
+<span class="o">&gt;</span> <span class="n">Hi</span> <span class="n">username</span><span class="o">!</span> <span class="n">You</span><span class="err">&#39;</span><span class="n">ve</span> <span class="n">successfully</span> <span class="n">authenticated</span><span class="p">,</span> <span class="n">but</span> <span class="n">GitHub</span> <span class="n">does</span> <span class="n">not</span>
+<span class="o">&gt;</span> <span class="n">provide</span> <span class="n">shell</span> <span class="n">access</span><span class="p">.</span>
+</pre></div>
+
+
+<p>您可能会看到以下错误消息：</p>
+<div class="hlcode"><pre><span class="p">...</span>
+<span class="n">Agent</span> <span class="n">admitted</span> <span class="n">failure</span> <span class="n">to</span> <span class="n">sign</span> <span class="n">using</span> <span class="n">the</span> <span class="n">key</span><span class="p">.</span>
+<span class="nl">debug1:</span> <span class="n">No</span> <span class="n">more</span> <span class="n">authentication</span> <span class="n">methods</span> <span class="n">to</span> <span class="n">try</span><span class="p">.</span>
+<span class="n">Permission</span> <span class="n">denied</span> <span class="p">(</span><span class="n">publickey</span><span class="p">).</span>
+</pre></div>
+
+
+<p>这是某些 Linux 发行版的已知问题。 更多信息请参阅“错误：代理承认没有签署”。</p>
+<p>验证生成的消息包含您的用户名。 如果收到“权限被拒绝”消息，请参阅“错误：权限被拒绝（公钥）”。</p>
+<h1 id="5">5. 参考资料</h1>
+<p>https://docs.microsoft.com/zh-cn/windows-server/administration/openssh/openssh_install_firstuse</p>
+<p><a href="https://docs.github.com/cn/free-pro-team@latest/github/authenticating-to-github/testing-your-ssh-connection">Github官网：使用 SSH 连接到 GitHub</a></p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

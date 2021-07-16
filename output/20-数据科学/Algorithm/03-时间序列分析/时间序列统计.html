@@ -1,0 +1,585 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>01-时间序列数据统计性描述 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#20-数据科学">20-数据科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-Algorithm">Algorithm</a>&nbsp;»&nbsp;<a href="/Wiki/#-03-时间序列分析">03-时间序列分析</a>&nbsp;»&nbsp;01-时间序列数据统计性描述</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">01-时间序列数据统计性描述</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#2">2. 随机变量的数学统计特征</a><ul>
+<li><a href="#21">2.1. 单变量的数学特征</a><ul>
+<li><a href="#211-">2.1.1. 期望--中心度</a></li>
+<li><a href="#212-">2.1.2. 方差--分散度</a></li>
+</ul>
+</li>
+<li><a href="#22">2.2. 多变量的数学特征</a><ul>
+<li><a href="#221-">2.2.1. 协方差--关联方向协同性</a></li>
+<li><a href="#222-">2.2.2. 相关系数--关联紧密性</a><ul>
+<li><a href="#2221">2.2.2.1. 皮尔逊相关系数</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#23">2.3. 单变量序列的数学特征</a><ul>
+<li><a href="#231-">2.3.1. 均值函数--中心度</a></li>
+<li><a href="#232">2.3.2. 方差</a></li>
+<li><a href="#233">2.3.3. 自相关性</a><ul>
+<li><a href="#2331">2.3.3.1. 依据自相关性的序列分类</a><ul>
+<li><a href="#23311">2.3.3.1.1. 白噪音</a></li>
+<li><a href="#23312">2.3.3.1.2. 自相关序列</a></li>
+</ul>
+</li>
+<li><a href="#2332-autocovariance">2.3.3.2. 自协方差函数 AutoCovariance</a></li>
+<li><a href="#2333-acf">2.3.3.3. 自相关函数 ACF</a></li>
+<li><a href="#2334-pacf">2.3.3.4. 偏自相关函数 PACF</a></li>
+<li><a href="#2335-ljung-box">2.3.3.5. Ljung-box 检验（白噪音检测）</a></li>
+</ul>
+</li>
+<li><a href="#234">2.3.4. 平稳性</a><ul>
+<li><a href="#2341">2.3.4.1. 平稳性分类</a></li>
+<li><a href="#2342">2.3.4.2. 定性判断平稳性</a><ul>
+<li><a href="#23421">2.3.4.2.1. 时序图</a></li>
+<li><a href="#23422">2.3.4.2.2. 自相关图/偏相关图</a></li>
+</ul>
+</li>
+<li><a href="#2343">2.3.4.3. 定量判定平稳性</a><ul>
+<li><a href="#23431-adf">2.3.4.3.1. ADF检验</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#235">2.3.5. 概念漂移</a><ul>
+<li><a href="#2351">2.3.5.1. 分类</a></li>
+<li><a href="#2352">2.3.5.2. 检测</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#24">2.4. 多变量序列的数学特征</a><ul>
+<li><a href="#241">2.4.1. 多变量之间的相关性/独立性</a></li>
+<li><a href="#242">2.4.2. 多变量之间的协整关系</a><ul>
+<li><a href="#2421">2.4.2.1. 多个序列变量组合的规则</a></li>
+<li><a href="#2422-engle-granger">2.4.2.2. Engle-Granger两步协整检验</a></li>
+<li><a href="#2423-jj">2.4.2.3. JJ检验</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="2">2. 随机变量的数学统计特征</h1>
+<h2 id="21">2.1. 单变量的数学特征</h2>
+<h3 id="211-">2.1.1. 期望--中心度</h3>
+<p>对于连续型随机变量$X$，有概率密度函数$f(x)$,则定义<br />
+$$E(X)= \int_{ - \infty }^{ + \infty } {f(x)dx} $$<br />
+为$X$的数学期望。</p>
+<p>对于离散型的随机变量$X$，$X$的数学期望就是随机变量$X$的取值与发生概率相乘得到的加和。</p>
+<p>$$E(X)= \sum {f(x_i)} $$</p>
+<h3 id="212-">2.1.2. 方差--分散度</h3>
+<p>设$X$是一个随机变量，若 $E{[X-E(X)]^2}$存在，则称$E{[X-E(X)]}$为$X$的<strong>方差</strong>，记为$D(X)$或$Var(X)$，即<br />
+$$D(X) = Var(x) = E{[X-E(X)]^2}$$</p>
+<p>$\sqrt{D(X)}$称为$X$的标准差；</p>
+<p>若$X$是离散型随机变量,则</p>
+<p>$$D(X)= \sum_{k=1}^{\infty}[x_{k}-E(X)]^{2}p_{k}$$</p>
+<p>若$X$是连续型随机变量，则</p>
+<p>$$D(X)= \int_{-\infty}^{\infty}[x-E(X)]^{2}f(x)dx$$</p>
+<p>补充：</p>
+<blockquote>
+<p>方差的推导关系：<br />
+$\color{blue}{D(X) }$<br />
+$= E{[X-E(X) ]^2 }$<br />
+$= E{X^2-2XE(X)+[E(X) ]^2 }$<br />
+$=E(X^2 )-2E(X)E(X)+[E(X) ]^2$<br />
+$\color{blue}{=E(X^2 )-[E(X)]^2}$</p>
+</blockquote>
+<h2 id="22">2.2. 多变量的数学特征</h2>
+<h3 id="221-">2.2.1. 协方差--关联方向协同性</h3>
+<p>称$E{(X-E(X))(y-E(Y))}$为随机变量$X$与$Y$的协方差，记为$Cov(X,Y)$</p>
+<p>$${Cov(X,Y)}<br />
+=E{(X-E(X) )(y-E(Y))}<br />
+{=E(XY)-E(X)E(Y)}$$</p>
+<h3 id="222-">2.2.2. 相关系数--关联紧密性</h3>
+<p>相关性（correlation）是两个随机变量和之间<strong>线性关系的强度</strong>和方向。</p>
+<h4 id="2221">2.2.2.1. 皮尔逊相关系数</h4>
+<p>Pearson product-moment correlation coefficient<br />
+称<br />
+$$ρ_{X,Y}=\frac{Cov(X,Y)}{\sqrt{D(X)D(Y)}}$$</p>
+<p>为随机变量$X$与$Y$的相关系数。描述X 与Y的关联度。相关系数就是消除了量纲的影响。</p>
+<p><img alt="" src="../../../../attach/images/2019-10-18-09-16-31.png" /></p>
+<h2 id="23">2.3. 单变量序列的数学特征</h2>
+<p>类比于随机变量的数学特征，下面是随机变量序列的一些数学特征：</p>
+<p>随机变量序列${y_{t}:t=0,1,2,... }$称为一个时间序列模型。</p>
+<h3 id="231-">2.3.1. 均值函数--中心度</h3>
+<p>$$u_{t}=E(y_{t} )，t=0,1,2,…$$</p>
+<h3 id="232">2.3.2. 方差</h3>
+<p><img alt="" src="../../../../attach/images/2019-10-19-16-52-43.png" /></p>
+<h3 id="233">2.3.3. 自相关性</h3>
+<p>序列相关（serial correlation），也叫自相关（autocorrelation），是指一个时间序列{x1,x2,x3...,xn}这些值前后自己相关，又称为滞后相关性。</p>
+<h4 id="2331">2.3.3.1. 依据自相关性的序列分类</h4>
+<div class="hlcode"><pre><span class="n">digraph</span> <span class="p">{</span>
+    <span class="err">序列数据</span><span class="o">-&gt;</span><span class="err">自相关序列</span>
+    <span class="err">序列数据</span><span class="o">-&gt;</span><span class="err">序列不相关序列（白噪音）</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h6 id="23311">2.3.3.1.1. 白噪音</h6>
+<p>白噪声序列的自相关函数为0（ρ0 =1除外）。</p>
+<p><img alt="" src="../../../../attach/images/2019-10-19-17-22-18.png" /></p>
+<p>实际应用中如果样本自相关函数近似为零（ACF 图中都位于控制线之内或基本不超出控制线），则可认为该序列是白噪声的样本。</p>
+<p><img alt="" src="../../../../attach/images/2019-10-19-16-25-49.png" /></p>
+<p>设 {Xt} 是独立同分布的二阶矩有限的随机变量，称 {Xt} 为<strong>独立同分布白噪声 (white noise)</strong>，又称为<strong>纯随机序列</strong>。最常用的白噪声一般假设均值为零。如果 {Xt} 独立同 N(0,σ2) 分布，称 {Xt} 为<strong>高斯 (Gaussian) 白噪声</strong>或正态白噪声。</p>
+<h6 id="23312">2.3.3.1.2. 自相关序列</h6>
+<p>判定序列的自相关性指标有：<br />
+1. 自协方<br />
+2. ACF<br />
+3. PACF<br />
+4. LB 检验</p>
+<p>ACF还是PACF都仅仅考虑是否存在某一特定滞后阶数的相关。LB检验则是基于一系列滞后阶数，</p>
+<h4 id="2332-autocovariance">2.3.3.2. 自协方差函数 AutoCovariance</h4>
+<p>$$\color{red}{\gamma{(t,s)}}<br />
+=Cov(y_t  ,y_s )<br />
+=E[(y_t-u_t )(y_s-u_s ) ]<br />
+\color{red}{=E(y_t y_s )-u_{t} u_{s}},<br />
+t,s=0,1,2,…$$<br />
+某个信号与其自身经过一定时间平移之后的相似性</p>
+<h4 id="2333-acf">2.3.3.3. 自相关函数 ACF</h4>
+<p>$$ρ_{k}=\frac{Cov(y_{t},y_{t-k})}{\sqrt{Var(y_{t-k})Var(y_t)}}$$</p>
+<p>$k$ 滞后因子(置滞后项),就是做差分的 时差 <br />
+$ρ_{k}$ 当滞后因子为k时的自相关系数<br />
+$y_{t-k}$ 做差分后的序列</p>
+<p>应为对于特定序列Y而言，自相关系数 是一个与 滞后因子k 相关的函数。将其称为自相关函数 ACF</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">statsmodels.tsa.api</span> <span class="kn">as</span> <span class="nn">smt</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">tsa是Time Series analysis缩写</span>
+<span class="sd">tsa的stattools（统计工具）提供了计算acf和pacf以及后面要用到的adfuller单位根检验函数</span>
+<span class="sd">使用help(smt.stattools.acf)可以查看相关参数设置</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c"># 计算自相关系数，这里设置滞后项为5期,默认是40期滞后</span>
+<span class="n">acf</span><span class="o">=</span><span class="n">smt</span><span class="o">.</span><span class="n">stattools</span><span class="o">.</span><span class="n">acf</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">nlags</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="c"># 计算偏自相关系数</span>
+<span class="n">pacf</span><span class="o">=</span><span class="n">smt</span><span class="o">.</span><span class="n">stattools</span><span class="o">.</span><span class="n">pacf</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">nlags</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">f</span><span class="s">&#39;自相关系数为：{acf};</span><span class="se">\n</span><span class="s">偏自相关系数为：{pacf}&#39;</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span>
+<span class="err">自相关系数为：</span><span class="p">[</span><span class="mf">1.</span> <span class="mf">0.99098764</span> <span class="mf">0.98189466</span> <span class="mf">0.97312885</span> <span class="mf">0.96252012</span> <span class="mf">0.95335064</span><span class="p">]</span>
+<span class="err">偏自相关系数为：</span><span class="p">[</span> <span class="mf">1.</span> <span class="mf">0.99231072</span> <span class="o">-</span><span class="mf">0.01047826</span>  <span class="mf">0.01620047</span> <span class="o">-</span><span class="mf">0.12635305</span>  <span class="mf">0.09200772</span><span class="p">]</span>
+
+
+<span class="kn">from</span> <span class="nn">statsmodels.graphics</span> <span class="kn">import</span> <span class="n">tsaplots</span>
+<span class="n">tsapltots</span><span class="o">.</span><span class="n">plot_acf</span><span class="p">(</span><span class="n">Train_Y</span><span class="p">,</span><span class="n">use_vlines</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span><span class="n">lags</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;60 以后tsapltots判定为acf==0 (alpha=0.05,95%置信度)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+
+<h4 id="2334-pacf">2.3.3.4. 偏自相关函数 PACF</h4>
+<p>PACF</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">statsmodels.tsa.api</span> <span class="kn">as</span> <span class="nn">smt</span>
+
+<span class="n">pacf</span><span class="o">=</span><span class="n">smt</span><span class="o">.</span><span class="n">stattools</span><span class="o">.</span><span class="n">pacf</span><span class="p">(</span><span class="n">df</span><span class="p">,</span><span class="n">nlags</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="c"># pacf .shape ==df.shape </span>
+
+<span class="kn">from</span> <span class="nn">statsmodels.graphics</span> <span class="kn">import</span> <span class="n">tsaplots</span>
+<span class="n">tsaplots</span><span class="o">.</span><span class="n">plot_pacf</span><span class="p">(</span>
+    <span class="n">x</span><span class="p">,</span>
+    <span class="n">ax</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+    <span class="n">lags</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+    <span class="n">method</span><span class="o">=</span><span class="s">&#39;ywunbiased&#39;</span><span class="p">,</span>
+    <span class="n">use_vlines</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">title</span><span class="o">=</span><span class="s">&#39;Partial Autocorrelation&#39;</span><span class="p">,</span>
+    <span class="n">zero</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">vlines_kwargs</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+    <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">print</span><span class="p">(</span><span class="s">&quot;60 以后tsapltots判定为acf==0 (alpha=0.05,95%置信度)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+
+<p>滞后相关的一种统计检验</p>
+<h4 id="2335-ljung-box">2.3.3.5. Ljung-box 检验（白噪音检测）</h4>
+<p>对于序列<br />
+$$X_n={ x_1,x_2,...x_n  }$$</p>
+<p>为了检验时间序列样本是否来自白噪声序列，可以检验 ρk =0,k =1,2,... 的零假设。<br />
+Box 和 Pierce(Box and Pierce, 1970) 提出了混成统计量 (Portmanteau statistic)用来检验零假设H0。<br />
+$$H0 : ρ1 =···= ρm =0$$</p>
+<p>$$Ha : 不全为零$$</p>
+<p>在{Xt}是独立白噪声序列条件下，Q∗(m) 近似服从 χ2(m) 分布。给定检验水平 α，当 Q∗(m) &gt; qchisq(1− α,m) 时拒绝 H0，否定白噪声假设。</p>
+<p>Ljung 和 Box(Ljung and Box, 1978) 对此检验方法进行了改进。统计量改为<br />
+$$Q(m)= T(T +2) \sum_{j=1}^m=\frac{ρ2}{T −j} $$</p>
+<p>在独立同分布白噪声假设下仍近似服从 χ2(m) 分布。当 Q(m) &gt; qchisq(1−α,m) 时拒绝 H0，否定白噪 声假设。这个检验称为 Ljung-Box 白噪声检验。</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">statsmodels</span>
+<span class="n">q_statarray</span><span class="p">,</span><span class="n">p_value</span> <span class="o">=</span><span class="n">statsmodels</span><span class="o">.</span><span class="n">tsa</span><span class="o">.</span><span class="n">stattools</span><span class="o">.</span><span class="n">q_stat</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">nobs</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="s">&#39;ljungbox&#39;</span><span class="p">)</span>
+
+<span class="n">q_statarray</span>  <span class="c"># shape =x.shape</span>
+<span class="o">&gt;&gt;&gt;</span>
+
+<span class="n">p_value</span>  <span class="c"># shape =x.shape</span>
+<span class="o">&gt;&gt;&gt;</span>
+
+<span class="c"># p_valeue 一般查看最后一个值</span>
+<span class="c"># 当 p_valeue &gt; 5%(0.05) ,则接收假设，认为序列是白噪音 </span>
+<span class="c"># 当 p_valeue &lt;5% , 则拒绝假设，认为序列是非白噪音 </span>
+</pre></div>
+
+
+<h3 id="234">2.3.4. 平稳性</h3>
+<p><strong>平稳性</strong>就是时间序列的统计性质关于时间平移的不变性，要求序列的均值和方差不发生明显变化。</p>
+<h4 id="2341">2.3.4.1. 平稳性分类</h4>
+<div class="hlcode"><pre><span class="n">digraph</span> <span class="p">{</span>
+    <span class="err">序列数据</span><span class="o">-&gt;</span><span class="err">非平稳序列</span>
+    <span class="err">序列数据</span><span class="o">-&gt;</span><span class="err">平稳序列</span>
+    <span class="err">平稳序列</span><span class="o">-&gt;</span><span class="err">强平稳序列（理论上）</span>
+    <span class="err">平稳序列</span><span class="o">-&gt;</span><span class="err">弱平稳序列</span><span class="p">[</span><span class="n">color</span><span class="o">=</span><span class="n">red</span><span class="p">,</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;一般指的是&quot;</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p><strong>严平稳</strong><br />
+严平稳表示所用统计性质不随时间的改变而改变。</p>
+<p>$$F(x_1,x_2..x_n)=F(x_{1+t},x_{2+t}...,x_{n+t})$$<br />
+F为{x1,x2,...xn}的联合分布。过于严苛，一般实际中都是弱平稳序列。一般提及稳定序列指的是弱平稳序列。 <br />
+<strong>弱平稳</strong><br />
+弱平稳：期望与相关系数（依赖性）不变未来某时刻的$t$的值$Y_{t}$就要依赖于它的过去信息，所以需要依赖性</p>
+<ol>
+<li>
+<p>均值$E(Y_{t})= μ$与时间$t$无关的常数；</p>
+</li>
+<li>
+<p>方差$Var(Y_{t} )= \gamma$与时间$t$无关的常数；</p>
+</li>
+<li>
+<p>协方差$Cov(Y_{t},Y_{t+k} )= \gamma_{0,k}$只与时间间隔$k$有关，与时间$t$无关的常数。</p>
+</li>
+<li>
+<p>自相关系数$ρ_{k }=\frac{Cov(y_{t },   y_{t-k})}{\sqrt{Var(y_{t-k)}Var{(y_t)}}}=\frac{Cov(y_{t },   y_{t-k})}{Var{(y_t)}}= \frac{\gamma_{k}}{\gamma_{0}} $</p>
+</li>
+</ol>
+<h4 id="2342">2.3.4.2. 定性判断平稳性</h4>
+<h5 id="23421">2.3.4.2.1. 时序图</h5>
+<p>平稳序列：在一定范围内上下波动<br />
+非平稳序列：有上升、下降趋势 </p>
+<p><img alt="" src="../../../../attach/images/2019-10-19-16-10-58.png" /></p>
+<h5 id="23422">2.3.4.2.2. 自相关图/偏相关图</h5>
+<p>平稳序列: 自相关系数快速（或某一阶段后）降低为0（或附近）<br />
+非平稳序列: 自相关系数缓慢降低</p>
+<h4 id="2343">2.3.4.3. 定量判定平稳性</h4>
+<h5 id="23431-adf">2.3.4.3.1. ADF检验</h5>
+<p>ADF检验全称是 Augmented Dickey-Fuller test，也叫做单位根（unit root）检验。顾名思义，ADF是 Dickey-Fuller检验的增广形式。DF检验只能应用于一阶情况，当序列存在高阶的滞后相关时，可以使用ADF检验，所以说ADF是对DF检验的扩展。<br />
+<strong>单位根</strong>就是指单位根过程，可以证明，序列中存在单位根过程就不平稳，会使回归分析中存在伪回归</p>
+<p>主要思想：</p>
+<div class="hlcode"><pre><span class="n">digraph</span> <span class="n">a</span><span class="p">{</span>
+    <span class="err">假设存在单位根</span><span class="o">-&gt;</span><span class="err">平稳序列</span><span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;不存在 p_value&lt;0.05&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">blue</span><span class="p">]</span>
+    <span class="err">假设存在单位根</span><span class="o">-&gt;</span><span class="err">非平稳序列</span><span class="p">[</span><span class="n">label</span><span class="o">=</span><span class="s">&quot;存在 p_value&gt;0.05&quot;</span><span class="p">,</span><span class="n">color</span><span class="o">=</span><span class="n">red</span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">arch.unitroot</span> <span class="kn">import</span> <span class="n">ADF</span>
+
+<span class="n">ADF_instance</span><span class="o">=</span><span class="n">ADF</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">lags</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="k">print</span> <span class="p">(</span><span class="n">ADF_instance</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>
+   <span class="n">Augmented</span> <span class="n">Dickey</span><span class="o">-</span><span class="n">Fuller</span> <span class="n">Results</span>   
+<span class="o">=====================================</span>
+<span class="n">Test</span> <span class="n">Statistic</span>                 <span class="o">-</span><span class="mf">8.635</span>
+<span class="n">P</span><span class="o">-</span><span class="n">value</span>                         <span class="mf">0.000</span>
+<span class="n">Lags</span>                               <span class="mi">10</span>
+<span class="o">-------------------------------------</span>
+
+<span class="n">Trend</span><span class="p">:</span> <span class="n">Constant</span>
+<span class="n">Critical</span> <span class="n">Values</span><span class="p">:</span> <span class="o">-</span><span class="mf">3.43</span> <span class="p">(</span><span class="mi">1</span><span class="o">%</span><span class="p">),</span> <span class="o">-</span><span class="mf">2.86</span> <span class="p">(</span><span class="mi">5</span><span class="o">%</span><span class="p">),</span> <span class="o">-</span><span class="mf">2.57</span> <span class="p">(</span><span class="mi">10</span><span class="o">%</span><span class="p">)</span>
+<span class="n">Null</span> <span class="n">Hypothesis</span><span class="p">:</span> <span class="n">The</span> <span class="n">process</span> <span class="n">contains</span> <span class="n">a</span> <span class="n">unit</span> <span class="n">root</span><span class="o">.</span>
+<span class="n">Alternative</span> <span class="n">Hypothesis</span><span class="p">:</span> <span class="n">The</span> <span class="n">process</span> <span class="ow">is</span> <span class="n">weakly</span> <span class="n">stationary</span><span class="o">.</span>
+
+<span class="c"># 若按照5% 致信区间判定</span>
+
+<span class="k">if</span> <span class="n">ADF_instance</span><span class="o">.</span><span class="n">stat</span><span class="o">&lt;</span><span class="n">ADF_instance</span><span class="o">.</span><span class="n">critical_values</span><span class="p">[</span><span class="s">&quot;5%&quot;</span><span class="p">]:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;拒绝假设，不存在单元根，序列是宽平稳的，是平稳序列&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">ADF_instance</span><span class="o">.</span><span class="n">p_value</span><span class="o">&lt;</span><span class="mf">0.05</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;拒绝假设，不存在单元根，序列是宽平稳的，是平稳序列&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="235">2.3.5. 概念漂移</h3>
+<p>概念漂移（Concept drift）就是<strong>目标变量随着时间的推移发生改变</strong>。概念指的就是一个模型要去预测的一个目标变量</p>
+<p><img alt="" src="../../../../attach/images/2019-10-21-11-56-05.png" /></p>
+<h4 id="2351">2.3.5.1. 分类</h4>
+<ul>
+<li>
+<p>sudden 指的是迅速同时又不可逆的改变，强调的是发生的迅速。</p>
+</li>
+<li>
+<p>incremental和gradual都是强调改变发生的缓慢，incremental强调值的随时间改变，gradual则是数据分布的改变。也有些研究者将这两种变化划分为同一类，用incremental gradual这个术语来代替。</p>
+</li>
+<li>
+<p>recurring则是一种temporary（临时性）的改变，在一段短时间内会恢复之前的状态。所以也有些研究者将其称为local drift，它不具有周期性，是在不规则的时间间隔内反复转换。</p>
+</li>
+<li>
+<p>blip是代表一种很稀少的事件，它可以被视为一种anomaly或者outlier（异常）。</p>
+</li>
+<li>
+<p>noise是一种随机的改变，通常这种数据会从样本数据中filter out。</p>
+</li>
+</ul>
+<h4 id="2352">2.3.5.2. 检测</h4>
+<p>DDM（Drift Detection Method）</p>
+<p>EDDM（Early Drift Detection Method）</p>
+<p>DDD（Diversity for Dealing with Drifts）  </p>
+<p>Ensemble with different diversity</p>
+<p>Hoeffding trees</p>
+<p>Ensemble Learnings</p>
+<h2 id="24">2.4. 多变量序列的数学特征</h2>
+<h3 id="241">2.4.1. 多变量之间的相关性/独立性</h3>
+<p>相关关系（correlation）</p>
+<div class="hlcode"><pre><span class="n">stattools</span><span class="o">.</span><span class="n">ccovf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">[,</span> <span class="n">adjusted</span><span class="p">,</span> <span class="n">demean</span><span class="p">])</span>
+
+<span class="n">Calculate</span> <span class="n">the</span> <span class="n">crosscovariance</span> <span class="n">between</span> <span class="n">two</span> <span class="n">series</span><span class="o">.</span>
+
+<span class="n">stattools</span><span class="o">.</span><span class="n">ccf</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">[,</span> <span class="n">adjusted</span><span class="p">])</span>
+
+<span class="n">The</span> <span class="n">cross</span><span class="o">-</span><span class="n">correlation</span> <span class="n">function</span><span class="o">.</span>
+</pre></div>
+
+
+<h3 id="242">2.4.2. 多变量之间的协整关系</h3>
+<p>如果两组序列是非平稳的，但它们的线性组合可以得到一个平稳序列，那么我们就说这两组时间序列数据具有协整(cointegration)的性质。</p>
+<h4 id="2421">2.4.2.1. 多个序列变量组合的规则</h4>
+<p><img alt="" src="../../../../attach/images/2019-10-31-10-12-02.png" /></p>
+<h4 id="2422-engle-granger">2.4.2.2. Engle-Granger两步协整检验</h4>
+<p>若$Y_t$,$X_t$ 属于I(1) <br />
+<strong>步骤</strong><br />
+1. 通过最小二乘回归得到协整系数$\beta$和残差序列$R_t$<br />
+   $Y_t=\beta X_t+R_t$<br />
+2. 对残差序列$R_t$ 进行自稳定性检验（ADF），如果$R_t$ 平稳则协整</p>
+<p><strong>缺点</strong> </p>
+<p>不能同时处理多个协整关系</p>
+<p>原假设H0是不存在协整关系，替代假设是存在协整关系。如果p值很小，低于临界大小，那么我们可以拒绝没有协整关系的假设，认为存在协整关系。</p>
+<div class="hlcode"><pre><span class="c">#cointegration 协整性</span>
+<span class="n">coint_t</span><span class="p">,</span><span class="n">p_value</span><span class="p">,</span><span class="n">crit_value</span><span class="o">=</span><span class="n">statsmodels</span><span class="o">.</span><span class="n">tsa</span><span class="o">.</span><span class="n">stattools</span><span class="o">.</span><span class="n">coint</span><span class="p">(</span><span class="n">y0</span><span class="p">,</span><span class="n">y1</span><span class="p">,</span><span class="n">trend</span> <span class="o">=</span><span class="s">&#39;c&#39;</span><span class="p">,</span><span class="n">method</span> <span class="o">=</span><span class="s">&#39;aeg&#39;</span><span class="p">,</span><span class="n">maxlag</span> <span class="o">=</span> <span class="bp">None</span><span class="p">,</span><span class="n">autolag</span> <span class="o">=</span><span class="s">&#39;aic&#39;</span><span class="p">,</span><span class="n">return_results</span> <span class="o">=</span> <span class="bp">None</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">p_value</span><span class="o">&lt;</span><span class="mf">0.01</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&quot;y0 y1 存在协整关系&quot;</span><span class="p">)</span>
+<span class="n">y0</span><span class="p">:</span>
+</pre></div>
+
+
+<p><strong>应用</strong></p>
+<p>两组时间序列数据的差是平稳的<br />
+当两只股票的价差过大，根据平稳性我们预期价差会收敛，因此买入低价的股票，卖空高价的股票，等待价格回归的时候进行反向操作从而获利。<br />
+这就是配对交易（pairs trading）的由来。</p>
+<p>(Phillips and Ouliaris 1990)给出了利用回归残差进行协整检验的方法， 包含两种方法， 方差比方法和多元迹统计量方法。 R扩展包urca的ca.po()可以用来计算Phillips-Ouliaris检验。 选项demean="constant"指定有确定性常数趋势， demean="trend"指定有确定性线性趋势， 缺省为demean="none"，没有确定性趋势（无漂移）。 选项type="Pu"指定使用方差比方法， 选项type="Pz"指定使用多元迹方法， 多元迹方法对哪个分量作为回归因变量不敏感。</p>
+<h4 id="2423-jj">2.4.2.3. JJ检验</h4>
+<p>而Johansen协整检验法采用的是多元方程技术</p>
+<div class="hlcode"><pre><span class="n">statsmodels</span><span class="o">.</span><span class="n">tsa</span><span class="o">.</span><span class="n">vector_ar</span><span class="o">.</span><span class="n">vecm</span><span class="o">.</span><span class="n">coint_johansen</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">det_order</span><span class="p">,</span> <span class="n">k_ar_diff</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">coint_johansen</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">det_order</span><span class="p">,</span> <span class="n">k_ar_diff</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Johansen 检验</span>
+
+<span class="sd">    参数</span>
+<span class="sd">    ----------</span>
+<span class="sd">    endog : array_like (nobs_tot x neqs)</span>
+<span class="sd">        Data to test</span>
+<span class="sd">    det_order : int</span>
+<span class="sd">        * -1 - no deterministic terms</span>
+<span class="sd">        * 0 - constant term</span>
+<span class="sd">        * 1 - linear trend</span>
+<span class="sd">    k_ar_diff : int, nonnegative</span>
+<span class="sd">        Number of lagged differences in the model.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    result : JohansenTestResult</span>
+<span class="sd">        An object containing the test&#39;s results. The most important attributes</span>
+<span class="sd">        of the result class are:</span>
+
+<span class="sd">        * trace_stat and trace_stat_crit_vals</span>
+<span class="sd">        * max_eig_stat and max_eig_stat_crit_vals</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">warnings</span>
+    <span class="k">if</span> <span class="n">det_order</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]:</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Critical values are only available for a det_order of &quot;</span>
+                      <span class="s">&quot;-1, 0, or 1.&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">HypothesisTestWarning</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">endog</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">12</span><span class="p">:</span>  <span class="c"># todo: test with a time series of 13 variables</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s">&quot;Critical values are only available for time series &quot;</span>
+                      <span class="s">&quot;with 12 variables at most.&quot;</span><span class="p">,</span>
+                      <span class="n">category</span><span class="o">=</span><span class="n">HypothesisTestWarning</span><span class="p">)</span>
+
+    <span class="kn">from</span> <span class="nn">statsmodels.regression.linear_model</span> <span class="kn">import</span> <span class="n">OLS</span>
+
+    <span class="k">def</span> <span class="nf">detrend</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">order</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">order</span> <span class="o">==</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">y</span>
+        <span class="k">return</span> <span class="n">OLS</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">vander</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">)),</span>
+                                <span class="n">order</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span><span class="o">.</span><span class="n">resid</span>
+
+    <span class="k">def</span> <span class="nf">resid</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">y</span>
+        <span class="n">r</span> <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">pinv</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">y</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">r</span>
+
+    <span class="n">endog</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">endog</span><span class="p">)</span>
+    <span class="n">nobs</span><span class="p">,</span> <span class="n">neqs</span> <span class="o">=</span> <span class="n">endog</span><span class="o">.</span><span class="n">shape</span>
+
+    <span class="c"># why this?  f is detrend transformed series, det_order is detrend data</span>
+    <span class="k">if</span> <span class="n">det_order</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mi">1</span><span class="p">:</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="n">det_order</span>
+
+    <span class="n">endog</span> <span class="o">=</span> <span class="n">detrend</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="n">det_order</span><span class="p">)</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">endog</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">lagmat</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">k_ar_diff</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">z</span><span class="p">[</span><span class="n">k_ar_diff</span><span class="p">:]</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">detrend</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">dx</span><span class="p">[</span><span class="n">k_ar_diff</span><span class="p">:]</span>
+
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">detrend</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">r0t</span> <span class="o">=</span> <span class="n">resid</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+    <span class="c"># GH 5731, [:-0] does not work, need [:t-0]</span>
+    <span class="n">lx</span> <span class="o">=</span> <span class="n">endog</span><span class="p">[:(</span><span class="n">endog</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">k_ar_diff</span><span class="p">)]</span>
+    <span class="n">lx</span> <span class="o">=</span> <span class="n">lx</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="n">dx</span> <span class="o">=</span> <span class="n">detrend</span><span class="p">(</span><span class="n">lx</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+    <span class="n">rkt</span> <span class="o">=</span> <span class="n">resid</span><span class="p">(</span><span class="n">dx</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>  <span class="c"># level on lagged diffs</span>
+    <span class="c"># Level covariance after filtering k_ar_diff</span>
+    <span class="n">skk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">rkt</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">rkt</span><span class="p">)</span> <span class="o">/</span> <span class="n">rkt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c"># Covariacne between filtered and unfiltered</span>
+    <span class="n">sk0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">rkt</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">r0t</span><span class="p">)</span> <span class="o">/</span> <span class="n">rkt</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">s00</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">r0t</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">r0t</span><span class="p">)</span> <span class="o">/</span> <span class="n">r0t</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">sig</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">sk0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">inv</span><span class="p">(</span><span class="n">s00</span><span class="p">),</span> <span class="n">sk0</span><span class="o">.</span><span class="n">T</span><span class="p">))</span>
+    <span class="n">tmp</span> <span class="o">=</span> <span class="n">inv</span><span class="p">(</span><span class="n">skk</span><span class="p">)</span>
+    <span class="n">au</span><span class="p">,</span> <span class="n">du</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">eig</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">sig</span><span class="p">))</span>  <span class="c"># au is eval, du is evec</span>
+
+    <span class="n">temp</span> <span class="o">=</span> <span class="n">inv</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">du</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">skk</span><span class="p">,</span> <span class="n">du</span><span class="p">))))</span>
+    <span class="n">dt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">du</span><span class="p">,</span> <span class="n">temp</span><span class="p">)</span>
+
+    <span class="c"># JP: the next part can be done much  easier</span>
+    <span class="n">auind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">au</span><span class="p">)</span>
+    <span class="n">aind</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">auind</span><span class="p">)</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">au</span><span class="p">[</span><span class="n">aind</span><span class="p">]</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">dt</span><span class="p">[:,</span> <span class="n">aind</span><span class="p">]</span>
+    <span class="c"># Normalize by first non-zero element of d, usually [0, 0]</span>
+    <span class="c"># GH 5517</span>
+    <span class="n">non_zero_d</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">flat</span> <span class="o">!=</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">non_zero_d</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">*=</span> <span class="n">np</span><span class="o">.</span><span class="n">sign</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">flat</span><span class="p">[</span><span class="n">non_zero_d</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c">#  Compute the trace and max eigenvalue statistics</span>
+    <span class="n">lr1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">neqs</span><span class="p">)</span>
+    <span class="n">lr2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">neqs</span><span class="p">)</span>
+    <span class="n">cvm</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">neqs</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">cvt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">neqs</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">iota</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">neqs</span><span class="p">)</span>
+    <span class="n">t</span><span class="p">,</span> <span class="n">junk</span> <span class="o">=</span> <span class="n">rkt</span><span class="o">.</span><span class="n">shape</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">neqs</span><span class="p">):</span>
+        <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">iota</span> <span class="o">-</span> <span class="n">a</span><span class="p">)[</span><span class="n">i</span><span class="p">:]</span>
+        <span class="n">lr1</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">t</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">lr2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">t</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">cvm</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">c_sja</span><span class="p">(</span><span class="n">neqs</span> <span class="o">-</span> <span class="n">i</span><span class="p">,</span> <span class="n">det_order</span><span class="p">)</span>
+        <span class="n">cvt</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">c_sjt</span><span class="p">(</span><span class="n">neqs</span> <span class="o">-</span> <span class="n">i</span><span class="p">,</span> <span class="n">det_order</span><span class="p">)</span>
+        <span class="n">aind</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+
+    <span class="k">return</span> <span class="n">JohansenTestResult</span><span class="p">(</span><span class="n">rkt</span><span class="p">,</span> <span class="n">r0t</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">d</span><span class="p">,</span> <span class="n">lr1</span><span class="p">,</span> <span class="n">lr2</span><span class="p">,</span> <span class="n">cvt</span><span class="p">,</span> <span class="n">cvm</span><span class="p">,</span> <span class="n">aind</span><span class="p">)</span>
+</pre></div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

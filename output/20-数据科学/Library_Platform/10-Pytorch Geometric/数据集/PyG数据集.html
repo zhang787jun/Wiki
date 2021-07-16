@@ -1,0 +1,276 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Pytorch Geometric 自带数据集 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#20-数据科学">20-数据科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-10-Pytorch Geometric">10-Pytorch Geometric</a>&nbsp;»&nbsp;<a href="/Wiki/#-数据集">数据集</a>&nbsp;»&nbsp;Pytorch Geometric 自带数据集</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Pytorch Geometric 自带数据集</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-karateclub">1. KarateClub</a></li>
+<li><a href="#2-tudataset">2. TUDataset</a></li>
+<li><a href="#3-planetoid">3. Planetoid</a></li>
+<li><a href="#4-corafull">4. CoraFull</a></li>
+<li><a href="#5-coauthor">5. Coauthor</a></li>
+<li><a href="#6-amazon">6. Amazon</a></li>
+<li><a href="#7-ppi">7. PPI</a></li>
+<li><a href="#8-entities">8. Entities</a></li>
+<li><a href="#9-bitcoinotc">9. BitcoinOTC</a></li>
+<li><a href="#10-cora">10. Cora</a><ul>
+<li><a href="#1001">10.0.1. 参考链接</a></li>
+<li><a href="#1002">10.0.2. 数据集介绍</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<p><code>TORCH_GEOMETRIC.DATASETS</code> 包含的了常见的图数据集<br />
+数据集|说明<br />
+--|--<br />
+GNNBenchmarkDataset|A variety of artificially and semi-artificially generated graph datasets from the “Benchmarking Graph Neural Networks” paper.</p>
+<p>Planetoid</p>
+<p>CitationFull</p>
+<p>The full citation network datasets from the “Deep Gaussian Embedding of Graphs: Unsupervised Inductive Learning via Ranking” paper.</p>
+<p>CoraFull</p>
+<p>Alias for torch_geometric.dataset.CitationFull with name="cora".</p>
+<p>Coauthor</p>
+<p>The Coauthor CS and Coauthor Physics networks from the “Pitfalls of Graph Neural Network Evaluation” paper.</p>
+<p>Amazon</p>
+<p>The Amazon Computers and Amazon Photo networks from the “Pitfalls of Graph Neural Network Evaluation” paper.</p>
+<p>PPI</p>
+<p>The protein-protein interaction networks from the “Predicting Multicellular Function through Multi-layer Tissue Networks” paper, containing positional gene sets, motif gene sets and immunological signatures as features (50 in total) and gene ontology sets as labels (121 in total).</p>
+<p>Reddit</p>
+<p>The Reddit dataset from the “Inductive Representation Learning on Large Graphs” paper, containing Reddit posts belonging to different communities.</p>
+<p>Reddit2</p>
+<p>The Reddit dataset from the “GraphSAINT: Graph Sampling Based Inductive Learning Method” paper, containing Reddit posts belonging to different communities.</p>
+<p>Flickr</p>
+<p>The Flickr dataset from the “GraphSAINT: Graph Sampling Based Inductive Learning Method” paper, containing descriptions and common properties of images.</p>
+<p>Yelp</p>
+<p>The Yelp dataset from the “GraphSAINT: Graph Sampling Based Inductive Learning Method” paper, containing customer reviewers and their friendship.</p>
+<p>QM7b</p>
+<p>The QM7b dataset from the “MoleculeNet: A Benchmark for Molecular Machine Learning” paper, consisting of 7,211 molecules with 14 regression targets.</p>
+<p>QM9</p>
+<p>The QM9 dataset from the “MoleculeNet: A Benchmark for Molecular Machine Learning” paper, consisting of about 130,000 molecules with 19 regression targets.</p>
+<p>ZINC</p>
+<p>The ZINC dataset from the ZINC database and the “Automatic Chemical Design Using a Data-Driven Continuous Representation of Molecules” paper, containing about 250,000 molecular graphs with up to 38 heavy atoms.</p>
+<p>MoleculeNet</p>
+<p>The MoleculeNet benchmark collection from the “MoleculeNet: A Benchmark for Molecular Machine Learning” paper, containing datasets from physical chemistry, biophysics and physiology.</p>
+<p>Entities</p>
+<p>The relational entities networks “AIFB”, “MUTAG”, “BGS” and “AM” from the “Modeling Relational Data with Graph Convolutional Networks” paper.</p>
+<p>GEDDataset</p>
+<p>The GED datasets from the “Graph Edit Distance Computation via Graph Neural Networks” paper.</p>
+<p>MNISTSuperpixels</p>
+<p>MNIST superpixels dataset from the “Geometric Deep Learning on Graphs and Manifolds Using Mixture Model CNNs” paper, containing 70,000 graphs with 75 nodes each.</p>
+<p>FAUST</p>
+<p>The FAUST humans dataset from the “FAUST: Dataset and Evaluation for 3D Mesh Registration” paper, containing 100 watertight meshes representing 10 different poses for 10 different subjects.</p>
+<p>DynamicFAUST</p>
+<p>The dynamic FAUST humans dataset from the “Dynamic FAUST: Registering Human Bodies in Motion” paper.</p>
+<p>ShapeNet</p>
+<p>The ShapeNet part level segmentation dataset from the “A Scalable Active Framework for Region Annotation in 3D Shape Collections” paper, containing about 17,000 3D shape point clouds from 16 shape categories.</p>
+<p>ModelNet</p>
+<p>The ModelNet10/40 datasets from the “3D ShapeNets: A Deep Representation for Volumetric Shapes” paper, containing CAD models of 10 and 40 categories, respectively.</p>
+<p>CoMA</p>
+<p>The CoMA 3D faces dataset from the “Generating 3D faces using Convolutional Mesh Autoencoders” paper, containing 20,466 meshes of extreme expressions captured over 12 different subjects.</p>
+<p>SHREC2016</p>
+<p>The SHREC 2016 partial matching dataset from the “SHREC’16: Partial Matching of Deformable Shapes” paper.</p>
+<p>TOSCA</p>
+<p>The TOSCA dataset from the “Numerical Geometry of Non-Ridig Shapes” book, containing 80 meshes.</p>
+<p>PCPNetDataset</p>
+<p>The PCPNet dataset from the “PCPNet: Learning Local Shape Properties from Raw Point Clouds” paper, consisting of 30 shapes, each given as a point cloud, densely sampled with 100k points.</p>
+<p>S3DIS</p>
+<p>The (pre-processed) Stanford Large-Scale 3D Indoor Spaces dataset from the “3D Semantic Parsing of Large-Scale Indoor Spaces” paper, containing point clouds of six large-scale indoor parts in three buildings with 12 semantic elements (and one clutter class).</p>
+<p>GeometricShapes</p>
+<p>Synthetic dataset of various geometric shapes like cubes, spheres or pyramids.</p>
+<p>BitcoinOTC</p>
+<p>The Bitcoin-OTC dataset from the “EvolveGCN: Evolving Graph Convolutional Networks for Dynamic Graphs” paper, consisting of 138 who-trusts-whom networks of sequential time steps.</p>
+<p>ICEWS18</p>
+<p>The Integrated Crisis Early Warning System (ICEWS) dataset used in the, e.g., “Recurrent Event Network for Reasoning over Temporal Knowledge Graphs” paper, consisting of events collected from 1/1/2018 to 10/31/2018 (24 hours time granularity).</p>
+<p>GDELT</p>
+<p>The Global Database of Events, Language, and Tone (GDELT) dataset used in the, e.g., “Recurrent Event Network for Reasoning over Temporal Knowledge Graphs” paper, consisting of events collected from 1/1/2018 to 1/31/2018 (15 minutes time granularity).</p>
+<p>DBP15K</p>
+<p>The DBP15K dataset from the “Cross-lingual Entity Alignment via Joint Attribute-Preserving Embedding” paper, where Chinese, Japanese and French versions of DBpedia were linked to its English version.</p>
+<p>WILLOWObjectClass</p>
+<p>The WILLOW-ObjectClass dataset from the “Learning Graphs to Match” paper, containing 10 equal keypoints of at least 40 images in each category.</p>
+<p>PascalVOCKeypoints</p>
+<p>The Pascal VOC 2011 dataset with Berkely annotations of keypoints from the “Poselets: Body Part Detectors Trained Using 3D Human Pose Annotations” paper, containing 0 to 23 keypoints per example over 20 categories.</p>
+<p>PascalPF</p>
+<p>The Pascal-PF dataset from the “Proposal Flow” paper, containing 4 to 16 keypoints per example over 20 categories.</p>
+<p>SNAPDataset</p>
+<p>A variety of graph datasets collected from SNAP at Stanford University.</p>
+<p>SuiteSparseMatrixCollection</p>
+<p>A suite of sparse matrix benchmarks known as the Suite Sparse Matrix Collection collected from a wide range of applications.</p>
+<p>TrackMLParticleTrackingDataset</p>
+<p>The TrackML Particle Tracking Challenge dataset to reconstruct particle tracks from 3D points left in the silicon detectors.</p>
+<p>AMiner</p>
+<p>The heterogeneous AMiner dataset from the “metapath2vec: Scalable Representation Learning for Heterogeneous Networks” paper, consisting of nodes from type "paper", "author" and "venue".</p>
+<p>WordNet18</p>
+<p>The WordNet18 dataset from the “Translating Embeddings for Modeling Multi-Relational Data” paper, containing 40,943 entities, 18 relations and 151,442 fact triplets, e.g., furniture includes bed.</p>
+<p>WordNet18RR</p>
+<p>The WordNet18RR dataset from the “Convolutional 2D Knowledge Graph Embeddings” paper, containing 40,943 entities, 11 relations and 93,003 fact triplets.</p>
+<p>WikiCS</p>
+<p>The semi-supervised Wikipedia-based dataset from the “Wiki-CS: A Wikipedia-Based Benchmark for Graph Neural Networks” paper, containing 11,701 nodes, 216,123 edges, 10 classes and 20 different training splits.</p>
+<p>WebKB</p>
+<p>The WebKB datasets used in the “Geom-GCN: Geometric Graph Convolutional Networks” paper.</p>
+<p>WikipediaNetwork</p>
+<p>The Wikipedia networks used in the “Geom-GCN: Geometric Graph Convolutional Networks” paper.</p>
+<p>Actor</p>
+<p>The actor-only induced subgraph of the film-director-actor-writer network used in the “Geom-GCN: Geometric Graph Convolutional Networks” paper.</p>
+<p>JODIEDataset</p>
+<p>MixHopSyntheticDataset</p>
+<p>The MixHop synthetic dataset from the “MixHop: Higher-Order Graph Convolutional Architectures via Sparsified Neighborhood Mixing” paper, containing 10 graphs, each with varying degree of homophily (ranging from 0.0 to 0.9).</p>
+<h1 id="1-karateclub">1. KarateClub</h1>
+<p>数据挖掘、社会网络分析常用的一个数据集，美国空手道俱乐部，用于验证社区挖掘算法有效性的常用数据集之一。</p>
+<p>Zachary’s karate club（空手道俱乐部） network from the “An Information Flow Model for Conflict and Fission in Small Groups” paper, containing <strong>34 nodes</strong>, connected by <strong>154 (undirected and unweighted) edges</strong>.（无向图、无权重）</p>
+<h1 id="2-tudataset">2. TUDataset</h1>
+<p>TUDataset：包括58个基础的分类数据集集合，数据都为无向图，如“IMDB-BINARY”，“PROTEINS”等，来源于TU Dortmund University</p>
+<p>A variety of graph kernel benchmark datasets, .e.g. “IMDB-BINARY”, “REDDIT-BINARY” or “PROTEINS”, collected from the TU Dortmund University.包括58个基础的分类数据集集合，数据都为无向图</p>
+<h1 id="3-planetoid">3. Planetoid</h1>
+<p>Planetoid：引文网络数据集，包括“Cora”, “CiteSeer” and “PubMed”，数据都为无向图，来源于论文Revisiting Semi-Supervised Learning with Graph Embeddings，节点代表文档，边代表引用关系</p>
+<p>The citation network datasets “Cora”, “CiteSeer” and “PubMed” from the “Revisiting Semi-Supervised Learning with Graph Embeddings” paper.</p>
+<h1 id="4-corafull">4. CoraFull</h1>
+<p>完整的“Cora”引文网络数据集，<strong>数据为无向图</strong>，来源于论文Deep Gaussian Embedding of Graphs: Unsupervised Inductive Learning via Ranking，节点代表文档，边代表引用关系</p>
+<h1 id="5-coauthor">5. Coauthor</h1>
+<p>共同作者网络数据集，包括“CS”和“Physics”，数据都为无向图，来源于论文Pitfalls of Graph Neural Network Evaluation。节点代表作者，若是共同作者则被边相连。学习任务是将作者映射到各自的研究领域中</p>
+<h1 id="6-amazon">6. Amazon</h1>
+<p>亚马逊网络数据集，包括“Computers”和“Photo”，数据都为无向图，来源于论文Pitfalls of Graph Neural Network Evaluation。节点代表货物，边代表两种货物经常被同时购买。学习任务是将货物映射到各自的种类里</p>
+<h1 id="7-ppi">7. PPI</h1>
+<p>蛋白质-蛋白质反应网络，数据为无向图，来源于论文Predicting multicellular function through multilayer tissue networks</p>
+<h1 id="8-entities">8. Entities</h1>
+<p>关系实体网络，包括“AIFB”, “MUTAG”, “BGS” 和“AM”，数据都为无向图，来源于论文Modeling Relational Data with Graph Convolutional Networks</p>
+<h1 id="9-bitcoinotc">9. BitcoinOTC</h1>
+<p>数据为有向图，包括138个“who-trusts-whom”网络，来源于论文EvolveGCN: Evolving Graph Convolutional Networks for Dynamic Graphs</p>
+<h1 id="10-cora">10. Cora</h1>
+<h3 id="1001">10.0.1. 参考链接</h3>
+<ul>
+<li><a href="https://linqs.soe.ucsc.edu/data">数据集下载链接</a></li>
+</ul>
+<h3 id="1002">10.0.2. 数据集介绍</h3>
+<p>Cora数据集由许多机器学习领域的paper构成，这些paper被分为7个类别：</p>
+<ul>
+<li>Case_Based</li>
+<li>Genetic_Algorithms</li>
+<li>Neural_Networks</li>
+<li>Probabilistic_Methods</li>
+<li>Reinforcement_Learning</li>
+<li>Rule_Learning</li>
+<li>Theory</li>
+</ul>
+<p>在该数据集中，每一篇论文至少引用了该数据集里面另外一篇论文或者被另外一篇论文所引用，数据集总共有2708篇papers。</p>
+<p>在消除停词以及除去文档频率小于10的词汇，最终词汇表中有1433个词汇。</p>
+<p>数据集文件夹中包含两个文件：</p>
+<ol>
+<li>
+<p><code>.content</code>文件包含对paper的内容描述，格式为<br />
+   $$<br />
+   \text{<paper_id>  <word_attributes> <class_label>}<br />
+   $$<br />
+   其中</p>
+</li>
+<li>
+<p><code>&lt;paper_id&gt;</code>是paper的标识符，每一篇paper对应一个标识符。</p>
+</li>
+<li><code>&lt;word_attributes&gt;</code>是词汇特征，为0或1，表示对应词汇是否存在。</li>
+<li>
+<p><code>&lt;class_label&gt;</code>是该文档所述的类别。</p>
+</li>
+<li>
+<p><code>.cites</code>文件包含数据集的引用图(citation graph)，每一行格式如下<br />
+   $$<br />
+   \text{<ID of cited paper> <ID of citing paper>}<br />
+   $$<br />
+   其中</p>
+</li>
+<li>
+<p><code>&lt;ID of cited paper&gt;</code>是被引用的paper标识符。</p>
+</li>
+<li><code>&lt;ID of citing paper&gt;</code>是引用的paper标识符。</li>
+</ol>
+<p>引用的方向是从右向左的，比如有一行为<code>paper1 paper2</code>，那么对应的连接关系是<code>paper2-&gt;paper1</code>。</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

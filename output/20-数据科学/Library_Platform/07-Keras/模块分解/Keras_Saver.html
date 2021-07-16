@@ -1,0 +1,232 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Keras模型的保存与加载 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#20-数据科学">20-数据科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-07-Keras">07-Keras</a>&nbsp;»&nbsp;<a href="/Wiki/#-模块分解">模块分解</a>&nbsp;»&nbsp;Keras模型的保存与加载</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Keras模型的保存与加载</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 模型需要保存什么</a><ul>
+<li><a href="#11">1.1. 模型结构</a></li>
+<li><a href="#12">1.2. 模型参数</a></li>
+<li><a href="#13">1.3. 优化器参数</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 模型以什么格式保存</a><ul>
+<li><a href="#21-hdf5">2.1. HDF5 格式是什么</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 实践</a><ul>
+<li><a href="#31">3.1. 模型保存</a></li>
+<li><a href="#32">3.2. 模型加载</a><ul>
+<li><a href="#321">3.2.1. 载入模型结构与权重</a></li>
+<li><a href="#322">3.2.2. 加载权重</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4-io">4. 数据IO</a></li>
+<li><a href="#5">5. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1">1. 模型需要保存什么</h1>
+<ol>
+<li>模型结构</li>
+<li>模型参数</li>
+<li>优化器参数</li>
+</ol>
+<h2 id="11">1.1. 模型结构</h2>
+<ol>
+<li>保存json文件</li>
+</ol>
+<div class="hlcode"><pre><span class="c"># serialize model to JSON</span>
+<span class="n">model_json</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_json</span><span class="p">()</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s">&quot;model.json&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">json_file</span><span class="p">:</span>
+    <span class="n">json_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">model_json</span><span class="p">)</span>
+</pre></div>
+
+
+<ol>
+<li>Yaml文件</li>
+</ol>
+<div class="hlcode"><pre><span class="c"># save as YAML</span>
+<span class="n">yaml_string</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">to_yaml</span><span class="p">()</span>
+</pre></div>
+
+
+<h2 id="12">1.2. 模型参数</h2>
+<ol>
+<li>HDF5文件</li>
+</ol>
+<div class="hlcode"><pre><span class="c"># serialize weights to HDF5</span>
+<span class="n">model</span><span class="o">.</span><span class="n">save_weights</span><span class="p">(</span><span class="s">&quot;model.h5&quot;</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="13">1.3. 优化器参数</h2>
+<h1 id="2">2. 模型以什么格式保存</h1>
+<h2 id="21-hdf5">2.1. HDF5 格式是什么</h2>
+<p>层级数据格式（Hierarchical Data Format：HDF）是设计用来<strong>存储</strong>和<strong>组织</strong>大量数据的一组<strong>文件格式</strong>。</p>
+<p>它最初开发于美国国家超级计算应用中心，现在由非营利社团HDF Group支持<sup id="fnref:HDF5"><a class="footnote-ref" href="#fn:HDF5" rel="footnote">1</a></sup></p>
+<p>当前版本是HDF5。</p>
+<p>HDF5只包含两种主要的对象类型：</p>
+<ol>
+<li>数据集(Dataset)，它是同质类型的多维数组；</li>
+<li>群组(Group)，它是持有数据集和其他群组的容器结构。</li>
+</ol>
+<p>由于它使用了B树来索引表格对象，HDF5有效工作于时间序列数据，比如股价序列，网络监控数据，和3D气象数据。大批量的数据直接进入数组（表格对象），它可以比SQL数据库的行存储更快访问，而非数组数据可获得B树访问。HDF5数据存储机制比SQL星模式（star schema）更简单和快速。</p>
+<p>对HDF5的批评来源于它的单体设计和冗长规定。</p>
+<p>HDF5不强制使用UTF-8，所以客户应用可以在多数位置上预期ASCII码。<br />
+在文件中的数据集数据不能释放，除非使用外部工具（h5repack）生成文件复本[6]。</p>
+<p>weights的tensor保存在Dataset的value中，而每一集都会有attrs保存各网络层的属性：</p>
+<h1 id="3">3. 实践</h1>
+<h2 id="31">3.1. 模型保存</h2>
+<div class="hlcode"><pre><span class="n">file_path</span><span class="o">=</span><span class="s">r&quot;./model.h5&quot;</span>
+<span class="c"># case1 </span>
+<span class="n">model</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="c">#</span>
+<span class="c"># case2 </span>
+<span class="n">model</span><span class="o">.</span><span class="n">save_model</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> 
+
+<span class="c"># case3</span>
+<span class="n">checkpoint_path</span> <span class="o">=</span> <span class="s">&quot;training_1/cp.ckpt&quot;</span>
+<span class="n">checkpoint_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">checkpoint_path</span><span class="p">)</span>
+
+<span class="c"># 创建一个保存模型权重的回调</span>
+<span class="n">cp_callback</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">callbacks</span><span class="o">.</span><span class="n">ModelCheckpoint</span><span class="p">(</span><span class="n">filepath</span><span class="o">=</span><span class="n">checkpoint_path</span><span class="p">,</span>
+                                                 <span class="n">save_weights_only</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+                                                 <span class="n">verbose</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c"># 使用新的回调训练模型</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">train_images</span><span class="p">,</span> 
+          <span class="n">train_labels</span><span class="p">,</span>  
+          <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+          <span class="n">validation_data</span><span class="o">=</span><span class="p">(</span><span class="n">test_images</span><span class="p">,</span><span class="n">test_labels</span><span class="p">),</span>
+          <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">cp_callback</span><span class="p">])</span>  <span class="c"># 通过回调训练</span>
+
+<span class="c"># 这可能会生成与保存优化程序状态相关的警告。</span>
+<span class="c"># 这些警告（以及整个笔记本中的类似警告）</span>
+<span class="c"># 是防止过时使用，可以忽略。</span>
+</pre></div>
+
+
+<h2 id="32">3.2. 模型加载</h2>
+<h3 id="321">3.2.1. 载入模型结构与权重</h3>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">keras.models</span> <span class="kn">import</span> <span class="n">load_model</span>
+
+<span class="c"># 载入模型</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">load_model</span><span class="p">(</span><span class="s">&#39;model.h5&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="322">3.2.2. 加载权重</h3>
+<p>单独加载权重需要先构建网络</p>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">network.resnet50</span> <span class="kn">import</span> <span class="n">ResNet50</span>
+<span class="c">#修改过，不加载权重（默认官方加载亦可）</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">ResNet50</span><span class="p">()</span> 
+
+<span class="c"># 参数默认 by_name = Fasle， 否则只读取匹配的权重</span>
+<span class="c"># 这里h5的层和权重文件中层名是对应的（除input层）</span>
+<span class="n">model</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="s">r&#39;\models\resnet50_weights_tf_dim_ordering_tf_kernels_v2.h5&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<h1 id="4-io">4. 数据IO</h1>
+<h1 id="5">5. 参考资料</h1>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:HDF5">
+<p><a href="https://zh.wikipedia.org/wiki/HDF">Wiki百科:HDF</a>&#160;<a class="footnote-backref" href="#fnref:HDF5" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

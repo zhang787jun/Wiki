@@ -1,0 +1,197 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>02_gstreamer-vaapi--支持VA-API的GStreamer - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#30-产品与应用">30-产品与应用</a>&nbsp;»&nbsp;<a href="/Wiki/#-33-Computer_Vision">33-Computer_Vision</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-Gstreamer">Gstreamer</a>&nbsp;»&nbsp;02_gstreamer-vaapi--支持VA-API的GStreamer</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">02_gstreamer-vaapi--支持VA-API的GStreamer</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-gstreamer-vaapi">1. 什么是 gstreamer-vaapi</a></li>
+<li><a href="#2-features">2. Features</a></li>
+<li><a href="#3-requirements">3. Requirements</a><ul>
+<li><a href="#31-hardware-requirements">3.1. Hardware requirements</a></li>
+</ul>
+</li>
+<li><a href="#4-usage">4. Usage</a></li>
+</ul>
+</div>
+<h1 id="1-gstreamer-vaapi">1. 什么是 gstreamer-vaapi</h1>
+<p>VA-API support to GStreamer<br />
+* <code>vaapi&lt;_CODEC_&gt;dec</code> is used to decode JPEG, MPEG-2, MPEG-4:2, H.264, AVC, H.264 MVC, VP8, VP9, VC-1, WMV3, HEVC videos to VA surfaces,<br />
+depending on the actual value of &lt;<em>CODEC</em>&gt; and the underlying hardware capabilities.  This plugin is also able to implicitly download the decoded surface to raw YUV buffers.</p>
+<ul>
+<li>
+<p><code>vaapi&lt;_CODEC_&gt;enc</code> is used to encode into MPEG-2, H.264 AVC, H.264, MVC, JPEG, VP8, VP9, HEVC videos, depending on the actual value of &lt;<em>CODEC</em>&gt; (mpeg2, h264, etc.) and the hardware capabilities. Bydefault, raw format bitstreams are generated, so the result may be piped to a muxer, e.g. qtmux for MP4 containers.</p>
+</li>
+<li>
+<p><code>vaapipostproc</code> is used to filter VA surfaces, for e.g. scaling, deinterlacing (bob, motion-adaptive, motion-compensated), noise reduction or sharpening. This plugin is also used to upload raw YUV pixels into VA surfaces.</p>
+</li>
+<li>
+<p><code>vaapisink</code> is used to render VA surfaces to an X11 or Wayland display. This plugin also features a "headless" mode (DRM) more suited to remote transcode scenarios, with faster throughput.</p>
+</li>
+<li>
+<p><code>vaapioverlay</code> is a accelerated compositor that blends or composite different video streams.</p>
+</li>
+</ul>
+<h1 id="2-features">2. Features</h1>
+<ul>
+<li>VA-API support from 0.39</li>
+<li>JPEG, MPEG-2, MPEG-4, H.264 AVC, H.264 MVC, VP8, VC-1, HEVC and VP9 ad-hoc <strong>decoders</strong></li>
+<li>MPEG-2, H.264 AVC,H.264 MVC, JPEG, VP8, VP9 and HEVC ad-hoc <strong>encoders</strong></li>
+<li>OpenGL rendering through VA/GLX or GLX texture-from-pixmap + FBO</li>
+<li>Support for EGL backend</li>
+<li>Support for the Wayland display server</li>
+<li>Support for headless decode pipelines with VA/DRM</li>
+<li>Support for major HW video decoding solutions on Linux (AMD,Intel, NVIDIA)</li>
+<li>Support for HW video encoding on Intel HD Graphics hardware</li>
+<li>Support for VA Video Processing APIs (VA/VPP)<ul>
+<li>Scaling and color conversion</li>
+<li>Image enhancement filters: Sharpening, Noise Reductio, Color Balance, Skin-Tone-Enhancement</li>
+<li>Advanced deinterlacing: Motion-Adaptive, Motion-Compensated</li>
+</ul>
+</li>
+</ul>
+<h1 id="3-requirements">3. Requirements</h1>
+<h2 id="31-hardware-requirements">3.1. Hardware requirements</h2>
+<ul>
+<li>Hardware supported by i965 driver or iHD, such as<ul>
+<li>Intel Ironlake, Sandybridge, Ivybridge, Haswell, Broadwell,<br />
+  Skylake, etc. (HD Graphics)</li>
+<li>Intel BayTrail, Braswell</li>
+<li>Intel Poulsbo (US15W)</li>
+<li>Intel Medfield or Cedar Trail</li>
+</ul>
+</li>
+<li>Hardware supported by AMD Radeonsi driver, such as the list below<ul>
+<li>AMD Carrizo, Bristol Ridge, Raven Ridge, Picasso, Renoir</li>
+<li>AMD Tonga, Fiji, Polaris XX, Vega XX, Navi 1X</li>
+</ul>
+</li>
+<li>Other hardware supported by Mesa VA gallium state-tracker</li>
+</ul>
+<h1 id="4-usage">4. Usage</h1>
+<p>VA elements are automatically plugged into GStreamer pipelines. So using playbin should work as is.</p>
+<p>However, here are a few alternate pipelines that could be manually constructed.</p>
+<ul>
+<li>Play an H.264 video with an MP4 container in fullscreen mode</li>
+</ul>
+<div class="hlcode"><pre>  <span class="err">$</span> <span class="n">gst</span><span class="o">-</span><span class="n">launch</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">-</span><span class="n">v</span> <span class="n">filesrc</span> <span class="n">location</span><span class="o">=/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">video</span><span class="p">.</span><span class="n">mp4</span> <span class="o">!</span> \
+      <span class="n">qtdemux</span> <span class="o">!</span> <span class="n">vaapidecodebin</span> <span class="o">!</span> <span class="n">vaapisink</span> <span class="n">fullscreen</span><span class="o">=</span><span class="nb">true</span>
+</pre></div>
+
+
+<ul>
+<li>Play a raw MPEG-2 interlaced stream</li>
+</ul>
+<div class="hlcode"><pre>  <span class="err">$</span> <span class="n">gst</span><span class="o">-</span><span class="n">launch</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">-</span><span class="n">v</span> <span class="n">filesrc</span> <span class="n">location</span><span class="o">=/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">mpeg2</span><span class="p">.</span><span class="n">bits</span> <span class="o">!</span> \
+      <span class="n">mpegvideoparse</span> <span class="o">!</span> <span class="n">vaapimpeg2dec</span> <span class="o">!</span> <span class="n">vaapipostproc</span> <span class="o">!</span> <span class="n">vaapisink</span>
+</pre></div>
+
+
+<ul>
+<li>Convert from one pixel format to another, while also downscaling</li>
+</ul>
+<div class="hlcode"><pre><span class="err">$</span> <span class="n">gst</span><span class="o">-</span><span class="n">launch</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">-</span><span class="n">v</span> <span class="n">filesrc</span> <span class="n">location</span><span class="o">=/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">raw_video</span><span class="p">.</span><span class="n">yuv</span> <span class="o">!</span> \
+    <span class="n">videoparse</span> <span class="n">format</span><span class="o">=</span><span class="n">yuy2</span> <span class="n">width</span><span class="o">=</span><span class="mi">1280</span> <span class="n">height</span><span class="o">=</span><span class="mi">720</span> <span class="o">!</span> \
+    <span class="n">vaapipostproc</span> <span class="n">format</span><span class="o">=</span><span class="n">nv12</span> <span class="n">height</span><span class="o">=</span><span class="mi">480</span> <span class="o">!</span> <span class="n">vaapisink</span>
+</pre></div>
+
+
+<ul>
+<li>Encode a 1080p stream in raw I420 format into H.264</li>
+</ul>
+<div class="hlcode"><pre><span class="err">$</span> <span class="n">gst</span><span class="o">-</span><span class="n">launch</span><span class="o">-</span><span class="mf">1.0</span> <span class="o">-</span><span class="n">v</span> <span class="n">filesrc</span> <span class="n">location</span><span class="o">=/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">raw_video</span><span class="p">.</span><span class="n">yuv</span> <span class="o">!</span> \
+    <span class="n">videoparse</span> <span class="n">format</span><span class="o">=</span><span class="n">i420</span> <span class="n">width</span><span class="o">=</span><span class="mi">1920</span> <span class="n">height</span><span class="o">=</span><span class="mi">1080</span> <span class="n">framerate</span><span class="o">=</span><span class="mi">30</span><span class="o">/</span><span class="mi">1</span> <span class="o">!</span> \
+    <span class="n">vaapih264enc</span> <span class="n">rate</span><span class="o">-</span><span class="n">control</span><span class="o">=</span><span class="n">cbr</span> <span class="n">tune</span><span class="o">=</span><span class="n">high</span><span class="o">-</span><span class="n">compression</span> <span class="o">!</span> \
+    <span class="n">qtmux</span> <span class="o">!</span> <span class="n">filesink</span> <span class="n">location</span><span class="o">=/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">encoded_video</span><span class="p">.</span><span class="n">mp4</span>
+</pre></div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

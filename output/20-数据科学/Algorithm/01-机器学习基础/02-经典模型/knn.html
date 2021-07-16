@@ -1,0 +1,220 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>knn - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#20-数据科学">20-数据科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-Algorithm">Algorithm</a>&nbsp;»&nbsp;<a href="/Wiki/#-01-机器学习基础">01-机器学习基础</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-经典模型">02-经典模型</a>&nbsp;»&nbsp;knn</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">knn</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 概述</a><ul>
+<li><a href="#11">1.1. 适用范围</a></li>
+<li><a href="#-">- 类域的交叉或重叠较多的样本</a></li>
+</ul>
+</li>
+<li><a href="#2-k">2. 如果寻找最近的k个点？</a><ul>
+<li><a href="#21-">2.1. 怎么评价最近--距离描述</a></li>
+<li><a href="#22-kd">2.2. 怎么找--kd树</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 实践</a><ul>
+<li><a href="#31">3.1. 调参策略</a><ul>
+<li><a href="#k">k 值</a></li>
+<li><a href="#_1">距离</a></li>
+<li><a href="#_2">分类决策规则</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4">4. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1">1. 概述</h1>
+<p>K最近邻(k-Nearest Neighbor，KNN)分类算法，是一个理论上比较成熟的方法，也是最简单的机器学习算法之一。</p>
+<p>K近邻法（k-NN）是一种分类与回归的算法。<br />
+<strong>优点</strong>：简单，直观，训练时间开销为0，待收到测试样本后再进行处理 </p>
+<p><strong>思路</strong>： 给定一个训练集，对新输入的实例，在训练数据集中找到与该实例最邻近的K个实例。采用<code>少数服从多数</code>的方法，寻找实例所在的类。</p>
+<h2 id="11">1.1. 适用范围</h2>
+<h2 id="-">- 类域的交叉或重叠较多的样本</h2>
+<p>KNN方法虽然从原理上也依赖于极限定理，但<strong>在类别决策时，只与极少量的相邻样本有关</strong>。由于KNN方法主要靠周围有限的邻近的样本，而不是靠判别类域的方法来确定所属类别的，因此对于类域的交叉或重叠较多的待分样本集来说，KNN方法较其他方法更为适合。</p>
+<p>KNN算法不仅可以用于分类，还可以用于回归。通过找出一个样本的k个最近邻居，将这些邻居的属性的平均值赋给该样本，就可以得到该样本的属性。更有用的方法是将不同距离的邻居对该样本产生的影响给予不同的权值(weight)，如权值与距离成反比。　该算法在分类时有个主要的不足是，当样本不平衡时，如一个类的样本容量很大，而其他类样本容量很小时，有可能导致当输入一个新样本时，该样本的K个邻居中大容量类的样本占多数。 该算法只计算“最近的”邻居样本，某一类的样本数量很大，那么或者这类样本并不接近目标样本，或者这类样本很靠近目标样本。无论怎样，数量并不能影响运行结果。可以采用权值的方法（和该样本距离小的邻居权值大）来改进。<br />
+该方法的另一个不足之处是计算量较大，因为对每一个待分类的文本都要计算它到全体已知样本的距离，才能求得它的K个最近邻点。目前常用的解决方法是事先对已知样本点进行剪辑，事先去除对分类作用不大的样本。该算法比较适用于样本容量比较大的类域的自动分类，而那些样本容量较小的类域采用这种算法比较容易产生误分。<br />
+实现 K 近邻算法时，主要考虑的问题是如何对训练数据进行快速 K 近邻搜索，这在特征空间维数大及训练数据容量大时非常必要。</p>
+<p>K近邻算法：（没有显式的学习过程）<br />
+<strong>input</strong> ：训练集 $T={(xi,yi) |i=1..n}$，预测集 实例x。</p>
+<p><strong>output</strong> ：实例x的分类y</p>
+<p>步骤：</p>
+<ol>
+<li>由距离度量找到T中与x最近的k个点，（k的个数可以由交叉验证确定）</li>
+<li>多数表决法，k个点中那个类别的点多，x就被分为哪一类</li>
+</ol>
+<p>注意：不同距离度量（具体距离算法在聚类中有详细介绍）所确定的最近邻点会有所不同</p>
+<h1 id="2-k">2. 如果寻找最近的k个点？</h1>
+<h2 id="21-">2.1. 怎么评价最近--距离描述</h2>
+<p>Metrics intended for real-valued vector spaces:</p>
+<p>identifier</p>
+<p>class name</p>
+<p>args</p>
+<p>distance function</p>
+<p>“euclidean”</p>
+<p>EuclideanDistance</p>
+<p>sqrt(sum((x - y)^2))</p>
+<p>“manhattan”</p>
+<p>ManhattanDistance</p>
+<p>sum(|x - y|)</p>
+<p>“chebyshev”</p>
+<p>ChebyshevDistance</p>
+<p>max(|x - y|)</p>
+<p>“minkowski”</p>
+<p>MinkowskiDistance</p>
+<p>p</p>
+<p>sum(|x - y|^p)^(1/p)</p>
+<p>“wminkowski”</p>
+<p>WMinkowskiDistance</p>
+<p>p, w</p>
+<p>sum(|w * (x - y)|^p)^(1/p)</p>
+<p>“seuclidean”</p>
+<p>SEuclideanDistance</p>
+<p>V</p>
+<p>sqrt(sum((x - y)^2 / V))</p>
+<p>“mahalanobis”</p>
+<p>MahalanobisDistance</p>
+<p>V or VI</p>
+<p>sqrt((x - y)' V^-1 (x - y))</p>
+<h2 id="22-kd">2.2. 怎么找--kd树</h2>
+<p>（k近邻实现的线性扫描）<br />
+构造根节点，使根节点对应于k维空间中所包含的实例点的超矩形区域。通过递归的方法，不断对k维空间进行切分成子节点。</p>
+<p>构造平衡的kd树：</p>
+<p>依次选择坐标进行切分，选择训练的实例点，在选定的坐标轴上的中位数为切分点，向坐标轴做垂线。</p>
+<p>搜索kd树<br />
+优点：省去对大部分数据的搜索，从而减少搜索的计算量</p>
+<p>kd树的最近邻搜索算法：</p>
+<p>input：已构造的kd树，实例目标点x</p>
+<p>output：实例点x的最近邻</p>
+<p>步骤：</p>
+<p>（1）在kd树中找包含目标点x的叶节点，从根节点出发，地递归的向下访问kd树，若x当前维的坐标小于切分点的坐标，则移动到左侧子节点，反之，移动到右侧子节点。直到子节点为叶节点为止</p>
+<p>（2）递归的向上回退</p>
+<h1 id="3">3. 实践</h1>
+<div class="hlcode"><pre><span class="n">neighbors</span><span class="o">.</span><span class="n">KNeighborsClassifier</span><span class="p">(</span><span class="n">n_neighbors</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="err">’</span><span class="n">uniform</span><span class="err">’</span><span class="p">,</span> <span class="n">algorithm</span><span class="o">=</span><span class="err">’</span><span class="n">auto</span><span class="err">’</span><span class="p">,</span> <span class="n">leaf_size</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">p</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="err">’</span><span class="n">minkowski</span><span class="err">’</span><span class="p">,</span> <span class="n">metric_params</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">n</span><span class="o">-</span><span class="n">jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>参数说明</strong><br />
+- <code>n_neighbors</code>[defual=5]:  int ,我们选取问题点最近的多少个最近邻。<br />
+- <code>weights</code>[defual=’uniform’]<br />
+- <code>algorithm</code>=’auto’, <br />
+  是分类时采取的算法，有 '<code>brute</code>'、<code>kd_tree</code>和 <code>ball_tree</code>,默认的 'auto' 选项会在学习时自动选择最合适的算法，所以一般来讲选择 auto 就可以。<br />
+- <code>leaf_size</code>=30, <br />
+- <code>p</code>=2, <br />
+- <code>metric</code>=’minkowski’, <br />
+    默认的 metric='minkowski'（默认）和 p=2（默认）就可以满足大部分需求。</p>
+<ul>
+<li><code>metric_params</code>=None, </li>
+<li><code>n-jobs</code>[defual=1]:<br />
+  计算的进程数量 ，默认1，-1为 cores of CPU</li>
+</ul>
+<h2 id="31">3.1. 调参策略</h2>
+<p>K 近邻算法使用的模型实际上对应于对特征空间的划分。该算法的三个基本要素：<br />
+1. K 值的选择，<br />
+2. 距离度量<br />
+3. 分类决策规则</p>
+<h3 id="k">k 值</h3>
+<p>K 值的选择会对算法的结果产生重大影响。K值较小意味着只有与输入实例较近的训练实例才会对预测结果起作用，但容易发生过拟合；如果 K 值较大，优点是可以减少学习的估计误差，但缺点是学习的近似误差增大，这时与输入实例较远的训练实例也会对预测起作用，使预测发生错误。</p>
+<p>在实际应用中，K 值一般<br />
+1. 选择一个较小的数值，<br />
+2. 通常采用交叉验证的方法来选择最优的 K 值。</p>
+<p>随着训练实例数目趋向于无穷和 K=1 时，误差率不会超过贝叶斯误差率的2倍，如果K也趋向于无穷，则误差率趋向于贝叶斯误差率。</p>
+<h3 id="_1">距离</h3>
+<p>距离度量一般采用 Lp 距离，当p=2时，即为欧氏距离，在度量之前，应该将每个属性的值规范化，这样有助于防止具有较大初始值域的属性比具有较小初始值域的属性的权重过大。</p>
+<h3 id="_2">分类决策规则</h3>
+<p>该算法中的分类决策规则往往是<strong>多数表决</strong>，即由输入实例的 K 个最临近的训练实例中的多数类决定输入实例的类别</p>
+<h1 id="4">4. 参考资料</h1>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

@@ -1,0 +1,753 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>图像增广Image Augmentation - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#20-数据科学">20-数据科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-Tools">Tools</a>&nbsp;»&nbsp;<a href="/Wiki/#-1-数据">1-数据</a>&nbsp;»&nbsp;<a href="/Wiki/#-数据增广">数据增广</a>&nbsp;»&nbsp;图像增广Image Augmentation</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">图像增广Image Augmentation</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#_1">一、数据增广</a></li>
+<li><a href="#_2">二、常用数据增广方法</a></li>
+<li><a href="#_3">三、图像变换类</a><ul>
+<li><a href="#31-autoaugment">3.1 AutoAugment</a></li>
+<li><a href="#32-randaugment">3.2 RandAugment</a></li>
+</ul>
+</li>
+<li><a href="#_4">四、图像裁剪类</a><ul>
+<li><a href="#41-cutout">4.1 Cutout</a></li>
+<li><a href="#42-randomerasing">4.2 RandomErasing</a></li>
+<li><a href="#43-hideandseek">4.3 HideAndSeek</a></li>
+<li><a href="#44-gridmask">4.4 GridMask</a></li>
+</ul>
+</li>
+<li><a href="#_5">五、图像混叠</a><ul>
+<li><a href="#51-mixup">5.1 Mixup</a></li>
+<li><a href="#52-cutmix">5.2 Cutmix</a></li>
+</ul>
+</li>
+<li><a href="#_6">六、实验</a></li>
+<li><a href="#_7">七、数据增广分类实战</a><ul>
+<li><a href="#71">7.1 参数配置</a><ul>
+<li><a href="#randaugment">RandAugment</a></li>
+<li><a href="#cutout">Cutout</a></li>
+<li><a href="#mixup">Mixup</a></li>
+</ul>
+</li>
+<li><a href="#72">7.2 启动命令</a></li>
+<li><a href="#73">7.3 注意事项</a></li>
+</ul>
+</li>
+<li><a href="#_8">参考文献</a></li>
+</ul>
+</div>
+<h1 id="_1">一、数据增广</h1>
+<p>在图像分类任务中，图像数据的增广是一种常用的正则化方法，常用于数据量不足或者模型参数较多的场景。在本章节中，我们将对除 ImageNet 分类任务标准数据增广外的8种数据增广方式进行简单的介绍和对比，用户也可以将这些增广方法应用到自己的任务中，以获得模型精度的提升。这8种数据增广方式在ImageNet上的精度指标如下所示。</p>
+<p><img alt="" src="../../../images/image_aug/main_image_aug.png" /></p>
+<h1 id="_2">二、常用数据增广方法</h1>
+<p>如果没有特殊说明，本章节中所有示例为 ImageNet 分类，并且假设最终输入网络的数据维度为：<code>[batch-size, 3, 224, 224]</code></p>
+<p>其中 ImageNet 分类训练阶段的标准数据增广方式分为以下几个步骤：</p>
+<ol>
+<li>图像解码：简写为 <code>ImageDecode</code></li>
+<li>随机裁剪到长宽均为 224 的图像：简写为 <code>RandCrop</code></li>
+<li>水平方向随机翻转：简写为 <code>RandFlip</code></li>
+<li>图像数据的归一化：简写为 <code>Normalize</code></li>
+<li>图像数据的重排，<code>[224, 224, 3]</code> 变为 <code>[3, 224, 224]</code>：简写为 <code>Transpose</code></li>
+<li>多幅图像数据组成 batch 数据，如 <code>batch-size</code> 个 <code>[3, 224, 224]</code> 的图像数据拼组成 <code>[batch-size, 3, 224, 224]</code>：简写为 <code>Batch</code></li>
+</ol>
+<p>相比于上述标准的图像增广方法，研究者也提出了很多改进的图像增广策略，这些策略均是在标准增广方法的不同阶段插入一定的操作，基于这些策略操作所处的不同阶段，我们将其分为了三类：</p>
+<ol>
+<li>对 <code>RandCrop</code> 后的 224 的图像进行一些变换: AutoAugment，RandAugment</li>
+<li>对<code>Transpose</code> 后的 224 的图像进行一些裁剪: CutOut，RandErasing，HideAndSeek，GridMask</li>
+<li>对 <code>Batch</code> 后的数据进行混合: Mixup，Cutmix</li>
+</ol>
+<p>增广后的可视化效果如下所示。</p>
+<p><img alt="" src="../../../images/image_aug/image_aug_samples_s.jpg" /></p>
+<p>具体如下表所示：</p>
+<table>
+<thead>
+<tr>
+<th>变换方法</th>
+<th>输入</th>
+<th>输出</th>
+<th>Auto-<br>Augment[1]</th>
+<th>Rand-<br>Augment[2]</th>
+<th>CutOut[3]</th>
+<th>Rand<br>Erasing[4]</th>
+<th>HideAnd-<br>Seek[5]</th>
+<th>GridMask[6]</th>
+<th>Mixup[7]</th>
+<th>Cutmix[8]</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Image<br>Decode</td>
+<td>Binary</td>
+<td>(224, 224, 3)<br>uint8</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+<tr>
+<td>RandCrop</td>
+<td>(:, :, 3)<br>uint8</td>
+<td>(224, 224, 3)<br>uint8</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+<tr>
+<td><strong>Process</strong></td>
+<td>(224, 224, 3)<br>uint8</td>
+<td>(224, 224, 3)<br>uint8</td>
+<td>Y</td>
+<td>Y</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>RandFlip</td>
+<td>(224, 224, 3)<br>uint8</td>
+<td>(224, 224, 3)<br>float32</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+<tr>
+<td>Normalize</td>
+<td>(224, 224, 3)<br>uint8</td>
+<td>(3, 224, 224)<br>float32</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+<tr>
+<td>Transpose</td>
+<td>(224, 224, 3)<br>float32</td>
+<td>(3, 224, 224)<br>float32</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+<tr>
+<td><strong>Process</strong></td>
+<td>(3, 224, 224)<br>float32</td>
+<td>(3, 224, 224)<br>float32</td>
+<td>-</td>
+<td>-</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>-</td>
+<td>-</td>
+</tr>
+<tr>
+<td>Batch</td>
+<td>(3, 224, 224)<br>float32</td>
+<td>(N, 3, 224, 224)<br>float32</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+<tr>
+<td><strong>Process</strong></td>
+<td>(N, 3, 224, 224)<br>float32</td>
+<td>(N, 3, 224, 224)<br>float32</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>-</td>
+<td>Y</td>
+<td>Y</td>
+</tr>
+</tbody>
+</table>
+<p>PaddleClas中集成了上述所有的数据增广策略，每种数据增广策略的参考论文与参考开源代码均在下面的介绍中列出。下文将介绍这些策略的原理与使用方法，并以下图为例，对变换后的效果进行可视化。为了说明问题，本章节中将 <code>RandCrop</code> 替换为 <code>Resize</code>。</p>
+<p><img alt="" src="../../../images/image_aug/test_baseline.jpeg" /></p>
+<h1 id="_3">三、图像变换类</h1>
+<p>图像变换类指的是对 <code>RandCrop</code> 后的 224 的图像进行一些变换，主要包括</p>
+<ul>
+<li>AutoAugment</li>
+<li>RandAugment</li>
+</ul>
+<h2 id="31-autoaugment">3.1 AutoAugment</h2>
+<p>论文地址：<a href="https://arxiv.org/abs/1805.09501v1">https://arxiv.org/abs/1805.09501v1</a></p>
+<p>开源代码github地址：<a href="https://github.com/DeepVoltaire/AutoAugment">https://github.com/DeepVoltaire/AutoAugment</a></p>
+<p>不同于常规的人工设计图像增广方式，AutoAugment 是在一系列图像增广子策略的搜索空间中通过搜索算法找到的适合特定数据集的图像增广方案。针对 ImageNet 数据集，最终搜索出来的数据增广方案包含 25 个子策略组合，每个子策略中都包含两种变换，针对每幅图像都随机的挑选一个子策略组合，然后以一定的概率来决定是否执行子策略中的每种变换。</p>
+<p>PaddleClas中<code>AutoAugment</code>的使用方法如下所示。</p>
+<div class="hlcode"><pre><span class="n">size</span> <span class="o">=</span> <span class="mi">224</span>
+
+<span class="n">decode_op</span> <span class="o">=</span> <span class="n">DecodeImage</span><span class="p">()</span>
+<span class="n">resize_op</span> <span class="o">=</span> <span class="n">ResizeImage</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+<span class="n">autoaugment_op</span> <span class="o">=</span> <span class="n">ImageNetPolicy</span><span class="p">()</span>
+
+<span class="n">ops</span> <span class="o">=</span> <span class="p">[</span><span class="n">decode_op</span><span class="p">,</span> <span class="n">resize_op</span><span class="p">,</span> <span class="n">autoaugment_op</span><span class="p">]</span>
+
+<span class="n">imgs_dir</span> <span class="o">=</span> <span class="err">图像路径</span>
+<span class="n">fnames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">imgs_dir</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fnames</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">imgs_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ops</span><span class="p">)</span>
+</pre></div>
+
+
+<p>结果如下图所示。</p>
+<p><img alt="" src="../../../images/image_aug/test_autoaugment.jpeg" /></p>
+<h2 id="32-randaugment">3.2 RandAugment</h2>
+<p>论文地址：<a href="https://arxiv.org/pdf/1909.13719.pdf">https://arxiv.org/pdf/1909.13719.pdf</a></p>
+<p>开源代码github地址：<a href="https://github.com/heartInsert/randaugment">https://github.com/heartInsert/randaugment</a></p>
+<p><code>AutoAugment</code> 的搜索方法比较暴力，直接在数据集上搜索针对该数据集的最优策略，其计算量很大。在 <code>RandAugment</code> 文章中作者发现，一方面，针对越大的模型，越大的数据集，使用 <code>AutoAugment</code> 方式搜索到的增广方式产生的收益也就越小；另一方面，这种搜索出的最优策略是针对该数据集的，其迁移能力较差，并不太适合迁移到其他数据集上。</p>
+<p>在 <code>RandAugment</code> 中，作者提出了一种随机增广的方式，不再像 <code>AutoAugment</code> 中那样使用特定的概率确定是否使用某种子策略，而是所有的子策略都会以同样的概率被选择到，论文中的实验也表明这种数据增广方式即使在大模型的训练中也具有很好的效果。</p>
+<p>PaddleClas中<code>RandAugment</code>的使用方法如下所示。</p>
+<div class="hlcode"><pre><span class="n">size</span> <span class="o">=</span> <span class="mi">224</span>
+
+<span class="n">decode_op</span> <span class="o">=</span> <span class="n">DecodeImage</span><span class="p">()</span>
+<span class="n">resize_op</span> <span class="o">=</span> <span class="n">ResizeImage</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+<span class="n">randaugment_op</span> <span class="o">=</span> <span class="n">RandAugment</span><span class="p">()</span>
+
+<span class="n">ops</span> <span class="o">=</span> <span class="p">[</span><span class="n">decode_op</span><span class="p">,</span> <span class="n">resize_op</span><span class="p">,</span> <span class="n">randaugment_op</span><span class="p">]</span>
+
+<span class="n">imgs_dir</span> <span class="o">=</span> <span class="err">图像路径</span>
+<span class="n">fnames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">imgs_dir</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fnames</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">imgs_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ops</span><span class="p">)</span>
+</pre></div>
+
+
+<p>结果如下图所示。</p>
+<p><img alt="" src="../../../images/image_aug/test_randaugment.jpeg" /></p>
+<h1 id="_4">四、图像裁剪类</h1>
+<p>图像裁剪类主要是对<code>Transpose</code> 后的 224 的图像进行一些裁剪，并将裁剪区域的像素值置为特定的常数（默认为0），主要包括：</p>
+<ul>
+<li>CutOut</li>
+<li>RandErasing</li>
+<li>HideAndSeek</li>
+<li>GridMask</li>
+</ul>
+<p>图像裁剪的这些增广并非一定要放在归一化之后，也有不少实现是放在归一化之前的，也就是直接对 uint8 的图像进行操作，两种方式的差别是：如果直接对 uint8 的图像进行操作，那么再经过归一化之后被裁剪的区域将不再是纯黑或纯白（减均值除方差之后像素值不为0）。而对归一后之后的数据进行操作，裁剪的区域会是纯黑或纯白。</p>
+<p>上述的裁剪变换思路是相同的，都是为了解决训练出的模型在有遮挡数据上泛化能力较差的问题，不同的是他们的裁剪方式、区域不太一样。</p>
+<h2 id="41-cutout">4.1 Cutout</h2>
+<p>论文地址：<a href="https://arxiv.org/abs/1708.04552">https://arxiv.org/abs/1708.04552</a></p>
+<p>开源代码github地址：<a href="https://github.com/uoguelph-mlrg/Cutout">https://github.com/uoguelph-mlrg/Cutout</a></p>
+<p>Cutout 可以理解为 Dropout 的一种扩展操作，不同的是 Dropout 是对图像经过网络后生成的特征进行遮挡，而 Cutout 是直接对输入的图像进行遮挡，相对于Dropout对噪声的鲁棒性更好。作者在论文中也进行了说明，这样做法有以下两点优势：(1) 通过 Cutout 可以模拟真实场景中主体被部分遮挡时的分类场景；(2) 可以促进模型充分利用图像中更多的内容来进行分类，防止网络只关注显著性的图像区域，从而发生过拟合。</p>
+<p>PaddleClas中<code>Cutout</code>的使用方法如下所示。</p>
+<div class="hlcode"><pre><span class="n">size</span> <span class="o">=</span> <span class="mi">224</span>
+
+<span class="n">decode_op</span> <span class="o">=</span> <span class="n">DecodeImage</span><span class="p">()</span>
+<span class="n">resize_op</span> <span class="o">=</span> <span class="n">ResizeImage</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+<span class="n">cutout_op</span> <span class="o">=</span> <span class="n">Cutout</span><span class="p">(</span><span class="n">n_holes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">112</span><span class="p">)</span>
+
+<span class="n">ops</span> <span class="o">=</span> <span class="p">[</span><span class="n">decode_op</span><span class="p">,</span> <span class="n">resize_op</span><span class="p">,</span> <span class="n">cutout_op</span><span class="p">]</span>
+
+<span class="n">imgs_dir</span> <span class="o">=</span> <span class="err">图像路径</span>
+<span class="n">fnames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">imgs_dir</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fnames</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">imgs_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ops</span><span class="p">)</span>
+</pre></div>
+
+
+<p>结果如下图所示。</p>
+<p><img alt="" src="../../../images/image_aug/test_cutout.jpeg" /></p>
+<h2 id="42-randomerasing">4.2 RandomErasing</h2>
+<p>论文地址：<a href="https://arxiv.org/pdf/1708.04896.pdf">https://arxiv.org/pdf/1708.04896.pdf</a></p>
+<p>开源代码github地址：<a href="https://github.com/zhunzhong07/Random-Erasing">https://github.com/zhunzhong07/Random-Erasing</a></p>
+<p><code>RandomErasing</code> 与 <code>Cutout</code> 方法类似，同样是为了解决训练出的模型在有遮挡数据上泛化能力较差的问题，作者在论文中也指出，随机裁剪的方式与随机水平翻转具有一定的互补性。作者也在行人再识别（REID）上验证了该方法的有效性。与<code>Cutout</code>不同的是，在<code>RandomErasing</code>中，图片以一定的概率接受该种预处理方法，生成掩码的尺寸大小与长宽比也是根据预设的超参数随机生成。</p>
+<p>PaddleClas中<code>RandomErasing</code>的使用方法如下所示。</p>
+<div class="hlcode"><pre><span class="n">size</span> <span class="o">=</span> <span class="mi">224</span>
+
+<span class="n">decode_op</span> <span class="o">=</span> <span class="n">DecodeImage</span><span class="p">()</span>
+<span class="n">resize_op</span> <span class="o">=</span> <span class="n">ResizeImage</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+<span class="n">randomerasing_op</span> <span class="o">=</span> <span class="n">RandomErasing</span><span class="p">()</span>
+
+<span class="n">ops</span> <span class="o">=</span> <span class="p">[</span><span class="n">decode_op</span><span class="p">,</span> <span class="n">resize_op</span><span class="p">,</span> <span class="n">tochw_op</span><span class="p">,</span> <span class="n">randomerasing_op</span><span class="p">]</span>
+
+<span class="n">imgs_dir</span> <span class="o">=</span> <span class="err">图像路径</span>
+<span class="n">fnames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">imgs_dir</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fnames</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">imgs_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ops</span><span class="p">)</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+</pre></div>
+
+
+<p>结果如下图所示。</p>
+<p><img alt="" src="../../../images/image_aug/test_randomerassing.jpeg" /></p>
+<h2 id="43-hideandseek">4.3 HideAndSeek</h2>
+<p>论文地址：<a href="https://arxiv.org/pdf/1811.02545.pdf">https://arxiv.org/pdf/1811.02545.pdf</a></p>
+<p>开源代码github地址：<a href="https://github.com/kkanshul/Hide-and-Seek">https://github.com/kkanshul/Hide-and-Seek</a></p>
+<p><code>HideAndSeek</code>论文将图像分为若干块区域(patch)，对于每块区域，都以一定的概率生成掩码，不同区域的掩码含义如下图所示。</p>
+<p><img alt="" src="../../../images/image_aug/hide-and-seek-visual.png" /></p>
+<p>PaddleClas中<code>HideAndSeek</code>的使用方法如下所示。</p>
+<div class="hlcode"><pre><span class="n">size</span> <span class="o">=</span> <span class="mi">224</span>
+
+<span class="n">decode_op</span> <span class="o">=</span> <span class="n">DecodeImage</span><span class="p">()</span>
+<span class="n">resize_op</span> <span class="o">=</span> <span class="n">ResizeImage</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+<span class="n">hide_and_seek_op</span> <span class="o">=</span> <span class="n">HideAndSeek</span><span class="p">()</span>
+
+<span class="n">ops</span> <span class="o">=</span> <span class="p">[</span><span class="n">decode_op</span><span class="p">,</span> <span class="n">resize_op</span><span class="p">,</span> <span class="n">tochw_op</span><span class="p">,</span> <span class="n">hide_and_seek_op</span><span class="p">]</span>
+
+<span class="n">imgs_dir</span> <span class="o">=</span> <span class="err">图像路径</span>
+<span class="n">fnames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">imgs_dir</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fnames</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">imgs_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ops</span><span class="p">)</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+</pre></div>
+
+
+<p>结果如下图所示。</p>
+<p><img alt="" src="../../../images/image_aug/test_hideandseek.jpeg" /></p>
+<h2 id="44-gridmask">4.4 GridMask</h2>
+<p>论文地址：<a href="https://arxiv.org/abs/2001.04086">https://arxiv.org/abs/2001.04086</a></p>
+<p>开源代码github地址：<a href="https://github.com/akuxcw/GridMask">https://github.com/akuxcw/GridMask</a></p>
+<p>作者在论文中指出，此前存在的基于对图像 crop 的方法存在两个问题，如下图所示：</p>
+<ol>
+<li>过度删除区域可能造成目标主体大部分甚至全部被删除，或者导致上下文信息的丢失，导致增广后的数据成为噪声数据；</li>
+<li>保留过多的区域，对目标主体及上下文基本产生不了什么影响，失去增广的意义。</li>
+</ol>
+<p><img alt="" src="../../../images/image_aug/gridmask-0.png" /></p>
+<p>因此如果避免过度删除或过度保留成为需要解决的核心问题。</p>
+<p><code>GridMask</code>是通过生成一个与原图分辨率相同的掩码，并将掩码进行随机翻转，与原图相乘，从而得到增广后的图像，通过超参数控制生成的掩码网格的大小。</p>
+<p>在训练过程中，有两种以下使用方法：<br />
+1. 设置一个概率p，从训练开始就对图片以概率p使用<code>GridMask</code>进行增广。<br />
+2. 一开始设置增广概率为0，随着迭代轮数增加，对训练图片进行<code>GridMask</code>增广的概率逐渐增大，最后变为p。</p>
+<p>论文中验证上述第二种方法的训练效果更好一些。</p>
+<p>PaddleClas中<code>GridMask</code>的使用方法如下所示。</p>
+<div class="hlcode"><pre><span class="n">size</span> <span class="o">=</span> <span class="mi">224</span>
+
+<span class="n">decode_op</span> <span class="o">=</span> <span class="n">DecodeImage</span><span class="p">()</span>
+<span class="n">resize_op</span> <span class="o">=</span> <span class="n">ResizeImage</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+<span class="n">tochw_op</span> <span class="o">=</span> <span class="n">ToCHWImage</span><span class="p">()</span>
+<span class="n">gridmask_op</span> <span class="o">=</span> <span class="n">GridMask</span><span class="p">(</span><span class="n">d1</span><span class="o">=</span><span class="mi">96</span><span class="p">,</span> <span class="n">d2</span><span class="o">=</span><span class="mi">224</span><span class="p">,</span> <span class="n">rotate</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ratio</span><span class="o">=</span><span class="mf">0.6</span><span class="p">,</span> <span class="n">mode</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">prob</span><span class="o">=</span><span class="mf">0.8</span><span class="p">)</span>
+
+<span class="n">ops</span> <span class="o">=</span> <span class="p">[</span><span class="n">decode_op</span><span class="p">,</span> <span class="n">resize_op</span><span class="p">,</span> <span class="n">tochw_op</span><span class="p">,</span> <span class="n">gridmask_op</span><span class="p">]</span>
+
+<span class="n">imgs_dir</span> <span class="o">=</span> <span class="err">图像路径</span>
+<span class="n">fnames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">imgs_dir</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">fnames</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">imgs_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ops</span><span class="p">)</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+</pre></div>
+
+
+<p>结果如下图所示。</p>
+<p><img alt="" src="../../../images/image_aug/test_gridmask.jpeg" /></p>
+<h1 id="_5">五、图像混叠</h1>
+<p>图像混叠主要对 <code>Batch</code> 后的数据进行混合，包括：</p>
+<ul>
+<li>Mixup</li>
+<li>Cutmix</li>
+</ul>
+<p>前文所述的图像变换与图像裁剪都是针对单幅图像进行的操作，而图像混叠是对两幅图像进行融合，生成一幅图像，两种方法的主要区别为混叠的方式不太一样。</p>
+<h2 id="51-mixup">5.1 Mixup</h2>
+<p>论文地址：<a href="https://arxiv.org/pdf/1710.09412.pdf">https://arxiv.org/pdf/1710.09412.pdf</a></p>
+<p>开源代码github地址：<a href="https://github.com/facebookresearch/mixup-cifar10">https://github.com/facebookresearch/mixup-cifar10</a></p>
+<p>Mixup 是最先提出的图像混叠增广方案，其原理简单、方便实现，不仅在图像分类上，在目标检测上也取得了不错的效果。为了便于实现，通常只对一个 batch 内的数据进行混叠，在 <code>Cutmix</code> 中也是如此。</p>
+<p>如下是 <code>imaug</code> 中的实现，需要指出的是，下述实现会出现对同一幅进行相加的情况，也就是最终得到的图和原图一样，随着 <code>batch-size</code> 的增加这种情况出现的概率也会逐渐减小。</p>
+<p>PaddleClas中<code>Mixup</code>的使用方法如下所示。</p>
+<div class="hlcode"><pre><span class="n">size</span> <span class="o">=</span> <span class="mi">224</span>
+
+<span class="n">decode_op</span> <span class="o">=</span> <span class="n">DecodeImage</span><span class="p">()</span>
+<span class="n">resize_op</span> <span class="o">=</span> <span class="n">ResizeImage</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+<span class="n">tochw_op</span> <span class="o">=</span> <span class="n">ToCHWImage</span><span class="p">()</span>
+<span class="n">hide_and_seek_op</span> <span class="o">=</span> <span class="n">HideAndSeek</span><span class="p">()</span>
+<span class="n">mixup_op</span> <span class="o">=</span> <span class="n">MixupOperator</span><span class="p">()</span>
+<span class="n">cutmix_op</span> <span class="o">=</span> <span class="n">CutmixOperator</span><span class="p">()</span>
+
+<span class="n">ops</span> <span class="o">=</span> <span class="p">[</span><span class="n">decode_op</span><span class="p">,</span> <span class="n">resize_op</span><span class="p">,</span> <span class="n">tochw_op</span><span class="p">]</span>
+
+<span class="n">imgs_dir</span> <span class="o">=</span> <span class="err">图像路径</span>
+
+<span class="n">batch</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">fnames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">imgs_dir</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fnames</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">imgs_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ops</span><span class="p">)</span>
+    <span class="n">batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span> <span class="p">)</span> <span class="c"># fake label</span>
+
+<span class="n">new_batch</span> <span class="o">=</span> <span class="n">mixup_op</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+</pre></div>
+
+
+<p>结果如下图所示。</p>
+<p><img alt="" src="../../../images/image_aug/test_mixup.png" /></p>
+<h2 id="52-cutmix">5.2 Cutmix</h2>
+<p>论文地址：<a href="https://arxiv.org/pdf/1905.04899v2.pdf">https://arxiv.org/pdf/1905.04899v2.pdf</a></p>
+<p>开源代码github地址：<a href="https://github.com/clovaai/CutMix-PyTorch">https://github.com/clovaai/CutMix-PyTorch</a></p>
+<p>与  <code>Mixup</code> 直接对两幅图进行相加不一样，<code>Cutmix</code> 是从一幅图中随机裁剪出一个 <code>ROI</code>，然后覆盖当前图像中对应的区域，代码实现如下所示：</p>
+<div class="hlcode"><pre><span class="n">size</span> <span class="o">=</span> <span class="mi">224</span>
+
+<span class="n">decode_op</span> <span class="o">=</span> <span class="n">DecodeImage</span><span class="p">()</span>
+<span class="n">resize_op</span> <span class="o">=</span> <span class="n">ResizeImage</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+<span class="n">tochw_op</span> <span class="o">=</span> <span class="n">ToCHWImage</span><span class="p">()</span>
+<span class="n">hide_and_seek_op</span> <span class="o">=</span> <span class="n">HideAndSeek</span><span class="p">()</span>
+<span class="n">cutmix_op</span> <span class="o">=</span> <span class="n">CutmixOperator</span><span class="p">()</span>
+
+<span class="n">ops</span> <span class="o">=</span> <span class="p">[</span><span class="n">decode_op</span><span class="p">,</span> <span class="n">resize_op</span><span class="p">,</span> <span class="n">tochw_op</span><span class="p">]</span>
+
+<span class="n">imgs_dir</span> <span class="o">=</span> <span class="err">图像路径</span>
+
+<span class="n">batch</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">fnames</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">imgs_dir</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">fnames</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">imgs_dir</span><span class="p">,</span> <span class="n">f</span><span class="p">))</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ops</span><span class="p">)</span>
+    <span class="n">batch</span><span class="o">.</span><span class="n">append</span><span class="p">(</span> <span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">idx</span><span class="p">)</span> <span class="p">)</span> <span class="c"># fake label</span>
+
+<span class="n">new_batch</span> <span class="o">=</span> <span class="n">cutmix_op</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
+</pre></div>
+
+
+<p>结果如下图所示。</p>
+<p><img alt="" src="../../../images/image_aug/test_cutmix.png" /></p>
+<h1 id="_6">六、实验</h1>
+<p>基于PaddleClas，在ImageNet1k数据集上的分类精度如下。</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>初始学习率策略</th>
+<th>l2 decay</th>
+<th>batch size</th>
+<th>epoch</th>
+<th>数据变化策略</th>
+<th>Top1 Acc</th>
+<th>论文中结论</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ResNet50</td>
+<td>0.1/cosine_decay</td>
+<td>0.0001</td>
+<td>256</td>
+<td>300</td>
+<td>标准变换</td>
+<td>0.7731</td>
+<td>-</td>
+</tr>
+<tr>
+<td>ResNet50</td>
+<td>0.1/cosine_decay</td>
+<td>0.0001</td>
+<td>256</td>
+<td>300</td>
+<td>AutoAugment</td>
+<td>0.7795</td>
+<td>0.7763</td>
+</tr>
+<tr>
+<td>ResNet50</td>
+<td>0.1/cosine_decay</td>
+<td>0.0001</td>
+<td>256</td>
+<td>300</td>
+<td>mixup</td>
+<td>0.7828</td>
+<td>0.7790</td>
+</tr>
+<tr>
+<td>ResNet50</td>
+<td>0.1/cosine_decay</td>
+<td>0.0001</td>
+<td>256</td>
+<td>300</td>
+<td>cutmix</td>
+<td>0.7839</td>
+<td>0.7860</td>
+</tr>
+<tr>
+<td>ResNet50</td>
+<td>0.1/cosine_decay</td>
+<td>0.0001</td>
+<td>256</td>
+<td>300</td>
+<td>cutout</td>
+<td>0.7801</td>
+<td>-</td>
+</tr>
+<tr>
+<td>ResNet50</td>
+<td>0.1/cosine_decay</td>
+<td>0.0001</td>
+<td>256</td>
+<td>300</td>
+<td>gridmask</td>
+<td>0.7785</td>
+<td>0.7790</td>
+</tr>
+<tr>
+<td>ResNet50</td>
+<td>0.1/cosine_decay</td>
+<td>0.0001</td>
+<td>256</td>
+<td>300</td>
+<td>random-augment</td>
+<td>0.7770</td>
+<td>0.7760</td>
+</tr>
+<tr>
+<td>ResNet50</td>
+<td>0.1/cosine_decay</td>
+<td>0.0001</td>
+<td>256</td>
+<td>300</td>
+<td>random erasing</td>
+<td>0.7791</td>
+<td>-</td>
+</tr>
+<tr>
+<td>ResNet50</td>
+<td>0.1/cosine_decay</td>
+<td>0.0001</td>
+<td>256</td>
+<td>300</td>
+<td>hide and seek</td>
+<td>0.7743</td>
+<td>0.7720</td>
+</tr>
+</tbody>
+</table>
+<p><strong>注意</strong>：<br />
+<em> 在这里的实验中，为了便于对比，我们将l2 decay固定设置为1e-4，在实际使用中，我们推荐尝试使用更小的l2 decay。结合数据增广，我们发现将l2 decay由1e-4减小为7e-5均能带来至少0.3~0.5%的精度提升。<br />
+</em> 我们目前尚未对不同策略进行组合并验证效果，这一块后续我们会开展更多的对比实验，敬请期待。</p>
+<h1 id="_7">七、数据增广分类实战</h1>
+<p>本节将基于ImageNet-1K的数据集详细介绍数据增广实验，如果想快速体验此方法，可以参考<a href="../../tutorials/quick_start_professional.md"><strong>30分钟玩转PaddleClas（进阶版）</strong></a>中基于CIFAR100的数据增广实验。</p>
+<h2 id="71">7.1 参数配置</h2>
+<p>由于不同的数据增广方式含有不同的超参数，为了便于理解和使用，我们在<code>configs/DataAugment</code>里分别列举了8种训练ResNet50的数据增广方式的参数配置文件，用户可以在<code>tools/run.sh</code>里直接替换配置文件的路径即可使用。此处分别挑选了图像变换、图像裁剪、图像混叠中的一个示例展示，其他参数配置用户可以自查配置文件。</p>
+<h3 id="randaugment">RandAugment</h3>
+<p><code>RandAugment</code>的图像增广方式的配置如下，其中用户需要指定其中的参数<code>num_layers</code>与<code>magnitude</code>，默认的数值分别是<code>2</code>和<code>5</code>。<code>RandAugment</code>是在uint8的数据格式上转换的，所以其处理过程应该放在归一化操作（<code>NormalizeImage</code>）之前。</p>
+<div class="hlcode"><pre>      <span class="l-Scalar-Plain">transform_ops</span><span class="p-Indicator">:</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DecodeImage</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">to_rgb</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">True</span>
+            <span class="l-Scalar-Plain">channel_first</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">False</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">RandCropImage</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">size</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">224</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">RandFlipImage</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">flip_code</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">1</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">RandAugment</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">num_layers</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">2</span>
+            <span class="l-Scalar-Plain">magnitude</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">5</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">NormalizeImage</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">scale</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">1.0/255.0</span>
+            <span class="l-Scalar-Plain">mean</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">0.485</span><span class="p-Indicator">,</span> <span class="nv">0.456</span><span class="p-Indicator">,</span> <span class="nv">0.406</span><span class="p-Indicator">]</span>
+            <span class="l-Scalar-Plain">std</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">0.229</span><span class="p-Indicator">,</span> <span class="nv">0.224</span><span class="p-Indicator">,</span> <span class="nv">0.225</span><span class="p-Indicator">]</span>
+            <span class="l-Scalar-Plain">order</span><span class="p-Indicator">:</span> <span class="s">&#39;&#39;</span>
+</pre></div>
+
+
+<h3 id="cutout">Cutout</h3>
+<p><code>Cutout</code>的图像增广方式的配置如下，其中用户需要指定其中的参数<code>n_holes</code>与<code>length</code>，默认的数值分别是<code>1</code>和<code>112</code>。类似其他图像裁剪类的数据增广方式，<code>Cutout</code>既可以在uint8格式的数据上操作，也可以在归一化（<code>NormalizeImage</code>）后的数据上操作，此处给出的是在归一化后的操作。</p>
+<div class="hlcode"><pre>      <span class="l-Scalar-Plain">transform_ops</span><span class="p-Indicator">:</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DecodeImage</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">to_rgb</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">True</span>
+            <span class="l-Scalar-Plain">channel_first</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">False</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">RandCropImage</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">size</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">224</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">RandFlipImage</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">flip_code</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">1</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">NormalizeImage</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">scale</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">1.0/255.0</span>
+            <span class="l-Scalar-Plain">mean</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">0.485</span><span class="p-Indicator">,</span> <span class="nv">0.456</span><span class="p-Indicator">,</span> <span class="nv">0.406</span><span class="p-Indicator">]</span>
+            <span class="l-Scalar-Plain">std</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">0.229</span><span class="p-Indicator">,</span> <span class="nv">0.224</span><span class="p-Indicator">,</span> <span class="nv">0.225</span><span class="p-Indicator">]</span>
+            <span class="l-Scalar-Plain">order</span><span class="p-Indicator">:</span> <span class="s">&#39;&#39;</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">Cutout</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">n_holes</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">1</span>
+            <span class="l-Scalar-Plain">length</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">112</span>
+</pre></div>
+
+
+<h3 id="mixup">Mixup</h3>
+<p><code>Mixup</code>的图像增广方式的配置如下，其中用户需要指定其中的参数<code>alpha</code>，默认的数值是<code>0.2</code>。类似其他图像混合类的数据增广方式，<code>Mixup</code>是在图像做完数据处理后将每个batch内的数据做图像混叠，将混叠后的图像和标签输入网络中训练，所以其是在图像数据处理（图像变换、图像裁剪）后操作。另外，在配置文件中，需要将<code>use_mix</code>参数设置为<code>True</code>。</p>
+<div class="hlcode"><pre>      <span class="l-Scalar-Plain">transform_ops</span><span class="p-Indicator">:</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">DecodeImage</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">to_rgb</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">True</span>
+            <span class="l-Scalar-Plain">channel_first</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">False</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">RandCropImage</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">size</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">224</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">RandFlipImage</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">flip_code</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">1</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">NormalizeImage</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">scale</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">1.0/255.0</span>
+            <span class="l-Scalar-Plain">mean</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">0.485</span><span class="p-Indicator">,</span> <span class="nv">0.456</span><span class="p-Indicator">,</span> <span class="nv">0.406</span><span class="p-Indicator">]</span>
+            <span class="l-Scalar-Plain">std</span><span class="p-Indicator">:</span> <span class="p-Indicator">[</span><span class="nv">0.229</span><span class="p-Indicator">,</span> <span class="nv">0.224</span><span class="p-Indicator">,</span> <span class="nv">0.225</span><span class="p-Indicator">]</span>
+            <span class="l-Scalar-Plain">order</span><span class="p-Indicator">:</span> <span class="s">&#39;&#39;</span>
+      <span class="l-Scalar-Plain">batch_transform_ops</span><span class="p-Indicator">:</span>
+        <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">MixupOperator</span><span class="p-Indicator">:</span>
+            <span class="l-Scalar-Plain">alpha</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">0.2</span>
+</pre></div>
+
+
+<h2 id="72">7.2 启动命令</h2>
+<p>当用户配置完训练环境后，类似于训练其他分类任务，只需要将<code>tools/train.sh</code>中的配置文件替换成为相应的数据增广方式的配置文件即可。</p>
+<p>其中<code>train.sh</code>中的内容如下：</p>
+<div class="hlcode"><pre>python3 -m paddle.distributed.launch <span class="se">\</span>
+    --selected_gpus<span class="o">=</span><span class="s2">&quot;0,1,2,3&quot;</span> <span class="se">\</span>
+    --log_dir<span class="o">=</span>ResNet50_Cutout <span class="se">\</span>
+    tools/train.py <span class="se">\</span>
+        -c ./ppcls/configs/ImageNet/DataAugment/ResNet50_Cutout.yaml
+</pre></div>
+
+
+<p>运行<code>train.sh</code>：</p>
+<div class="hlcode"><pre>sh tools/train.sh
+</pre></div>
+
+
+<h2 id="73">7.3 注意事项</h2>
+<ul>
+<li>
+<p>由于图像混叠时需对label进行混叠，无法计算训练数据的准确率，所以在训练过程中没有打印训练准确率。</p>
+</li>
+<li>
+<p>在使用数据增广后，由于训练数据更难，所以训练损失函数可能较大，训练集的准确率相对较低，但其有拥更好的泛化能力，所以验证集的准确率相对较高。</p>
+</li>
+<li>
+<p>在使用数据增广后，模型可能会趋于欠拟合状态，建议可以适当的调小<code>l2_decay</code>的值来获得更高的验证集准确率。</p>
+</li>
+<li>
+<p>几乎每一类图像增广均含有超参数，我们只提供了基于ImageNet-1k的超参数，其他数据集需要用户自己调试超参数，具体超参数的含义用户可以阅读相关的论文，调试方法也可以参考训练技巧的章节。</p>
+</li>
+</ul>
+<blockquote>
+<p>如果您觉得此文档对您有帮助，欢迎star我们的项目：<a href="https://github.com/PaddlePaddle/PaddleClas">https://github.com/PaddlePaddle/PaddleClas</a></p>
+</blockquote>
+<h1 id="_8">参考文献</h1>
+<p>[1] Cubuk E D, Zoph B, Mane D, et al. Autoaugment: Learning augmentation strategies from data[C]//Proceedings of the IEEE conference on computer vision and pattern recognition. 2019: 113-123.</p>
+<p>[2] Cubuk E D, Zoph B, Shlens J, et al. Randaugment: Practical automated data augmentation with a reduced search space[J]. arXiv preprint arXiv:1909.13719, 2019.</p>
+<p>[3] DeVries T, Taylor G W. Improved regularization of convolutional neural networks with cutout[J]. arXiv preprint arXiv:1708.04552, 2017.</p>
+<p>[4] Zhong Z, Zheng L, Kang G, et al. Random erasing data augmentation[J]. arXiv preprint arXiv:1708.04896, 2017.</p>
+<p>[5] Singh K K, Lee Y J. Hide-and-seek: Forcing a network to be meticulous for weakly-supervised object and action localization[C]//2017 IEEE international conference on computer vision (ICCV). IEEE, 2017: 3544-3553.</p>
+<p>[6] Chen P. GridMask Data Augmentation[J]. arXiv preprint arXiv:2001.04086, 2020.</p>
+<p>[7] Zhang H, Cisse M, Dauphin Y N, et al. mixup: Beyond empirical risk minimization[J]. arXiv preprint arXiv:1710.09412, 2017.</p>
+<p>[8] Yun S, Han D, Oh S J, et al. Cutmix: Regularization strategy to train strong classifiers with localizable features[C]//Proceedings of the IEEE International Conference on Computer Vision. 2019: 6023-6032.</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

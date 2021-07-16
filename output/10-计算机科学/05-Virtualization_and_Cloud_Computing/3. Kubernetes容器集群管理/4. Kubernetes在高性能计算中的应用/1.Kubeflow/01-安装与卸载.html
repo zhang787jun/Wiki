@@ -1,0 +1,883 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>01-Kubeflow--安装与卸载 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#10-计算机科学">10-计算机科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-05-Virtualization_and_Cloud_Computing">05-Virtualization_and_Cloud_Computing</a>&nbsp;»&nbsp;<a href="/Wiki/#-3. Kubernetes容器集群管理">3. Kubernetes容器集群管理</a>&nbsp;»&nbsp;<a href="/Wiki/#-4. Kubernetes在高性能计算中的应用">4. Kubernetes在高性能计算中的应用</a>&nbsp;»&nbsp;<a href="/Wiki/#-1.Kubeflow">1.Kubeflow</a>&nbsp;»&nbsp;01-Kubeflow--安装与卸载</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">01-Kubeflow--安装与卸载</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 安装</a><ul>
+<li><a href="#11">1.1. 最低系统要求</a></li>
+<li><a href="#12-10">1.2. 实践1.0版本</a><ul>
+<li><a href="#121-kfctl">1.2.1. 安装kfctl</a></li>
+<li><a href="#122">1.2.2. 获得配置文件</a></li>
+<li><a href="#123">1.2.3. 配置存储</a></li>
+<li><a href="#124">1.2.4. 安装</a></li>
+</ul>
+</li>
+<li><a href="#13">1.3. 查看与验证</a><ul>
+<li><a href="#131-shell">1.3.1. Shell</a></li>
+<li><a href="#132-kubeflow-ui">1.3.2. Kubeflow UI</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#2">2. 卸载</a></li>
+<li><a href="#3">3. 问题</a><ul>
+<li><a href="#31-notebook">3.1. Notebook 的存储问题</a></li>
+<li><a href="#32-crds">3.2. crds</a></li>
+<li><a href="#33">3.3. 镜像不存在</a></li>
+</ul>
+</li>
+<li><a href="#4-kfctl_k8s_istioyaml">4. 详细解读 kfctl_k8s_istio.yaml</a></li>
+<li><a href="#5">5. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1">1. 安装</h1>
+<p><strong>在现有kebernetes群集上的部署概述</strong></p>
+<h2 id="11">1.1. 最低系统要求</h2>
+<p>Kubernetes集群必须满足以下最低要求：<br />
+您的集群必须至少包含<strong>1个工作节点</strong>(Work node)，且最少为：<br />
+1. <strong>4个CPU</strong><br />
+2. <strong>50 GB的存储空间</strong><br />
+3. <strong>12 GB内存</strong></p>
+<h2 id="12-10">1.2. 实践1.0版本</h2>
+<p>使用kfctl安装kubeflow</p>
+<h3 id="121-kfctl">1.2.1. 安装kfctl</h3>
+<p><code>kfctl</code> is the executable binary file that you use to deploy Kubeflow.<br />
+<code>kfctl</code> 是用于部署Kubeflow的可执行文件，通过ctl实现.</p>
+<div class="hlcode"><pre><span class="cp"># 1. 安装kfctl</span>
+<span class="n">wget</span> <span class="n">http</span><span class="o">:</span><span class="c1">//kubeflow.oss-cn-beijing.aliyuncs.com/kfctl_v1.0-0-g94c35cf_linux.tar.gz</span>
+<span class="n">tar</span> <span class="n">zxvf</span> <span class="n">kfctl_v1</span><span class="mf">.0</span><span class="o">-</span><span class="mi">0</span><span class="o">-</span><span class="n">g94c35cf_linux</span><span class="p">.</span><span class="n">tar</span><span class="p">.</span><span class="n">gz</span>
+<span class="n">sudo</span> <span class="n">mv</span> <span class="n">kfctl</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">bin</span><span class="o">/</span>
+
+<span class="cp"># 验证</span>
+<span class="n">kfctl</span> <span class="n">version</span>
+</pre></div>
+
+
+<h3 id="122">1.2.2. 获得配置文件</h3>
+<p><code>kfctl_k8s_istio.yaml</code> 是Kubeflow官方的的配置文件（社区版），此配置使用其所有核心组件创建了Kubeflow的原始部署，而没有任何外部依赖性。可以根据您的环境需求自定义部署。</p>
+<div class="hlcode"><pre># 2. 通过kfctl生成应用的配置文件
+export KF_NAME=my-kubeflow-2
+export BASE_DIR=/home
+export KF_DIR=<span class="cp">${</span><span class="n">BASE_DIR</span><span class="cp">}</span>/<span class="cp">${</span><span class="n">KF_NAME</span><span class="cp">}</span>
+export CONFIG_URI=&quot;http://kubeflow.oss-cn-beijing.aliyuncs.com/kfctl_k8s_istio.v1.0.1.yaml&quot;
+sudo mkdir -p <span class="cp">${</span><span class="n">KF_DIR</span><span class="cp">}</span>
+sudo chmod -R 777 <span class="cp">${</span><span class="n">KF_DIR</span><span class="cp">}</span>
+cd <span class="cp">${</span><span class="n">KF_DIR</span><span class="cp">}</span>
+</pre></div>
+
+
+<h3 id="123">1.2.3. 配置存储</h3>
+<p>KubeFlow里面有4个有状态应用（Deployment），通过PVC 声明了存储情况：</p>
+<table>
+<thead>
+<tr>
+<th>app(Deployment)</th>
+<th>PVC</th>
+<th>PC</th>
+<th>默认申请资源</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>minio</td>
+<td>minio-pv-claim</td>
+<td>minio-pv</td>
+<td>20G</td>
+<td></td>
+</tr>
+<tr>
+<td>mysql</td>
+<td>mysql-pv-claim</td>
+<td>mysql-pv</td>
+<td>20G</td>
+<td></td>
+</tr>
+<tr>
+<td>katib-mysql</td>
+<td>katib-mysql</td>
+<td>katib-mysql-pv</td>
+<td>10G</td>
+<td></td>
+</tr>
+<tr>
+<td>metadata-db</td>
+<td>metadata-mysql</td>
+<td>metadata-mysql</td>
+<td>10G</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>4个Deployment，指定了4个PVC，每个PVC都要去k8s系统中寻找并申请符合要求的PV资源。</p>
+<p>默认的PVC 里面指定了名为 <code>kubeflow-nfs-storage</code>的存储类 (storageClassName) 动态申请PV  </p>
+<div class="hlcode"><pre><span class="c1">#  PersistentVolumeClaim 示例</span>
+<span class="nn">---</span>
+<span class="l-Scalar-Plain">apiVersion</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">v1</span>
+<span class="l-Scalar-Plain">kind</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">PersistentVolumeClaim</span>
+<span class="l-Scalar-Plain">metadata</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">annotations</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">finalizers</span><span class="p-Indicator">:</span>
+    <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">kubernetes.io/pvc-protection</span>
+  <span class="l-Scalar-Plain">labels</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">app.kubernetes.io/component</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">katib</span>
+    <span class="l-Scalar-Plain">app.kubernetes.io/instance</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">katib-controller-0.8.0</span>
+    <span class="l-Scalar-Plain">app.kubernetes.io/managed-by</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">kfctl</span>
+    <span class="l-Scalar-Plain">app.kubernetes.io/name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">katib-controller</span>
+    <span class="l-Scalar-Plain">app.kubernetes.io/part-of</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">kubeflow</span>
+    <span class="l-Scalar-Plain">app.kubernetes.io/version</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">0.8.0</span>
+  <span class="l-Scalar-Plain">name</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">katib-mysql</span>
+  <span class="l-Scalar-Plain">namespace</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">kubeflow</span>
+  <span class="l-Scalar-Plain">resourceVersion</span><span class="p-Indicator">:</span> <span class="s">&#39;24142483&#39;</span>
+  <span class="l-Scalar-Plain">selfLink</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">/api/v1/namespaces/kubeflow/persistentvolumeclaims/katib-mysql</span>
+  <span class="l-Scalar-Plain">uid</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">51885436-20be-4154-96ef-0bc7cb0d622e</span>
+<span class="l-Scalar-Plain">spec</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">accessModes</span><span class="p-Indicator">:</span>
+    <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">ReadWriteOnce</span>
+  <span class="l-Scalar-Plain">resources</span><span class="p-Indicator">:</span>
+    <span class="l-Scalar-Plain">requests</span><span class="p-Indicator">:</span>
+      <span class="l-Scalar-Plain">storage</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">10Gi</span>
+  <span class="l-Scalar-Plain">storageClassName</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">kubeflow-nfs-storage</span>
+  <span class="l-Scalar-Plain">volumeMode</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Filesystem</span>
+<span class="l-Scalar-Plain">status</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">phase</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">Pending</span>
+</pre></div>
+
+
+<p>所以，需要：<br />
+1. 创建 storageClassName<br />
+   1. 创建 provisioner<br />
+      1. 选择 nfs- provisioner<br />
+         1. 创建 nfs 服务</p>
+<p>具体参考kubenetes 存储部分的教程</p>
+<div class="hlcode"><pre><span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span>  <span class="n">kubeflow</span><span class="o">-</span><span class="n">nfs</span><span class="o">-</span><span class="n">storage</span><span class="p">.</span><span class="n">yaml</span>
+<span class="nl">apiVersion:</span> <span class="n">storage</span><span class="p">.</span><span class="n">k8s</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">v1</span>
+<span class="nl">kind:</span> <span class="n">StorageClass</span>
+<span class="nl">metadata:</span>
+  <span class="nl">annotations:</span>
+    <span class="n">storageclass</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">is</span><span class="o">-</span><span class="k">default</span><span class="o">-</span><span class="n">class</span><span class="o">:</span> <span class="err">&#39;</span><span class="nb">true</span><span class="err">&#39;</span>
+  <span class="nl">name:</span> <span class="n">kubeflow</span><span class="o">-</span><span class="n">nfs</span><span class="o">-</span><span class="n">storage</span>
+<span class="nl">provisioner:</span> <span class="n">nfs</span><span class="o">-</span><span class="n">client</span><span class="o">-</span><span class="n">provisioner</span>
+<span class="nl">reclaimPolicy:</span> <span class="n">Delete</span>
+<span class="nl">volumeBindingMode:</span> <span class="n">Immediate</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">kubeflow</span><span class="o">-</span><span class="n">nfs</span><span class="o">-</span><span class="n">storage</span><span class="p">.</span><span class="n">yaml</span>
+<span class="cp"># kubectl delete -f kubeflow-nfs-storage.yaml</span>
+</pre></div>
+
+
+<h3 id="124">1.2.4. 安装</h3>
+<div class="hlcode"><pre>kfctl apply -V -f <span class="cp">${</span><span class="n">CONFIG_URI</span><span class="cp">}</span>
+export CONFIG=<span class="cp">${</span><span class="n">KF_DIR</span><span class="cp">}</span>/kfctl_k8s_istio.v1.0.1.yaml
+
+# 中间cert会错误，各个pod之间有依赖，需要等待一会
+# 命令完成后，部署依然没有完成，而是转为后台部署
+</pre></div>
+
+
+<h2 id="13">1.3. 查看与验证</h2>
+<h3 id="131-shell">1.3.1. Shell</h3>
+<div class="hlcode"><pre><span class="cp"># 查看pod 状态</span>
+<span class="n">kubectl</span> <span class="n">get</span> <span class="n">pods</span> <span class="o">-</span><span class="n">n</span> <span class="n">kubeflow</span> 
+<span class="n">kubectl</span> <span class="n">get</span> <span class="n">pods</span> <span class="o">-</span><span class="n">n</span> <span class="n">cert</span><span class="o">-</span><span class="n">manager</span>
+<span class="n">kubectl</span> <span class="n">get</span> <span class="n">pods</span> <span class="o">-</span><span class="n">n</span> <span class="n">knative</span><span class="o">-</span><span class="n">serving</span>
+<span class="n">kubectl</span> <span class="n">get</span> <span class="n">pods</span> <span class="o">-</span><span class="n">n</span> <span class="n">istio</span><span class="o">-</span><span class="n">system</span>
+<span class="cp"># 查看 pvc 状态</span>
+<span class="n">kubectl</span> <span class="n">get</span> <span class="n">pv</span> <span class="o">-</span><span class="n">n</span> <span class="n">kubeflow</span> 
+<span class="n">kubectl</span> <span class="n">get</span> <span class="n">pvc</span> <span class="o">-</span><span class="n">n</span> <span class="n">kubeflow</span> 
+<span class="cp"># 查看 services 状态</span>
+<span class="n">kubectl</span> <span class="n">get</span> <span class="n">services</span> <span class="o">-</span><span class="n">n</span> <span class="n">kubeflow</span>
+<span class="n">kubectl</span> <span class="n">get</span> <span class="n">services</span> <span class="o">-</span><span class="n">n</span> <span class="n">knative</span><span class="o">-</span><span class="n">serving</span>
+<span class="n">kubectl</span> <span class="n">get</span> <span class="n">services</span> <span class="o">-</span><span class="n">n</span> <span class="n">istio</span><span class="o">-</span><span class="n">system</span>
+</pre></div>
+
+
+<h3 id="132-kubeflow-ui">1.3.2. Kubeflow UI</h3>
+<p>kubeflow中，附带了许多Web UI:<br />
+1. Argo UI<br />
+2. Central UI for navigation<br />
+3. JupyterHub<br />
+4. Katib<br />
+5. TFJobs Dashboard</p>
+<p>可以通过web UI 验证是否安装成功.</p>
+<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">proxy</span> <span class="o">&amp;</span> <span class="n">kubectl</span> <span class="n">get</span> <span class="n">namespace</span> <span class="err">$</span><span class="n">NAMESPACE</span> <span class="o">-</span><span class="n">o</span> <span class="n">json</span> <span class="o">|</span><span class="n">jq</span> <span class="err">&#39;</span><span class="p">.</span><span class="n">spec</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;finalizers&quot;</span><span class="o">:</span><span class="p">[]}</span><span class="err">&#39;</span> <span class="o">&gt;</span><span class="n">temp</span><span class="p">.</span><span class="n">json</span>
+<span class="n">curl</span> <span class="o">-</span><span class="n">k</span> <span class="o">-</span><span class="n">H</span> <span class="s">&quot;Content-Type: application/json&quot;</span> <span class="o">-</span><span class="n">X</span> <span class="n">PUT</span> <span class="o">--</span><span class="n">data</span><span class="o">-</span><span class="n">binary</span> <span class="err">@</span><span class="n">temp</span><span class="p">.</span><span class="n">json</span> <span class="mf">127.0.0.1</span><span class="o">:</span><span class="mi">8001</span><span class="o">/</span><span class="n">api</span><span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">namespaces</span><span class="o">/</span><span class="err">$</span><span class="n">NAMESPACE</span><span class="o">/</span><span class="n">finalize</span>
+</pre></div>
+
+
+<h1 id="2">2. 卸载</h1>
+<div class="hlcode"><pre># If you want to delete all the resources, including storage:
+kfctl delete -f <span class="cp">${</span><span class="n">CONFIG</span><span class="cp">}</span> --delete_storage
+
+# If you want to preserve storage, which contains metadata and information
+# from Kubeflow Pipelines:
+kfctl delete -f <span class="cp">${</span><span class="n">CONFIG</span><span class="cp">}</span>
+
+kubectl delete mutatingwebhookconfigurations --all
+kubectl delete validatingwebhookconfigurations --all
+kubectl delete crd --all
+kubectl patch crd/profiles.kubeflow.org -p &#39;{&quot;metadata&quot;:{&quot;finalizers&quot;:[]}}&#39; --type=merge
+</pre></div>
+
+
+<h1 id="3">3. 问题</h1>
+<h2 id="31-notebook">3.1. Notebook 的存储问题</h2>
+<p>通过istio-ingressgateway访问Kubeflow Dashboard，进入notebook提示一个错误</p>
+<div class="hlcode"><pre><span class="n">No</span> <span class="k">default</span> <span class="n">Storage</span> <span class="n">Class</span> <span class="n">is</span> <span class="n">set</span><span class="p">.</span> <span class="n">Can</span><span class="err">’</span><span class="n">t</span> <span class="n">create</span> <span class="n">new</span> <span class="n">Disks</span> <span class="k">for</span> <span class="n">the</span> <span class="n">new</span> <span class="n">Notebook</span><span class="p">.</span> <span class="n">Please</span> <span class="n">use</span> <span class="n">an</span> <span class="n">Existing</span> <span class="n">Disk</span>
+</pre></div>
+
+
+<p>原因是没有配置默认的StorageClass(动态PVC 创建)</p>
+<h2 id="32-crds">3.2. crds</h2>
+<p><strong>问题1</strong>：安装的时候，一班需要多次运行kfctl apply命令出现如下问题</p>
+<div class="hlcode"><pre><span class="n">WARN</span><span class="p">[</span><span class="mo">05</span><span class="mi">98</span><span class="p">]</span> <span class="n">Encountered</span> <span class="n">error</span> <span class="n">applying</span> <span class="n">application</span> <span class="n">tf</span><span class="o">-</span><span class="n">job</span><span class="o">-</span><span class="n">crds</span><span class="o">:</span>  <span class="p">(</span><span class="n">kubeflow</span><span class="p">.</span><span class="n">error</span><span class="p">)</span><span class="o">:</span> <span class="n">Code</span> <span class="mi">500</span> <span class="n">with</span> <span class="n">message</span><span class="o">:</span> <span class="n">Apply</span><span class="p">.</span><span class="n">Run</span>  <span class="n">Error</span> <span class="n">error</span> <span class="n">when</span> <span class="n">applying</span> <span class="n">patch</span><span class="o">:</span>
+<span class="p">............</span>
+<span class="nl">for:</span> <span class="s">&quot;/tmp/kout686424655&quot;</span><span class="o">:</span> <span class="n">CustomResourceDefinition</span><span class="p">.</span><span class="n">apiextensions</span><span class="p">.</span><span class="n">k8s</span><span class="p">.</span><span class="n">io</span> <span class="s">&quot;tfjobs.kubeflow.org&quot;</span> <span class="n">is</span> <span class="n">invalid</span><span class="o">:</span> <span class="p">[</span><span class="n">spec</span><span class="p">.</span><span class="n">version</span><span class="o">:</span> <span class="n">Invalid</span> <span class="n">value</span><span class="o">:</span> <span class="s">&quot;v1beta1&quot;</span><span class="o">:</span> <span class="n">must</span> <span class="n">match</span> <span class="n">the</span> <span class="n">first</span> <span class="n">version</span> <span class="n">in</span> <span class="n">spec</span><span class="p">.</span><span class="n">versions</span><span class="p">,</span> <span class="n">status</span><span class="p">.</span><span class="n">storedVersions</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">:</span> <span class="n">Invalid</span> <span class="n">value</span><span class="o">:</span> <span class="s">&quot;v1beta1&quot;</span><span class="o">:</span> <span class="n">must</span> <span class="n">appear</span> <span class="n">in</span> <span class="n">spec</span><span class="p">.</span><span class="n">versions</span><span class="p">]</span>
+</pre></div>
+
+
+<p>我是通过先执行删除命令，之后又重新安装就可以了</p>
+<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">kustomize</span>  <span class="n">kustomize</span><span class="o">/</span><span class="n">tf</span><span class="o">-</span><span class="n">job</span><span class="o">-</span><span class="n">crds</span><span class="o">/</span> <span class="o">|</span> <span class="n">kubectl</span> <span class="n">delete</span> <span class="o">-</span><span class="n">f</span> <span class="o">-</span>
+<span class="n">kubectl</span> <span class="n">kustomize</span>  <span class="n">kustomize</span><span class="o">/</span><span class="n">tf</span><span class="o">-</span><span class="n">job</span><span class="o">-</span><span class="n">crds</span><span class="o">/</span> <span class="o">|</span> <span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="o">-</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">kubectl</span> <span class="n">patch</span> <span class="n">mutatingwebhookconfiguration</span> <span class="n">inferenceservice</span><span class="p">.</span><span class="n">serving</span><span class="p">.</span><span class="n">kubeflow</span><span class="p">.</span><span class="n">org</span> <span class="o">--</span><span class="n">patch</span> <span class="err">&#39;</span><span class="p">{</span><span class="s">&quot;webhooks&quot;</span><span class="o">:</span><span class="p">[{</span><span class="s">&quot;name&quot;</span><span class="o">:</span> <span class="s">&quot;inferenceservice.kfserving-webhook-server.pod-mutator&quot;</span><span class="p">,</span><span class="s">&quot;objectSelector&quot;</span><span class="o">:</span><span class="p">{</span><span class="s">&quot;matchExpressions&quot;</span><span class="o">:</span><span class="p">[{</span><span class="s">&quot;key&quot;</span><span class="o">:</span><span class="s">&quot;serving.kubeflow.org/inferenceservice&quot;</span><span class="p">,</span> <span class="s">&quot;operator&quot;</span><span class="o">:</span> <span class="s">&quot;Exists&quot;</span><span class="p">}]}}]}</span><span class="err">&#39;</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span> <span class="n">istio</span><span class="o">-</span><span class="n">io</span><span class="o">-</span><span class="n">health</span><span class="p">.</span><span class="n">yaml</span>
+<span class="nl">apiVersion:</span> <span class="n">security</span><span class="p">.</span><span class="n">istio</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">v1beta1</span>
+<span class="nl">kind:</span> <span class="n">PeerAuthentication</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="s">&quot;default&quot;</span>
+  <span class="nl">namespace:</span> <span class="s">&quot;istio-io-health&quot;</span>
+<span class="nl">spec:</span>
+  <span class="nl">mtls:</span>
+    <span class="nl">mode:</span> <span class="n">STRICT</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="n">istio</span><span class="o">-</span><span class="n">io</span><span class="o">-</span><span class="n">health</span><span class="p">.</span><span class="n">yaml</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span> <span class="n">profile</span><span class="p">.</span><span class="n">yaml</span>
+<span class="nl">apiVersion:</span> <span class="n">kubeflow</span><span class="p">.</span><span class="n">org</span><span class="o">/</span><span class="n">v1beta1</span>
+<span class="nl">kind:</span> <span class="n">Profile</span>
+<span class="nl">metadata:</span>
+  <span class="nl">name:</span> <span class="n">haha</span>
+<span class="nl">spec:</span>
+  <span class="nl">owner:</span>
+    <span class="nl">kind:</span> <span class="n">User</span>
+    <span class="nl">name:</span> <span class="n">userid</span><span class="err">@</span><span class="n">email</span><span class="p">.</span><span class="n">com</span>   <span class="err">#</span> <span class="n">replace</span> <span class="n">with</span> <span class="n">the</span> <span class="n">email</span> <span class="n">of</span> <span class="n">the</span> <span class="n">user</span>
+
+  <span class="nl">resourceQuotaSpec:</span>    <span class="err">#</span> <span class="n">resource</span> <span class="n">quota</span> <span class="n">can</span> <span class="n">be</span> <span class="n">set</span> <span class="n">optionally</span>
+   <span class="nl">hard:</span>
+     <span class="nl">cpu:</span> <span class="s">&quot;2&quot;</span>
+     <span class="nl">memory:</span> <span class="mi">2</span><span class="n">Gi</span>
+     <span class="n">requests</span><span class="p">.</span><span class="n">nvidia</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">gpu</span><span class="o">:</span> <span class="s">&quot;1&quot;</span>
+     <span class="nl">persistentvolumeclaims:</span> <span class="s">&quot;1&quot;</span>
+     <span class="n">requests</span><span class="p">.</span><span class="n">storage</span><span class="o">:</span> <span class="s">&quot;5Gi&quot;</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">profile</span><span class="p">.</span><span class="n">yaml</span>
+<span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="n">profile</span><span class="p">.</span><span class="n">yaml</span>  <span class="err">#</span><span class="k">if</span> <span class="n">you</span> <span class="n">are</span> <span class="n">modifying</span> <span class="n">the</span> <span class="n">profile</span>
+</pre></div>
+
+
+<h2 id="33">3.3. 镜像不存在</h2>
+<p>问题3 :registry.cn-hangzhou.aliyuncs.com/kfserving/kfserving-controller 不存在</p>
+<div class="hlcode"><pre><span class="n">docker</span> <span class="n">tag</span> <span class="n">smartliby</span><span class="o">/</span><span class="n">kfserving</span><span class="o">-</span><span class="n">controller</span><span class="o">:</span><span class="mf">0.2.2</span> <span class="n">registry</span><span class="p">.</span><span class="n">cn</span><span class="o">-</span><span class="n">hangzhou</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">kfserving</span><span class="o">/</span><span class="n">kfserving</span><span class="o">-</span><span class="n">controller</span><span class="o">:</span><span class="mf">0.2.2</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">cat</span> <span class="o">&lt;&lt;</span> <span class="n">EOF</span> <span class="o">&gt;</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">controller</span><span class="o">-</span><span class="n">manager</span><span class="p">.</span><span class="n">yaml</span>
+<span class="o">---</span>
+<span class="nl">apiVersion:</span> <span class="n">apps</span><span class="o">/</span><span class="n">v1</span>
+<span class="nl">kind:</span> <span class="n">StatefulSet</span>
+<span class="nl">metadata:</span>
+  <span class="nl">annotations:</span>
+    <span class="n">k8s</span><span class="p">.</span><span class="n">kuboard</span><span class="p">.</span><span class="n">cn</span><span class="o">/</span><span class="n">ingress</span><span class="o">:</span> <span class="err">&#39;</span><span class="nb">false</span><span class="err">&#39;</span>
+    <span class="n">k8s</span><span class="p">.</span><span class="n">kuboard</span><span class="p">.</span><span class="n">cn</span><span class="o">/</span><span class="n">service</span><span class="o">:</span> <span class="n">none</span>
+    <span class="n">k8s</span><span class="p">.</span><span class="n">kuboard</span><span class="p">.</span><span class="n">cn</span><span class="o">/</span><span class="n">workload</span><span class="o">:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">controller</span><span class="o">-</span><span class="n">manager</span>
+    <span class="n">kubectl</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">last</span><span class="o">-</span><span class="n">applied</span><span class="o">-</span><span class="n">configuration</span><span class="o">:</span> <span class="o">&gt;</span>
+      <span class="p">{</span><span class="s">&quot;apiVersion&quot;</span><span class="o">:</span><span class="s">&quot;apps/v1&quot;</span><span class="p">,</span><span class="s">&quot;kind&quot;</span><span class="o">:</span><span class="s">&quot;StatefulSet&quot;</span><span class="p">,</span><span class="s">&quot;metadata&quot;</span><span class="o">:</span><span class="p">{</span><span class="s">&quot;annotations&quot;</span><span class="o">:</span><span class="p">{},</span><span class="s">&quot;labels&quot;</span><span class="o">:</span><span class="p">{</span><span class="s">&quot;app.kubernetes.io/component&quot;</span><span class="o">:</span><span class="s">&quot;kfserving-install&quot;</span><span class="p">,</span><span class="s">&quot;app.kubernetes.io/instance&quot;</span><span class="o">:</span><span class="s">&quot;kfserving-install-0.2.2&quot;</span><span class="p">,</span><span class="s">&quot;app.kubernetes.io/managed-by&quot;</span><span class="o">:</span><span class="s">&quot;kfctl&quot;</span><span class="p">,</span><span class="s">&quot;app.kubernetes.io/name&quot;</span><span class="o">:</span><span class="s">&quot;kfserving-install&quot;</span><span class="p">,</span><span class="s">&quot;app.kubernetes.io/part-of&quot;</span><span class="o">:</span><span class="s">&quot;kubeflow&quot;</span><span class="p">,</span><span class="s">&quot;app.kubernetes.io/version&quot;</span><span class="o">:</span><span class="s">&quot;0.2.2&quot;</span><span class="p">,</span><span class="s">&quot;control-plane&quot;</span><span class="o">:</span><span class="s">&quot;kfserving-controller-manager&quot;</span><span class="p">,</span><span class="s">&quot;controller-tools.k8s.io&quot;</span><span class="o">:</span><span class="s">&quot;1.0&quot;</span><span class="p">,</span><span class="s">&quot;kustomize.component&quot;</span><span class="o">:</span><span class="s">&quot;kfserving&quot;</span><span class="p">},</span><span class="s">&quot;name&quot;</span><span class="o">:</span><span class="s">&quot;kfserving-controller-manager&quot;</span><span class="p">,</span><span class="s">&quot;namespace&quot;</span><span class="o">:</span><span class="s">&quot;kubeflow&quot;</span><span class="p">},</span><span class="s">&quot;spec&quot;</span><span class="o">:</span><span class="p">{</span><span class="s">&quot;selector&quot;</span><span class="o">:</span><span class="p">{</span><span class="s">&quot;matchLabels&quot;</span><span class="o">:</span><span class="p">{</span><span class="s">&quot;app.kubernetes.io/component&quot;</span><span class="o">:</span><span class="s">&quot;kfserving-install&quot;</span><span class="p">,</span><span class="s">&quot;app.kubernetes.io/instance&quot;</span><span class="o">:</span><span class="s">&quot;kfserving-install-0.2.2&quot;</span><span class="p">,</span><span class="s">&quot;app.kubernetes.io/managed-by&quot;</span><span class="o">:</span><span class="s">&quot;kfctl&quot;</span><span class="p">,</span><span class="s">&quot;app.kubernetes.io/name&quot;</span><span class="o">:</span><span class="s">&quot;kfserving-install&quot;</span><span class="p">,</span><span class="s">&quot;app.kubernetes.io/part-of&quot;</span><span class="o">:</span><span class="s">&quot;kubeflow&quot;</span><span class="p">,</span><span class="s">&quot;app.kubernetes.io/version&quot;</span><span class="o">:</span><span class="s">&quot;0.2.2&quot;</span><span class="p">,</span><span class="s">&quot;control-plane&quot;</span><span class="o">:</span><span class="s">&quot;kfserving-controller-manager&quot;</span><span class="p">,</span><span class="s">&quot;controller-tools.k8s.io&quot;</span><span class="o">:</span><span class="s">&quot;1.0&quot;</span><span class="p">,</span><span class="s">&quot;kustomize.component&quot;</span><span class="o">:</span><span class="s">&quot;kfserving&quot;</span><span class="p">}},</span><span class="s">&quot;serviceName&quot;</span><span class="o">:</span><span class="s">&quot;controller-manager-service&quot;</span><span class="p">,</span><span class="s">&quot;template&quot;</span><span class="o">:</span><span class="p">{</span><span class="s">&quot;metadata&quot;</span><span class="o">:</span><span class="p">{</span><span class="s">&quot;annotations&quot;</span><span class="o">:</span><span class="p">{</span><span class="s">&quot;sidecar.istio.io/inject&quot;</span><span class="o">:</span><span class="s">&quot;false&quot;</span><span class="p">},</span><span class="s">&quot;labels&quot;</span><span class="o">:</span><span class="p">{</span><span class="s">&quot;app.kubernetes.io/component&quot;</span><span class="o">:</span><span class="s">&quot;kfserving-install&quot;</span><span class="p">,</span><span class="s">&quot;app.kubernetes.io/instance&quot;</span><span class="o">:</span><span class="s">&quot;kfserving-install-0.2.2&quot;</span><span class="p">,</span><span class="s">&quot;app.kubernetes.io/managed-by&quot;</span><span class="o">:</span><span class="s">&quot;kfctl&quot;</span><span class="p">,</span><span class="s">&quot;app.kubernetes.io/name&quot;</span><span class="o">:</span><span class="s">&quot;kfserving-install&quot;</span><span class="p">,</span><span class="s">&quot;app.kubernetes.io/part-of&quot;</span><span class="o">:</span><span class="s">&quot;kubeflow&quot;</span><span class="p">,</span><span class="s">&quot;app.kubernetes.io/version&quot;</span><span class="o">:</span><span class="s">&quot;0.2.2&quot;</span><span class="p">,</span><span class="s">&quot;control-plane&quot;</span><span class="o">:</span><span class="s">&quot;kfserving-controller-manager&quot;</span><span class="p">,</span><span class="s">&quot;controller-tools.k8s.io&quot;</span><span class="o">:</span><span class="s">&quot;1.0&quot;</span><span class="p">,</span><span class="s">&quot;kustomize.component&quot;</span><span class="o">:</span><span class="s">&quot;kfserving&quot;</span><span class="p">}},</span><span class="s">&quot;spec&quot;</span><span class="o">:</span><span class="p">{</span><span class="s">&quot;containers&quot;</span><span class="o">:</span><span class="p">[{</span><span class="s">&quot;args&quot;</span><span class="o">:</span><span class="p">[</span><span class="s">&quot;--secure-listen-address=0.0.0.0:8443&quot;</span><span class="p">,</span><span class="s">&quot;--upstream=http://127.0.0.1:8080/&quot;</span><span class="p">,</span><span class="s">&quot;--logtostderr=true&quot;</span><span class="p">,</span><span class="s">&quot;--v=10&quot;</span><span class="p">],</span><span class="s">&quot;image&quot;</span><span class="o">:</span><span class="s">&quot;registry.cn-hangzhou.aliyuncs.com/kubebuilder/kube-rbac-proxy:v0.4.0&quot;</span><span class="p">,</span><span class="s">&quot;name&quot;</span><span class="o">:</span><span class="s">&quot;kube-rbac-proxy&quot;</span><span class="p">,</span><span class="s">&quot;ports&quot;</span><span class="o">:</span><span class="p">[{</span><span class="s">&quot;containerPort&quot;</span><span class="o">:</span><span class="mi">8443</span><span class="p">,</span><span class="s">&quot;name&quot;</span><span class="o">:</span><span class="s">&quot;https&quot;</span><span class="p">}]},{</span><span class="s">&quot;args&quot;</span><span class="o">:</span><span class="p">[</span><span class="s">&quot;--metrics-addr=127.0.0.1:8080&quot;</span><span class="p">],</span><span class="s">&quot;command&quot;</span><span class="o">:</span><span class="p">[</span><span class="s">&quot;/manager&quot;</span><span class="p">],</span><span class="s">&quot;env&quot;</span><span class="o">:</span><span class="p">[{</span><span class="s">&quot;name&quot;</span><span class="o">:</span><span class="s">&quot;POD_NAMESPACE&quot;</span><span class="p">,</span><span class="s">&quot;valueFrom&quot;</span><span class="o">:</span><span class="p">{</span><span class="s">&quot;fieldRef&quot;</span><span class="o">:</span><span class="p">{</span><span class="s">&quot;fieldPath&quot;</span><span class="o">:</span><span class="s">&quot;metadata.namespace&quot;</span><span class="p">}}},{</span><span class="s">&quot;name&quot;</span><span class="o">:</span><span class="s">&quot;SECRET_NAME&quot;</span><span class="p">,</span><span class="s">&quot;value&quot;</span><span class="o">:</span><span class="s">&quot;kfserving-webhook-server-secret&quot;</span><span class="p">},{</span><span class="s">&quot;name&quot;</span><span class="o">:</span><span class="s">&quot;ENABLE_WEBHOOK_NAMESPACE_SELECTOR&quot;</span><span class="p">,</span><span class="s">&quot;value&quot;</span><span class="o">:</span><span class="s">&quot;enabled&quot;</span><span class="p">}],</span><span class="s">&quot;image&quot;</span><span class="o">:</span><span class="s">&quot;smartliby/kfserving-controller:0.2.2&quot;</span><span class="p">,</span><span class="s">&quot;imagePullPolicy&quot;</span><span class="o">:</span><span class="s">&quot;Always&quot;</span><span class="p">,</span><span class="s">&quot;name&quot;</span><span class="o">:</span><span class="s">&quot;manager&quot;</span><span class="p">,</span><span class="s">&quot;ports&quot;</span><span class="o">:</span><span class="p">[{</span><span class="s">&quot;containerPort&quot;</span><span class="o">:</span><span class="mi">9876</span><span class="p">,</span><span class="s">&quot;name&quot;</span><span class="o">:</span><span class="s">&quot;webhook-server&quot;</span><span class="p">,</span><span class="s">&quot;protocol&quot;</span><span class="o">:</span><span class="s">&quot;TCP&quot;</span><span class="p">}],</span><span class="s">&quot;resources&quot;</span><span class="o">:</span><span class="p">{</span><span class="s">&quot;limits&quot;</span><span class="o">:</span><span class="p">{</span><span class="s">&quot;cpu&quot;</span><span class="o">:</span><span class="s">&quot;100m&quot;</span><span class="p">,</span><span class="s">&quot;memory&quot;</span><span class="o">:</span><span class="s">&quot;300Mi&quot;</span><span class="p">},</span><span class="s">&quot;requests&quot;</span><span class="o">:</span><span class="p">{</span><span class="s">&quot;cpu&quot;</span><span class="o">:</span><span class="s">&quot;100m&quot;</span><span class="p">,</span><span class="s">&quot;memory&quot;</span><span class="o">:</span><span class="s">&quot;200Mi&quot;</span><span class="p">}},</span><span class="s">&quot;volumeMounts&quot;</span><span class="o">:</span><span class="p">[{</span><span class="s">&quot;mountPath&quot;</span><span class="o">:</span><span class="s">&quot;/tmp/cert&quot;</span><span class="p">,</span><span class="s">&quot;name&quot;</span><span class="o">:</span><span class="s">&quot;cert&quot;</span><span class="p">,</span><span class="s">&quot;readOnly&quot;</span><span class="o">:</span><span class="nb">true</span><span class="p">}]}],</span><span class="s">&quot;terminationGracePeriodSeconds&quot;</span><span class="o">:</span><span class="mi">10</span><span class="p">,</span><span class="s">&quot;volumes&quot;</span><span class="o">:</span><span class="p">[{</span><span class="s">&quot;name&quot;</span><span class="o">:</span><span class="s">&quot;cert&quot;</span><span class="p">,</span><span class="s">&quot;secret&quot;</span><span class="o">:</span><span class="p">{</span><span class="s">&quot;defaultMode&quot;</span><span class="o">:</span><span class="mi">420</span><span class="p">,</span><span class="s">&quot;secretName&quot;</span><span class="o">:</span><span class="s">&quot;kfserving-webhook-server-secret&quot;</span><span class="p">}}]}},</span><span class="s">&quot;volumeClaimTemplates&quot;</span><span class="o">:</span><span class="p">[]}}</span>
+  <span class="nl">creationTimestamp:</span> <span class="err">&#39;</span><span class="mi">2021</span><span class="o">-</span><span class="mo">04</span><span class="o">-</span><span class="mi">19</span><span class="n">T07</span><span class="o">:</span><span class="mi">43</span><span class="o">:</span><span class="mi">22</span><span class="n">Z</span><span class="err">&#39;</span>
+  <span class="nl">generation:</span> <span class="mi">10</span>
+  <span class="nl">labels:</span>
+    <span class="n">app</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">component</span><span class="o">:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">install</span>
+    <span class="n">app</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">instance</span><span class="o">:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">install</span><span class="o">-</span><span class="mf">0.2.2</span>
+    <span class="n">app</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">managed</span><span class="o">-</span><span class="n">by</span><span class="o">:</span> <span class="n">kfctl</span>
+    <span class="n">app</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">name</span><span class="o">:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">install</span>
+    <span class="n">app</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">part</span><span class="o">-</span><span class="n">of</span><span class="o">:</span> <span class="n">kubeflow</span>
+    <span class="n">app</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">version</span><span class="o">:</span> <span class="mf">0.2.2</span>
+    <span class="n">control</span><span class="o">-</span><span class="n">plane</span><span class="o">:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">controller</span><span class="o">-</span><span class="n">manager</span>
+    <span class="n">controller</span><span class="o">-</span><span class="n">tools</span><span class="p">.</span><span class="n">k8s</span><span class="p">.</span><span class="n">io</span><span class="o">:</span> <span class="err">&#39;</span><span class="mf">1.0</span><span class="err">&#39;</span>
+    <span class="n">kustomize</span><span class="p">.</span><span class="n">component</span><span class="o">:</span> <span class="n">kfserving</span>
+  <span class="nl">name:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">controller</span><span class="o">-</span><span class="n">manager</span>
+  <span class="nl">namespace:</span> <span class="n">kubeflow</span>
+  <span class="nl">resourceVersion:</span> <span class="err">&#39;</span><span class="mi">15134897</span><span class="err">&#39;</span>
+  <span class="nl">selfLink:</span> <span class="o">/</span><span class="n">apis</span><span class="o">/</span><span class="n">apps</span><span class="o">/</span><span class="n">v1</span><span class="o">/</span><span class="n">namespaces</span><span class="o">/</span><span class="n">kubeflow</span><span class="o">/</span><span class="n">statefulsets</span><span class="o">/</span><span class="n">kfserving</span><span class="o">-</span><span class="n">controller</span><span class="o">-</span><span class="n">manager</span>
+  <span class="nl">uid:</span> <span class="mi">54</span><span class="n">c69db1</span><span class="o">-</span><span class="mo">03</span><span class="mi">84</span><span class="o">-</span><span class="mi">4309</span><span class="o">-</span><span class="n">b891</span><span class="o">-</span><span class="mf">2f</span><span class="n">ef13a15b01</span>
+<span class="nl">spec:</span>
+  <span class="nl">podManagementPolicy:</span> <span class="n">OrderedReady</span>
+  <span class="nl">replicas:</span> <span class="mi">1</span>
+  <span class="nl">revisionHistoryLimit:</span> <span class="mi">10</span>
+  <span class="nl">selector:</span>
+    <span class="nl">matchLabels:</span>
+      <span class="n">app</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">component</span><span class="o">:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">install</span>
+      <span class="n">app</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">instance</span><span class="o">:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">install</span><span class="o">-</span><span class="mf">0.2.2</span>
+      <span class="n">app</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">managed</span><span class="o">-</span><span class="n">by</span><span class="o">:</span> <span class="n">kfctl</span>
+      <span class="n">app</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">name</span><span class="o">:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">install</span>
+      <span class="n">app</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">part</span><span class="o">-</span><span class="n">of</span><span class="o">:</span> <span class="n">kubeflow</span>
+      <span class="n">app</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">version</span><span class="o">:</span> <span class="mf">0.2.2</span>
+      <span class="n">control</span><span class="o">-</span><span class="n">plane</span><span class="o">:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">controller</span><span class="o">-</span><span class="n">manager</span>
+      <span class="n">controller</span><span class="o">-</span><span class="n">tools</span><span class="p">.</span><span class="n">k8s</span><span class="p">.</span><span class="n">io</span><span class="o">:</span> <span class="err">&#39;</span><span class="mf">1.0</span><span class="err">&#39;</span>
+      <span class="n">kustomize</span><span class="p">.</span><span class="n">component</span><span class="o">:</span> <span class="n">kfserving</span>
+  <span class="nl">serviceName:</span> <span class="n">controller</span><span class="o">-</span><span class="n">manager</span><span class="o">-</span><span class="n">service</span>
+  <span class="nl">template:</span>
+    <span class="nl">metadata:</span>
+      <span class="nl">creationTimestamp:</span> <span class="n">null</span>
+      <span class="nl">labels:</span>
+        <span class="n">app</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">component</span><span class="o">:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">install</span>
+        <span class="n">app</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">instance</span><span class="o">:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">install</span><span class="o">-</span><span class="mf">0.2.2</span>
+        <span class="n">app</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">managed</span><span class="o">-</span><span class="n">by</span><span class="o">:</span> <span class="n">kfctl</span>
+        <span class="n">app</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">name</span><span class="o">:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">install</span>
+        <span class="n">app</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">part</span><span class="o">-</span><span class="n">of</span><span class="o">:</span> <span class="n">kubeflow</span>
+        <span class="n">app</span><span class="p">.</span><span class="n">kubernetes</span><span class="p">.</span><span class="n">io</span><span class="o">/</span><span class="n">version</span><span class="o">:</span> <span class="mf">0.2.2</span>
+        <span class="n">control</span><span class="o">-</span><span class="n">plane</span><span class="o">:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">controller</span><span class="o">-</span><span class="n">manager</span>
+        <span class="n">controller</span><span class="o">-</span><span class="n">tools</span><span class="p">.</span><span class="n">k8s</span><span class="p">.</span><span class="n">io</span><span class="o">:</span> <span class="err">&#39;</span><span class="mf">1.0</span><span class="err">&#39;</span>
+        <span class="n">kustomize</span><span class="p">.</span><span class="n">component</span><span class="o">:</span> <span class="n">kfserving</span>
+    <span class="nl">spec:</span>
+      <span class="nl">containers:</span>
+        <span class="o">-</span> <span class="n">args</span><span class="o">:</span>
+            <span class="o">-</span> <span class="err">&#39;</span><span class="o">--</span><span class="n">secure</span><span class="o">-</span><span class="n">listen</span><span class="o">-</span><span class="n">address</span><span class="o">=</span><span class="mf">0.0.0.0</span><span class="o">:</span><span class="mi">8443</span><span class="err">&#39;</span>
+            <span class="o">-</span> <span class="err">&#39;</span><span class="o">--</span><span class="n">upstream</span><span class="o">=</span><span class="n">http</span><span class="o">:</span><span class="c1">//127.0.0.1:8080/&#39;</span>
+            <span class="o">-</span> <span class="err">&#39;</span><span class="o">--</span><span class="n">logtostderr</span><span class="o">=</span><span class="nb">true</span><span class="err">&#39;</span>
+            <span class="o">-</span> <span class="err">&#39;</span><span class="o">--</span><span class="n">v</span><span class="o">=</span><span class="mi">10</span><span class="err">&#39;</span>
+          <span class="nl">image:</span> <span class="err">&#39;</span><span class="n">registry</span><span class="p">.</span><span class="n">cn</span><span class="o">-</span><span class="n">hangzhou</span><span class="p">.</span><span class="n">aliyuncs</span><span class="p">.</span><span class="n">com</span><span class="o">/</span><span class="n">kubebuilder</span><span class="o">/</span><span class="n">kube</span><span class="o">-</span><span class="n">rbac</span><span class="o">-</span><span class="n">proxy</span><span class="o">:</span><span class="n">v0</span><span class="mf">.4.0</span><span class="err">&#39;</span>
+          <span class="nl">imagePullPolicy:</span> <span class="n">IfNotPresent</span>
+          <span class="nl">lifecycle:</span> <span class="p">{}</span>
+          <span class="nl">name:</span> <span class="n">kube</span><span class="o">-</span><span class="n">rbac</span><span class="o">-</span><span class="n">proxy</span>
+          <span class="nl">ports:</span>
+            <span class="o">-</span> <span class="n">containerPort</span><span class="o">:</span> <span class="mi">8443</span>
+              <span class="nl">name:</span> <span class="n">https</span>
+              <span class="nl">protocol:</span> <span class="n">TCP</span>
+          <span class="nl">resources:</span> <span class="p">{}</span>
+          <span class="nl">terminationMessagePath:</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">termination</span><span class="o">-</span><span class="n">log</span>
+          <span class="nl">terminationMessagePolicy:</span> <span class="n">File</span>
+        <span class="o">-</span> <span class="n">args</span><span class="o">:</span>
+            <span class="o">-</span> <span class="err">&#39;</span><span class="o">--</span><span class="n">metrics</span><span class="o">-</span><span class="n">addr</span><span class="o">=</span><span class="mf">127.0.0.1</span><span class="o">:</span><span class="mi">8080</span><span class="err">&#39;</span>
+          <span class="nl">command:</span>
+            <span class="o">-</span> <span class="o">/</span><span class="n">manager</span>
+          <span class="nl">env:</span>
+            <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">POD_NAMESPACE</span>
+              <span class="nl">valueFrom:</span>
+                <span class="nl">fieldRef:</span>
+                  <span class="nl">apiVersion:</span> <span class="n">v1</span>
+                  <span class="nl">fieldPath:</span> <span class="n">metadata</span><span class="p">.</span><span class="n">namespace</span>
+            <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">SECRET_NAME</span>
+              <span class="nl">value:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">webhook</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="n">secret</span>
+            <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">ENABLE_WEBHOOK_NAMESPACE_SELECTOR</span>
+              <span class="nl">value:</span> <span class="n">enabled</span>
+          <span class="nl">image:</span> <span class="err">&#39;</span><span class="n">smartliby</span><span class="o">/</span><span class="n">kfserving</span><span class="o">-</span><span class="n">controller</span><span class="o">:</span><span class="mf">0.2.2</span><span class="err">&#39;</span>
+          <span class="nl">imagePullPolicy:</span> <span class="n">Always</span>
+          <span class="nl">lifecycle:</span> <span class="p">{}</span>
+          <span class="nl">name:</span> <span class="n">manager</span>
+          <span class="nl">ports:</span>
+            <span class="o">-</span> <span class="n">containerPort</span><span class="o">:</span> <span class="mi">9876</span>
+              <span class="nl">name:</span> <span class="n">webhook</span><span class="o">-</span><span class="n">server</span>
+              <span class="nl">protocol:</span> <span class="n">TCP</span>
+          <span class="nl">resources:</span>
+            <span class="nl">limits:</span>
+              <span class="nl">cpu:</span> <span class="mi">100</span><span class="n">m</span>
+              <span class="nl">memory:</span> <span class="mi">300</span><span class="n">Mi</span>
+            <span class="nl">requests:</span>
+              <span class="nl">cpu:</span> <span class="mi">100</span><span class="n">m</span>
+              <span class="nl">memory:</span> <span class="mi">200</span><span class="n">Mi</span>
+          <span class="nl">terminationMessagePath:</span> <span class="o">/</span><span class="n">dev</span><span class="o">/</span><span class="n">termination</span><span class="o">-</span><span class="n">log</span>
+          <span class="nl">terminationMessagePolicy:</span> <span class="n">File</span>
+          <span class="nl">volumeMounts:</span>
+            <span class="o">-</span> <span class="n">mountPath</span><span class="o">:</span> <span class="o">/</span><span class="n">tmp</span><span class="o">/</span><span class="n">cert</span>
+              <span class="nl">name:</span> <span class="n">cert</span>
+              <span class="nl">readOnly:</span> <span class="nb">true</span>
+      <span class="nl">dnsConfig:</span> <span class="p">{}</span>
+      <span class="nl">dnsPolicy:</span> <span class="n">ClusterFirst</span>
+      <span class="nl">restartPolicy:</span> <span class="n">Always</span>
+      <span class="nl">schedulerName:</span> <span class="k">default</span><span class="o">-</span><span class="n">scheduler</span>
+      <span class="nl">securityContext:</span>
+        <span class="nl">seLinuxOptions:</span> <span class="p">{}</span>
+      <span class="nl">terminationGracePeriodSeconds:</span> <span class="mi">10</span>
+      <span class="nl">volumes:</span>
+        <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">cert</span>
+          <span class="nl">secret:</span>
+            <span class="nl">defaultMode:</span> <span class="mi">420</span>
+            <span class="nl">secretName:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">webhook</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="n">secret</span>
+  <span class="nl">updateStrategy:</span>
+    <span class="nl">rollingUpdate:</span>
+      <span class="nl">partition:</span> <span class="mi">0</span>
+    <span class="nl">type:</span> <span class="n">RollingUpdate</span>
+<span class="n">EOF</span>
+<span class="n">kubectl</span> <span class="n">apply</span> <span class="o">-</span><span class="n">f</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">controller</span><span class="o">-</span><span class="n">manager</span><span class="p">.</span><span class="n">yaml</span>
+</pre></div>
+
+
+<h1 id="4-kfctl_k8s_istioyaml">4. 详细解读 kfctl_k8s_istio.yaml</h1>
+<p><code>kfctl_k8s_istio.yaml</code>中包括44个applications（应用），每个应用通过<br />
+kustomizeConfig部署</p>
+<div class="hlcode"><pre><span class="n">apiVersion</span><span class="o">:</span> <span class="n">kfdef</span><span class="o">.</span><span class="na">apps</span><span class="o">.</span><span class="na">kubeflow</span><span class="o">.</span><span class="na">org</span><span class="o">/</span><span class="n">v1</span>
+<span class="n">kind</span><span class="o">:</span> <span class="n">KfDef</span>
+<span class="n">metadata</span><span class="o">:</span>
+  <span class="kd">namespace</span><span class="o">:</span> <span class="n">kubeflow</span>
+<span class="n">spec</span><span class="o">:</span>
+  <span class="n">applications</span><span class="o">:</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">parameters</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="kd">namespace</span>
+        <span class="n">value</span><span class="o">:</span> <span class="n">istio</span><span class="o">-</span><span class="n">system</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">istio</span><span class="o">/</span><span class="n">istio</span><span class="o">-</span><span class="n">crds</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">istio</span><span class="o">-</span><span class="n">crds</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">parameters</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="kd">namespace</span>
+        <span class="n">value</span><span class="o">:</span> <span class="n">istio</span><span class="o">-</span><span class="n">system</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">istio</span><span class="o">/</span><span class="n">istio</span><span class="o">-</span><span class="n">install</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">istio</span><span class="o">-</span><span class="n">install</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">parameters</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="kd">namespace</span>
+        <span class="n">value</span><span class="o">:</span> <span class="n">istio</span><span class="o">-</span><span class="n">system</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">istio</span><span class="o">/</span><span class="n">cluster</span><span class="o">-</span><span class="n">local</span><span class="o">-</span><span class="n">gateway</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">cluster</span><span class="o">-</span><span class="n">local</span><span class="o">-</span><span class="n">gateway</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">parameters</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="kd">namespace</span>
+        <span class="n">value</span><span class="o">:</span> <span class="n">istio</span><span class="o">-</span><span class="n">system</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">istio</span><span class="o">/</span><span class="n">kfserving</span><span class="o">-</span><span class="n">gateway</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">gateway</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">parameters</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">clusterRbacConfig</span>
+        <span class="n">value</span><span class="o">:</span> <span class="s1">&#39;OFF&#39;</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">istio</span><span class="o">/</span><span class="n">istio</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">istio</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">parameters</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="kd">namespace</span>
+        <span class="n">value</span><span class="o">:</span> <span class="n">istio</span><span class="o">-</span><span class="n">system</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">istio</span><span class="o">/</span><span class="n">add</span><span class="o">-</span><span class="n">anonymous</span><span class="o">-</span><span class="n">user</span><span class="o">-</span><span class="n">filter</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">add</span><span class="o">-</span><span class="n">anonymous</span><span class="o">-</span><span class="n">user</span><span class="o">-</span><span class="n">filter</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">application</span><span class="o">/</span><span class="n">application</span><span class="o">-</span><span class="n">crds</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">application</span><span class="o">-</span><span class="n">crds</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">application</span><span class="o">/</span><span class="n">application</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">application</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">parameters</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="kd">namespace</span>
+        <span class="n">value</span><span class="o">:</span> <span class="n">cert</span><span class="o">-</span><span class="n">manager</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">cert</span><span class="o">-</span><span class="n">manager</span><span class="o">/</span><span class="n">cert</span><span class="o">-</span><span class="n">manager</span><span class="o">-</span><span class="n">crds</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">cert</span><span class="o">-</span><span class="n">manager</span><span class="o">-</span><span class="n">crds</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">parameters</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="kd">namespace</span>
+        <span class="n">value</span><span class="o">:</span> <span class="n">kube</span><span class="o">-</span><span class="n">system</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">cert</span><span class="o">-</span><span class="n">manager</span><span class="o">/</span><span class="n">cert</span><span class="o">-</span><span class="n">manager</span><span class="o">-</span><span class="n">kube</span><span class="o">-</span><span class="n">system</span><span class="o">-</span><span class="n">resources</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">cert</span><span class="o">-</span><span class="n">manager</span><span class="o">-</span><span class="n">kube</span><span class="o">-</span><span class="n">system</span><span class="o">-</span><span class="n">resources</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">self</span><span class="o">-</span><span class="n">signed</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">parameters</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="kd">namespace</span>
+        <span class="n">value</span><span class="o">:</span> <span class="n">cert</span><span class="o">-</span><span class="n">manager</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">cert</span><span class="o">-</span><span class="n">manager</span><span class="o">/</span><span class="n">cert</span><span class="o">-</span><span class="n">manager</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">cert</span><span class="o">-</span><span class="n">manager</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">metacontroller</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">metacontroller</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">istio</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">argo</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">argo</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">kubeflow</span><span class="o">-</span><span class="n">roles</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">kubeflow</span><span class="o">-</span><span class="n">roles</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">istio</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">common</span><span class="o">/</span><span class="n">centraldashboard</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">centraldashboard</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">admission</span><span class="o">-</span><span class="n">webhook</span><span class="o">/</span><span class="n">bootstrap</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">bootstrap</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">admission</span><span class="o">-</span><span class="n">webhook</span><span class="o">/</span><span class="n">webhook</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">webhook</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">istio</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">parameters</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">userid</span><span class="o">-</span><span class="n">header</span>
+        <span class="n">value</span><span class="o">:</span> <span class="n">kubeflow</span><span class="o">-</span><span class="n">userid</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">jupyter</span><span class="o">/</span><span class="n">jupyter</span><span class="o">-</span><span class="n">web</span><span class="o">-</span><span class="n">app</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">jupyter</span><span class="o">-</span><span class="n">web</span><span class="o">-</span><span class="n">app</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">spark</span><span class="o">/</span><span class="n">spark</span><span class="o">-</span><span class="n">operator</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">spark</span><span class="o">-</span><span class="n">operator</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">istio</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="o">-</span> <span class="n">db</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">metadata</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">metadata</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">istio</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">jupyter</span><span class="o">/</span><span class="n">notebook</span><span class="o">-</span><span class="n">controller</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">notebook</span><span class="o">-</span><span class="n">controller</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">pytorch</span><span class="o">-</span><span class="n">job</span><span class="o">/</span><span class="n">pytorch</span><span class="o">-</span><span class="n">job</span><span class="o">-</span><span class="n">crds</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">pytorch</span><span class="o">-</span><span class="n">job</span><span class="o">-</span><span class="n">crds</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">pytorch</span><span class="o">-</span><span class="n">job</span><span class="o">/</span><span class="n">pytorch</span><span class="o">-</span><span class="n">operator</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">pytorch</span><span class="o">-</span><span class="n">operator</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">parameters</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="kd">namespace</span>
+        <span class="n">value</span><span class="o">:</span> <span class="n">knative</span><span class="o">-</span><span class="n">serving</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">knative</span><span class="o">/</span><span class="n">knative</span><span class="o">-</span><span class="n">serving</span><span class="o">-</span><span class="n">crds</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">knative</span><span class="o">-</span><span class="n">crds</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">parameters</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="kd">namespace</span>
+        <span class="n">value</span><span class="o">:</span> <span class="n">knative</span><span class="o">-</span><span class="n">serving</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">knative</span><span class="o">/</span><span class="n">knative</span><span class="o">-</span><span class="n">serving</span><span class="o">-</span><span class="n">install</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">knative</span><span class="o">-</span><span class="n">install</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">kfserving</span><span class="o">/</span><span class="n">kfserving</span><span class="o">-</span><span class="n">crds</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">crds</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">kfserving</span><span class="o">/</span><span class="n">kfserving</span><span class="o">-</span><span class="n">install</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">kfserving</span><span class="o">-</span><span class="n">install</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">parameters</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">usageId</span>
+        <span class="n">value</span><span class="o">:</span> <span class="o">&lt;</span><span class="n">randomly</span><span class="o">-</span><span class="n">generated</span><span class="o">-</span><span class="n">id</span><span class="o">&gt;</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">reportUsage</span>
+        <span class="n">value</span><span class="o">:</span> <span class="s1">&#39;true&#39;</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">common</span><span class="o">/</span><span class="n">spartakus</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">spartakus</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">istio</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">tensorboard</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">tensorboard</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">tf</span><span class="o">-</span><span class="n">training</span><span class="o">/</span><span class="n">tf</span><span class="o">-</span><span class="n">job</span><span class="o">-</span><span class="n">crds</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">tf</span><span class="o">-</span><span class="n">job</span><span class="o">-</span><span class="n">crds</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">tf</span><span class="o">-</span><span class="n">training</span><span class="o">/</span><span class="n">tf</span><span class="o">-</span><span class="n">job</span><span class="o">-</span><span class="n">operator</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">tf</span><span class="o">-</span><span class="n">job</span><span class="o">-</span><span class="n">operator</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">katib</span><span class="o">/</span><span class="n">katib</span><span class="o">-</span><span class="n">crds</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">katib</span><span class="o">-</span><span class="n">crds</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="o">-</span> <span class="n">istio</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">katib</span><span class="o">/</span><span class="n">katib</span><span class="o">-</span><span class="n">controller</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">katib</span><span class="o">-</span><span class="n">controller</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">pipeline</span><span class="o">/</span><span class="n">api</span><span class="o">-</span><span class="n">service</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">api</span><span class="o">-</span><span class="n">service</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">parameters</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">minioPvcName</span>
+        <span class="n">value</span><span class="o">:</span> <span class="n">minio</span><span class="o">-</span><span class="n">pv</span><span class="o">-</span><span class="n">claim</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">pipeline</span><span class="o">/</span><span class="n">minio</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">minio</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">parameters</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">mysqlPvcName</span>
+        <span class="n">value</span><span class="o">:</span> <span class="n">mysql</span><span class="o">-</span><span class="n">pv</span><span class="o">-</span><span class="n">claim</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">pipeline</span><span class="o">/</span><span class="n">mysql</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">mysql</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">pipeline</span><span class="o">/</span><span class="n">persistent</span><span class="o">-</span><span class="n">agent</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">persistent</span><span class="o">-</span><span class="n">agent</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">pipeline</span><span class="o">/</span><span class="n">pipelines</span><span class="o">-</span><span class="n">runner</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">pipelines</span><span class="o">-</span><span class="n">runner</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">istio</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">pipeline</span><span class="o">/</span><span class="n">pipelines</span><span class="o">-</span><span class="n">ui</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">pipelines</span><span class="o">-</span><span class="n">ui</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">pipeline</span><span class="o">/</span><span class="n">pipelines</span><span class="o">-</span><span class="n">viewer</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">pipelines</span><span class="o">-</span><span class="n">viewer</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">pipeline</span><span class="o">/</span><span class="n">scheduledworkflow</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">scheduledworkflow</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">pipeline</span><span class="o">/</span><span class="n">pipeline</span><span class="o">-</span><span class="n">visualization</span><span class="o">-</span><span class="n">service</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">pipeline</span><span class="o">-</span><span class="n">visualization</span><span class="o">-</span><span class="n">service</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="o">-</span> <span class="n">istio</span>
+      <span class="n">parameters</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">admin</span>
+        <span class="n">value</span><span class="o">:</span> <span class="n">johnDoe</span><span class="err">@</span><span class="n">acme</span><span class="o">.</span><span class="na">com</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">profiles</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">profiles</span>
+  <span class="o">-</span> <span class="n">kustomizeConfig</span><span class="o">:</span>
+      <span class="n">overlays</span><span class="o">:</span>
+      <span class="o">-</span> <span class="n">application</span>
+      <span class="n">repoRef</span><span class="o">:</span>
+        <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+        <span class="n">path</span><span class="o">:</span> <span class="n">seldon</span><span class="o">/</span><span class="n">seldon</span><span class="o">-</span><span class="n">core</span><span class="o">-</span><span class="n">operator</span>
+    <span class="n">name</span><span class="o">:</span> <span class="n">seldon</span><span class="o">-</span><span class="n">core</span><span class="o">-</span><span class="n">operator</span>
+  <span class="n">repos</span><span class="o">:</span>
+  <span class="o">-</span> <span class="n">name</span><span class="o">:</span> <span class="n">manifests</span>
+    <span class="n">uri</span><span class="o">:</span> <span class="n">https</span><span class="o">://</span><span class="n">github</span><span class="o">.</span><span class="na">com</span><span class="sr">/kubeflow/manifests/archive/</span><span class="n">v1</span><span class="o">.</span><span class="mf">0.2</span><span class="o">.</span><span class="na">tar</span><span class="o">.</span><span class="na">gz</span>
+  <span class="n">version</span><span class="o">:</span> <span class="n">v1</span><span class="o">.</span><span class="mf">0.2</span>
+</pre></div>
+
+
+<h1 id="5">5. 参考资料</h1>
+<ol>
+<li><a href="https://developer.aliyun.com/article/758776">阿里云Kubeflow 1.0 上线： 体验生产级的机器学习平台<br />
+</a></li>
+<li><a href="https://blog.csdn.net/reachyu/article/details/105764805">基于K8s 1.15部署kubeflow 0.7.0 by kfctl--问题集锦</a></li>
+</ol>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

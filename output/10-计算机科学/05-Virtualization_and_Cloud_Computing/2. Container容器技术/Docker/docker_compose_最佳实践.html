@@ -1,0 +1,317 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Docker Compose 镜像编排的最佳实践 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#10-计算机科学">10-计算机科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-05-Virtualization_and_Cloud_Computing">05-Virtualization_and_Cloud_Computing</a>&nbsp;»&nbsp;<a href="/Wiki/#-2. Container容器技术">2. Container容器技术</a>&nbsp;»&nbsp;<a href="/Wiki/#-Docker">Docker</a>&nbsp;»&nbsp;Docker Compose 镜像编排的最佳实践</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Docker Compose 镜像编排的最佳实践</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 概念</a></li>
+<li><a href="#2">2. 镜像编排实践</a><ul>
+<li><a href="#21">2.1. 忽略文件</a></li>
+<li><a href="#22-docker-compose">2.2. docker-compose 命令</a><ul>
+<li><a href="#221">2.2.1. 镜像构建</a></li>
+<li><a href="#222">2.2.2. 容器暂停</a></li>
+<li><a href="#223">2.2.3. 打印某个容器端口所映射的公共端口</a></li>
+<li><a href="#224">2.2.4.列出项目中目前的所有容器。</a></li>
+<li><a href="#225">2.2.5. 容器管理</a><ul>
+<li><a href="#2251">2.2.5.1. 容器运行</a></li>
+</ul>
+</li>
+<li><a href="#226">2.2.6. 版本查看</a></li>
+</ul>
+</li>
+<li><a href="#docker-composeyaml">docker-compose.yaml 文件</a><ul>
+<li><a href="#_1">环境遍历</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4">4. 参考文献</a></li>
+</ul>
+</div>
+<h1 id="1">1. 概念</h1>
+<p>Docker Compose 是 Docker 官方编排（Orchestration）项目之一，负责快速的部署分布式应用。</p>
+<p>Compose 定位是 "定义和<strong>运行多个</strong> Docker 容器的应用（Defining and running multi-container Docker applications）"，其前身是开源项目 </p>
+<p>允许用户通过一个单独的 <code>docker-compose.yml</code> 模板文件（YAML 格式）来定义一组相关联的应用容器为一个项目（project）。</p>
+<p>Compose 中有两个重要的概念：<br />
+    • <strong>服务 (service)</strong>：一个应用的容器，实际上可以包括若干运行相同镜像的容器实例。<br />
+    • <strong>项目 (project)</strong>：由一组关联的应用容器组成的一个完整业务单元，在 docker-compose.yml 文件中定义。<br />
+Compose 的默认管理对象是项目，通过子命令对项目中的一组容器进行便捷地生命周期管理。</p>
+<p>Compose 项目<strong>由 Python 编写</strong>，实现上调用了 Docker 服务提供的 API 来对容器进行管理。因此，只要所操作的平台支持 Docker API，就可以在其上利用 Compose 来进行编排管理。</p>
+<h1 id="2">2. 镜像编排实践</h1>
+<h2 id="21">2.1. 忽略文件</h2>
+<p>在工作目录下新建 <code>.dockerignore</code> 文件<br />
+.dockerignore 语法与 .gitignore 语法一致。使用它排除构建无关的文件及目录，如 node_modules</p>
+<h2 id="22-docker-compose">2.2. docker-compose 命令</h2>
+<p>对于 Compose 来说，大部分命令的对象既可以是项目本身，也可以指定为项目中的服务或者容器。如果没有特别的说明，命令对象将是项目，这意味着项目中所有的服务都会受到命令影响。<br />
+执行 docker-compose [COMMAND] --help 或者 docker-compose help [COMMAND] 可以查看具体某个命令的使用格式。</p>
+<p><code>docker-compose</code> 命令的基本的使用格式是</p>
+<div class="hlcode"><pre><span class="nx">docker</span><span class="na">-compose</span> <span class="err">[</span><span class="na">-f</span><span class="o">=&lt;</span><span class="nx">arg</span><span class="o">&gt;</span><span class="nx">...</span><span class="cp">]</span> <span class="cp">[</span><span class="nx">options</span><span class="cp">]</span> <span class="cp">[</span><span class="nb">COMMAND</span><span class="cp">]</span> <span class="cp">[</span><span class="nx">ARGS...</span><span class="cp">]</span>
+</pre></div>
+
+
+<p><strong>命令行 选项参数</strong><br />
+    • -f, --file FILE 指定使用的 Compose 模板文件，默认为 docker-compose.yml，可以多次指定。<br />
+    • -p, --project-name NAME 指定项目名称，默认将使用所在目录名称作为项目名。<br />
+    • --x-networking 使用 Docker 的可拔插网络后端特性<br />
+    • --x-network-driver DRIVER 指定网络后端的驱动，默认为 bridge<br />
+    • --verbose 输出更多调试信息。<br />
+    • -v, --version 打印版本并退出。</p>
+<h3 id="221">2.2.1. 镜像构建</h3>
+<p><strong>命令行 命令</strong><br />
+- build<br />
+格式为 </p>
+<div class="hlcode"><pre><span class="n">docker</span><span class="o">-</span><span class="n">compose</span> <span class="n">build</span> <span class="p">[</span><span class="n">options</span><span class="p">]</span> <span class="p">[</span><span class="n">SERVICE</span><span class="p">...]</span>
+</pre></div>
+
+
+<p>构建（重新构建）项目中的服务容器。<br />
+服务容器一旦构建后，将会带上一个标记名，例如对于 web 项目中的一个 db 容器，可能是 web_db。<br />
+可以随时在项目目录下运行 docker-compose build 来重新构建服务。<br />
+选项包括：<br />
+    • --force-rm 删除构建过程中的临时容器。<br />
+    • --no-cache 构建镜像过程中不使用 cache（这将加长构建过程）。<br />
+    • --pull 始终尝试通过 pull 来获取更新版本的镜像。<br />
+- config<br />
+验证 Compose 文件格式是否正确，若正确则显示配置，若格式错误显示错误原因。<br />
+- down<br />
+此命令将会停止 up 命令所启动的容器，并移除网络<br />
+- exec<br />
+进入指定的容器。<br />
+- help<br />
+获得一个命令的帮助。<br />
+- images<br />
+列出 Compose 文件中包含的镜像。<br />
+- kill<br />
+格式为 docker-compose kill [options] [SERVICE...]。<br />
+通过发送 SIGKILL 信号来强制停止服务容器。<br />
+支持通过 -s 参数来指定发送的信号，例如通过如下指令发送 SIGINT 信号。</p>
+<div class="hlcode"><pre><span class="err">$</span> <span class="n">docker</span><span class="o">-</span><span class="n">compose</span> <span class="n">kill</span> <span class="o">-</span><span class="n">s</span> <span class="n">SIGINT</span>
+</pre></div>
+
+
+<ul>
+<li>logs<br />
+格式为 docker-compose logs [options] [SERVICE...]。<br />
+查看服务容器的输出。默认情况下，docker-compose 将对不同的服务输出使用不同的颜色来区分。可以通过 --no-color 来关闭颜色。<br />
+该命令在调试问题的时候十分有用。</li>
+</ul>
+<h3 id="222">2.2.2. 容器暂停</h3>
+<div class="hlcode"><pre><span class="n">docker</span><span class="o">-</span><span class="n">compose</span> <span class="n">pause</span> <span class="p">[</span><span class="n">SERVICE</span><span class="p">...]</span>
+</pre></div>
+
+
+<p>暂停一个服务容器。</p>
+<h3 id="223">2.2.3. 打印某个容器端口所映射的公共端口</h3>
+<p>port<br />
+格式为 docker-compose port [options] SERVICE PRIVATE_PORT。<br />
+打印某个容器端口所映射的公共端口。<br />
+选项：<br />
+    • --protocol=proto 指定端口协议，tcp（默认值）或者 udp。<br />
+    • --index=index 如果同一服务存在多个容器，指定命令对象容器的序号（默认为 1）。</p>
+<h3 id="224">2.2.4.列出项目中目前的所有容器。</h3>
+<p>ps<br />
+格式为 <code>docker-compose ps [options] [SERVICE...]</code>。<br />
+列出项目中目前的所有容器。<br />
+选项：<br />
+    • -q 只打印容器的 ID 信息。<br />
+pull<br />
+格式为 docker-compose pull [options] [SERVICE...]。<br />
+拉取服务依赖的镜像。<br />
+选项：<br />
+    • --ignore-pull-failures 忽略拉取镜像过程中的错误。<br />
+push<br />
+推送服务依赖的镜像到 Docker 镜像仓库。<br />
+restart<br />
+格式为 docker-compose restart [options] [SERVICE...]。<br />
+重启项目中的服务。<br />
+选项：<br />
+    • -t, --timeout TIMEOUT 指定重启前停止容器的超时（默认为 10 秒）。<br />
+rm<br />
+格式为 docker-compose rm [options] [SERVICE...]。<br />
+删除所有（停止状态的）服务容器。推荐先执行 docker-compose stop 命令来停止容器。<br />
+选项：<br />
+    • -f, --force 强制直接删除，包括非停止状态的容器。一般尽量不要使用该选项。<br />
+    • -v 删除容器所挂载的数据卷。</p>
+<h3 id="225">2.2.5. 容器管理</h3>
+<h4 id="2251">2.2.5.1. 容器运行</h4>
+<p>格式为 docker-compose run [options] [-p PORT...] [-e KEY=VAL...] SERVICE [COMMAND] [ARGS...]。<br />
+在指定服务上执行一个命令。<br />
+例如：</p>
+<div class="hlcode"><pre><span class="n">docker</span><span class="o">-</span><span class="n">compose</span> <span class="n">run</span> <span class="n">ubuntu</span> <span class="n">ping</span> <span class="n">docker</span><span class="p">.</span><span class="n">com</span>
+</pre></div>
+
+
+<p>将会启动一个 ubuntu 服务容器，并执行 ping docker.com 命令。<br />
+默认情况下，如果存在关联，则所有关联的服务将会自动被启动，除非这些服务已经在运行中。<br />
+该命令类似启动容器后运行指定的命令，相关卷、链接等等都将会按照配置自动创建。<br />
+两个不同点：<br />
+    • 给定命令将会覆盖原有的自动运行命令；<br />
+    • 不会自动创建端口，以避免冲突。<br />
+如果不希望自动启动关联的容器，可以使用 --no-deps 选项，例如</p>
+<div class="hlcode"><pre><span class="n">docker</span><span class="o">-</span><span class="n">compose</span> <span class="n">run</span> <span class="o">--</span><span class="n">no</span><span class="o">-</span><span class="n">deps</span> <span class="n">web</span> <span class="n">python</span> <span class="n">manage</span><span class="p">.</span><span class="n">py</span> <span class="n">shell</span>
+</pre></div>
+
+
+<p>将不会启动 web 容器所关联的其它容器。<br />
+选项：<br />
+    • -d 后台运行容器。<br />
+    • --name NAME 为容器指定一个名字。<br />
+    • --entrypoint CMD 覆盖默认的容器启动指令。<br />
+    • -e KEY=VAL 设置环境变量值，可多次使用选项来设置多个环境变量。<br />
+    • -u, --user="" 指定运行容器的用户名或者 uid。<br />
+    • --no-deps 不自动启动关联的服务容器。<br />
+    • --rm 运行命令后自动删除容器，d 模式下将忽略。<br />
+    • -p, --publish=[] 映射容器端口到本地主机。<br />
+    • --service-ports 配置服务端口并映射到本地主机。<br />
+    • -T 不分配伪 tty，意味着依赖 tty 的指令将无法运行。<br />
+scale<br />
+格式为 docker-compose scale [options] [SERVICE=NUM...]。<br />
+设置指定服务运行的容器个数。<br />
+通过 service=num 的参数来设置数量。例如：</p>
+<div class="hlcode"><pre><span class="err">$</span> <span class="n">docker</span><span class="o">-</span><span class="n">compose</span> <span class="n">scale</span> <span class="n">web</span><span class="o">=</span><span class="mi">3</span> <span class="n">db</span><span class="o">=</span><span class="mi">2</span>
+</pre></div>
+
+
+<p>将启动 3 个容器运行 web 服务，2 个容器运行 db 服务。<br />
+一般的，当指定数目多于该服务当前实际运行容器，将新创建并启动容器；反之，将停止容器。<br />
+选项：<br />
+    • -t, --timeout TIMEOUT 停止容器时候的超时（默认为 10 秒）。<br />
+start<br />
+格式为 docker-compose start [SERVICE...]。<br />
+启动已经存在的服务容器。<br />
+stop<br />
+格式为 docker-compose stop [options] [SERVICE...]。<br />
+停止已经处于运行状态的容器，但不删除它。通过 docker-compose start 可以再次启动这些容器。<br />
+选项：<br />
+    • -t, --timeout TIMEOUT 停止容器时候的超时（默认为 10 秒）。<br />
+top<br />
+查看各个服务容器内运行的进程。<br />
+unpause<br />
+格式为 docker-compose unpause [SERVICE...]。<br />
+恢复处于暂停状态中的服务。<br />
+up<br />
+格式为 docker-compose up [options] [SERVICE...]。<br />
+该命令十分强大，它将尝试自动完成包括构建镜像，（重新）创建服务，启动服务，并关联服务相关容器的一系列操作。<br />
+链接的服务都将会被自动启动，除非已经处于运行状态。<br />
+可以说，大部分时候都可以直接通过该命令来启动一个项目。<br />
+默认情况，docker-compose up 启动的容器都在前台，控制台将会同时打印所有容器的输出信息，可以很方便进行调试。<br />
+当通过 Ctrl-C 停止命令时，所有容器将会停止。<br />
+如果使用 docker-compose up -d，将会在后台启动并运行所有的容器。一般推荐生产环境下使用该选项。<br />
+默认情况，如果服务容器已经存在，docker-compose up 将会尝试停止容器，然后重新创建（保持使用 volumes-from 挂载的卷），以保证新启动的服务匹配 docker-compose.yml 文件的最新内容。如果用户不希望容器被停止并重新创建，可以使用 docker-compose up --no-recreate。这样将只会启动处于停止状态的容器，而忽略已经运行的服务。如果用户只想重新部署某个服务，可以使用 docker-compose up --no-deps -d <SERVICE_NAME> 来重新创建服务并后台停止旧服务，启动新服务，并不会影响到其所依赖的服务。<br />
+选项：<br />
+    • -d 在后台运行服务容器。<br />
+    • --no-color 不使用颜色来区分不同的服务的控制台输出。<br />
+    • --no-deps 不启动服务所链接的容器。<br />
+    • --force-recreate 强制重新创建容器，不能与 --no-recreate 同时使用。<br />
+    • --no-recreate 如果容器已经存在了，则不重新创建，不能与 --force-recreate 同时使用。<br />
+    • --no-build 不自动构建缺失的服务镜像。<br />
+    • -t, --timeout TIMEOUT 停止容器时候的超时（默认为 10 秒）。</p>
+<h3 id="226">2.2.6. 版本查看</h3>
+<ul>
+<li>version<br />
+格式为 <code>docker-compose version</code>。<br />
+打印版本信息。</li>
+</ul>
+<h2 id="docker-composeyaml">docker-compose.yaml 文件</h2>
+<h3 id="_1">环境遍历</h3>
+<div class="hlcode"><pre>volumes:
+    - <span class="cp">${</span><span class="n">QLIB_DATA</span><span class="cp">}</span>:/nfsshare
+</pre></div>
+
+
+<h1 id="4">4. 参考文献</h1>
+<ol>
+<li>本文链接：https://deepzz.com/post/dockerfile-best-practices.html</li>
+</ol>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

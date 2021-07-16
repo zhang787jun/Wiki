@@ -1,0 +1,230 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Leetcode 刷题 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#10-计算机科学">10-计算机科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-01-Basic_CS">01-Basic_CS</a>&nbsp;»&nbsp;<a href="/Wiki/#-2-Algorithm">2-Algorithm</a>&nbsp;»&nbsp;Leetcode 刷题</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Leetcode 刷题</div>
+<div id="content">
+  <h1 id="leetcode">Leetcode 刷题</h1>
+<div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#leetcode">Leetcode 刷题</a><ul>
+<li><a href="#_1">反转列表</a></li>
+<li><a href="#_2">爬楼梯</a></li>
+<li><a href="#3">3的幂</a></li>
+<li><a href="#z">Z形变换</a></li>
+<li><a href="#306">306. 累加数</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h2 id="_1">反转列表</h2>
+<p>反转链表</p>
+<h2 id="_2">爬楼梯</h2>
+<div class="hlcode"><pre><span class="c">#递归法 </span>
+<span class="k">class</span> <span class="nc">Solution</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">climbStairs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">n</span><span class="o">&lt;</span><span class="mi">3</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">n</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">climbStairs</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">climbStairs</span><span class="p">(</span><span class="n">n</span><span class="o">-</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c"># </span>
+</pre></div>
+
+
+<h2 id="3">3的幂</h2>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Solution</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">isPowerOfThree</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :type n: int</span>
+<span class="sd">        :rtype: bool</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">n</span><span class="o">==</span><span class="mi">3</span> <span class="ow">or</span> <span class="n">n</span><span class="o">==</span><span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">True</span>
+
+        <span class="k">elif</span> <span class="n">n</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">n</span><span class="o">%</span><span class="mi">3</span><span class="o">==</span><span class="mi">0</span><span class="p">:</span>
+                <span class="n">n</span><span class="o">=</span><span class="n">n</span><span class="o">//</span><span class="mi">3</span>
+                <span class="c"># 注意 递归要renturn 啊！！！</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">isPowerOfThree</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">False</span>
+</pre></div>
+
+
+<h2 id="z">Z形变换</h2>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Solution</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">convert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">numRows</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">numRows</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span> <span class="k">return</span> <span class="n">s</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;&quot;</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">numRows</span><span class="p">)]</span>
+        <span class="n">i</span><span class="p">,</span> <span class="n">flag</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+            <span class="n">res</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">c</span>
+            <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="n">numRows</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span> <span class="n">flag</span> <span class="o">=</span> <span class="o">-</span><span class="n">flag</span>
+            <span class="n">i</span> <span class="o">+=</span> <span class="n">flag</span>
+        <span class="k">return</span> <span class="s">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="306">306. 累加数</h2>
+<blockquote>
+<p>累加数是一个字符串，组成它的数字可以形成累加序列。<br />
+一个有效的累加序列必须至少包含 3 个数。除了最开始的两个数以外，字符串中的其他数都等于它之前两个数相加的和。<br />
+给定一个只包含数字 '0'-'9' 的字符串，编写一个算法来判断给定输入是否是累加数。<br />
+说明: 累加序列里的数不会以 0 开头，所以不会出现 1, 2, 03 或者 1, 02, 3 的情况。<br />
+示例 1:<br />
+输入: "112358"输出: true<br />
+解释: 累加序列为: 1, 1, 2, 3, 5, 8 。1 + 1 = 2, 1 + 2 = 3, 2 + 3 = 5, 3 + 5 = 8<br />
+示例 2:<br />
+输入: "199100199"输出: true<br />
+解释: 累加序列为: 1, 99, 100, 199。1 + 99 = 100, 99 + 100 = 199<br />
+进阶:<br />
+你如何处理一个溢出的过大的整数输入?</p>
+</blockquote>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Solution</span> <span class="p">{</span>
+<span class="nl">public:</span>
+    <span class="kt">bool</span> <span class="n">isAdditiveNumber</span><span class="p">(</span><span class="n">string</span> <span class="n">num</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kt">int</span> <span class="n">size</span> <span class="o">=</span> <span class="n">num</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">size</span> <span class="o">&lt;=</span> <span class="mi">2</span><span class="p">)</span>
+            <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+        <span class="n">string</span> <span class="n">str1</span><span class="p">,</span> <span class="n">str2</span><span class="p">,</span> <span class="n">str3</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">len1</span><span class="p">,</span> <span class="n">len2</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">len1</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">len1</span> <span class="o">&lt;=</span> <span class="n">size</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span> <span class="n">len1</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">str1</span> <span class="o">=</span> <span class="n">num</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">len1</span><span class="p">);</span>
+            <span class="k">for</span> <span class="p">(</span><span class="n">len2</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">len2</span> <span class="o">&lt;=</span> <span class="n">size</span> <span class="o">/</span> <span class="mi">2</span><span class="p">;</span> <span class="n">len2</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
+                <span class="n">str2</span> <span class="o">=</span> <span class="n">num</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="n">len1</span><span class="p">,</span> <span class="n">len2</span><span class="p">);</span>
+                <span class="n">str3</span> <span class="o">=</span> <span class="n">num</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="n">len1</span> <span class="o">+</span> <span class="n">len2</span><span class="p">,</span> <span class="n">size</span> <span class="o">-</span> <span class="n">len1</span> <span class="o">-</span> <span class="n">len2</span><span class="p">);</span>
+                <span class="k">if</span> <span class="p">(</span><span class="n">DFS</span><span class="p">(</span><span class="n">str1</span><span class="p">,</span> <span class="n">str2</span><span class="p">,</span> <span class="n">str3</span><span class="p">))</span>
+                    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="p">}</span>
+    <span class="c1">// 3 种情况：1 相等 返回True; 2. 确定不相等 3 不确定 继续DFS</span>
+    <span class="kt">bool</span> <span class="n">DFS</span><span class="p">(</span><span class="n">string</span> <span class="n">first</span><span class="p">,</span><span class="n">string</span> <span class="n">second</span><span class="p">,</span><span class="n">string</span> <span class="n">last</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">string</span> <span class="n">addstr</span> <span class="o">=</span> <span class="n">add</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">second</span><span class="p">);</span>
+        <span class="c1">// 1.相等</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">addstr</span> <span class="o">==</span> <span class="n">last</span><span class="p">)</span> 
+            <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+        <span class="c1">// 2. 确定不相等</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">first</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="sc">&#39;0&#39;</span><span class="o">&amp;&amp;</span><span class="n">first</span> <span class="o">!=</span> <span class="s">&quot;0&quot;</span> <span class="o">||</span> <span class="n">second</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="sc">&#39;0&#39;</span><span class="o">&amp;&amp;</span><span class="n">second</span> <span class="o">!=</span> <span class="s">&quot;0&quot;</span><span class="p">)</span> 
+            <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">addstr</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&gt;</span> <span class="n">last</span><span class="p">.</span><span class="n">size</span><span class="p">())</span> 
+            <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">size</span> <span class="o">=</span> <span class="n">addstr</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">addstr</span> <span class="o">!=</span> <span class="n">last</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span> 
+            <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+        <span class="c1">//3. 不确定</span>
+        <span class="n">first</span> <span class="o">=</span> <span class="n">second</span><span class="p">;</span>
+        <span class="n">second</span> <span class="o">=</span> <span class="n">addstr</span><span class="p">;</span>
+        <span class="n">last</span> <span class="o">=</span> <span class="n">last</span><span class="p">.</span><span class="n">substr</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="kt">int</span><span class="p">(</span><span class="n">last</span><span class="p">.</span><span class="n">size</span><span class="p">())</span> <span class="o">-</span> <span class="n">size</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nf">DFS</span><span class="p">(</span><span class="n">first</span><span class="p">,</span> <span class="n">second</span><span class="p">,</span> <span class="n">last</span><span class="p">);</span>
+    <span class="p">}</span>
+    <span class="n">string</span> <span class="n">add</span><span class="p">(</span><span class="n">string</span> <span class="n">str1</span><span class="p">,</span> <span class="n">string</span> <span class="n">str2</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">str1</span><span class="p">.</span><span class="n">size</span><span class="p">()</span> <span class="o">&lt;</span> <span class="n">str2</span><span class="p">.</span><span class="n">size</span><span class="p">())</span> <span class="n">swap</span><span class="p">(</span><span class="n">str1</span><span class="p">,</span> <span class="n">str2</span><span class="p">);</span>
+        <span class="kt">int</span> <span class="n">size1</span> <span class="o">=</span> <span class="n">str1</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+        <span class="kt">int</span> <span class="n">size2</span> <span class="o">=</span> <span class="n">str2</span><span class="p">.</span><span class="n">size</span><span class="p">();</span>
+        <span class="n">str2</span> <span class="o">=</span> <span class="n">string</span><span class="p">(</span><span class="n">size1</span> <span class="o">-</span> <span class="n">size2</span><span class="p">,</span> <span class="sc">&#39;0&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="n">str2</span><span class="p">;</span>
+        <span class="kt">int</span> <span class="n">sgn</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">int</span> <span class="n">i</span> <span class="o">=</span> <span class="n">size1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span><span class="o">--</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kt">int</span> <span class="n">nums</span> <span class="o">=</span> <span class="n">str1</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span> <span class="o">+</span> <span class="n">str2</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="sc">&#39;0&#39;</span> <span class="o">+</span> <span class="n">sgn</span><span class="p">;</span>
+            <span class="n">str1</span><span class="p">[</span><span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">nums</span> <span class="o">%</span> <span class="mi">10</span> <span class="o">+</span> <span class="sc">&#39;0&#39;</span><span class="p">;</span>
+            <span class="n">sgn</span> <span class="o">=</span> <span class="n">nums</span> <span class="o">/</span> <span class="mi">10</span><span class="p">;</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">sgn</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span> <span class="n">str1</span> <span class="o">=</span> <span class="s">&quot;1&quot;</span> <span class="o">+</span> <span class="n">str1</span><span class="p">;</span>
+        <span class="k">return</span> <span class="n">str1</span><span class="p">;</span>
+    <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

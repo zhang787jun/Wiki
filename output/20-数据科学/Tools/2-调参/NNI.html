@@ -1,0 +1,377 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>NNI--自动机器学习（AutoML）工具包 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#20-数据科学">20-数据科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-Tools">Tools</a>&nbsp;»&nbsp;<a href="/Wiki/#-2-调参">2-调参</a>&nbsp;»&nbsp;NNI--自动机器学习（AutoML）工具包</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">NNI--自动机器学习（AutoML）工具包</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 单机使用</a><ul>
+<li><a href="#11">1.1. 基本步骤</a><ul>
+<li><a href="#111">1.1.1. 定义搜索空间文件</a></li>
+<li><a href="#112">1.1.2. 修改程序脚本</a></li>
+<li><a href="#113">1.1.3. 定义配置文件</a></li>
+<li><a href="#114">1.1.4. 执行试验</a></li>
+</ul>
+</li>
+<li><a href="#12-docker">1.2. docker 实践</a></li>
+</ul>
+</li>
+<li><a href="#2-experiment">2. 在远程计算机上运行 Experiment</a><ul>
+<li><a href="#21">2.1. 远程计算机的要求</a></li>
+<li><a href="#22-experiment">2.2. 运行 Experiment</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 参考资料</a></li>
+</ul>
+</div>
+<p>NNI (Neural Network Intelligence) 是一个轻量但强大的工具包，帮助用户自动的进行特征工程，神经网络架构搜索，超参调优以及模型压缩。</p>
+<p>NNI的中文官方文档写的非常详细，建议阅读。 https://github.com/microsoft/nni/blob/master/README_zh_CN.md</p>
+<h1 id="1">1. 单机使用</h1>
+<h2 id="11">1.1. 基本步骤</h2>
+<ol>
+<li>编写<code>search_space.json</code> 文件</li>
+<li>修改运行程序脚本</li>
+<li>定义nni 程序配置文件<code>config.yml</code></li>
+</ol>
+<div class="hlcode"><pre><span class="o">/</span><span class="n">root</span>
+<span class="o">|</span><span class="n">__mnist</span><span class="p">.</span><span class="n">py</span> 
+<span class="o">|</span><span class="n">__search_space</span><span class="p">.</span><span class="n">json</span>
+<span class="o">|</span><span class="n">__config</span><span class="p">.</span><span class="n">yml</span>
+</pre></div>
+
+
+<h3 id="111">1.1.1. 定义搜索空间文件</h3>
+<p>注意，搜索空间的效果与 Tuner 高度相关。 此处列出了内置 Tuner 所支持的类型。 对于自定义的 Tuner，不必遵循鞋标，可使用任何的类型。</p>
+<p>所有采样策略和参数如下：</p>
+<p><code>{"_type": "choice", "_value": options}</code></p>
+<p><code>{"_type": "randint", "_value": [lower, upper]}</code></p>
+<ul>
+<li>从 <code>lower</code> (包含) 到 <code>upper</code> (不包含) 中选择一个随机整数。</li>
+<li>注意：不同 Tuner 可能对 <code>randint</code> 有不同的实现。 一些 Tuner（例如，TPE，GridSearch）将从低到高无序选择，而其它一些（例如，SMAC）则有顺序。 如果希望所有 Tuner 都有序，可使用 <code>quniform</code> 并设置 <code>q=1</code>。</li>
+</ul>
+<p><code>{"_type": "uniform", "_value": [low, high]}</code><br />
+  * 变量是 low 和 high 之间均匀分布的值。<br />
+  * 当优化时，此变量值会在两侧区间内。</p>
+<p><code>{"_type": "quniform", "_value": [low, high, q]}</code></p>
+<ul>
+<li>变量值为 <code>clip(round(uniform(low, high) / q) * q, low, high)</code>，clip 操作用于约束生成值的边界。 例如，<code>_value</code> 为 [0, 10, 2.5]，可取的值为 [0, 2.5, 5.0, 7.5, 10.0]; <code>_value</code> 为 [2, 10, 5]，可取的值为 [2, 5, 10]。</li>
+<li>适用于离散，同时反映了某种"平滑"的数值，但上下限都有限制。 如果需要从范围 [low, high] 中均匀选择整数，可以如下定义 <code>_value</code>：<code>[low, high, 1]</code>。</li>
+</ul>
+<p><code>{"_type": "loguniform", "_value": [low, high]}</code></p>
+<ul>
+<li>变量值在范围 [low, high] 中是 loguniform 分布，如 exp(uniform(log(low), log(high)))，因此返回值是对数均匀分布的。</li>
+<li>
+<p>当优化时，此变量必须是正数。</p>
+</li>
+<li>
+<p><code>{"_type": "qloguniform", "_value": [low, high, q]}</code></p>
+</li>
+<li>
+<p>变量值为 <code>clip(round(loguniform(low, high) / q) * q, low, high)</code>，clip 操作用于约束生成值的边界。</p>
+</li>
+<li>
+<p>适用于值是“平滑”的离散变量，但上下限均有限制。<br />
+<code>{"_type": "normal", "_value": [mu, sigma]}</code></p>
+</li>
+<li>
+<p>变量值为实数，且为正态分布，均值为 mu，标准方差为 sigma。 优化时，此变量不受约束。</p>
+</li>
+</ul>
+<p><code>{"_type": "qnormal", "_value": [mu, sigma, q]}</code></p>
+<ul>
+<li>这表示变量值会类似于 <code>round(normal(mu, sigma) / q) * q</code></li>
+<li>适用于在 mu 周围的离散变量，且没有上下限限制。</li>
+</ul>
+<p><code>{"_type": "lognormal", "_value": [mu, sigma]}</code></p>
+<ul>
+<li>变量值为 <code>exp(normal(mu, sigma))</code> 分布，范围值是对数的正态分布。 当优化时，此变量必须是正数。</li>
+</ul>
+<p><code>{"_type": "qlognormal", "_value": [mu, sigma, q]}</code></p>
+<ul>
+<li>这表示变量值会类似于 <code>round(exp(normal(mu, sigma)) / q) * q</code></li>
+<li>适用于值是“平滑”的离散变量，但某一边有界。</li>
+</ul>
+<div class="hlcode"><pre><span class="err">//search_space.json</span>
+<span class="p">{</span>
+    <span class="nt">&quot;dropout_rate&quot;</span><span class="p">:{</span><span class="nt">&quot;_type&quot;</span><span class="p">:</span><span class="s2">&quot;uniform&quot;</span><span class="p">,</span><span class="nt">&quot;_value&quot;</span><span class="p">:[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">]},</span>
+    <span class="nt">&quot;conv_size&quot;</span><span class="p">:{</span><span class="nt">&quot;_type&quot;</span><span class="p">:</span><span class="s2">&quot;choice&quot;</span><span class="p">,</span><span class="nt">&quot;_value&quot;</span><span class="p">:[</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">5</span><span class="p">,</span><span class="mi">7</span><span class="p">]},</span>
+    <span class="nt">&quot;hidden_size&quot;</span><span class="p">:{</span><span class="nt">&quot;_type&quot;</span><span class="p">:</span><span class="s2">&quot;randint&quot;</span><span class="p">,</span><span class="nt">&quot;_value&quot;</span><span class="p">:[</span><span class="mi">124</span><span class="p">,</span><span class="mi">1024</span><span class="p">]},</span>
+    <span class="nt">&quot;batch_size&quot;</span><span class="p">:</span> <span class="p">{</span><span class="nt">&quot;_type&quot;</span><span class="p">:</span><span class="s2">&quot;choice&quot;</span><span class="p">,</span> <span class="nt">&quot;_value&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">32</span><span class="p">]},</span>
+    <span class="nt">&quot;learning_rate&quot;</span><span class="p">:{</span><span class="nt">&quot;_type&quot;</span><span class="p">:</span><span class="s2">&quot;choice&quot;</span><span class="p">,</span><span class="nt">&quot;_value&quot;</span><span class="p">:[</span><span class="mf">0.0001</span><span class="p">,</span> <span class="mf">0.001</span><span class="p">,</span> <span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]}</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<h3 id="112">1.1.2. 修改程序脚本</h3>
+<p>修改 Trial 代码来从 NNI 获取超参，并返回 NNI 最终结果。</p>
+<div class="hlcode"><pre><span class="c"># import nni</span>
+<span class="o">+</span> <span class="kn">import</span> <span class="nn">nni</span>
+
+  <span class="k">def</span> <span class="nf">run_trial</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+      <span class="n">mnist</span> <span class="o">=</span> <span class="n">input_data</span><span class="o">.</span><span class="n">read_data_sets</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;data_dir&#39;</span><span class="p">],</span> <span class="n">one_hot</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+      <span class="n">mnist_network</span> <span class="o">=</span> <span class="n">MnistNetwork</span><span class="p">(</span><span class="n">channel_1_num</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;channel_1_num&#39;</span><span class="p">],</span> <span class="n">channel_2_num</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;channel_2_num&#39;</span><span class="p">],</span> <span class="n">conv_size</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;conv_size&#39;</span><span class="p">],</span> <span class="n">hidden_size</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;hidden_size&#39;</span><span class="p">],</span> <span class="n">pool_size</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;pool_size&#39;</span><span class="p">],</span> <span class="n">learning_rate</span><span class="o">=</span><span class="n">params</span><span class="p">[</span><span class="s">&#39;learning_rate&#39;</span><span class="p">])</span>
+      <span class="n">mnist_network</span><span class="o">.</span><span class="n">build_network</span><span class="p">()</span>
+
+      <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+          <span class="n">mnist_network</span><span class="o">.</span><span class="n">train</span><span class="p">(</span><span class="n">sess</span><span class="p">,</span> <span class="n">mnist</span><span class="p">)</span>
+          <span class="n">test_acc</span> <span class="o">=</span> <span class="n">mnist_network</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">mnist</span><span class="p">)</span>
+<span class="c"># 添加report value</span>
+<span class="o">+</span>         <span class="n">nni</span><span class="o">.</span><span class="n">report_final_result</span><span class="p">(</span><span class="n">test_acc</span><span class="p">)</span>
+
+  <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+
+<span class="o">-</span>     <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;data_dir&#39;</span><span class="p">:</span> <span class="s">&#39;/tmp/tensorflow/mnist/input_data&#39;</span><span class="p">,</span> <span class="s">&#39;dropout_rate&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s">&#39;channel_1_num&#39;</span><span class="p">:</span> <span class="mi">32</span><span class="p">,</span> <span class="s">&#39;channel_2_num&#39;</span><span class="p">:</span> <span class="mi">64</span><span class="p">,</span>
+<span class="o">-</span>     <span class="s">&#39;conv_size&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s">&#39;pool_size&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s">&#39;hidden_size&#39;</span><span class="p">:</span> <span class="mi">1024</span><span class="p">,</span> <span class="s">&#39;learning_rate&#39;</span><span class="p">:</span> <span class="mf">1e-4</span><span class="p">,</span> <span class="s">&#39;batch_num&#39;</span><span class="p">:</span> <span class="mi">2000</span><span class="p">,</span> <span class="s">&#39;batch_size&#39;</span><span class="p">:</span> <span class="mi">32</span><span class="p">}</span>
+<span class="c"># 获取params</span>
+<span class="o">+</span>     <span class="n">params</span> <span class="o">=</span> <span class="n">nni</span><span class="o">.</span><span class="n">get_next_parameter</span><span class="p">()</span>
+      <span class="n">run_trial</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+</pre></div>
+
+
+<h3 id="113">1.1.3. 定义配置文件</h3>
+<div class="hlcode"><pre><span class="n">authorName</span><span class="o">:</span> <span class="k">default</span>
+<span class="n">experimentName</span><span class="o">:</span> <span class="n">example_mnist</span>
+<span class="n">trialConcurrency</span><span class="o">:</span> <span class="mi">1</span>
+<span class="n">maxExecDuration</span><span class="o">:</span> <span class="mi">1</span><span class="n">h</span>
+<span class="n">maxTrialNum</span><span class="o">:</span> <span class="mi">10</span>
+<span class="err">#</span><span class="n">choice</span><span class="o">:</span> <span class="n">local</span><span class="o">,</span> <span class="n">remote</span><span class="o">,</span> <span class="n">pai</span>
+<span class="n">trainingServicePlatform</span><span class="o">:</span> <span class="n">local</span>
+<span class="n">searchSpacePath</span><span class="o">:</span> <span class="n">search_space</span><span class="o">.</span><span class="na">json</span>
+<span class="err">#</span><span class="n">choice</span><span class="o">:</span> <span class="kc">true</span><span class="o">,</span> <span class="kc">false</span>
+<span class="n">useAnnotation</span><span class="o">:</span> <span class="kc">false</span>
+<span class="n">tuner</span><span class="o">:</span>
+  <span class="err">#</span><span class="n">choice</span><span class="o">:</span> <span class="n">TPE</span><span class="o">,</span> <span class="n">Random</span><span class="o">,</span> <span class="n">Anneal</span><span class="o">,</span> <span class="n">Evolution</span><span class="o">,</span> <span class="n">BatchTuner</span><span class="o">,</span> <span class="n">MetisTuner</span><span class="o">,</span> <span class="n">GPTuner</span>
+  <span class="err">#</span><span class="n">SMAC</span> <span class="o">(</span><span class="n">SMAC</span> <span class="n">should</span> <span class="n">be</span> <span class="n">installed</span> <span class="n">through</span> <span class="n">nnictl</span><span class="o">)</span>
+  <span class="n">builtinTunerName</span><span class="o">:</span> <span class="n">TPE</span>
+  <span class="n">classArgs</span><span class="o">:</span>
+    <span class="err">#</span><span class="n">choice</span><span class="o">:</span> <span class="n">maximize</span><span class="o">,</span> <span class="n">minimize</span>
+    <span class="n">optimize_mode</span><span class="o">:</span> <span class="n">maximize</span>
+<span class="n">trial</span><span class="o">:</span>
+  <span class="n">command</span><span class="o">:</span> <span class="n">python3</span> <span class="n">mnist</span><span class="o">.</span><span class="na">py</span>
+  <span class="n">codeDir</span><span class="o">:</span> <span class="o">.</span>
+  <span class="n">gpuNum</span><span class="o">:</span> <span class="mi">0</span>
+</pre></div>
+
+
+<h3 id="114">1.1.4. 执行试验</h3>
+<div class="hlcode"><pre><span class="err">#</span> <span class="nx">nnictl</span> <span class="nx">命令行</span>
+<span class="nx">nnictl</span> <span class="nb">create</span> <span class="o">--</span><span class="nx">config</span> <span class="o">&lt;</span><span class="nx">config_file</span><span class="o">&gt;</span>
+<span class="nx">nnictl</span> <span class="nb">create</span> <span class="o">--</span><span class="nx">config</span> <span class="nx">nni</span><span class="o">\</span><span class="nx">examples</span><span class="o">\</span><span class="nx">trials</span><span class="o">\</span><span class="nx">mnist</span><span class="na">-tfv1</span><span class="o">\</span><span class="nx">config_windows.yml</span>
+</pre></div>
+
+
+<h2 id="12-docker">1.2. docker 实践</h2>
+<div class="hlcode"><pre><span class="n">docker</span> <span class="n">pull</span> <span class="n">msranni</span><span class="o">/</span><span class="n">nni</span><span class="o">:</span><span class="n">latest</span>
+<span class="cp"># docker pull msranni/nni:1.14</span>
+</pre></div>
+
+
+<p>拉下的官方镜像以<code>/root</code>为工作区，<code>python3</code> 打开python命令（注意，在编写nni 的<code>config.yml</code>的时候）</p>
+<p>完成步骤1~3</p>
+<div class="hlcode"><pre><span class="err">#</span> <span class="nx">将workspace</span> <span class="nx">挂载到</span> <span class="nx">docker</span> <span class="nx">中</span>
+<span class="nx">docker</span> <span class="nb">run</span> <span class="o">--</span><span class="nx">rm</span> <span class="na">-it</span> <span class="na">-p</span> <span class="mi">8080</span><span class="p">:</span><span class="mi">8080</span> <span class="na">-v</span> <span class="o">&lt;</span><span class="nx">file_path</span><span class="o">&gt;</span><span class="p">:/</span><span class="nb">root</span> <span class="nx">msranni</span><span class="p">/</span><span class="nx">nni</span><span class="p">:</span><span class="nx">latest</span>
+
+<span class="o">&gt;&gt;&gt;</span>
+<span class="err">#</span> <span class="nx">在docker</span> <span class="nx">内执行</span>
+<span class="nb">root</span><span class="p">@</span><span class="nx">docker</span><span class="p">:</span>
+<span class="nx">nnictl</span> <span class="nb">create</span> <span class="o">--</span><span class="nx">config</span> <span class="o">&lt;</span><span class="nx">config_file</span><span class="o">&gt;</span>
+
+<span class="o">&gt;&gt;&gt;</span>
+<span class="err">#</span> <span class="nx">开启nni</span> <span class="nx">service</span><span class="err">，</span><span class="mi">8080</span><span class="nx">端口export</span>
+<span class="nx">...</span>
+<span class="nx">Successfully</span> <span class="nx">started</span> <span class="nx">experiment</span><span class="o">!</span>
+<span class="o">-----------------------------------------------</span>
+<span class="nx">The</span> <span class="nx">experiment</span> <span class="nb">id</span> <span class="nx">is</span> <span class="nx">AuXd4oEe</span>
+<span class="nx">The</span> <span class="nx">Web</span> <span class="nx">UI</span> <span class="nx">urls</span> <span class="nx">are</span><span class="p">:</span> <span class="nx">http</span><span class="p">:</span><span class="c1">//172.17.0.3:8080   http://127.0.0.1:8080</span>
+</pre></div>
+
+
+<p>在Host 机器上的 浏览器中打开 Web UI url，可看到下图的 Experiment 详细信息，以及所有的 Trial 任务。 查看这里的更多页面。<br />
+<img alt="" src="/attach/images/2020-02-26-20-32-37.png" /></p>
+<h1 id="2-experiment">2. 在远程计算机上运行 Experiment</h1>
+<p>NNI 可以通过 SSH 在多个远程计算机上运行同一个 Experiment，称为 <code>remote</code> 模式。 这就像一个轻量级的训练平台。 在此模式下，可以从计算机启动 NNI，并将 Trial 并行调度到远程计算机。</p>
+<h2 id="21">2.1. 远程计算机的要求</h2>
+<ul>
+<li>
+<p>仅支持 Linux 作为远程计算机，其<a href="../Tutorial/Installation.md">配置需求</a>与 NNI 本机模式相同。</p>
+</li>
+<li>
+<p>根据<a href="../Tutorial/Installation.md">安装文章</a>，在每台计算机上安装 NNI。</p>
+</li>
+<li>
+<p>确保远程计算机满足 Trial 代码的环境要求。 如果默认环境不符合要求，可以将设置脚本添加到 NNI 配置的 <code>command</code> 字段。</p>
+</li>
+<li>
+<p>确保远程计算机能被运行 <code>nnictl</code> 命令的计算机通过 SSH 访问。 同时支持 SSH 的密码和密钥验证方法。 有关高级用法，参考<a href="../Tutorial/ExperimentConfig.md">配置</a>的 machineList 部分。</p>
+</li>
+<li>
+<p>确保每台计算机上的 NNI 版本一致。</p>
+</li>
+</ul>
+<h2 id="22-experiment">2.2. 运行 Experiment</h2>
+<p>例如，有三台机器，可使用用户名和密码登录。</p>
+<table>
+<thead>
+<tr>
+<th>IP</th>
+<th>用户名</th>
+<th>密码</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10.1.1.1</td>
+<td>bob</td>
+<td>bob123</td>
+</tr>
+<tr>
+<td>10.1.1.2</td>
+<td>bob</td>
+<td>bob123</td>
+</tr>
+<tr>
+<td>10.1.1.3</td>
+<td>bob</td>
+<td>bob123</td>
+</tr>
+</tbody>
+</table>
+<p>在这三台计算机或另一台能访问这些计算机的环境中安装并运行 NNI。</p>
+<p>以 <code>examples/trials/mnist-annotation</code> 为例。 示例文件 <code>examples/trials/mnist-annotation/config_remote.yml</code> 的内容如下：</p>
+<div class="hlcode"><pre><span class="l-Scalar-Plain">authorName</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">default</span>
+<span class="l-Scalar-Plain">experimentName</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">example_mnist</span>
+<span class="l-Scalar-Plain">trialConcurrency</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">1</span>
+<span class="l-Scalar-Plain">maxExecDuration</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">1h</span>
+<span class="l-Scalar-Plain">maxTrialNum</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">10</span>
+<span class="c1">#choice: local, remote, pai</span>
+<span class="l-Scalar-Plain">trainingServicePlatform</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">remote</span>
+<span class="c1"># 搜索空间文件</span>
+<span class="l-Scalar-Plain">searchSpacePath</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">search_space.json</span>
+<span class="c1"># 可选项: true, false</span>
+<span class="l-Scalar-Plain">useAnnotation</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">true</span>
+<span class="l-Scalar-Plain">tuner</span><span class="p-Indicator">:</span>
+  <span class="c1"># 可选项: TPE, Random, Anneal, Evolution, BatchTuner</span>
+  <span class="c1">#SMAC (SMAC 需要先通过 nnictl 来安装)</span>
+  <span class="l-Scalar-Plain">builtinTunerName</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">TPE</span>
+  <span class="l-Scalar-Plain">classArgs</span><span class="p-Indicator">:</span>
+    <span class="c1"># 可选项:: maximize, minimize</span>
+    <span class="l-Scalar-Plain">optimize_mode</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">maximize</span>
+<span class="l-Scalar-Plain">trial</span><span class="p-Indicator">:</span>
+  <span class="l-Scalar-Plain">command</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">python3 mnist.py</span>
+  <span class="l-Scalar-Plain">codeDir</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">.</span>
+  <span class="l-Scalar-Plain">gpuNum</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">0</span>
+<span class="c1">#local 模式下 machineList 可为空</span>
+<span class="l-Scalar-Plain">machineList</span><span class="p-Indicator">:</span>
+  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">ip</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">10.1.1.1</span>
+    <span class="l-Scalar-Plain">username</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">bob</span>
+    <span class="l-Scalar-Plain">passwd</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">bob123</span>
+    <span class="c1">#使用默认端口 22 时，该配置可跳过</span>
+    <span class="c1">#port: 22</span>
+  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">ip</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">10.1.1.2</span>
+    <span class="l-Scalar-Plain">username</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">bob</span>
+    <span class="l-Scalar-Plain">passwd</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">bob123</span>
+  <span class="p-Indicator">-</span> <span class="l-Scalar-Plain">ip</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">10.1.1.3</span>
+    <span class="l-Scalar-Plain">username</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">bob</span>
+    <span class="l-Scalar-Plain">passwd</span><span class="p-Indicator">:</span> <span class="l-Scalar-Plain">bob123</span>
+</pre></div>
+
+
+<p><code>codeDir</code> 中的文件会自动上传到远程计算机中。 可在 Windows、Linux 或 macOS 上运行以下命令，在远程 Linux 计算机上启动 Trial：</p>
+<div class="hlcode"><pre>nnictl create --config examples/trials/mnist-annotation/config_remote.yml
+</pre></div>
+
+
+<h1 id="3">3. 参考资料</h1>
+<p>[1]: 官方文档 https://github.com/microsoft/nni/blob/master/README_zh_CN.md</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

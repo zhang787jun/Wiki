@@ -1,0 +1,313 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Jupyter Notebooks on Kubernetes - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#10-计算机科学">10-计算机科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-05-Virtualization_and_Cloud_Computing">05-Virtualization_and_Cloud_Computing</a>&nbsp;»&nbsp;<a href="/Wiki/#-3. Kubernetes容器集群管理">3. Kubernetes容器集群管理</a>&nbsp;»&nbsp;<a href="/Wiki/#-4. Kubernetes在高性能计算中的应用">4. Kubernetes在高性能计算中的应用</a>&nbsp;»&nbsp;<a href="/Wiki/#-1.Kubeflow">1.Kubeflow</a>&nbsp;»&nbsp;<a href="/Wiki/#-关键组建">关键组建</a>&nbsp;»&nbsp;Jupyter Notebooks on Kubernetes</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Jupyter Notebooks on Kubernetes</div>
+<div id="content">
+  <h1 id="jupyter-notebooks-on-kubernetes">Jupyter Notebooks on Kubernetes</h1>
+<p>Jupyter Notebook 因为具有很好的交互性，被广泛地应用于Python 代码的运行和调试中，特别是在机器学习领域。Kubeflow 引入了Jupyter Notebook Hub，使机器学习能够更方便地运行到Kubernetes 集群中。本章主要讲解JupyterNotebook 的架构及其运行原理，以及Kubeflow 中的Jupyter Notebook 组件及其使用方法。</p>
+<p>kubeflow / jupyter-web-app-deployment</p>
+<h2 id="prerequisites">Prerequisites</h2>
+<ul>
+<li><a href="../1-docker">1 - Docker Basics</a></li>
+<li><a href="../2-kubernetes">2 - Kubernetes Basics and cluster created</a></li>
+<li><a href="../4-kubeflow">4 - Kubeflow</a></li>
+</ul>
+<h2 id="summary">Summary</h2>
+<p>In this module, you will learn how to:</p>
+<ul>
+<li>Run Jupyter Notebooks locally using Docker</li>
+<li>Run JupyterHub on Kubernetes using Kubeflow</li>
+</ul>
+<h2 id="how-jupyter-notebooks-work">How Jupyter Notebooks work</h2>
+<p>The <a href="http://jupyter.org/">Jupyter Notebook</a> is an open source web application that allows users to create and share documents that contain live code, equations, visualizations, and narrative text for rapid prototyping. It is often used for data cleaning and transformation, numerical simulation, statistical modeling, data visualization, machine learning, and more. To better support exploratory iteration and to accelerate computation of Tensorflow jobs, let's look at how we can include data science tools like Jupyter Notebook with Docker and Kubernetes.</p>
+<h2 id="how-jupyterhub-works">How JupyterHub works</h2>
+<p>The <a href="https://jupyterhub.readthedocs.io/en/latest/">JupyterHub</a> is a multi-user Hub, spawns, manages, and proxies multiple instances of the single-user Jupyter notebook server. JupyterHub can be used to serve notebooks to a class of students, a corporate data science group, or a scientific research group. Let's look at how we can create JupyterHub to spawn multiple instances of Jupyter Notebook on Kubernetes using Kubeflow.</p>
+<h2 id="exercises">Exercises</h2>
+<h3 id="exercise-1-run-jupyter-notebooks-locally-using-docker">Exercise 1: Run Jupyter Notebooks locally using Docker</h3>
+<p>In this first exercise, we will run Jupyter Notebooks locally using Docker. We will use the official tensorflow docker image as it comes with Jupyter notebook.</p>
+<div class="hlcode"><pre><span class="go">docker run -it -p 8888:8888 tensorflow/tensorflow</span>
+</pre></div>
+
+
+<h4 id="validation">Validation</h4>
+<p>To verify, browse to the url in the output log.</p>
+<p>For example: <code>http://localhost:8888/?token=a3ea3cd914c5b68149e2b4a6d0220eca186fec41563c0413</code></p>
+<h3 id="exercise-2-run-jupyterhub-on-kubernetes-using-kubeflow">Exercise 2: Run JupyterHub on Kubernetes using Kubeflow</h3>
+<p>In this exercise, we will run JupyterHub to spawn multiple instances of Jupyter Notebooks on a Kubernetes cluster using Kubeflow.</p>
+<div class="hlcode"><pre><span class="n">NAMESPACE</span><span class="o">=</span><span class="nx">kubeflow</span>
+<span class="nx">kubectl</span> <span class="nb">get</span> <span class="nx">svc</span> <span class="na">-n</span><span class="o">=</span><span class="err">$</span><span class="p">{</span><span class="nx">NAMESPACE</span><span class="p">}</span>
+
+<span class="nb">NAME</span>               <span class="k">TYPE</span>           <span class="nx">CLUSTER</span><span class="na">-IP</span>      <span class="nx">EXTERNAL</span><span class="na">-IP</span>   <span class="nb">PORT</span><span class="p">(</span><span class="nb">S</span><span class="p">)</span>        <span class="nx">AGE</span>
+<span class="nx">...</span>
+<span class="nx">jupyter</span><span class="o">-</span><span class="mi">0</span>                                <span class="nx">ClusterIP</span>   <span class="kc">None</span>           <span class="o">&lt;</span><span class="kc">none</span><span class="o">&gt;</span>        <span class="mi">8000</span><span class="p">/</span><span class="nx">TCP</span>            <span class="mi">132</span><span class="nx">m</span>
+<span class="nx">jupyter</span><span class="na">-lb</span>                               <span class="nx">ClusterIP</span>   <span class="mf">10.0.191.68</span>    <span class="o">&lt;</span><span class="kc">none</span><span class="o">&gt;</span>        <span class="mi">80</span><span class="p">/</span><span class="nx">TCP</span>              <span class="mi">132</span><span class="nx">m</span>
+</pre></div>
+
+
+<p>To connect to the Kubeflow dashboard locally:</p>
+<div class="hlcode"><pre>kubectl port-forward    svc/ambassador -n <span class="k">${</span><span class="nv">NAMESPACE</span><span class="k">}</span> 8080:80
+</pre></div>
+
+
+<p>Then navigate to JupyterHub: http://localhost:8080/hub</p>
+<p>[Optional] To connect to your JupyterHub over a public IP:</p>
+<p>To update the default service created for JupyterHub, run the following command to change the service to type LoadBalancer:</p>
+<div class="hlcode"><pre><span class="nb">cd </span>ks_app
+ks param <span class="nb">set </span>jupyter serviceType LoadBalancer
+<span class="nb">cd</span> ..
+<span class="k">${</span><span class="nv">KUBEFLOW_SOURCE</span><span class="k">}</span>/scripts/kfctl.sh apply k8s
+</pre></div>
+
+
+<p>创建一个新的Jupyter Notebook 实例<br />
+- 浏览器打开hub<br />
+- 登入<br />
+- 点击<code>Start My Server</code> 按钮<br />
+- 选择 images<br />
+- CPU 内存限制</p>
+<h1 id="distributed-tensorflow-with-kubernetes-and-tfjob">Distributed TensorFlow with Kubernetes and TFJob</h1>
+<p>Thankfully, with Kubernetes and TFJob things are much, much simpler, making distributed training something you might actually be able to benefit from.</p>
+<p>Before submitting a training job, you should have deployed Kubeflow to your cluster. Doing so ensures that the TFJob custom resource is available when you submit the training job.</p>
+<ol>
+<li>在集群中部署Kubeflow</li>
+<li>TFJob 自定义资源</li>
+</ol>
+<p>Overview of TFJob distributed training<br />
+So, how does TFJob work for distributed training? Let's look again at what the TFJobSpecand TFReplicaSpec objects looks like:<br />
+TFJobSpec Object<br />
+Field<br />
+Type<br />
+Description<br />
+ReplicaSpecs<br />
+TFReplicaSpec array<br />
+Specification for a set of TensorFlow processes, defined below<br />
+TFReplicaSpec Object<br />
+Note the last parameter IsDefaultPS that we didn't talk about before.<br />
+Field<br />
+Type<br />
+Description<br />
+TfReplicaType<br />
+string<br />
+What type of replica are we defining? Can be MASTER, WORKER or PS. When not doing distributed TensorFlow, we just use MASTER which happens to be the default value.<br />
+Replicas<br />
+int<br />
+Number of replicas of TfReplicaType. Again this is useful only for distributed TensorFLow. Default value is 1.<br />
+Template<br />
+PodTemplateSpec<br />
+Describes the pod that will be created when executing a job. This is the standard Pod description that we have been using everywhere.<br />
+IsDefaultPS<br />
+boolean<br />
+Whether the parameter server should be using a default image or a custom one (default to true)<br />
+In case the distinction between master and workers is not clear, there is a single master per TensorFlow cluster, and it is in fact a worker. The difference is that the master is the worker that is going to handle the creation of the tf.Session, write logs and save the model.<br />
+As you can see, TFJobSpec and TFReplicaSpec allow us to easily define the architecture of the TensorFlow cluster we would like to setup.<br />
+Once we have defined this architecture in a TFJob template and deployed it with kubectl create, the operator will do most of the work for us. For each master, worker and parameter server in our TensorFlow cluster, the operator will create a service exposing it so they can communicate.<br />
+It will then create an internal representation of the cluster with each node and it's associated internal DNS name.</p>
+<p>For example, if you were to create a TFJob with 1 MASTER, 2 WORKERS and 1 PS, this representation would look similar to this:</p>
+<div class="hlcode"><pre><span class="p">{</span>  
+    <span class="nt">&quot;master&quot;</span><span class="p">:[</span>  
+        <span class="s2">&quot;distributed-mnist-master-5oz2-0:2222&quot;</span>
+    <span class="p">],</span>
+    <span class="nt">&quot;ps&quot;</span><span class="p">:[</span>  
+        <span class="s2">&quot;distributed-mnist-ps-5oz2-0:2222&quot;</span>
+    <span class="p">],</span>
+    <span class="nt">&quot;worker&quot;</span><span class="p">:[</span>  
+        <span class="s2">&quot;distributed-mnist-worker-5oz2-0:2222&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;distributed-mnist-worker-5oz2-1:2222&quot;</span>
+    <span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>Finally, the operator will create all the necessary pods, and in each one, inject an environment variable named Tf_CONFIG, containing the cluster specification above, as well as the respective job name and task id that each node of the TensorFlow cluster should assume.<br />
+For example, here is the value of the TF_CONFIG environment variable that would be sent to worker 1:</p>
+<div class="hlcode"><pre><span class="p">{</span>  
+   <span class="nt">&quot;cluster&quot;</span><span class="p">:{</span>  
+      <span class="nt">&quot;master&quot;</span><span class="p">:[</span>  
+         <span class="s2">&quot;distributed-mnist-master-5oz2-0:2222&quot;</span>
+      <span class="p">],</span>
+      <span class="nt">&quot;ps&quot;</span><span class="p">:[</span>  
+         <span class="s2">&quot;distributed-mnist-ps-5oz2-0:2222&quot;</span>
+      <span class="p">],</span>
+      <span class="nt">&quot;worker&quot;</span><span class="p">:[</span>  
+         <span class="s2">&quot;distributed-mnist-worker-5oz2-0:2222&quot;</span><span class="p">,</span>
+         <span class="s2">&quot;distributed-mnist-worker-5oz2-1:2222&quot;</span>
+      <span class="p">]</span>
+   <span class="p">},</span>
+   <span class="nt">&quot;task&quot;</span><span class="p">:{</span>  
+      <span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="s2">&quot;worker&quot;</span><span class="p">,</span>
+      <span class="nt">&quot;index&quot;</span><span class="p">:</span><span class="mi">1</span>
+   <span class="p">},</span>
+   <span class="nt">&quot;environment&quot;</span><span class="p">:</span><span class="s2">&quot;cloud&quot;</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>As you can see, this completely takes the responsibility of building and maintaining the ClusterSpec away from you. All you have to do, is modify your code to read the TF_CONFIG and act accordingly.<br />
+Modifying your model to use TFJob's TF_CONFIG<br />
+Concretely, let's see how you would modify your code:</p>
+<div class="hlcode"><pre><span class="c"># Grab the TF_CONFIG environment variable</span>
+<span class="n">tf_config_json</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;TF_CONFIG&quot;</span><span class="p">,</span> <span class="s">&quot;{}&quot;</span><span class="p">)</span>
+
+<span class="c"># Deserialize to a python object</span>
+<span class="n">tf_config</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">tf_config_json</span><span class="p">)</span>
+
+<span class="c"># Grab the cluster specification from tf_config and create a new tf.train.ClusterSpec instance with it</span>
+<span class="n">cluster_spec</span> <span class="o">=</span> <span class="n">tf_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;cluster&quot;</span><span class="p">,</span> <span class="p">{})</span>
+<span class="n">cluster_spec_object</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">ClusterSpec</span><span class="p">(</span><span class="n">cluster_spec</span><span class="p">)</span>
+
+<span class="c"># Grab the task assigned to this specific process from the config. job_name might be &quot;worker&quot; and task_id might be 1 for example</span>
+<span class="n">task</span> <span class="o">=</span> <span class="n">tf_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&quot;task&quot;</span><span class="p">,</span> <span class="p">{})</span>
+<span class="n">job_name</span> <span class="o">=</span> <span class="n">task</span><span class="p">[</span><span class="s">&quot;type&quot;</span><span class="p">]</span>
+<span class="n">task_id</span> <span class="o">=</span> <span class="n">task</span><span class="p">[</span><span class="s">&quot;index&quot;</span><span class="p">]</span>
+
+<span class="c"># Configure the TensorFlow server</span>
+<span class="n">server_def</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">ServerDef</span><span class="p">(</span>
+    <span class="n">cluster</span><span class="o">=</span><span class="n">cluster_spec_object</span><span class="o">.</span><span class="n">as_cluster_def</span><span class="p">(),</span>
+    <span class="n">protocol</span><span class="o">=</span><span class="s">&quot;grpc&quot;</span><span class="p">,</span>
+    <span class="n">job_name</span><span class="o">=</span><span class="n">job_name</span><span class="p">,</span>
+    <span class="n">task_index</span><span class="o">=</span><span class="n">task_id</span><span class="p">)</span>
+<span class="n">server</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Server</span><span class="p">(</span><span class="n">server_def</span><span class="p">)</span>
+
+<span class="c"># checking if this process is the chief (also called master). The master has the responsibility of creating the session, saving the summaries etc.</span>
+<span class="n">is_chief</span> <span class="o">=</span> <span class="p">(</span><span class="n">job_name</span> <span class="o">==</span> <span class="s">&#39;master&#39;</span><span class="p">)</span>
+
+<span class="c"># Notice that we are not handling the case where job_name == &#39;ps&#39;. That is because `TFJob` will take care of the parameter servers for us by default.</span>
+<span class="n">As</span> <span class="k">for</span> <span class="nb">any</span> <span class="n">distributed</span> <span class="n">TensorFlow</span> <span class="n">training</span><span class="p">,</span> <span class="n">you</span> <span class="n">will</span> <span class="n">then</span> <span class="n">also</span> <span class="n">need</span> <span class="n">to</span> <span class="n">modify</span> <span class="n">your</span> <span class="n">model</span> <span class="n">to</span> <span class="n">split</span> <span class="n">the</span> <span class="n">operations</span> <span class="ow">and</span> <span class="n">variables</span> <span class="n">among</span> <span class="n">the</span> <span class="n">workers</span> <span class="ow">and</span> <span class="n">parameter</span> <span class="n">servers</span> <span class="k">as</span> <span class="n">well</span> <span class="k">as</span> <span class="n">create</span> <span class="n">on</span> <span class="n">session</span> <span class="n">on</span> <span class="n">the</span> <span class="n">master</span><span class="o">.</span>
+<span class="n">Exercises</span>
+<span class="mi">1</span> <span class="o">-</span> <span class="n">Modifying</span> <span class="n">Our</span> <span class="n">MNIST</span> <span class="n">Example</span> <span class="n">to</span> <span class="n">Support</span> <span class="n">Distributed</span> <span class="n">Training</span>
+<span class="mf">1.</span> <span class="n">a</span><span class="o">.</span>
+<span class="n">Starting</span> <span class="kn">from</span> <span class="nn">the</span> <span class="nn">MNIST</span> <span class="nn">sample</span> <span class="nn">we</span> <span class="nn">have</span> <span class="nn">been</span> <span class="nn">working</span> <span class="nn">with</span> <span class="nn">so</span> <span class="nn">far</span><span class="p">,</span> <span class="n">modify</span> <span class="n">it</span> <span class="n">to</span> <span class="n">work</span> <span class="k">with</span> <span class="n">distributed</span> <span class="n">TensorFlow</span> <span class="ow">and</span> <span class="n">TFJob</span><span class="o">.</span> <span class="n">You</span> <span class="n">will</span> <span class="n">then</span> <span class="n">need</span> <span class="n">to</span> <span class="n">build</span> <span class="n">the</span> <span class="n">image</span> <span class="ow">and</span> <span class="n">push</span> <span class="n">it</span> <span class="p">(</span><span class="n">you</span> <span class="n">should</span> <span class="n">push</span> <span class="n">it</span> <span class="n">under</span> <span class="n">a</span> <span class="n">different</span> <span class="n">name</span> <span class="ow">or</span> <span class="n">tag</span> <span class="n">to</span> <span class="n">avoid</span> <span class="n">overwriting</span> <span class="n">what</span> <span class="n">you</span> <span class="n">did</span> <span class="n">before</span><span class="p">)</span><span class="o">.</span>
+<span class="n">cd</span> <span class="mi">7</span><span class="o">-</span><span class="n">distributed</span><span class="o">-</span><span class="n">tensorflow</span><span class="o">/</span><span class="n">solution</span><span class="o">-</span><span class="n">src</span>
+<span class="c"># build from tensorflow/tensorflow:gpu for master and workers</span>
+<span class="n">docker</span> <span class="n">build</span> <span class="o">-</span><span class="n">t</span> <span class="err">$</span><span class="p">{</span><span class="n">DOCKER_USERNAME</span><span class="p">}</span><span class="o">/</span><span class="n">tf</span><span class="o">-</span><span class="n">mnist</span><span class="p">:</span><span class="n">distributedgpu</span> <span class="o">-</span><span class="n">f</span> <span class="o">./</span><span class="n">Dockerfile</span><span class="o">.</span><span class="n">gpu</span> <span class="o">.</span>
+
+<span class="c"># builld from tensorflow/tensorflow for the parameter server</span>
+<span class="n">docker</span> <span class="n">build</span> <span class="o">-</span><span class="n">t</span> <span class="err">$</span><span class="p">{</span><span class="n">DOCKER_USERNAME</span><span class="p">}</span><span class="o">/</span><span class="n">tf</span><span class="o">-</span><span class="n">mnist</span><span class="p">:</span><span class="n">distributed</span> <span class="o">.</span>
+<span class="mf">1.</span> <span class="n">b</span><span class="o">.</span>
+<span class="n">Modify</span> <span class="n">the</span> <span class="n">yaml</span> <span class="n">template</span> <span class="kn">from</span> <span class="nn">module</span> <span class="mi">6</span> <span class="o">-</span> <span class="n">TFJob</span><span class="p">,</span> <span class="n">to</span> <span class="n">instead</span> <span class="n">deploy</span> <span class="mi">1</span> <span class="n">master</span><span class="p">,</span> <span class="mi">2</span> <span class="n">workers</span> <span class="ow">and</span> <span class="mi">1</span> <span class="n">PS</span><span class="o">.</span> <span class="n">Then</span> <span class="n">create</span> <span class="n">a</span> <span class="n">yaml</span> <span class="n">to</span> <span class="n">deploy</span> <span class="n">TensorBoard</span> <span class="n">to</span> <span class="n">monitor</span> <span class="n">the</span> <span class="n">training</span> <span class="k">with</span> <span class="n">TensorBoard</span><span class="o">.</span> <span class="n">Note</span> <span class="n">that</span> <span class="n">since</span> <span class="n">our</span> <span class="n">model</span> <span class="ow">is</span> <span class="n">very</span> <span class="n">simple</span><span class="p">,</span> <span class="n">TensorFlow</span> <span class="n">will</span> <span class="n">likely</span> <span class="n">use</span> <span class="n">only</span> <span class="mi">1</span> <span class="n">of</span> <span class="n">the</span> <span class="n">workers</span><span class="p">,</span> <span class="n">but</span> <span class="n">it</span> <span class="n">will</span> <span class="n">still</span> <span class="n">work</span> <span class="n">fine</span><span class="o">.</span> <span class="n">Don</span><span class="s">&#39;t forget to update the image or tag.</span>
+<span class="n">Validation</span>
+<span class="n">kubectl</span> <span class="n">get</span> <span class="n">pods</span>
+<span class="n">Should</span> <span class="k">yield</span><span class="p">:</span>
+<span class="n">NAME</span>                                       <span class="n">READY</span>     <span class="n">STATUS</span>              <span class="n">RESTARTS</span>   <span class="n">AGE</span>
+<span class="n">module6</span><span class="o">-</span><span class="n">ex1</span><span class="o">-</span><span class="n">master</span><span class="o">-</span><span class="n">m8vi</span><span class="o">-</span><span class="mi">0</span><span class="o">-</span><span class="n">rdr5o</span>            <span class="mi">1</span><span class="o">/</span><span class="mi">1</span>       <span class="n">Running</span>   <span class="mi">0</span>          <span class="mi">23</span><span class="n">s</span>
+<span class="n">module6</span><span class="o">-</span><span class="n">ex1</span><span class="o">-</span><span class="n">ps</span><span class="o">-</span><span class="n">m8vi</span><span class="o">-</span><span class="mi">0</span><span class="o">-</span><span class="mi">0</span><span class="n">vhjm</span>                <span class="mi">1</span><span class="o">/</span><span class="mi">1</span>       <span class="n">Running</span>   <span class="mi">0</span>          <span class="mi">23</span><span class="n">s</span>
+<span class="n">module6</span><span class="o">-</span><span class="n">ex1</span><span class="o">-</span><span class="n">worker</span><span class="o">-</span><span class="n">m8vi</span><span class="o">-</span><span class="mi">0</span><span class="o">-</span><span class="n">eyb6l</span>            <span class="mi">1</span><span class="o">/</span><span class="mi">1</span>       <span class="n">Running</span>   <span class="mi">0</span>          <span class="mi">23</span><span class="n">s</span>
+<span class="n">module6</span><span class="o">-</span><span class="n">ex1</span><span class="o">-</span><span class="n">worker</span><span class="o">-</span><span class="n">m8vi</span><span class="o">-</span><span class="mi">1</span><span class="o">-</span><span class="n">bm2ue</span>            <span class="mi">1</span><span class="o">/</span><span class="mi">1</span>       <span class="n">Running</span>   <span class="mi">0</span>          <span class="mi">23</span><span class="n">s</span>
+<span class="n">looking</span> <span class="n">at</span> <span class="n">the</span> <span class="n">logs</span> <span class="n">of</span> <span class="n">the</span> <span class="n">master</span> <span class="k">with</span><span class="p">:</span>
+<span class="n">kubectl</span> <span class="n">logs</span> <span class="o">&lt;</span><span class="n">master</span><span class="o">-</span><span class="n">pod</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
+<span class="n">Should</span> <span class="k">yield</span><span class="p">:</span>
+<span class="p">[</span><span class="o">...</span><span class="p">]</span>
+<span class="n">Initialize</span> <span class="n">GrpcChannelCache</span> <span class="k">for</span> <span class="n">job</span> <span class="n">master</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="mi">0</span> <span class="o">-&gt;</span> <span class="n">localhost</span><span class="p">:</span><span class="mi">2222</span><span class="p">}</span>
+<span class="n">Initialize</span> <span class="n">GrpcChannelCache</span> <span class="k">for</span> <span class="n">job</span> <span class="n">ps</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="mi">0</span> <span class="o">-&gt;</span> <span class="n">module6</span><span class="o">-</span><span class="n">ex1</span><span class="o">-</span><span class="n">ps</span><span class="o">-</span><span class="n">m8vi</span><span class="o">-</span><span class="mi">0</span><span class="p">:</span><span class="mi">2222</span><span class="p">}</span>
+<span class="n">Initialize</span> <span class="n">GrpcChannelCache</span> <span class="k">for</span> <span class="n">job</span> <span class="n">worker</span> <span class="o">-&gt;</span> <span class="p">{</span><span class="mi">0</span> <span class="o">-&gt;</span> <span class="n">module6</span><span class="o">-</span><span class="n">ex1</span><span class="o">-</span><span class="n">worker</span><span class="o">-</span><span class="n">m8vi</span><span class="o">-</span><span class="mi">0</span><span class="p">:</span><span class="mi">2222</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-&gt;</span> <span class="n">module6</span><span class="o">-</span><span class="n">ex1</span><span class="o">-</span><span class="n">worker</span><span class="o">-</span><span class="n">m8vi</span><span class="o">-</span><span class="mi">1</span><span class="p">:</span><span class="mi">2222</span><span class="p">}</span>
+<span class="mi">2018</span><span class="o">-</span><span class="mo">04</span><span class="o">-</span><span class="mi">30</span> <span class="mi">22</span><span class="p">:</span><span class="mi">45</span><span class="p">:</span><span class="mf">28.963803</span><span class="p">:</span> <span class="n">I</span> <span class="n">tensorflow</span><span class="o">/</span><span class="n">core</span><span class="o">/</span><span class="n">distributed_runtime</span><span class="o">/</span><span class="n">rpc</span><span class="o">/</span><span class="n">grpc_server_lib</span><span class="o">.</span><span class="n">cc</span><span class="p">:</span><span class="mi">333</span><span class="p">]</span> <span class="n">Started</span> <span class="n">server</span> <span class="k">with</span> <span class="n">target</span><span class="p">:</span> <span class="n">grpc</span><span class="p">:</span><span class="o">//</span><span class="n">localhost</span><span class="p">:</span><span class="mi">2222</span>
+<span class="o">...</span>
+
+<span class="n">Accuracy</span> <span class="n">at</span> <span class="n">step</span> <span class="mi">970</span><span class="p">:</span> <span class="mf">0.9784</span>
+<span class="n">Accuracy</span> <span class="n">at</span> <span class="n">step</span> <span class="mi">980</span><span class="p">:</span> <span class="mf">0.9791</span>
+<span class="n">Accuracy</span> <span class="n">at</span> <span class="n">step</span> <span class="mi">990</span><span class="p">:</span> <span class="mf">0.9796</span>
+<span class="n">Adding</span> <span class="n">run</span> <span class="n">metadata</span> <span class="k">for</span> <span class="mi">999</span>
+<span class="n">This</span> <span class="n">indicates</span> <span class="n">that</span> <span class="n">the</span> <span class="n">ClusterSpec</span> <span class="n">was</span> <span class="n">correctly</span> <span class="n">extracted</span> <span class="kn">from</span> <span class="nn">the</span> <span class="nn">environment</span> <span class="nn">variable</span> <span class="nn">and</span> <span class="nn">given</span> <span class="nn">to</span> <span class="nn">TensorFlow.</span>
+<span class="n">Once</span> <span class="n">the</span> <span class="n">TensorBoard</span> <span class="n">pod</span> <span class="ow">is</span> <span class="n">provisioned</span> <span class="ow">and</span> <span class="n">running</span><span class="p">,</span> <span class="n">we</span> <span class="n">can</span> <span class="n">connect</span> <span class="n">to</span> <span class="n">it</span> <span class="n">using</span><span class="p">:</span>
+<span class="n">PODNAME</span><span class="o">=</span><span class="err">$</span><span class="p">(</span><span class="n">kubectl</span> <span class="n">get</span> <span class="n">pod</span> <span class="o">-</span><span class="n">l</span> <span class="n">app</span><span class="o">=</span><span class="n">tensorboard</span> <span class="o">-</span><span class="n">o</span> <span class="n">jsonpath</span><span class="o">=</span><span class="s">&#39;{.items[0].metadata.name}&#39;</span><span class="p">)</span>
+<span class="n">kubectl</span> <span class="n">port</span><span class="o">-</span><span class="n">forward</span> <span class="err">$</span><span class="p">{</span><span class="n">PODNAME</span><span class="p">}</span> <span class="mi">6006</span><span class="p">:</span><span class="mi">6006</span>
+<span class="n">From</span> <span class="n">the</span> <span class="n">browser</span><span class="p">,</span> <span class="n">connect</span> <span class="n">to</span> <span class="n">it</span> <span class="n">at</span> <span class="n">http</span><span class="p">:</span><span class="o">//</span><span class="mf">127.0</span><span class="o">.</span><span class="mf">0.1</span><span class="p">:</span><span class="mi">6006</span><span class="p">,</span> <span class="n">you</span> <span class="n">should</span> <span class="n">see</span> <span class="n">that</span> <span class="n">your</span> <span class="n">model</span> <span class="ow">is</span> <span class="n">indeed</span> <span class="n">correctly</span> <span class="n">distributed</span> <span class="n">between</span> <span class="n">workers</span> <span class="ow">and</span> <span class="n">PS</span><span class="p">:</span>
+
+<span class="n">After</span> <span class="n">a</span> <span class="n">few</span> <span class="n">minutes</span><span class="p">,</span> <span class="n">the</span> <span class="n">status</span> <span class="n">of</span> <span class="n">both</span> <span class="n">worker</span> <span class="n">nodes</span> <span class="n">should</span> <span class="n">show</span> <span class="k">as</span> <span class="n">Completed</span> <span class="n">when</span> <span class="n">doing</span> <span class="n">kubectl</span> <span class="n">get</span> <span class="n">pods</span> <span class="o">-</span><span class="n">a</span><span class="o">.</span>
+<span class="n">Solution</span>
+<span class="n">A</span> <span class="n">working</span> <span class="n">code</span> <span class="n">sample</span> <span class="ow">is</span> <span class="n">available</span> <span class="ow">in</span> <span class="n">solution</span><span class="o">-</span><span class="n">src</span><span class="o">/</span><span class="n">main</span><span class="o">.</span><span class="n">py</span><span class="o">.</span>
+<span class="n">TFJob</span><span class="s">&#39;s Template</span>
+<span class="n">TensorBoard</span> <span class="n">Template</span>
+</pre></div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

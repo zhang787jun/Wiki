@@ -1,0 +1,576 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Python--单元测试实践 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#10-计算机科学">10-计算机科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-Programming_Language">02-Programming_Language</a>&nbsp;»&nbsp;<a href="/Wiki/#-Python">Python</a>&nbsp;»&nbsp;<a href="/Wiki/#-用好python">用好python</a>&nbsp;»&nbsp;<a href="/Wiki/#-测试">测试</a>&nbsp;»&nbsp;Python--单元测试实践</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Python--单元测试实践</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 单元测试</a><ul>
+<li><a href="#11">1.1. 什么是单元测试</a></li>
+<li><a href="#12">1.2. 测试驱动开发的思想</a></li>
+<li><a href="#13">1.3. 优势</a></li>
+<li><a href="#14">1.4. 问题和注意事项</a></li>
+</ul>
+</li>
+<li><a href="#2-python-unittest">2. python-unittest</a><ul>
+<li><a href="#21-unittest">2.1. unittest库 基础</a><ul>
+<li><a href="#211-case">2.1.1. Case实例</a><ul>
+<li><a href="#2111-testcase">2.1.1.1. TestCase</a></li>
+<li><a href="#215-test-fixture">2.1.5. Test fixture</a></li>
+</ul>
+</li>
+<li><a href="#212-suite">2.1.2. Suite 套件</a><ul>
+<li><a href="#2121-testsuite">2.1.2.1. TestSuite</a></li>
+</ul>
+</li>
+<li><a href="#213-loader">2.1.3. Loader 实例加载器</a><ul>
+<li><a href="#2131-testloader">2.1.3.1. TestLoader</a></li>
+</ul>
+</li>
+<li><a href="#214-runner">2.1.4. Runner运行器</a><ul>
+<li><a href="#2141-testrunner">2.1.4.1. TestRunner</a></li>
+<li><a href="#2142-texttestresult">2.1.4.2. TextTestResult</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#22">2.2. 简单实例</a><ul>
+<li><a href="#221">2.2.1. 项目背景需求</a></li>
+<li><a href="#222">2.2.2. 编码</a><ul>
+<li><a href="#2221">2.2.2.1. 常用断言</a></li>
+</ul>
+</li>
+<li><a href="#223">2.2.3. 运行</a></li>
+</ul>
+</li>
+<li><a href="#23">2.3. 进阶</a><ul>
+<li><a href="#231-testsuite">2.3.1. 多个测试用例--组织TestSuite</a></li>
+<li><a href="#232">2.3.2. 跳过测试用例执行</a><ul>
+<li><a href="#2321">2.3.2.1. 修饰器</a></li>
+<li><a href="#2322-testcaseskiptest">2.3.2.2. TestCase.skipTest方法</a></li>
+</ul>
+</li>
+<li><a href="#233">2.3.3. 出好看的报告</a><ul>
+<li><a href="#2331-txt">2.3.3.1. txt格式</a></li>
+<li><a href="#2332-html">2.3.3.2. html 格式</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#3">3. 优秀工具</a><ul>
+<li><a href="#31-vscode">3.1. VScode</a><ul>
+<li><a href="#311">3.1.1. 设置</a><ul>
+<li><a href="#3111">3.1.1.1. 启用单元测试</a></li>
+<li><a href="#3112-unittest">3.1.1.2. 配置测试框架--Unittest</a></li>
+<li><a href="#3113">3.1.1.3. 测试发现</a></li>
+<li><a href="#3114">3.1.1.4. 运行测试</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#4">4. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1">1. 单元测试</h1>
+<h2 id="11">1.1. 什么是单元测试</h2>
+<p>单元测试（英语：Unit Testing）又称为模块测试，是针对程序模块（软件设计的最小单位）来进行正确性检验的测试工作。程序单元是应用的最小可测试部件。在过程化编程中，一个单元就是单个程序、函数、过程等；对于面向对象编程，最小单元就是方法，包括基类（超类）、抽象类、或者派生类（子类）中的方法。</p>
+<p>通常来说，程序员每修改一次程序就会进行最少一次单元测试，在编写程序的过程中前后很可能要进行多次单元测试，以证实程序达到软件规格书要求的工作目标，没有程序错误；虽然单元测试不是必须的，但也不坏，这牵涉到项目管理的政策决定。</p>
+<h2 id="12">1.2. 测试驱动开发的思想</h2>
+<p>测试驱动开发（英语：Test-driven development，缩写为TDD）是一种软件开发过程中的应用方法，由极限编程中倡导，以其倡导先写测试程序，然后编码实现其功能得名。通过测试来推动整个开发的进行，这有助于编写简洁可用和高质量的代码，并加速开发过程。</p>
+<h2 id="13">1.3. 优势</h2>
+<ol>
+<li>确保一个程序模块的行为符合我们设计的测试用例</li>
+</ol>
+<p>如果单元测试通过，说明我们测试的这个函数能够正常工作。如果单元测试不通过，要么函数有bug，要么测试条件输入不正确，总之，需要修复使单元测试能够通过。</p>
+<p>单元测试通过后有什么意义呢？如果我们对abs()函数代码做了修改，只需要再跑一遍单元测试，如果通过，说明我们的修改不会对abs()函数原有的行为造成影响，如果测试不通过，说明我们的修改与原有行为不一致，要么修改代码，要么修改测试。</p>
+<p>这种以测试为驱动的开发模式最大的好处就是<strong>确保一个程序模块的行为符合我们设计的测试用例</strong>。在将来修改的时候，可以极大程度地保证该模块行为仍然是正确的。</p>
+<h2 id="14">1.4. 问题和注意事项</h2>
+<ol>
+<li>单元测试的测试用例要覆盖常用的输入组合、边界条件和异常。</li>
+<li>单元测试代码要非常简单，如果测试代码太复杂，那么测试代码本身就可能有bug。因此，您可能偶尔需要在调试器中单步执行单元测试</li>
+<li>单元测试通过了并不意味着程序就没有bug了，但是不通过程序肯定有bug。</li>
+</ol>
+<h1 id="2-python-unittest">2. python-unittest</h1>
+<h2 id="21-unittest">2.1. unittest库 基础</h2>
+<p><img alt="" src="../../../attach/images/2019-09-05-12-20-30.png" /></p>
+<h3 id="211-case">2.1.1. Case实例</h3>
+<h4 id="2111-testcase">2.1.1.1. TestCase</h4>
+<p>一个TestCase的实例就是一个测试用例。什么是测试用例呢？就是一个完整的测试流程，包括：<br />
+1. 测试前准备环境的搭建(setUp);<br />
+2. 执行测试代码(run);<br />
+3. 测试后环境的还原(tearDown)</p>
+<p>元测试(unit test)的本质也就在这里，<strong>一个测试用例是一个完整的测试单元</strong>，通过运行这个测试单元，可以对某一个问题进行验证。</p>
+<h4 id="215-test-fixture">2.1.5. Test fixture</h4>
+<p>而对一个测试用例环境的搭建和销毁，是一个fixture。固定执行setUp、tearDown就是fixture</p>
+<h3 id="212-suite">2.1.2. Suite 套件</h3>
+<h4 id="2121-testsuite">2.1.2.1. TestSuite</h4>
+<p>$$TestSuite=TestCase1+TestCase2+TestCase3+...$$</p>
+<p>而多个测试用例集合在一起，就是TestSuite，而且TestSuite也可以嵌套TestSuite。 </p>
+<h3 id="213-loader">2.1.3. Loader 实例加载器</h3>
+<h4 id="2131-testloader">2.1.3.1. TestLoader</h4>
+<p>TestLoader 是用来加载TestCase到TestSuite中的，其中有几个loadTestsFrom__()方法，就是从各个地方寻找TestCase，创建它们的实例，然后add到TestSuite中，再返回一个TestSuite实例。</p>
+<h3 id="214-runner">2.1.4. Runner运行器</h3>
+<h4 id="2141-testrunner">2.1.4.1. TestRunner</h4>
+<p>TextTestRunner是来执行测试用例的，其中的run(test)会执行TestSuite/TestCase中的run(result)方法。</p>
+<h4 id="2142-texttestresult">2.1.4.2. TextTestResult</h4>
+<p>测试的结果会保存到TextTestResult实例中，包括运行了多少测试用例，成功了多少，失败了多少等信息。</p>
+<h2 id="22">2.2. 简单实例</h2>
+<h3 id="221">2.2.1. 项目背景需求</h3>
+<p>比如对函数abs()，我们可以编写出以下几个测试用例：</p>
+<ol>
+<li>输入正数，比如1、1.2、0.99，期待返回值与输入相同；</li>
+<li>输入负数，比如-1、-1.2、-0.99，期待返回值与输入相反；</li>
+<li>输入0，期待返回0；</li>
+<li>输入非数值类型，比如None、[]、{}，期待抛出TypeError。</li>
+</ol>
+<p>把上面的测试用例放到一个测试模块里，就是一个完整的单元测试。</p>
+<p>我们来编写一个Dict类，这个类的行为和dict一致，但是可以通过属性来访问，用起来就像下面这样：</p>
+<div class="hlcode"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">d</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="p">[</span><span class="s">&#39;a&#39;</span><span class="p">]</span>
+<span class="mi">1</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">d</span><span class="o">.</span><span class="n">a</span>
+<span class="mi">1</span>
+</pre></div>
+
+
+<h3 id="222">2.2.2. 编码</h3>
+<div class="hlcode"><pre><span class="n">tree</span> <span class="n">workspace</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">WORKSPACE</span>
+        <span class="o">|</span><span class="n">__</span> <span class="n">mydict</span><span class="p">.</span><span class="n">py</span>
+        <span class="o">|</span><span class="n">__</span> <span class="n">mydict_test</span><span class="p">.</span><span class="n">py</span>
+</pre></div>
+
+
+<p>mydict.py代码如下：</p>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">Dict</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kw</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Dict</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">kw</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s">r&quot;&#39;Dict&#39; object has no attribute &#39;</span><span class="si">%s</span><span class="s">&#39;&quot;</span> <span class="o">%</span> <span class="n">key</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__setattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+</pre></div>
+
+
+<p>为了编写单元测试，我们需要引入Python自带的unittest模块，编写mydict_test.py如下：</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">from</span> <span class="nn">mydict</span> <span class="kn">import</span> <span class="n">Dict</span>
+
+<span class="c">#编写单元测试时，我们需要编写一个测试类，从unittest.TestCase继承</span>
+<span class="k">class</span> <span class="nc">TestDict</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+    <span class="c">#以test开头的test_xxx()方法就是测试方法，不以test开头的方法不被认为是测试方法，测试的时候不会被执行。</span>
+    <span class="k">def</span> <span class="nf">test_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="s">&#39;test&#39;</span><span class="p">)</span>
+        <span class="c">#最常用的断言就是assertEquals()：</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEquals</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">a</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEquals</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">b</span><span class="p">,</span> <span class="s">&#39;test&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="nb">dict</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">test_key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">()</span>
+        <span class="n">d</span><span class="p">[</span><span class="s">&#39;key&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s">&#39;value&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEquals</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">key</span><span class="p">,</span> <span class="s">&#39;value&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">test_attr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">()</span>
+        <span class="n">d</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="s">&#39;value&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertTrue</span><span class="p">(</span><span class="s">&#39;key&#39;</span> <span class="ow">in</span> <span class="n">d</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEquals</span><span class="p">(</span><span class="n">d</span><span class="p">[</span><span class="s">&#39;key&#39;</span><span class="p">],</span> <span class="s">&#39;value&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">test_keyerror</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">()</span>
+        <span class="c">#期待抛出指定类型的Error的断言</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">KeyError</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">d</span><span class="p">[</span><span class="s">&#39;empty&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">test_attrerror</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">Dict</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">assertRaises</span><span class="p">(</span><span class="ne">AttributeError</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">empty</span>
+
+    <span class="c"># 特殊的setUp() 方法，会在每调用一个测试方法的前执行</span>
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        连接数据库</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">print</span> <span class="p">(</span><span class="s">&#39;setUp...&#39;</span><span class="p">)</span>
+
+    <span class="c"># 特殊的tearDown() 方法，会在每调用一个测试方法的后执行</span>
+    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        断开数据库</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">print</span> <span class="s">&#39;tearDown...&#39;</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">unittest</span><span class="o">.</span><span class="n">main</span><span class="p">()</span>
+</pre></div>
+
+
+<h4 id="2221">2.2.2.1. 常用断言</h4>
+<p>常用断言</p>
+<div class="hlcode"><pre>    <span class="n">assertEqual</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>     <span class="n">a</span> <span class="o">==</span> <span class="n">b</span>      
+    <span class="n">assertNotEqual</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>     <span class="n">a</span> <span class="o">!=</span> <span class="n">b</span>      
+    <span class="n">assertTrue</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>     <span class="nb">bool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">True</span>      
+    <span class="n">assertFalse</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>     <span class="nb">bool</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="ow">is</span> <span class="bp">False</span>      
+    <span class="n">assertIsNone</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>     <span class="n">x</span> <span class="ow">is</span> <span class="bp">None</span>     
+    <span class="n">assertIsNotNone</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>     <span class="n">x</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span>   
+    <span class="n">assertIn</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>     <span class="n">a</span> <span class="ow">in</span> <span class="n">b</span>    
+    <span class="n">assertNotIn</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>     <span class="n">a</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">b</span>
+</pre></div>
+
+
+<h3 id="223">2.2.3. 运行</h3>
+<div class="hlcode"><pre><span class="cp">#一旦编写好单元测试，我们就可以运行单元测试</span>
+<span class="n">python</span> <span class="n">mydict_test</span><span class="p">.</span><span class="n">py</span>
+
+<span class="cp">#另一种更常见的方法是在命令行通过参数-m unittest直接运行单元测试：</span>
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">unittest</span> <span class="n">mydict_test</span>
+
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">Ran</span> <span class="mi">5</span> <span class="n">tests</span> <span class="n">in</span> <span class="mf">0.000</span><span class="n">s</span>
+</pre></div>
+
+
+<h2 id="23">2.3. 进阶</h2>
+<h3 id="231-testsuite">2.3.1. 多个测试用例--组织TestSuite</h3>
+<p>我们可以通过skip，skipIf，skipUnless装饰器跳过某个case，或者用TestCase.skipTest方法。</p>
+<p>上面的代码示例了如何编写一个简单的测试，但有两个问题，我们怎么控制用例执行的顺序呢？（这里的示例中的几个测试方法并没有一定关系，但之后你写的用例可能会有先后关系，需要先执行方法A，再执行方法B），我们就要用到TestSuite了。我们添加到TestSuite中的case是会按照添加的顺序执行的。</p>
+<p>问题二是我们现在只有一个测试文件，我们直接执行该文件即可，但如果有多个测试文件，怎么进行组织，总不能一个个文件执行吧，答案也在TestSuite中。</p>
+<h3 id="232">2.3.2. 跳过测试用例执行</h3>
+<h4 id="2321">2.3.2.1. 修饰器</h4>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">unittest</span>
+
+<span class="k">class</span> <span class="nc">SkipExample</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>
+
+    <span class="nd">@unittest.skip</span><span class="p">(</span><span class="s">&#39;用例 1 无条件跳过&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_case_one</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;---用例 1 ---&#39;</span><span class="p">)</span>
+
+    <span class="nd">@unittest.skipIf</span><span class="p">(</span><span class="mi">2</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;条件为True ，用例2 跳过&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_case_two</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;---用例 2  ---&#39;</span><span class="p">)</span>
+
+    <span class="nd">@unittest.skipUnless</span><span class="p">(</span><span class="mi">2</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s">&#39;条件为False, 用例3 跳过&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">test_case_three</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;---用例 3  ---&#39;</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">unittest</span><span class="o">.</span><span class="n">main</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+
+<h4 id="2322-testcaseskiptest">2.3.2.2. TestCase.skipTest方法</h4>
+<h3 id="233">2.3.3. 出好看的报告</h3>
+<h4 id="2331-txt">2.3.3.1. txt格式</h4>
+<p>用TextTestRunner输出txt报告，</p>
+<h4 id="2332-html">2.3.3.2. html 格式</h4>
+<p>HtmlTestRunner</p>
+<p>python 下可以安装html-testRunner包</p>
+<div class="hlcode"><pre><span class="n">pip3</span> <span class="n">install</span> <span class="n">html</span><span class="o">-</span><span class="n">testRunner</span>
+</pre></div>
+
+
+<p>在py文件中导入</p>
+<div class="hlcode"><pre><span class="n">import</span> <span class="n">HtmlTestRunner</span>
+</pre></div>
+
+
+<p>示例</p>
+<div class="hlcode"><pre><span class="c"># -*- coding:utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">unittest</span>
+<span class="kn">import</span> <span class="nn">time</span><span class="o">,</span><span class="nn">os</span><span class="o">,</span><span class="nn">sys</span><span class="o">,</span><span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">HtmlTestRunner</span>
+
+<span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">__file__</span><span class="p">))</span> <span class="o">+</span> <span class="s">r&#39;\..&#39;</span><span class="p">)</span>  <span class="c"># 返回脚本的路径</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">basicConfig</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+                    <span class="n">format</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%(asctime)s</span><span class="s"> </span><span class="si">%(filename)s</span><span class="s">[line:</span><span class="si">%(lineno)d</span><span class="s">] </span><span class="si">%(levelname)s</span><span class="s"> </span><span class="si">%(message)s</span><span class="s">&#39;</span><span class="p">,</span>
+                    <span class="n">datefmt</span><span class="o">=</span><span class="s">&#39;%a, </span><span class="si">%d</span><span class="s"> %b %Y %H:%M:%S&#39;</span><span class="p">,</span>
+                    <span class="n">filename</span><span class="o">=</span><span class="s">&#39;log_test.log&#39;</span><span class="p">,</span>
+                    <span class="n">filemode</span><span class="o">=</span><span class="s">&#39;w&#39;</span><span class="p">)</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">()</span>
+<span class="k">class</span> <span class="nc">MyTest</span><span class="p">(</span><span class="n">unittest</span><span class="o">.</span><span class="n">TestCase</span><span class="p">):</span>  <span class="c"># 继承unittest.TestCase</span>
+
+    <span class="k">def</span> <span class="nf">setUp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># 每个测试用例执行之前做操作</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;执行用例开始&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">tearDown</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># 每个测试用例执行之后做操作</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;执行用例结束&#39;</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">tearDownClass</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># 必须使用 @ classmethod装饰器, 所有test运行完后运行一次</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;--------测试执行结束--------&#39;</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">setUpClass</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c"># 必须使用@classmethod 装饰器,所有test运行前运行一次</span>
+        <span class="k">print</span><span class="p">(</span><span class="s">&#39;--------测试执行开始--------&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">test_1_add</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;添加类别信息&quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Now: </span><span class="si">%r</span><span class="s">&quot;</span><span class="p">,</span> <span class="s">&#39;执行添加&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">test_2_que</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;查询类别信息&quot;&quot;&quot;</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s">&quot;Now: </span><span class="si">%r</span><span class="s">&quot;</span><span class="p">,</span> <span class="s">&#39;执行查询&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">assertEqual</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">current_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s">-%H_%M_%S&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">.</span><span class="n">localtime</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+    <span class="n">test_suite</span> <span class="o">=</span> <span class="n">unittest</span><span class="o">.</span><span class="n">TestSuite</span><span class="p">()</span>  <span class="c"># 创建一个测试集合</span>
+    <span class="n">test_suite</span><span class="o">.</span><span class="n">addTest</span><span class="p">(</span><span class="n">MyTest</span><span class="p">(</span><span class="s">&#39;test_1_add&#39;</span><span class="p">))</span>
+    <span class="n">test_suite</span><span class="o">.</span><span class="n">addTest</span><span class="p">(</span><span class="n">MyTest</span><span class="p">(</span><span class="s">&#39;test_2_que&#39;</span><span class="p">))</span><span class="c"># 测试套件中添加测试用例</span>
+    <span class="c"># test_suite.addTest(unittest.makeSuite(MyTest))#使用makeSuite方法添加所有的测试方法</span>
+    <span class="n">report_path</span> <span class="o">=</span> <span class="n">current_time</span> <span class="o">+</span> <span class="s">&#39;.html&#39;</span>  <span class="c"># 生成测试报告的路径</span>
+    <span class="n">fp</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">report_path</span><span class="p">,</span> <span class="s">&quot;wb&quot;</span><span class="p">)</span>
+    <span class="n">runner</span> <span class="o">=</span> <span class="n">HTMLTestRunner</span><span class="o">.</span><span class="n">HTMLTestRunner</span><span class="p">(</span><span class="n">stream</span> <span class="o">=</span> <span class="n">fp</span><span class="p">,</span>
+                                           <span class="n">title</span> <span class="o">=</span> <span class="s">&#39;自动化测试报告&#39;</span><span class="p">,</span>
+                                           <span class="n">description</span> <span class="o">=</span> <span class="s">&#39;用例执行情况：&#39;</span><span class="p">,</span>
+                                           <span class="n">verbosity</span> <span class="o">=</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="n">runner</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">test_suite</span><span class="p">)</span>
+    <span class="n">fp</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+
+
+<h1 id="3">3. 优秀工具</h1>
+<h3 id="31-vscode">3.1. VScode</h3>
+<h4 id="311">3.1.1. 设置</h4>
+<h5 id="3111">3.1.1.1. 启用单元测试</h5>
+<p>默认情况下禁用单元测试。要启用单元测试，请将VScode 设置中将以下设置之一设置为true：</p>
+<div class="hlcode"><pre>    <span class="s">&quot;python.unitTest.unittestEnabled&quot;</span><span class="o">:</span> <span class="nb">false</span><span class="p">,</span>
+    <span class="s">&quot;python.unitTest.pyTestEnabled&quot;</span><span class="o">:</span> <span class="nb">true</span><span class="p">,</span>
+    <span class="s">&quot;python.unitTest.nosetestsEnabled&quot;</span><span class="o">:</span> <span class="nb">false</span><span class="p">,</span>
+</pre></div>
+
+
+<p>注意：一次只启用一个测试框架。上面的示例启用了pytest，使unittest和Nose禁用。</p>
+<p>每个框架还具有特定的配置设置</p>
+<h5 id="3112-unittest">3.1.1.2. 配置测试框架--Unittest</h5>
+<p>设置</p>
+<table>
+<thead>
+<tr>
+<th>（python.unitTest.）</th>
+<th>默认</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>unittestEnabled</td>
+<td>false</td>
+<td>指定是否为单元测试启用UnitTest。</td>
+</tr>
+<tr>
+<td>unittestArgs</td>
+<td>["-v", "-s", ".", "-p", "<em>test</em>.py"]</td>
+<td>传递给unittest的参数，其中由空格分隔的每个元素是列表中的单独项。有关默认值的说明，请参见下文。</td>
+</tr>
+<tr>
+<td>CWD</td>
+<td>空值</td>
+<td>指定单元测试的可选工作目录。</td>
+</tr>
+<tr>
+<td>outputWindow</td>
+<td>"Python Test Log"</td>
+<td>用于单元测试输出的窗口。</td>
+</tr>
+<tr>
+<td>promptToConfigure</td>
+<td>true</td>
+<td>指定VS代码是否在发现潜在测试时提示配置测试框架。</td>
+</tr>
+<tr>
+<td>DEBUGPORT</td>
+<td>3000</td>
+<td>用于调试UnitTest测试的端口号。</td>
+</tr>
+<tr>
+<td>autoTestDiscoverOnSaveEnabled</td>
+<td>true</td>
+<td>指定在保存单元测试文件时是启用还是禁用自动运行测试发现。</td>
+</tr>
+</tbody>
+</table>
+<p>UnitTest的默认参数如下：<br />
+| unittest的默认参数 | 含义                                                                         |<br />
+| ------------------ | ---------------------------------------------------------------------------- |<br />
+| -v                 | 设置默认详细程度。删除此参数以获得更简单的输出。                             |<br />
+| -f                 | 要在第一次失败时停止测试运​​行，请将fail fast选项添加"-f"到arguments数组中。 |</p>
+<h5 id="3113">3.1.1.3. 测试发现</h5>
+<p>VS Code使用当前启用的单元测试框架来发现测试。您可以使用Python：Discover Unit Tests命令随时触发测试发现。使用Unittest，您可以将 python.unittest.autoTestDiscoverOnSaveEnabled设置设置为true在保存测试文件时运行测试发现。</p>
+<div class="hlcode"><pre><span class="n">python</span><span class="p">.</span><span class="n">unittest</span><span class="p">.</span><span class="n">autoTestDiscoverOnSaveEnabled</span><span class="o">:</span><span class="nb">true</span><span class="p">;</span>
+</pre></div>
+
+
+<p>测试发现应用当前测试框架的arguments选项中指定的发现模式。<br />
+| unittest的默认参数 | 含义                           |<br />
+| ------------------ | ------------------------------ |<br />
+| -s <fold_path>     | 递归查找项目文件夹 <fold_path> |<br />
+| -p <file_name>     | 匹配文件                       |</p>
+<div class="hlcode"><pre><span class="na">-s</span> <span class="o">&lt;</span><span class="nx">fold_path</span><span class="o">&gt;</span> <span class="na">-p</span> <span class="o">&lt;</span><span class="nx">file_name</span><span class="o">&gt;</span> 
+<span class="na">-s</span> <span class="nx">.</span><span class="p">/</span><span class="nx">workspace</span><span class="o">/</span> <span class="na">-p</span> <span class="o">*</span><span class="nx">test</span><span class="o">*</span><span class="bp">.</span><span class="nx">py</span>
+</pre></div>
+
+
+<p>意味着unittest以项目文件夹./workspace/开头递归查找(-s ./workspace/)名称与<em>test</em>.pypattern（-p <em>test</em>.py）匹配的所有文件。</p>
+<h5 id="3114">3.1.1.4. 运行测试</h5>
+<p><img alt="" src="../../../attach/images/2019-09-05-14-13-24.png" /></p>
+<p>使用以下任何操作运行测试：</p>
+<table>
+<thead>
+<tr>
+<th>命令</th>
+<th>描述</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>运行所有单元测试</td>
+<td>在工作区及其子文件夹中搜索并运行所有单元测试。</td>
+</tr>
+<tr>
+<td>运行当前单元测试文件</td>
+<td>在当前在编辑器中查看的文件中运行测试。</td>
+</tr>
+<tr>
+<td>运行失败的单元测试</td>
+<td>重新运行先前测试运行中失败的任何测试。如果尚未运行任何测试，则运行所有测试。</td>
+</tr>
+<tr>
+<td>运行单元测试文件...</td>
+<td>提示输入特定的测试文件名，然后在该文件中运行测试。</td>
+</tr>
+<tr>
+<td>运行单元测试方法......</td>
+<td>提示要运行的测试名称，为测试名称提供自动完成功能。</td>
+</tr>
+<tr>
+<td>显示单元测试输出</td>
+<td>打开Python Test Log面板，其中包含有关传递和失败测试以及错误和跳过测试的信息。</td>
+</tr>
+</tbody>
+</table>
+<p><sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup></p>
+<h1 id="4">4. 参考资料</h1>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>VScode Python settings reference<br />
+https://code.visualstudio.com/docs/python/settings-reference&#160;<a class="footnote-backref" href="#fnref:1" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:2">
+<p>Python testing in Visual Studio Code https://s0code0visualstudio0com.icopy.site/docs/python/testing&#160;<a class="footnote-backref" href="#fnref:2" rev="footnote" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

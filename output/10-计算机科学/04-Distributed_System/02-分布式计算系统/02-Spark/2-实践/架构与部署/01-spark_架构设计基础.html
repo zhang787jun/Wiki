@@ -1,0 +1,145 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>01-Spark 架构设计 101 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#10-计算机科学">10-计算机科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-04-Distributed_System">04-Distributed_System</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-分布式计算系统">02-分布式计算系统</a>&nbsp;»&nbsp;<a href="/Wiki/#-02-Spark">02-Spark</a>&nbsp;»&nbsp;<a href="/Wiki/#-2-实践">2-实践</a>&nbsp;»&nbsp;<a href="/Wiki/#-架构与部署">架构与部署</a>&nbsp;»&nbsp;01-Spark 架构设计 101</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">01-Spark 架构设计 101</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 概况</a></li>
+<li><a href="#2">2. 组成</a><ul>
+<li><a href="#21-drive-program">2.1. Drive Program</a></li>
+<li><a href="#22-cluster-manager">2.2. Cluster Manager</a></li>
+<li><a href="#23-executor">2.3. Executor</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="1">1. 概况</h1>
+<p>单机版的Spark运行模式主要有：<br />
+1. Spark Local<br />
+2. Spark 伪分布式</p>
+<p>分布式的Spark主要有4种运行模型：<br />
+1. Spark on Standalone <br />
+2. Spark on Mesos<br />
+3. Spark on Yarn<br />
+4. Spark on k8s<br />
+   1. Spark on k8s--Standalone<br />
+   2. Spark on k8s--Kubernetes Native<br />
+   3. Spark on k8s--Spark Operator</p>
+<h1 id="2">2. 组成</h1>
+<p>Spark的架构设计不断迭代，但最核心的还是3大组件：<br />
+    1. Drive Program <br />
+    2. Cluster Manager<br />
+    3. Executor</p>
+<h2 id="21-drive-program">2.1. Drive Program</h2>
+<p>Drive Program 驱动程序（股东大会，指挥团队领导的机制），Driver 官方解释是 <code>The process running the main() function of the application and creating the SparkContext</code></p>
+<p>一般在Client Node /Work Node上，运行Application 的main()函数<br />
+1. 负责提交应用，触发集群开始处理作业。<br />
+2. 通过生成一个SparkContext 对象访问Spark<br />
+3. 一个SparkContext 对象代表一个对集群的连接<br />
+4. 初始化SparkContext 对象 需要 （1） 集群url （2）应用名</p>
+<h2 id="22-cluster-manager">2.2. Cluster Manager</h2>
+<p>Cluster Manager 集群管理器（团队领导 ）<br />
+1. 一般运行在master node<br />
+2. 集群管理器（ClusterManager）给任务分配资源，即将具体任务分配到Worker上，Worker创建Executor来处理任务的运行。<br />
+3. Standalone、YARN、Mesos、EC2等都可以作为Spark的集群管理器。</p>
+<h2 id="23-executor">2.3. Executor</h2>
+<p>Executor：执行器（打工仔）<br />
+为某个应用Application运行在worker node上的一个进程</p>
+<div class="hlcode"><pre><span class="n">executor</span> <span class="err">数量</span> <span class="o">=</span> <span class="n">spark</span><span class="p">.</span><span class="n">cores</span><span class="p">.</span><span class="n">max</span><span class="o">/</span><span class="n">spark</span><span class="p">.</span><span class="n">executor</span><span class="p">.</span><span class="n">cores</span>
+</pre></div>
+
+
+<p>spark.cores.max 是指你的spark程序需要的总核数<br />
+spark.executor.cores 是指每个executor需要的核数</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

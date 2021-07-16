@@ -1,0 +1,431 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>CTC--全时连接分类器 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#30-产品与应用">30-产品与应用</a>&nbsp;»&nbsp;<a href="/Wiki/#-33-Computer_Vision">33-Computer_Vision</a>&nbsp;»&nbsp;<a href="/Wiki/#-Algorithm_Theory">Algorithm_Theory</a>&nbsp;»&nbsp;<a href="/Wiki/#-03-场景">03-场景</a>&nbsp;»&nbsp;<a href="/Wiki/#-OCR">OCR</a>&nbsp;»&nbsp;<a href="/Wiki/#-字符识别">字符识别</a>&nbsp;»&nbsp;CTC--全时连接分类器</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">CTC--全时连接分类器</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-ctc">1. CTC 是什么</a></li>
+<li><a href="#2">2. 使用场景</a></li>
+<li><a href="#3">3. 原理</a><ul>
+<li><a href="#31-softmax">3.1. Softmax 之后</a></li>
+</ul>
+</li>
+<li><a href="#4">4. 关键</a><ul>
+<li><a href="#41-ctc-loss">4.1. CTC Loss</a><ul>
+<li><a href="#411">4.1.1. 基本步骤</a></li>
+</ul>
+</li>
+<li><a href="#42-ctc-decoder">4.2. CTC decoder</a><ul>
+<li><a href="#421-raw-decode">4.2.1. Raw decode 全局最优值求解</a></li>
+<li><a href="#422-best-path-decoding-greedy-decode">4.2.2. Best path decoding (Greedy decode 贪心搜索)</a></li>
+<li><a href="#423-beam-search-decoding">4.2.3. Beam search decoding</a><ul>
+<li><a href="#4231">4.2.3.1. 基础版本</a></li>
+<li><a href="#4232-word-beam-search">4.2.3.2. Word Beam Search</a></li>
+<li><a href="#4233-1-beam-search-with-character-lm">4.2.3.3. 改进版本1-  Beam search with character-LM</a></li>
+</ul>
+</li>
+<li><a href="#424-token-passing">4.2.4. Token passing</a></li>
+<li><a href="#425-prefix-beam-decode">4.2.5. prefix beam decode</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#5">5. 实践</a><ul>
+<li><a href="#51-ctc_loss">5.1. ctc_loss</a><ul>
+<li><a href="#511-tensorflow">5.1.1. Tensorflow</a><ul>
+<li><a href="#5111-sparsetensor">5.1.1.1. SparseTensor 类介绍</a><ul>
+<li><a href="#51111-sparsetensor">5.1.1.1.1. 生成 SparseTensor</a></li>
+<li><a href="#51112-sparsetensor-densetensor">5.1.1.1.2. SparseTensor 转 DenseTensor</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#512-keras">5.1.2. Keras</a></li>
+<li><a href="#513-pytorch">5.1.3. Pytorch</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#6">6. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="1-ctc">1. CTC 是什么</h1>
+<p>CTC 的全称是<code>Connectionist Temporal Classification</code>。</p>
+<h1 id="2">2. 使用场景</h1>
+<p>这个方法主要是解决神经网络 label 和output <strong>不对齐的问题</strong>（Alignment problem）。</p>
+<h1 id="3">3. 原理</h1>
+<p>CTC是借鉴了隐马尔科夫模型(Hidden Markov Nodel)的Forward-Backward算法思路，是利用动态规划的思路计算CTC-Loss及其导数的。<br />
+<strong>特点</strong></p>
+<ol>
+<li>引入blank字符，解决有些位置没有字符的问题；</li>
+<li>通过递推，快速计算梯度。</li>
+</ol>
+<h2 id="31-softmax">3.1. Softmax 之后</h2>
+<h1 id="4">4. 关键</h1>
+<h2 id="41-ctc-loss">4.1. CTC Loss</h2>
+<h3 id="411">4.1.1. 基本步骤</h3>
+<p>训练神经网络需要计算<code>loss function</code>，与其他常见的<code>loss function</code>不同，计算<strong>CTC loss</strong>需要2步：<br />
+1. 计算所有可能的序列组合的概率和</p>
+<blockquote>
+<p>We first need to sum over probabilities of all possible alignments of the text present in the image.</p>
+</blockquote>
+<ol>
+<li>取负对数<blockquote>
+<p>Then take the negative logarithm of this to calculate the loss.</p>
+</blockquote>
+</li>
+</ol>
+<h2 id="42-ctc-decoder">4.2. CTC decoder</h2>
+<p>在推理阶段，需要 <code>CTC decoder</code>从神经网络的输出获得文本。<br />
+训练和的 Nw 可以用来预测新的样本输入对应的输出字符串，这涉及到解码。<br />
+按照最大似然准则，最优的解码结果为：</p>
+<p>$$h(x)=argmax_{l∈L≤T} p(l|x)$$</p>
+<p>然而，上式不存在已知的高效解法。下面介绍几种实用的近似破解码方法。</p>
+<p>这里主要有2种分类方法 (decoding method)：<br />
+1. <code>Best path decoding</code>. <br />
+2. <code>prefix search decoding</code>.  这个方法据说给定足够的计算资源和时间， 能找到最优解。 但是复杂度会指数增长 随着输入sequence 长度的变化。  这里推荐用有限长度的prefix search decode 来做。 但是具体考虑多长的sequence做判断 还需具体问题具体分析。 这里的理论基础和就是 每一个node  都是condition 在上一个输出的前提下 算出整个序列的概率。</p>
+<h3 id="421-raw-decode">4.2.1. Raw decode 全局最优值求解</h3>
+<p>将所有路径组合, <code>O(n**m)</code>。<br />
+例如：3个标签，时序3，27 路径。<br />
+$$3^3=27$$</p>
+<p><strong>适用性</strong><br />
+小样本 ，大样本计算量大太</p>
+<h3 id="422-best-path-decoding-greedy-decode">4.2.2. Best path decoding (Greedy decode 贪心搜索)</h3>
+<p><strong>基本步骤</strong><br />
+1. 选取每个步长概率最高的字符</p>
+<blockquote>
+<p>Takes the characters with the highest probability for each time step.<br />
+2. 去重和移除空白符号<br />
+    &gt;Remove the duplicate characters and then remove the blank character from the outputs.</p>
+</blockquote>
+<p>这是一种启发式算法，按照正常分类问题，那就是概率最大的sequence 就是分类器的输出。 这个就是用每一个 time step的输出做最后的结果。 </p>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ctc_greedy_decoder</span><span class="p">(</span><span class="n">inputs</span><span class="p">,</span> <span class="n">sequence_length</span><span class="p">,</span> <span class="n">merge_repeated</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+<span class="n">output</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">edit_distance</span><span class="p">(</span><span class="n">hypothesis</span><span class="p">,</span> <span class="n">truth</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">&#39;edit_distance&#39;</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>缺点</strong><br />
+1. 忽略了一个输出可能对应多个对齐(alignments)方式。<br />
+2. 虽然单个路径可能分数很高，但是这样的方法不能保证一定会找到最大概率的sequence。</p>
+<h3 id="423-beam-search-decoding">4.2.3. Beam search decoding</h3>
+<h4 id="4231">4.2.3.1. 基础版本</h4>
+<p><strong>基本步骤</strong></p>
+<p>1)(2). Then, the algorithm iterates over all time-steps of the NN output matrix (3–15). At each time-step, only the best scoring beams from the previous time-step are kept (4). The beam width (BW) specifies the number of beams to keep. For each of these beams, the score at the current time-step is calculated (8). Further, each beam is extended by all possible characters from the alphabet (10) and again, a score is calculated (11). After the last time-step, the best beam is returned as a result (16).</p>
+<ol>
+<li>创建候选项目（beams）<blockquote>
+<p>creates text candidates (beams)<br />
+the list of beams is initialized with an empty beam (line 1) and a corresponding score </p>
+</blockquote>
+</li>
+<li>计算概率<blockquote>
+<p>scores them.</p>
+</blockquote>
+</li>
+</ol>
+<p>Beam Search 是寻找全局最优值和Greedy Search在查找时间和模型精度的一个折中。一个简单的beam search在每个时间片计算所有可能假设的概率，并从中选出最高的几个作为一组。然后再从这组假设的基础上产生概率最高的几个作为一组假设，依次进行，直到达到最后一个时间片。</p>
+<h4 id="4232-word-beam-search">4.2.3.2. Word Beam Search</h4>
+<p>Word Beam Search （以下简称“WBS”）则针对上述缺点进行了改进：</p>
+<p>It constrains words to those contained in a dictionary, allows non-word character strings between words, optionally integrates a word-level language model and has a better running time than token passing.<br />
+使用语言模型，WBS提供了四种给beam打分的方法：</p>
+<p>限制beam在字典内：<br />
+only constrain the beams by the dictionary;<br />
+2. 给被完全识别出的词打分：</p>
+<p>score when a word is completely recognized;<br />
+3. 预测下个句子的分值：</p>
+<p>forecast the score by calculating possible next words;<br />
+4. 预测随机得到的下一组句子的分值：</p>
+<p>forecast the score with a random sample of possible next words;</p>
+<h4 id="4233-1-beam-search-with-character-lm">4.2.3.3. 改进版本1-  Beam search with character-LM</h4>
+<p>时间复杂度 <code>O(T·BW·C·log(BW·C))</code></p>
+<h3 id="424-token-passing">4.2.4. Token passing</h3>
+<p>Token passing: “A random number”. This algorithm uses a dictionary and word-LM. It searches for the most probable sequence of dictionary words in the NN output. But it can’t handle arbitrary character sequences (numbers, punctuation marks) like “: 1234.”.</p>
+<h3 id="425-prefix-beam-decode">4.2.5. prefix beam decode</h3>
+<p>Top-path is (1, 2), after many-to-one map, the path is (1, 2) which is same from top-path in raw decode, and the score is 0.12 which is lower than score in raw decode. So, obviously, prefix beam decode is better than greedy decode and beam decode. And the reason why score is lower than score in raw decode is that I set the beamSize be 2, if beamSize=3, the score will 0.2178, which is same with the score in raw decode.</p>
+<p><sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup><sup id="fnref:2"><a class="footnote-ref" href="#fn:2" rel="footnote">3</a></sup></p>
+<h1 id="5">5. 实践</h1>
+<h2 id="51-ctc_loss">5.1. ctc_loss</h2>
+<p>TF 和 keras 都提供了CTC的解决方案<br />
+最终我是用keras.backend.ctc_batch_cost 做的。但是也把tf.nn.ctc_loss 的解读放前面。</p>
+<h3 id="511-tensorflow">5.1.1. Tensorflow</h3>
+<div class="hlcode"><pre><span class="n">tensor</span><span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ctc_loss</span><span class="p">(</span>
+    <span class="n">labels</span><span class="p">,</span>
+    <span class="n">inputs</span><span class="p">,</span>
+    <span class="n">sequence_length</span><span class="p">,</span>
+    <span class="n">preprocess_collapse_repeated</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">ctc_merge_repeated</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span>
+    <span class="n">ignore_longer_outputs_than_inputs</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">time_major</span><span class="o">=</span><span class="bp">True</span>
+<span class="p">)</span>
+
+
+<span class="c"># labels：int32 类型的稀疏向量</span>
+<span class="c"># inputs：3维的float向量，如果time_major为默认的，那么其形状为[max_time, batch_size, num_classes]，把LSTM输出的第0维和第1维换一下即可。另外，如同TensorFlow源码解读之greedy search及beam search中所讲的那样，输入值是经过logit处理的变量。</span>
+<span class="c"># sequence_length：是一个int32列表，维度为 batch_size，里面每个值的大小为系列的长度。</span>
+<span class="c"># preprocess_collapse_repeated: 是否需要预处理，将重复的 label 合并成一个，默认是 False</span>
+<span class="c"># ctc_merge_repeated: 默认为 True</span>
+
+<span class="c">## 输出：</span>
+<span class="c"># Tensor: A 1-D float Tensor, size [batch], containing the negative log probabilities，同样也需要对 ctc_loss 求均值。</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">ctc_loss</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">):</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">y_true</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">y_pred</span><span class="p">)</span>
+    <span class="n">y_true</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">time_step_len</span><span class="p">))</span>
+    <span class="n">y_pred</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">y_pred</span><span class="p">,</span> <span class="p">(</span><span class="n">BATCH_SIZE</span><span class="p">,</span> <span class="n">time_step_len</span><span class="p">,</span> <span class="n">NUM_CHARACTERS</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span> <span class="p">)</span>
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">keras</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">ctc_batch_cost</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">90</span><span class="p">],</span> <span class="p">[</span><span class="mi">150</span><span class="p">]]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">150</span><span class="p">],</span> <span class="p">[</span><span class="mi">20</span><span class="p">]]))</span>
+</pre></div>
+
+
+<h4 id="5111-sparsetensor">5.1.1.1. SparseTensor 类介绍</h4>
+<p><code>稀疏矩阵</code>： 当密集矩阵中大部分的数都是 0 的时候，就可以用一种更好的存储方式（只将矩阵中不为 0 的）</p>
+<div class="hlcode"><pre><span class="k">class</span> <span class="nc">tf</span><span class="o">.</span><span class="n">SparseTensor</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">dense_shape</span><span class="p">)</span>
+</pre></div>
+
+
+<p>输入参数：</p>
+<p>indices： 指定 Sparse Tensor 中非 0 值的索引，是一个 2D 的 int64 张量，形状为[N, ndims]，其中 N 为非 0 值的维数，ndims 为 dense_shape 的维数<br />
+values： 指定 Sparse Tensor 索引处的值，是 一个1D 张量，维数为[N]<br />
+dense_shape： 指定 Sparse Tensor 的形状，是一个 1D 的 int64 张量，维数为[ndims]，代表原来密集矩阵的形状<br />
+输出：</p>
+<p>形状为 dense_shape、指定索引 indices 处的值为 values 的稀疏张量<br />
+常用属性：</p>
+<p>indices<br />
+values<br />
+dense_shape<br />
+喂数据(tf.sparse_placeholder)：</p>
+<div class="hlcode"><pre><span class="n">sp</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">sparse_placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+<span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">xxx</span><span class="p">,</span> <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">sp</span><span class="p">:</span> <span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">dense_shape</span><span class="p">)})</span>
+</pre></div>
+
+
+<p>代码示例</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">SparseTensor</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">dense_shape</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+<span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+ <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+ <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]]</span>
+
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">indices</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">values</span><span class="p">)</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">dense_shape</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span><span class="n">SparseTensorValue</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="n">array</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int64</span><span class="p">),</span> <span class="n">values</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]),</span> <span class="n">dense_shape</span><span class="o">=</span><span class="n">array</span><span class="p">([</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">int64</span><span class="p">))</span>
+
+<span class="o">&gt;&gt;&gt;</span><span class="p">[[</span><span class="mi">0</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]]</span>
+<span class="o">&gt;&gt;&gt;</span><span class="p">[</span><span class="mi">1</span> <span class="mi">2</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span><span class="p">[</span><span class="mi">3</span> <span class="mi">4</span><span class="p">]</span>
+</pre></div>
+
+
+<h5 id="51111-sparsetensor">5.1.1.1.1. 生成 SparseTensor</h5>
+<p>TensorFlow 中没有现成的函数，可以自己封装起来，以备不时之需。</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+
+<span class="c"># 注意此处 dtype 指定的 values 的数据类型</span>
+<span class="k">def</span> <span class="nf">sparse_tuple_from</span><span class="p">(</span><span class="n">sequences</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int32</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Create a sparse representention of x.</span>
+<span class="sd">    Args:</span>
+<span class="sd">        sequences: a list of lists of type dtype where each element is a sequence</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        A tuple with (indices, values, shape)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">indices</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">seq</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">sequences</span><span class="p">):</span>
+        <span class="n">indices</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">zip</span><span class="p">([</span><span class="n">n</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">),</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">seq</span><span class="p">))))</span>
+        <span class="n">values</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+
+    <span class="n">indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">values</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
+    <span class="c"># 自动寻找序列的最大长度，形状为：batch_size * max_len</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">sequences</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">indices</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="mi">0</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">tf</span><span class="o">.</span><span class="n">SparseTensor</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="n">indices</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="n">values</span><span class="p">,</span> <span class="n">dense_shape</span><span class="o">=</span><span class="n">shape</span><span class="p">)</span>
+</pre></div>
+
+
+<h5 id="51112-sparsetensor-densetensor">5.1.1.1.2. SparseTensor 转 DenseTensor</h5>
+<div class="hlcode"><pre><span class="n">tensor</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">sparse_tensor_to_dense</span><span class="p">(</span><span class="n">sp_input</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">validate_indices</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+
+
+<p><strong>输入参数：</strong><br />
+<code>sp_input</code>： 输入的 SparseTensor<br />
+default_value： Scalar value to set for indices not specified in sp_input，默认为 0<br />
+validate_indices： A boolean value. If True, indices are checked to make sure they are sorted in lexicographic order and that there are no repeats in indices<br />
+<strong>输出：</strong><br />
+<code>tensor</code> : A dense tensor with shape sp_input.dense_shape and values specified by the non-empty values in sp_input， Indices not in sp_input are assigned default_value</p>
+<p>代码示例：</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">SparseTensor</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span> <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">dense_shape</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">])</span>
+
+<span class="c"># 未指定索引的位置使用 -1 来填充</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">sparse_tensor_to_dense</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>  
+
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">b</span><span class="p">))</span>
+
+<span class="p">[[</span><span class="o">-</span><span class="mi">1</span>  <span class="mi">2</span> <span class="o">-</span><span class="mi">1</span>  <span class="mi">3</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+ <span class="p">[</span><span class="o">-</span><span class="mi">1</span> <span class="o">-</span><span class="mi">1</span> <span class="o">-</span><span class="mi">1</span> <span class="o">-</span><span class="mi">1</span> <span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+ <span class="p">[</span> <span class="mi">5</span> <span class="o">-</span><span class="mi">1</span> <span class="o">-</span><span class="mi">1</span> <span class="o">-</span><span class="mi">1</span> <span class="o">-</span><span class="mi">1</span><span class="p">]]</span>
+</pre></div>
+
+
+<h3 id="512-keras">5.1.2. Keras</h3>
+<p><code>keras.backend.ctc_batch_cost</code>实际上也是用tf做的后端。具体可以参考官方文档<br />
+1. https://www.tensorflow.org/api_docs/python/tf/keras/backend/ctc_batch_cost<br />
+2. https://keras.io/backend/#ctc_batch_cost</p>
+<div class="hlcode"><pre><span class="n">loss</span><span class="o">=</span><span class="n">keras</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">ctc_batch_cost</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">input_length</span><span class="p">,</span> <span class="n">label_length</span><span class="p">)</span>
+
+<span class="c"># y_true: tensor (samples, max_string_length) containing the truth labels.</span>
+<span class="c"># y_pred: tensor (samples, time_steps, num_categories) containing the prediction, or output of the softmax.</span>
+
+<span class="c"># input_length: tensor (samples, 1) containing the sequence length for each batch item in y_pred.</span>
+<span class="c"># label_length: tensor (samples, 1) containing the sequence length for each batch item in y_true.</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">tensorflow</span> <span class="kn">import</span>  <span class="n">keras</span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+
+<span class="n">y_true</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">],])</span>                                   <span class="c"># (2, 3)</span>
+<span class="n">y_pred</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">to_categorical</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">]]),</span> <span class="mi">6</span><span class="p">)</span>     <span class="c"># (2, 3, 6)</span>
+
+
+<span class="n">input_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">]])</span>                                            <span class="c"># (2, 1)</span>
+<span class="n">label_length</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">]])</span>                                            <span class="c"># (2, 1)</span>
+<span class="n">cost</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">ctc_batch_cost</span><span class="p">(</span><span class="n">y_true</span><span class="p">,</span> <span class="n">y_pred</span><span class="p">,</span> <span class="n">input_length</span><span class="p">,</span> <span class="n">label_length</span><span class="p">)</span> <span class="c"># (2,1)</span>
+</pre></div>
+
+
+<p>The ctc_code implementation in Tensorflow's backend is this one: tensorflow.org/api_docs/python/tf/keras/backend/ctc_decode which is different from tf.nn.ctc_beam_search_decoder – GPhilo Jan 25 '18 at 14:56<br />
+@GPhilo Exactly, that's the first link in the post. However, if using the option greedy=False, following the code here we will finally reach tf.nn.ctc_beam_search_decoder, as far as I understand. – user1578793 Jan 25 '18 at 15:13<br />
+You're right, I got confused by the different import (the script has from tensorflow.python.ops import ctc_ops as ctc) and I thought it called directly the underlying C++ code wrapper, but I see now that tf.nn.ctc_beam_search_decoder is implemented in that python file. – GPhilo Jan 25 '18 at 15:16 <br />
+1<br />
+It looks like there's no dictionary functionality fully implemented as of this date. See github.com/tensorflow/tensorflow/issues/12356 for info on how to implement it yourself. – bivouac0 Feb 3 '18 at 16:11</p>
+<p>https://stackoverflow.com/questions/48445751/keras-constrained-dictionary-search-with-ctc-decode</p>
+<h3 id="513-pytorch">5.1.3. Pytorch</h3>
+<p><sup id="fnref:3"><a class="footnote-ref" href="#fn:3" rel="footnote">2</a></sup><br />
+<sup id="fnref:4"><a class="footnote-ref" href="#fn:4" rel="footnote">4</a></sup></p>
+<h1 id="6">6. 参考资料</h1>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>Connectionist Temporal Classification - Labeling Unsegmented Sequence Data with Recurrent Neural Networks: Graves et al., 2006 <a href="http://www.cs.toronto.edu/~graves/icml_2006.pdf">(pdf)</a>&#160;<a class="footnote-backref" href="#fnref:1" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:3">
+<p>https://theailearner.com/2019/05/29/connectionist-temporal-classificationctc/&#160;<a class="footnote-backref" href="#fnref:3" rev="footnote" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+<li id="fn:2">
+<p><a href="https://blog.csdn.net/JackyTintin/article/details/79425866">CSDN: CTC 原理及实现</a>&#160;<a class="footnote-backref" href="#fnref:2" rev="footnote" title="Jump back to footnote 3 in the text">&#8617;</a></p>
+</li>
+<li id="fn:4">
+<p><a href="https://github.com/DingKe/ml-tutorial/blob/master/ctc/CTC.ipynb">中文CTC教程</a>&#160;<a class="footnote-backref" href="#fnref:4" rev="footnote" title="Jump back to footnote 4 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

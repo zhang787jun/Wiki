@@ -1,0 +1,164 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>01_RTSP协议 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#30-产品与应用">30-产品与应用</a>&nbsp;»&nbsp;<a href="/Wiki/#-33-Computer_Vision">33-Computer_Vision</a>&nbsp;»&nbsp;<a href="/Wiki/#-Protocols">Protocols</a>&nbsp;»&nbsp;01_RTSP协议</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">01_RTSP协议</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#rtsp">什么是RTSP</a></li>
+<li><a href="#rtsp-in-ffmeg">RTSP in ffmeg</a><ul>
+<li><a href="#muxer">编码器muxer</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="rtsp">什么是RTSP</h1>
+<p>Real-Time Streaming Protocol.</p>
+<h1 id="rtsp-in-ffmeg">RTSP in ffmeg</h1>
+<p>RTSP is not technically a protocol handler in libavformat, it is a demuxer and muxer. The demuxer supports both normal RTSP (with data transferred over RTP; this is used by e.g. Apple and Microsoft) and Real-RTSP (with data transferred over RDT).</p>
+<h2 id="muxer">编码器muxer</h2>
+<p>The muxer can be used to send a stream using RTSP ANNOUNCE to a server supporting it (currently Darwin Streaming Server and Mischa Spiegelmock’s RTSP server).</p>
+<p>The required syntax for a RTSP url is:</p>
+<div class="hlcode"><pre><span class="nl">rtsp:</span><span class="c1">//hostname[:port]/path</span>
+</pre></div>
+
+
+<p>Options can be set on the ffmpeg/ffplay command line, or set in code via AVOptions or in avformat_open_input.</p>
+<p>The following options are supported.</p>
+<p>initial_pause<br />
+Do not start playing the stream immediately if set to 1. Default value is 0.</p>
+<p>rtsp_transport<br />
+Set RTSP transport protocols.</p>
+<p>It accepts the following values:</p>
+<p>‘udp’<br />
+Use UDP as lower transport protocol.</p>
+<p>‘tcp’<br />
+Use TCP (interleaving within the RTSP control channel) as lower transport protocol.</p>
+<p>‘udp_multicast’<br />
+Use UDP multicast as lower transport protocol.</p>
+<p>‘http’<br />
+Use HTTP tunneling as lower transport protocol, which is useful for passing proxies.</p>
+<p>Multiple lower transport protocols may be specified, in that case they are tried one at a time (if the setup of one fails, the next one is tried). For the muxer, only the ‘tcp’ and ‘udp’ options are supported.</p>
+<p>rtsp_flags<br />
+Set RTSP flags.</p>
+<p>The following values are accepted:</p>
+<p>‘filter_src’<br />
+Accept packets only from negotiated peer address and port.</p>
+<p>‘listen’<br />
+Act as a server, listening for an incoming connection.</p>
+<p>‘prefer_tcp’<br />
+Try TCP for RTP transport first, if TCP is available as RTSP RTP transport.</p>
+<p>Default value is ‘none’.</p>
+<p>allowed_media_types<br />
+Set media types to accept from the server.</p>
+<p>The following flags are accepted:</p>
+<p>‘video’<br />
+‘audio’<br />
+‘data’<br />
+By default it accepts all media types.</p>
+<p>min_port<br />
+Set minimum local UDP port. Default value is 5000.</p>
+<p>max_port<br />
+Set maximum local UDP port. Default value is 65000.</p>
+<p>timeout<br />
+Set maximum timeout (in seconds) to wait for incoming connections.</p>
+<p>A value of -1 means infinite (default). This option implies the rtsp_flags set to ‘listen’.</p>
+<p>reorder_queue_size<br />
+Set number of packets to buffer for handling of reordered packets.</p>
+<p>stimeout<br />
+Set socket TCP I/O timeout in microseconds.</p>
+<p>user-agent<br />
+Override User-Agent header. If not specified, it defaults to the libavformat identifier string.</p>
+<p>When receiving data over UDP, the demuxer tries to reorder received packets (since they may arrive out of order, or packets may get lost totally). This can be disabled by setting the maximum demuxing delay to zero (via the max_delay field of AVFormatContext).</p>
+<p>When watching multi-bitrate Real-RTSP streams with ffplay, the streams to display can be chosen with -vst n and -ast n for video and audio respectively, and can be switched on the fly by pressing v and a.</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

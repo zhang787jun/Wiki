@@ -1,0 +1,144 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Tensorflow_异常集锦 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#20-数据科学">20-数据科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-04-Tensorflow 1.x">04-Tensorflow 1.x</a>&nbsp;»&nbsp;<a href="/Wiki/#-模块分解笔记">模块分解笔记</a>&nbsp;»&nbsp;Tensorflow_异常集锦</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Tensorflow_异常集锦</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-tensorflow">1. Tensorflow异常集锦</a><ul>
+<li><a href="#11-tensorflow-checkpoint">1.1. tensorflow checkpoint报错</a></li>
+<li><a href="#12-feed_dict">1.2. feed_dict</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="1-tensorflow">1. Tensorflow异常集锦</h1>
+<h2 id="11-tensorflow-checkpoint">1.1. tensorflow checkpoint报错</h2>
+<p>在调用<code>tf.train.Saver</code>#save时，如果使用的路径是绝对路径，那么保存的checkpoint里面用的就是绝对路径；如果使用的是相对路径，那么保存的checkpoint里面用的就是相对路径。正确的方法应该是使用相对路径进行保存，这样才能保证较好的可移植性。<br />
+如果使用相对路径，复制到本地之后，会报找不到文件的错误。<br />
+tensorflow.python.framework.errors_impl.NotFoundError: FindFirstFile failed for: <br />
+一个绝对路径...... : ϵͳ\udcd5Ҳ\udcbb\udcb5\udcbdָ\udcb6\udca8\udcb5\udcc4·\udcbe\udcb6\udca1\udca3<br />
+; No such process</p>
+<p><strong>解决方法：</strong><br />
+1. 手动修改checkpoint文件，checkpoint文件是一个文本文件。<br />
+2. 注意路径的斜杠"\"，特别是windows 平台下,部分需要双饭斜杠 “\”、</p>
+<p>以上结论可以通过以下代码进行验证。<br />
+用以下代码，加载图模型的时候会报错</p>
+<div class="hlcode"><pre><span class="c">#保存图模型</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">write_graph</span><span class="p">(</span><span class="n">sess</span><span class="o">.</span><span class="n">graph_def</span><span class="p">,</span> <span class="n">graph_dir</span><span class="p">,</span> <span class="s">&#39;graph.pbtxt&#39;</span><span class="p">,</span><span class="n">as_text</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="c"># 注意 as_text=True</span>
+
+<span class="c">#加载图模型</span>
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">gfile</span><span class="o">.</span><span class="n">FastGFile</span><span class="p">(</span><span class="s">&quot;modle_graph/graph.pbtxt&quot;</span><span class="p">,</span><span class="s">&quot;rb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">graph_def</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">GraphDef</span><span class="p">()</span>
+    <span class="n">graph_def</span><span class="o">.</span><span class="n">ParseFromString</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+
+<span class="o">&gt;&gt;&gt;</span> 
+<span class="n">google</span><span class="o">.</span><span class="n">protobuf</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">DecodeError</span><span class="p">:</span> <span class="n">Error</span> <span class="n">parsing</span> <span class="n">message</span>
+</pre></div>
+
+
+<p><strong>解决:</strong></p>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">write_graph</span><span class="p">(</span><span class="n">sess</span><span class="o">.</span><span class="n">graph_def</span><span class="p">,</span> <span class="n">graph_dir</span><span class="p">,</span> <span class="s">&#39;graph.pbtxt&#39;</span><span class="p">,</span><span class="n">as_text</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="12-feed_dict">1.2. feed_dict</h2>
+<p>TypeError: Cannot interpret feed_dict key as Tensor: Can not convert a int into a Tensor<br />
+解释：你的占位符中传入的已经是tensor了，没必要feed_dict,<br />
+可以直接sess.run， 如果你非要feed__dict的话，可以参考</p>
+<div class="hlcode"><pre><span class="n">ph</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="err">（</span><span class="o">......</span><span class="err">）</span>
+<span class="n">ph_tensor</span><span class="o">=</span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">tensor</span><span class="p">)</span>
+<span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="o">......</span><span class="p">],</span><span class="n">feed_dict</span><span class="p">{</span><span class="n">ph</span><span class="p">:</span><span class="n">ph_tensor</span><span class="p">})</span>
+</pre></div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

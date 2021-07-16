@@ -1,0 +1,515 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Linux - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#10-计算机科学">10-计算机科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-01-Basic_CS">01-Basic_CS</a>&nbsp;»&nbsp;<a href="/Wiki/#-3-OS">3-OS</a>&nbsp;»&nbsp;<a href="/Wiki/#-Linux">Linux</a>&nbsp;»&nbsp;Linux</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Linux</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-linux">1. Linux 技能</a><ul>
+<li><a href="#_1">查看版本</a></li>
+<li><a href="#11-ubuntu">1.1. Ubuntu</a><ul>
+<li><a href="#111">1.1.1. 安装</a></li>
+<li><a href="#112-root">1.1.2. root用户管理</a></li>
+<li><a href="#113">1.1.3. 镜像加速</a></li>
+<li><a href="#114">1.1.4. 网络</a></li>
+</ul>
+</li>
+<li><a href="#12-centos">1.2. CentOS</a></li>
+<li><a href="#13">1.3. 软件包管理</a><ul>
+<li><a href="#131">1.3.1. 软件包的分类</a><ul>
+<li><a href="#1311">1.3.1.1. 源码包</a></li>
+<li><a href="#1312">1.3.1.2. 二进制包</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#14-rpm">1.4. rpm命令管理</a></li>
+<li><a href="#15-yum">1.5. yum在线安装</a></li>
+<li><a href="#16">1.6. 源码包安装</a><ul>
+<li><a href="#161-rpm">1.6.1. 源码包和RPM包的区别</a></li>
+<li><a href="#162">1.6.2. 源码包安装过程</a></li>
+<li><a href="#163">1.6.3. 卸载</a></li>
+<li><a href="#164">1.6.4. 脚本安装</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#2">2. 常用命令</a></li>
+<li><a href="#_2">守护进程管理</a></li>
+</ul>
+</div>
+<h1 id="1-linux">1. Linux 技能</h1>
+<p>Linux工具快速教程<br />
+https://linuxtools-rst.readthedocs.io/zh_CN/latest/index.html</p>
+<table>
+<thead>
+<tr>
+<th align="right">命令</th>
+<th align="right">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">grep</td>
+<td align="right">用于查找文件里符合条件的字符串</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_1">查看版本</h2>
+<div class="hlcode"><pre><span class="n">cat</span> <span class="o">/</span><span class="n">proc</span><span class="o">/</span><span class="n">version</span> 
+</pre></div>
+
+
+<h2 id="11-ubuntu">1.1. Ubuntu</h2>
+<h3 id="111">1.1.1. 安装</h3>
+<p>从科大镜像http://mirrors.ustc.edu.cn/ 下载 Ubuntu-16.04-x64</p>
+<h3 id="112-root">1.1.2. root用户管理</h3>
+<p>ubuntu系统 禁用了root用户，在安装过程中新建的用户并没有全部权限</p>
+<div class="hlcode"><pre><span class="cp">#1.3.1 开启root账户 并以root账户登入</span>
+<span class="n">sudo</span> <span class="n">passwd</span> <span class="n">root</span> 
+<span class="cp">#输入root账户密码</span>
+<span class="cp">#再次输入root账户密码确认</span>
+
+<span class="cp">#添加运行以图形界面登入命令</span>
+<span class="n">sudo</span> <span class="n">vim</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">share</span><span class="o">/</span><span class="n">lightdm</span><span class="o">/</span><span class="n">lightdm</span><span class="p">.</span><span class="n">conf</span><span class="p">.</span><span class="n">d</span><span class="o">/</span><span class="mi">50</span><span class="o">-</span><span class="n">ubuntu</span><span class="p">.</span><span class="n">conf</span>
+<span class="o">&gt;</span>
+<span class="n">greeter</span><span class="o">-</span><span class="n">show</span><span class="o">-</span><span class="n">manual</span><span class="o">-</span><span class="n">login</span><span class="o">=</span><span class="nb">true</span>
+</pre></div>
+
+
+<h3 id="113">1.1.3. 镜像加速</h3>
+<div class="hlcode"><pre><span class="n">echo</span> <span class="s">&quot;# 默认注释了源码镜像以提高 yes|apt update 速度，如有需要可自行取消注释</span>
+<span class="n">deb</span> <span class="n">https</span><span class="o">:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic main restricted universe multiverse</span>
+<span class="cp"># deb-src https:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic main restricted universe multiverse</span>
+<span class="n">deb</span> <span class="n">https</span><span class="o">:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-updates main restricted universe multiverse</span>
+<span class="cp"># deb-src https:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-updates main restricted universe multiverse</span>
+<span class="n">deb</span> <span class="n">https</span><span class="o">:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-backports main restricted universe multiverse</span>
+<span class="cp"># deb-src https:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-backports main restricted universe multiverse</span>
+<span class="n">deb</span> <span class="n">https</span><span class="o">:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-security main restricted universe multiverse</span>
+<span class="cp"># deb-src https:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-security main restricted universe multiverse</span>
+<span class="cp"># 预发布软件源，不建议启用</span>
+<span class="cp"># deb https:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse</span>
+<span class="cp"># deb-src https:</span><span class="c1">//mirrors.tuna.tsinghua.edu.cn/ubuntu/ bionic-proposed main restricted universe multiverse&quot;&gt; /etc/apt/sources.list</span>
+
+<span class="n">yes</span><span class="o">|</span> <span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">echo</span> <span class="s">&quot;deb http://mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse</span>
+<span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="n">http</span><span class="o">:</span><span class="c1">//mirrors.aliyun.com/ubuntu/ bionic main restricted universe multiverse</span>
+
+<span class="n">deb</span> <span class="n">http</span><span class="o">:</span><span class="c1">//mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse</span>
+<span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="n">http</span><span class="o">:</span><span class="c1">//mirrors.aliyun.com/ubuntu/ bionic-security main restricted universe multiverse</span>
+
+<span class="n">deb</span> <span class="n">http</span><span class="o">:</span><span class="c1">//mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse</span>
+<span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="n">http</span><span class="o">:</span><span class="c1">//mirrors.aliyun.com/ubuntu/ bionic-updates main restricted universe multiverse</span>
+
+<span class="n">deb</span> <span class="n">http</span><span class="o">:</span><span class="c1">//mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse</span>
+<span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="n">http</span><span class="o">:</span><span class="c1">//mirrors.aliyun.com/ubuntu/ bionic-proposed main restricted universe multiverse</span>
+
+<span class="n">deb</span> <span class="n">http</span><span class="o">:</span><span class="c1">//mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse</span>
+<span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="n">http</span><span class="o">:</span><span class="c1">//mirrors.aliyun.com/ubuntu/ bionic-backports main restricted universe multiverse&quot;&gt; /etc/apt/sources.list</span>
+<span class="n">yes</span><span class="o">|</span> <span class="n">sudo</span> <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+
+
+
+
+<span class="cp"># 默认注释了源码镜像以提高 apt update 速度，如有需要可自行取消注释</span>
+<span class="n">echo</span> <span class="s">&quot;deb http://mirrors.163.com/debian/ buster main non-free contrib</span>
+<span class="n">deb</span> <span class="n">http</span><span class="o">:</span><span class="c1">//mirrors.163.com/debian/ buster-updates main non-free contrib</span>
+<span class="n">deb</span> <span class="n">http</span><span class="o">:</span><span class="c1">//mirrors.163.com/debian/ buster-backports main non-free contrib</span>
+<span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="n">http</span><span class="o">:</span><span class="c1">//mirrors.163.com/debian/ buster main non-free contrib</span>
+<span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="n">http</span><span class="o">:</span><span class="c1">//mirrors.163.com/debian/ buster-updates main non-free contrib</span>
+<span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="n">http</span><span class="o">:</span><span class="c1">//mirrors.163.com/debian/ buster-backports main non-free contrib</span>
+<span class="n">deb</span> <span class="n">http</span><span class="o">:</span><span class="c1">//mirrors.163.com/debian-security/ buster/updates main non-free contrib</span>
+<span class="n">deb</span><span class="o">-</span><span class="n">src</span> <span class="n">http</span><span class="o">:</span><span class="c1">//mirrors.163.com/debian-security/ buster/updates main non-free contrib&quot;&gt; /etc/apt/sources.list</span>
+<span class="n">yes</span><span class="o">|</span>  <span class="n">apt</span><span class="o">-</span><span class="n">get</span> <span class="n">update</span>
+</pre></div>
+
+
+<h3 id="114">1.1.4. 网络</h3>
+<div class="hlcode"><pre><span class="cp"># 1. 配置静态ip：</span>
+<span class="n">sudo</span> <span class="n">vi</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">network</span><span class="o">/</span><span class="n">interfaces</span> 
+<span class="o">&gt;</span>
+<span class="k">auto</span> <span class="n">eth0</span>                  <span class="err">#设置自动启动</span><span class="n">eth0</span><span class="err">接口</span>
+<span class="n">iface</span> <span class="n">eth0</span> <span class="n">inet</span> <span class="k">static</span>     <span class="err">#配置静态</span><span class="n">IP</span>
+<span class="n">address</span> <span class="mf">172.28.44.120</span>      <span class="err">#</span><span class="n">IP</span><span class="err">地址</span>
+<span class="n">netmask</span> <span class="mf">255.255.255.0</span><span class="err">：</span>      <span class="err">#子网掩码</span>
+<span class="n">gateway</span> <span class="mf">172.28.44.254</span>        <span class="err">#默认网关</span>
+<span class="cp">#2 修改DNS 配置nameserver</span>
+<span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">resolvconf</span><span class="o">/</span><span class="n">resolv</span><span class="p">.</span><span class="n">conf</span><span class="p">.</span><span class="n">d</span><span class="o">/</span><span class="n">base</span> 
+<span class="o">&gt;</span>
+<span class="n">nameserver</span> <span class="mf">172.25.9.10</span>
+<span class="n">nameserver</span> <span class="mf">172.26.9.10</span>
+<span class="cp"># 3 重启网络，使配置生效</span>
+<span class="n">sudo</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">init</span><span class="p">.</span><span class="n">d</span><span class="o">/</span><span class="n">networking</span> <span class="n">restart</span>
+
+<span class="n">dns</span><span class="o">-</span><span class="n">nameserver</span> <span class="mf">114.114.114.114</span> <span class="mf">8.8.8.8</span> <span class="mf">192.168.0.1</span> <span class="err">#定义</span><span class="n">DNS</span><span class="err">服务器的</span><span class="n">IP</span><span class="err">地址</span>
+<span class="n">dns</span><span class="o">-</span><span class="n">search</span> <span class="n">www</span><span class="p">.</span><span class="n">ringkee</span><span class="p">.</span><span class="n">com</span> <span class="n">ringkee</span><span class="p">.</span><span class="n">com</span> <span class="err">#定义域名的搜索列表</span>
+
+<span class="cp"># 1.2 修改host文件 </span>
+<span class="n">sudo</span> <span class="n">vim</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">hosts</span>
+<span class="o">&gt;</span> 
+<span class="cp">#写入主机名称与ip 之间的关系</span>
+<span class="mf">192.168.0.102</span>  <span class="n">master</span>
+<span class="mf">192.168.0.179</span>  <span class="n">slaver_1</span>
+<span class="mf">192.168.0.141</span>  <span class="n">slaver_2</span>
+</pre></div>
+
+
+<h2 id="12-centos">1.2. CentOS</h2>
+<h2 id="13">1.3. 软件包管理</h2>
+<h3 id="131">1.3.1. 软件包的分类</h3>
+<ol>
+<li>源码包</li>
+<li>二进制包</li>
+</ol>
+<h4 id="1311">1.3.1.1. 源码包</h4>
+<p><strong>优点</strong><br />
+1. 开源，如果有足够能力，可以修改源代码<br />
+2. 可以自由选择所需的功能<br />
+3. 软件是编译安装，所有更加适合自己的系统，更加稳定也效率更高<br />
+4. 卸载方便</p>
+<p><strong>缺点</strong><br />
+1. 安装麻烦，尤其是一些比较大的集合软件<br />
+2. 编译过程时间比较长，安装比二进制安装时间长<br />
+3. 因为是编译安装，一旦出错会很麻烦</p>
+<h4 id="1312">1.3.1.2. 二进制包</h4>
+<p><strong>优点</strong><br />
+1. 包管理系统简单，只通过几个命令就可以实现包的安装，升级，查询和卸载<br />
+2. 安装速度比源码包要快</p>
+<p><strong>缺点</strong><br />
+1. 经过编译，不能看到源代码了<br />
+2. 功能选择不如源码包灵活<br />
+3. 依赖性</p>
+<h2 id="14-rpm">1.4. rpm命令管理</h2>
+<p><strong>RPM包命名规则</strong></p>
+<div class="hlcode"><pre><span class="n">httpd</span><span class="o">-</span><span class="mf">2.2.15</span><span class="o">-</span><span class="mf">15.</span><span class="n">el6</span><span class="p">.</span><span class="n">centos</span><span class="mf">.1</span><span class="p">.</span><span class="n">i686</span><span class="p">.</span><span class="n">rpm</span>
+<span class="cp"># - httpd       软件包名</span>
+<span class="cp"># - 2.2.15  软件版本</span>
+<span class="cp"># - 15      软件发布的次数</span>
+<span class="cp"># - el6.centos 适合的linux的平台</span>
+<span class="cp"># - i686        适合的硬件平台</span>
+<span class="cp"># - rpm     rpm包的扩展名</span>
+</pre></div>
+
+
+<p><strong>RPM包的依赖性</strong></p>
+<ol>
+<li>树形依赖：a -&gt; b -&gt; c</li>
+<li>环形依赖：a - &gt; b -&gt; c -&gt; a</li>
+<li>模块依赖：查询网站：www.rpmfind.net</li>
+</ol>
+<p><strong>安装命令</strong><br />
+包全名与包名<br />
+包全名：操作的包是没有按照的软件包时，使用包全名，而且要注意路径<br />
+包名：操作已经安装的软件包时，使用包名是搜索/var/lib/rpm 中的数据库<br />
+RPM安装</p>
+<div class="hlcode"><pre><span class="n">rpm</span> <span class="o">-</span><span class="n">ivh</span> <span class="o">&lt;</span><span class="n">full</span><span class="o">-</span><span class="n">pakage</span><span class="o">-</span><span class="n">name</span><span class="o">&gt;</span>
+<span class="cp"># 选项：</span>
+<span class="cp"># -i            安装</span>
+<span class="cp"># -v            显示详细信息</span>
+<span class="cp"># -h            显示进度</span>
+<span class="cp"># --nodeps  不检测依赖性</span>
+</pre></div>
+
+
+<p><strong>升级和卸载</strong><br />
+RPM包升级</p>
+<div class="hlcode"><pre><span class="n">rpm</span> <span class="o">-</span><span class="n">Uvh</span> <span class="err">包全名</span>
+<span class="cp"># 选项：</span>
+<span class="cp">#   -U  升级</span>
+</pre></div>
+
+
+<p><strong>RPM包卸载</strong></p>
+<div class="hlcode"><pre><span class="n">rpm</span> <span class="o">-</span><span class="n">e</span> <span class="err">包名</span>
+<span class="cp"># 选项：</span>
+<span class="cp"># -e            卸载</span>
+<span class="cp"># --nodeps  不检查依赖性</span>
+</pre></div>
+
+
+<p><strong>RPM包查询</strong></p>
+<div class="hlcode"><pre><span class="cp"># 查询是否安装</span>
+<span class="n">rpm</span> <span class="o">-</span><span class="n">q</span> <span class="err">包名</span>
+
+<span class="cp"># 查询所有安装的rpm包</span>
+<span class="n">rpm</span> <span class="o">-</span><span class="n">qa</span>
+
+
+<span class="cp">#查询软件包的详细信息</span>
+<span class="n">rpm</span> <span class="o">-</span><span class="n">qi</span> <span class="err">包名</span>
+<span class="cp"># 选项：</span>
+<span class="cp">#   -i  查询软件信息</span>
+<span class="cp">#   -p  查询未安装包信息</span>
+
+
+<span class="cp"># 查询包中文件安装位置</span>
+<span class="n">rpm</span> <span class="o">-</span><span class="n">ql</span> <span class="err">包名</span>
+<span class="cp"># 选项：</span>
+<span class="cp">#   -l  列表</span>
+<span class="cp">#   -p  查询未安装包信息</span>
+<span class="cp"># q Location</span>
+</pre></div>
+
+
+<p><strong>RPM包默认安装位置</strong><br />
+| 地址            | 详细                       |<br />
+| --------------- | -------------------------- |<br />
+| /etc/           | 配置文件安装目录           |<br />
+| /usr/bin/       | 可执行的命令安装目录       |<br />
+| /usr/lib/       | 程序所使用的函数库保存位置 |<br />
+| /usr/share/doc/ | 基本的软件使用手册保存位置 |<br />
+| /usr/share/man/ | 帮助文件保存位置           |</p>
+<div class="hlcode"><pre><span class="cp">#查询系统文件属于哪个rpm包</span>
+<span class="n">rpm</span> <span class="o">-</span><span class="n">qf</span> <span class="err">系统文件名</span>
+<span class="cp"># 选项：</span>
+<span class="cp">#   -f  查询系统文件属于哪个软件包</span>
+
+
+<span class="cp"># 查询软件包的依赖性</span>
+<span class="n">rpm</span> <span class="o">-</span><span class="n">qR</span> <span class="err">包名</span>
+<span class="cp"># 选项：</span>
+<span class="cp">#   -R  查询软件包的依赖性</span>
+<span class="cp">#   -p  查询未安装包的信息</span>
+
+<span class="cp"># RPM包校验</span>
+<span class="n">rpm</span> <span class="o">-</span><span class="n">V</span> <span class="err">已安装的包名</span>
+<span class="cp"># 选项：</span>
+<span class="cp">#   -V  校验指定RPM包的文件</span>
+
+<span class="cp"># 验证内容中的8个信息的具体内容</span>
+<span class="cp">#   s   文件大小是否改变</span>
+<span class="cp">#   M   文件的类型或文件权限（rwx）是否被改变</span>
+<span class="cp">#   5   文件MD5校验是否改变（可以看成文件内容是否被改变）</span>
+<span class="cp">#   D   设备的主从代码是否改变</span>
+<span class="cp">#   L   文件路径是否改变</span>
+<span class="cp">#   U   文件的属主（所有者）是否改变</span>
+<span class="cp">#   G   文件的属组是否改变</span>
+<span class="cp">#   T   文件的修改实际是否改变</span>
+
+<span class="cp"># 文件类型</span>
+<span class="cp">#   c   配置文件</span>
+<span class="cp">#   d   普通文件</span>
+<span class="cp">#   g   “鬼”文件，就是该文件不应该被这个RPM所包含的</span>
+<span class="cp">#   L   授权文件</span>
+<span class="cp">#   r   描述文件</span>
+</pre></div>
+
+
+<h2 id="15-yum">1.5. yum在线安装</h2>
+<p>yum源文件</p>
+<div class="hlcode"><pre><span class="n">vim</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">yum</span><span class="p">.</span><span class="n">repos</span><span class="p">.</span><span class="n">d</span><span class="o">/</span><span class="n">CentOS</span><span class="o">-</span><span class="n">Base</span><span class="p">.</span><span class="n">repo</span> 
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="p">[</span><span class="n">base</span><span class="p">]</span>      <span class="err">容器说明，一定要放在</span><span class="p">[]</span><span class="err">中</span>
+<span class="n">name</span>        <span class="err">容器说明，可以自己随便写</span>
+<span class="n">mirrorlist</span>  <span class="err">镜像站点，这个可以注释</span>
+<span class="n">baseurl</span>     <span class="n">yum</span><span class="err">源服务器的地址，可以自己更改自己喜欢的</span><span class="n">yum</span><span class="err">源</span>
+<span class="n">enabled</span>     <span class="err">此容器是否生效，</span><span class="mi">1</span><span class="err">代表生效，</span><span class="mi">0</span><span class="err">代表不生效</span>
+<span class="n">gpgcheck</span>    <span class="err">如果是</span><span class="mi">1</span><span class="err">是指</span><span class="n">RPM</span><span class="err">数字保证书生效，如果是</span><span class="mi">0</span><span class="err">则是不生效</span>
+<span class="n">gpgkey</span>      <span class="err">数字保证书的公钥文件保存位置，不用修改</span>
+<span class="n">failovermethod</span><span class="o">=</span><span class="n">priority</span>
+</pre></div>
+
+
+<p>常用yum命令 查询</p>
+<div class="hlcode"><pre><span class="cp"># 查询所有可用软件包列表</span>
+<span class="n">yum</span> <span class="n">list</span>
+
+<span class="cp"># 3. 搜索服务器上所有和关键字相关的包</span>
+
+<span class="n">yum</span> <span class="n">search</span> <span class="err">关键字</span>
+
+<span class="cp"># 4. 安装</span>
+<span class="n">yum</span> <span class="o">-</span><span class="n">y</span> <span class="n">install</span> <span class="err">包名</span>
+<span class="cp"># 5. 选项：</span>
+<span class="cp"># 6. install    安装</span>
+<span class="cp"># 7. -y     自动回答yes</span>
+
+<span class="cp"># 8. 升级</span>
+<span class="n">yum</span> <span class="o">-</span><span class="n">y</span> <span class="n">update</span> <span class="err">包名</span>
+<span class="cp"># 9. 选项：</span>
+<span class="cp"># 10. update    升级</span>
+
+<span class="cp"># 11. 卸载</span>
+<span class="n">yum</span> <span class="o">-</span><span class="n">y</span> <span class="n">remove</span> <span class="err">包名</span>
+<span class="cp"># 12. 选项：</span>
+<span class="cp"># 13. remove    卸载</span>
+
+<span class="cp"># 14. ------------yum软件组管理命令</span>
+<span class="cp"># 15. 列出所有可用的软件组列表</span>
+<span class="n">yum</span> <span class="n">grouplist</span>
+
+<span class="n">yum</span> <span class="n">grouplist</span> <span class="err">软件组名</span>
+<span class="cp"># 16. 安装指定软件组，组名可用由grouplist查询出来</span>
+
+<span class="n">yum</span> <span class="n">groupremove</span> <span class="err">软件组名</span>
+<span class="cp"># 2. 卸载指定软件组</span>
+</pre></div>
+
+
+<h2 id="16">1.6. 源码包安装</h2>
+<h3 id="161-rpm">1.6.1. 源码包和RPM包的区别</h3>
+<ol>
+<li>安装之前的区别：概念上的区别</li>
+<li>安装之后的区别：安装位置的不同</li>
+<li>安装位置不同带来的影响<br />
+RPM包安装的服务可以使用系统服务管理命令（service）来管理，例如RPM包安装的apache的启动方法</li>
+</ol>
+<div class="hlcode"><pre><span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">rc</span><span class="p">.</span><span class="n">d</span><span class="o">/</span><span class="n">init</span><span class="p">.</span><span class="n">d</span><span class="o">/</span><span class="n">httpd</span> <span class="n">start</span>
+<span class="n">service</span> <span class="n">httpd</span> <span class="n">start</span>
+</pre></div>
+
+
+<p>源码包安装位置<br />
+安装在指定位置，一般是/usr/local/软件名/</p>
+<h3 id="162">1.6.2. 源码包安装过程</h3>
+<ol>
+<li>安装准备<br />
+    安装gcc<br />
+    下载源码包</li>
+<li>安装注意事项<br />
+    源码包保存位置：/usr/local/src<br />
+    软件安装位置：/usr/local<br />
+    如何确定安装过程报错<br />
+        安装过程停止<br />
+        并出现error，warning或no提示</li>
+<li>源码包安装过程<br />
+    下载源码包<br />
+    解压下载好的源码包<br />
+    进入解压目录<br />
+    ./configure 软件配置与检查<br />
+        定义需要功能的选项<br />
+        检测系统环境是否符合安装需求<br />
+        把定义好的功能选项和检测系统环境的信息都写入Makefile文件，用于后续编辑<br />
+        --prefix=指定安装的位置</li>
+<li>make编译<br />
+    make clean  清除编译好的文件<br />
+    make install 编译安装</li>
+</ol>
+<h3 id="163">1.6.3. 卸载</h3>
+<p>卸载：直接删除安装目录即可</p>
+<h3 id="164">1.6.4. 脚本安装</h3>
+<p>所谓的一键安装包，实际上还是安装的源码包与RPM包，知识把安装过程写成了脚本，便于初学者安装<br />
+优点：<br />
+    简单，快捷，方便<br />
+缺点：<br />
+    不能定义安装软件的版本<br />
+    不能定义所需要的软件功能<br />
+    源码包的优势丧失</p>
+<h1 id="2">2. 常用命令</h1>
+<p>关闭SElinux和防火墙</p>
+<div class="hlcode"><pre><span class="n">vim</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">selinux</span><span class="o">/</span><span class="n">config</span>  <span class="err">把</span><span class="n">enforcing</span><span class="err">改为</span><span class="n">disabled</span>
+</pre></div>
+
+
+<p>关闭SElinux和防火墙</p>
+<div class="hlcode"><pre><span class="n">wget</span> <span class="o">-</span><span class="n">P</span> <span class="o">/</span><span class="n">root</span> <span class="err">网址</span>
+
+<span class="n">nohup</span> <span class="n">Command</span> <span class="p">[</span> <span class="n">Arg</span> <span class="err">…</span> <span class="p">]</span> <span class="p">[</span>　<span class="o">&amp;</span> <span class="p">]</span>
+<span class="cp"># 3. 用途：不挂断地运行命令。</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cp"># 查看开放的端口</span>
+<span class="n">netstat</span> <span class="o">-</span><span class="n">tnlp</span>
+</pre></div>
+
+
+<h1 id="_2">守护进程管理</h1>
+<p>Systemd是一个系统管理守护进程、工具和库的集合，用于取代System V初始进程。Systemd的功能是用于集中管理和配置类UNIX系统。</p>
+<p>Systemctl是一个systemd工具，主要负责控制systemd系统和服务管理器。</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

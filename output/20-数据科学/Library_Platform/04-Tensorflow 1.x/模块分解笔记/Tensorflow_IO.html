@@ -1,0 +1,1218 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Tensorflow I/O问题 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#20-数据科学">20-数据科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-04-Tensorflow 1.x">04-Tensorflow 1.x</a>&nbsp;»&nbsp;<a href="/Wiki/#-模块分解笔记">模块分解笔记</a>&nbsp;»&nbsp;Tensorflow I/O问题</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Tensorflow I/O问题</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-tensorflow">1. Tensorflow将数据加载到计算图中</a><ul>
+<li><a href="#11-constant">1.1. Constant 转换为常量存在图中</a><ul>
+<li><a href="#111">1.1.1. 描述</a></li>
+<li><a href="#112">1.1.2. 优劣及适用情景</a></li>
+</ul>
+</li>
+<li><a href="#12-feeding-dataprovider">1.2. Feeding 自建 DataProvider 喂给图</a><ul>
+<li><a href="#121">1.2.1. 描述</a></li>
+<li><a href="#122">1.2.2. 优劣及适用情景</a></li>
+<li><a href="#123">1.2.3. 实践</a></li>
+</ul>
+</li>
+<li><a href="#13-queue">1.3. Queue 使用队列多线程输入到图中</a><ul>
+<li><a href="#131">1.3.1. 描述</a></li>
+<li><a href="#132">1.3.2. 优劣及适用情景</a></li>
+<li><a href="#133">1.3.3. 实践</a></li>
+</ul>
+</li>
+<li><a href="#14-tfdata">1.4. 数据的输入（tf.data）</a><ul>
+<li><a href="#141">1.4.1. 构建数据集</a></li>
+<li><a href="#142">1.4.2. 构建迭代器</a><ul>
+<li><a href="#1421-one-shot">1.4.2.1. one-shot</a></li>
+<li><a href="#1422-initializable">1.4.2.2. initializable （可初始化的）</a></li>
+<li><a href="#1423-reinitializable">1.4.2.3. reinitializable （可重复初始化的）</a></li>
+<li><a href="#1424-feedable-">1.4.2.4. feedable（反馈的--正对有调用机制的）</a></li>
+</ul>
+</li>
+<li><a href="#143">1.4.3. 数据集的操作</a><ul>
+<li><a href="#1431-map">1.4.3.1. map</a></li>
+<li><a href="#1432-batch">1.4.3.2.  batch</a></li>
+<li><a href="#1433-shuffle">1.4.3.3. shuffle</a></li>
+<li><a href="#1434-padded_batch">1.4.3.4. padded_batch</a></li>
+<li><a href="#1435-repeat">1.4.3.5. repeat</a></li>
+<li><a href="#1436-prefetch">1.4.3.6.  prefetch</a></li>
+<li><a href="#1437-take-skip">1.4.3.7. take skip 划分数据集</a></li>
+</ul>
+</li>
+<li><a href="#144">1.4.4. 在训练中使用</a><ul>
+<li><a href="#1441-session">1.4.4.1. 在Session 模式下中使用</a></li>
+<li><a href="#1442-keras-tfdata">1.4.4.2. keras 里面使用tf.data</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#2-io">2. I/O 问题</a><ul>
+<li><a href="#21-io">2.1. I/O数据的存储格式</a><ul>
+<li><a href="#211-protocol-buffer">2.1.1. Protocol Buffer</a></li>
+<li><a href="#212-json">2.1.2. json</a></li>
+</ul>
+</li>
+<li><a href="#22-tfrecord-io">2.2. TFRecord 格式的数据及其I/O操作</a><ul>
+<li><a href="#221-tfrecord">2.2.1. TFRecord 是什么？</a></li>
+<li><a href="#222">2.2.2. 什么情景下使用</a></li>
+<li><a href="#223-tfrecord-example">2.2.3. TFRecord 核心概念--Example</a><ul>
+<li><a href="#2231">2.2.3.1. 参数说明</a><ul>
+<li><a href="#22311">2.2.3.1.1. 方法说明</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#224">2.2.4. 实践</a><ul>
+<li><a href="#2241-tfrecord">2.2.4.1. 存储为 TFrecord格式文件</a><ul>
+<li><a href="#22411">2.2.4.1.1. 通用</a></li>
+</ul>
+</li>
+<li><a href="#2242-tensor">2.2.4.2. 将tensor 写入</a></li>
+<li><a href="#2243-tensorflow">2.2.4.3. 输入到tensorflow计算图中</a><ul>
+<li><a href="#22431">2.2.4.3.1. 导入</a></li>
+<li><a href="#22432">2.2.4.3.2. 序列化样本解析</a></li>
+<li><a href="#22433">2.2.4.3.3. 执行解析函数</a></li>
+<li><a href="#22434">2.2.4.3.4. 创建迭代器</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#3-tensorflow">3. tensorflow 文件操作</a><ul>
+<li><a href="#31-tfgfile">3.1. tf.gfile</a><ul>
+<li><a href="#311">3.1.1. 作用</a></li>
+<li><a href="#312-pythonioapi">3.1.2. 与 python的I/O操作的API区别</a></li>
+</ul>
+</li>
+<li><a href="#32">3.2. 队列进阶</a><ul>
+<li><a href="#32001-io">3.2.0.0.1. 利用多进程 I/O 构建流水线</a></li>
+</ul>
+</li>
+<li><a href="#33-tensorflowio">3.3. 多线程任务中的 TensorFlow/IO</a></li>
+<li><a href="#34-parse_example">3.4. parse_example</a></li>
+</ul>
+</li>
+<li><a href="#4-io1">4. 提升I/O性能的方法1</a><ul>
+<li><a href="#41">4.1. 硬件上任务分离</a><ul>
+<li><a href="#411-cpu">4.1.1. CPU</a></li>
+<li><a href="#412-gpu">4.1.2. GPU</a></li>
+<li><a href="#413">4.1.3. 网络</a></li>
+</ul>
+</li>
+<li><a href="#42">4.2. 并行计算</a><ul>
+<li><a href="#421">4.2.1. 总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#5">5. 参考文献</a></li>
+</ul>
+</div>
+<h1 id="1-tensorflow">1. Tensorflow将数据加载到计算图中</h1>
+<p>Tensorflow把数据输送到计算图的过程中，在内存里的数据结构形式主要有三种：</p>
+<h2 id="11-constant">1.1. Constant 转换为常量存在图中</h2>
+<h3 id="111">1.1.1. 描述</h3>
+<p>把Dataset中的数据以const的形式存放在tensorflow的计算图中，主要使用的是<code>tf.constant</code> 函数。  </p>
+<h3 id="112">1.1.2. 优劣及适用情景</h3>
+<p><strong>优势</strong><br />
+[速度最快]。<br />
+由于数据固化到了计算图中，所以它的数据读取速度是最快的。</p>
+<p><strong>劣势</strong><br />
+小数据。适用于小数据集。</p>
+<h2 id="12-feeding-dataprovider">1.2. Feeding 自建 DataProvider 喂给图</h2>
+<h3 id="121">1.2.1. 描述</h3>
+<p>磁盘数据-&gt;独立内存空间1-&gt;计算图</p>
+<p>在每次session.run 时，把numpy形式的数据输入到feed_dict参数中。这种方式主要包括两种存在的状态。<br />
+1. <strong>全部加载到内存</strong>。自己维护一个DataProvider 类，每次都会获取一部分训练数据。需要注意的是training的时候最好把数据集shuffle，test的时最好不shuffle。</p>
+<ol>
+<li><strong>分批加载到内存</strong>。训练数据无法一次性全部load到内存中时，分批次load数据。自己维护的DataProvider 类要做好队列的管理。这种形式一个小的trick是每次载入的数据使用多次进行训练，这样可以减少重复地读取数据。</li>
+</ol>
+<h3 id="122">1.2.2. 优劣及适用情景</h3>
+<p><strong>优点：</strong><br />
+1. 当数据集较小的时候，数据可以全部载入到内存，这时数据的处理速度就会比较快。<br />
+2. 训练和测试几乎可以共用一套代码，仅需要把反馈网络去掉，不使用参数更新即可。<br />
+3. 在预测的时候，一般数据不会是文件的形式，所以只能使用feeding方式。</p>
+<p><strong>缺点：</strong><br />
+1. 自己维护DataProvider类相对麻烦，而且自己写的类原生是不支持多进程的（主要是Python API的问题）<br />
+2. 单进程读取数据较慢，很多时间花费在数据读取上，所以训练时间相对较长。<br />
+3. feed_dict是利用python读取数据，python读取数据的时候，tensorflow无法计算，而且会将数据再次拷贝一份<br />
+4. 不适用大规模数据集</p>
+<h3 id="123">1.2.3. 实践</h3>
+<p>以字典<code>{tensor:value}</code>的形式将数据传入到图中，构成feed_dict 系统。</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="n">y</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="mf">2.0</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+    <span class="n">_y</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">x</span><span class="p">:</span><span class="mf">1.2</span><span class="p">})</span>
+</pre></div>
+
+
+<h2 id="13-queue">1.3. Queue 使用队列多线程输入到图中</h2>
+<p>磁盘数据-&gt;导入队列的内存空间-&gt;队列的内存空间导出-&gt;计算图</p>
+<h3 id="131">1.3.1. 描述</h3>
+<p>使用Queue Runner形式从文件中读取。tensorflow以一种黑箱的方式读取数据,必要的时候会启动多进程（需要设置，这些代码是用c++封装的，多线程支持的效果比较好）。</p>
+<p>队列运行器QueueRunner需要2个东西：<br />
+1. 队列<br />
+2. 一些队列操作器((you can have multiple enqueue operations for one queue))</p>
+<p>支持：</p>
+<ol>
+<li>
+<p>FIFOQueue: A queue implementation that dequeues elements in first-in first-out order.</p>
+</li>
+<li>
+<p>PaddingFIFOQueue: A FIFOQueue that supports batching variable-sized tensors by padding.</p>
+</li>
+<li>
+<p>PriorityQueue: A queue implementation that dequeues elements in prioritized order.</p>
+</li>
+<li>
+<p>QueueBase: Base class for queue implementations.</p>
+</li>
+<li>
+<p>RandomShuffleQueue: A queue implementation that dequeues elements in a random order.</p>
+</li>
+</ol>
+<h3 id="132">1.3.2. 优劣及适用情景</h3>
+<ol>
+<li>Python不支持多线程（伪多线程，虽可以启用multi-thread，但所有启用线程的处理能力加起来等于一个核的处理能力）</li>
+<li>Python多进程如果是任务可分，不用和主线程交互的情况下是可用的，但对于tensorflow的训练来说，肯定需要使用多（线程、进程）与主（线程、进程）交互。</li>
+</ol>
+<p>所以在数据I/O阶段使用python 解释器对磁盘文件进行操作会影响性能<br />
+<strong>优势</strong></p>
+<ol>
+<li>Tensorflow使用黑箱的方式为数据的解析提供支持，相比于自己写multi-process然后共享变量来说在代码实现上更加友好。</li>
+<li>python 写的 Tensorflow 程序在运行阶段是调用底层c++运行，更具有I/O 效率</li>
+</ol>
+<p><strong>劣势</strong> </p>
+<p>过于繁琐 目前推荐 <code>tf.data</code>  更高级别的封装</p>
+<h3 id="133">1.3.3. 实践</h3>
+<p>一句话概括就是：<br />
+1. 构建图阶段: 创建队列Queue 和队列执行器QueueRunner<br />
+2. 执行图阶段：tf.train.start_queue_runners() 开始填充队列<br />
+3. tf.train.Coordinator() 在线程出错时关闭之。</p>
+<div class="hlcode"><pre><span class="c">#-*- coding:utf-8 -*-  </span>
+<span class="kn">import</span> <span class="nn">tensorflow</span> <span class="kn">as</span> <span class="nn">tf</span>  
+
+<span class="c">#创建的图:</span>
+
+<span class="c"># 构建一个size=3的先入先出队列q</span>
+<span class="n">q</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">FIFOQueue</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s">&quot;float&quot;</span><span class="p">)</span>  
+<span class="c"># 入队操作  </span>
+<span class="n">enqueue_op</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">enqueue_many</span><span class="p">(([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.2</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">],))</span> 
+<span class="c"># 出列 </span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">dequeue</span><span class="p">()</span>  
+<span class="n">y</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span>  
+<span class="n">q_inc</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">enqueue</span><span class="p">([</span><span class="n">y</span><span class="p">])</span>  
+
+<span class="c">#开启一个session,session是会话,会话的潜在含义是状态保持,各种tensor的状态保持  </span>
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>  
+    <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">enqueue_op</span><span class="p">)</span> 
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>  
+        <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">q_inc</span><span class="p">)</span>  
+
+    <span class="n">quelen</span> <span class="o">=</span>  <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">size</span><span class="p">())</span>  
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">quelen</span><span class="p">):</span>  
+        <span class="k">print</span> <span class="p">(</span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">q</span><span class="o">.</span><span class="n">dequeue</span><span class="p">()))</span> 
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">read_example</span><span class="p">(</span><span class="n">filename_queue</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Read one example from filename_queue&quot;&quot;&quot;</span>
+    <span class="n">reader</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">TFRecordReader</span><span class="p">()</span>
+    <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename_queue</span><span class="p">)</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">parse_single_example</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;image&quot;</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">FixedLenFeature</span><span class="p">([],</span> <span class="n">tf</span><span class="o">.</span><span class="n">string</span><span class="p">),</span>
+                                                        <span class="s">&quot;label&quot;</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">FixedLenFeature</span><span class="p">([],</span> <span class="n">tf</span><span class="o">.</span><span class="n">int64</span><span class="p">)})</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">decode_raw</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="s">&quot;image&quot;</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="p">[</span><span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">])</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="s">&quot;label&quot;</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">image</span><span class="p">,</span> <span class="n">label</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">queue</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">string_input_producer</span><span class="p">([</span><span class="s">&quot;TFRecords/train.tfrecords&quot;</span><span class="p">],</span> <span class="n">num_epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+    <span class="n">image</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="n">read_example</span><span class="p">(</span><span class="n">queue</span><span class="p">)</span>
+
+    <span class="n">img_batch</span><span class="p">,</span> <span class="n">label_batch</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">shuffle_batch</span><span class="p">([</span><span class="n">image</span><span class="p">,</span> <span class="n">label</span><span class="p">],</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">capacity</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span>
+                                                    <span class="n">min_after_dequeue</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">num_threads</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+        <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">local_variables_initializer</span><span class="p">())</span>
+        <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">global_variables_initializer</span><span class="p">())</span>
+
+        <span class="n">coord</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Coordinator</span><span class="p">()</span>
+        <span class="n">threads</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">start_queue_runners</span><span class="p">(</span><span class="n">sess</span><span class="o">=</span><span class="n">sess</span><span class="p">,</span> <span class="n">coord</span><span class="o">=</span><span class="n">coord</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="n">coord</span><span class="o">.</span><span class="n">should_stop</span><span class="p">():</span>
+                <span class="c"># Run training steps or whatever</span>
+                <span class="n">images</span><span class="p">,</span> <span class="n">labels</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="n">img_batch</span><span class="p">,</span> <span class="n">label_batch</span><span class="p">])</span>
+                <span class="k">print</span><span class="p">(</span><span class="n">images</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">labels</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="n">tf</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">OutOfRangeError</span><span class="p">:</span>
+            <span class="k">print</span><span class="p">(</span><span class="s">&#39;Done training -- epoch limit reached&#39;</span><span class="p">)</span>
+
+        <span class="n">coord</span><span class="o">.</span><span class="n">request_stop</span><span class="p">()</span>
+        <span class="n">coord</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">threads</span><span class="p">)</span>
+</pre></div>
+
+
+<h2 id="14-tfdata">1.4. 数据的输入（tf.data）</h2>
+<p>https://cs230-stanford.github.io/tensorflow-input-data.html</p>
+<blockquote>
+<p>本质上还是 分为4步：<br />
+1. 构建 数据集 dataset<br />
+2. 构建 迭代器 interator <br />
+3. 构建 next 操作 get_next</p>
+<blockquote>
+<p>next 操作得出相应数据变量 切入到模型中<br />
+4. 构建 初始化 操作  init_op<br />
+初始化操作可能在运行时候被 全局一次性初始化替代</p>
+</blockquote>
+</blockquote>
+<h3 id="141">1.4.1. 构建数据集</h3>
+<p>读取输入数据</p>
+<div class="hlcode"><pre><span class="c"># 1. constant 数字</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+
+<span class="c"># 2. 从内存中读取数组</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">features</span><span class="p">,</span> <span class="n">labels</span><span class="p">))</span>
+<span class="o">&gt;&gt;&gt;</span><span class="nb">type</span><span class="p">(</span><span class="n">features</span><span class="p">)</span>
+<span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span>
+
+<span class="o">&gt;&gt;&gt;</span><span class="nb">type</span><span class="p">(</span><span class="n">labels</span><span class="p">)</span>
+<span class="n">numpy</span><span class="o">.</span><span class="n">ndarray</span>
+
+<span class="c"># 3. 从磁盘中读取文件</span>
+<span class="c">## 3.1 tfrecord 文件</span>
+<span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;/var/data/file1.tfrecord&quot;</span><span class="p">,</span> <span class="s">&quot;/var/data/file2.tfrecord&quot;</span><span class="p">]</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">TFRecordDataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span>
+
+<span class="c">## 3.2 txt 文件</span>
+<span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;/var/data/file1.txt&quot;</span><span class="p">,</span> <span class="s">&quot;/var/data/file2.txt&quot;</span><span class="p">]</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">TextLineDataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span>
+
+<span class="c">## 3.3 csv 文件</span>
+<span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;/var/data/file1.csv&quot;</span><span class="p">,</span> <span class="s">&quot;/var/data/file2.csv&quot;</span><span class="p">]</span>
+<span class="n">record_defaults</span> <span class="o">=</span> <span class="p">[</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">]</span> <span class="o">*</span> <span class="mi">8</span>  
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">CsvDataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">,</span> <span class="n">record_defaults</span><span class="p">)</span>
+</pre></div>
+
+
+<p>从文件中读取数据，使用QueueRunner形式从文件中读取。tensorflow以一种黑箱的方式读取数据,必要的时候会启动多进程（需要设置，这些代码是用c++封装的，多线程支持的效果比较好）</p>
+<h3 id="142">1.4.2. 构建迭代器</h3>
+<p>构建怎么样的迭代器？惰性的，不能知道序列的长度</p>
+<table>
+<thead>
+<tr>
+<th>迭代器类型</th>
+<th align="center">难度</th>
+<th align="right">应用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>one-shot</td>
+<td align="center">0</td>
+<td align="right">仅支持对整个数据集访问一遍，不需要显式的初始化(不需要多写一行初始化命令)</td>
+</tr>
+<tr>
+<td>initializable</td>
+<td align="center">1</td>
+<td align="right">支持动态数据集（通过参数或其他设置，获得动态数据集,即再初始化）</td>
+</tr>
+<tr>
+<td>reinitializable</td>
+<td align="center">2</td>
+<td align="right">支持多个相同数据结构的数据集</td>
+</tr>
+<tr>
+<td>feedable</td>
+<td align="center">3</td>
+<td align="right">支持调用机制</td>
+</tr>
+</tbody>
+</table>
+<h4 id="1421-one-shot">1.4.2.1. one-shot</h4>
+<div class="hlcode"><pre><span class="c"># 构建dataset </span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span>
+<span class="c"># 构建 迭代器（生成器）</span>
+<span class="n">iterator</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">make_one_shot_iterator</span><span class="p">()</span> 
+<span class="c"># 构建 next op操作</span>
+<span class="n">next_element</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>  
+
+<span class="c"># 构建 初始化 操作（one-shot 模式 无）</span>
+<span class="c"># run</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+    <span class="n">value</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">next_element</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">i</span> <span class="o">==</span> <span class="n">value</span>
+</pre></div>
+
+
+<p>next_element 就是一个tensor,与tf.placehold/tf.constant 一样</p>
+<table>
+<thead>
+<tr>
+<th align="right">code</th>
+<th align="right">type</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right"><code>next_element = iterator.get_next()</code></td>
+<td align="right">tensorflow.python.framework.ops.Tensor</td>
+</tr>
+<tr>
+<td align="right"><code>x=tf.placeholder(dtype=tf.float32,shape=(1,2))</code></td>
+<td align="right">tensorflow.python.framework.ops.Tensor</td>
+</tr>
+<tr>
+<td align="right"><code>y=tf.constant([1,2,3])</code></td>
+<td align="right">tensorflow.python.framework.ops.Tensor</td>
+</tr>
+</tbody>
+</table>
+<h4 id="1422-initializable">1.4.2.2. initializable （可初始化的）</h4>
+<blockquote>
+<p>Q: 为什么要创立 initializable的 dataset？<br />
+A: 当我们想要创建一个动态的dataset的时候</p>
+</blockquote>
+<div class="hlcode"><pre><span class="c"># 构建dataset （数据集元素数量待定）</span>
+<span class="n">max_value</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">int64</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[])</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="n">max_value</span><span class="p">)</span>
+<span class="c"># 构建 迭代器（生成器）</span>
+<span class="n">iterator</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">make_initializable_iterator</span><span class="p">()</span>
+<span class="c"># 构建 next op操作</span>
+<span class="n">next_element</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+<span class="c"># 构建 初始化 操作</span>
+<span class="n">initializer_op</span><span class="o">=</span><span class="n">iterator</span><span class="o">.</span><span class="n">initializer</span>
+
+<span class="c"># 例子1 初始化一个含有10个元素的迭代器</span>
+<span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">initializer_op</span><span class="p">,</span> <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">max_value</span><span class="p">:</span> <span class="mi">10</span><span class="p">})</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">next_element</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">i</span> <span class="o">==</span> <span class="n">value</span>
+
+<span class="c"># 例子2 初始化一个含有100个元素的迭代器</span>
+<span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">initializer_op</span><span class="p">,</span> <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">max_value</span><span class="p">:</span> <span class="mi">100</span><span class="p">})</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">next_element</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">i</span> <span class="o">==</span> <span class="n">value</span>
+
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+        <span class="c"># 初始化生成器</span>
+        <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">init_op</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">next_element</span><span class="p">))</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">next_element</span><span class="p">))</span>
+        <span class="c"># 将生成器返回到初始状态</span>
+        <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">init_op</span><span class="p">)</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">next_element</span><span class="p">))</span>
+
+<span class="s">&#39;I use Tensorflow&#39;</span>
+<span class="s">&#39;You use PyTorch&#39;</span>
+<span class="s">&#39;I use Tensorflow&#39;</span> <span class="c"># Iterator 会回到初始的位置</span>
+</pre></div>
+
+
+<h4 id="1423-reinitializable">1.4.2.3. reinitializable （可重复初始化的）</h4>
+<div class="hlcode"><pre><span class="c"># 构建dataset </span>
+<span class="c"># 定义一个具有相同结构的 训练数据集 和 验证集</span>
+<span class="n">training_dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span>
+<span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">tf</span><span class="o">.</span><span class="n">random_uniform</span><span class="p">([],</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span>
+<span class="n">validation_dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
+
+
+<span class="c"># 构建 迭代器（生成器）</span>
+<span class="n">iterator</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">Iterator</span><span class="o">.</span><span class="n">from_structure</span><span class="p">(</span><span class="n">training_dataset</span><span class="o">.</span><span class="n">output_types</span><span class="p">,</span><span class="n">training_dataset</span><span class="o">.</span><span class="n">output_shapes</span><span class="p">)</span>
+
+<span class="c"># 构建 next op操作</span>
+<span class="n">next_element</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+
+<span class="c"># 构建 初始化 操作</span>
+<span class="n">training_init_op</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">.</span><span class="n">make_initializer</span><span class="p">(</span><span class="n">training_dataset</span><span class="p">)</span>
+<span class="n">validation_init_op</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">.</span><span class="n">make_initializer</span><span class="p">(</span><span class="n">validation_dataset</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">20</span><span class="p">):</span>
+    <span class="c"># 初始化训练集的 迭代器.</span>
+    <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">training_init_op</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+            <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">next_element</span><span class="p">)</span>
+
+    <span class="c"># 初始化验证集的 迭代器.</span>
+    <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">validation_init_op</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+            <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">next_element</span><span class="p">)</span>
+</pre></div>
+
+
+<h4 id="1424-feedable-">1.4.2.4. feedable（反馈的--正对有调用机制的）</h4>
+<p>一个调用机制</p>
+<blockquote>
+<ol>
+<li>构建数据集</li>
+<li>针对数据集构建迭代器</li>
+<li>构建 next 操作 （使用handle）<blockquote>
+<ul>
+<li>数据集建立 handle</li>
+<li>定义一种统一的迭代器类型（带有handle str 和数据结构）</li>
+<li>以统一的迭代器进行 next 操作</li>
+</ul>
+</blockquote>
+</li>
+</ol>
+</blockquote>
+<p>定义完 操作后，可以通过feed 选择  </p>
+<div class="hlcode"><pre><span class="c"># 构建不同的 数据集</span>
+<span class="n">training_dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="mi">100</span><span class="p">)</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">tf</span><span class="o">.</span><span class="n">random_uniform</span><span class="p">([],</span> <span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">int64</span><span class="p">))</span><span class="o">.</span><span class="n">repeat</span><span class="p">()</span>
+<span class="n">validation_dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">range</span><span class="p">(</span><span class="mi">50</span><span class="p">)</span>
+
+
+<span class="c"># 为不同数据集构建 迭代器</span>
+<span class="n">training_iterator</span> <span class="o">=</span> <span class="n">training_dataset</span><span class="o">.</span><span class="n">make_one_shot_iterator</span><span class="p">()</span>
+<span class="n">validation_iterator</span> <span class="o">=</span> <span class="n">validation_dataset</span><span class="o">.</span><span class="n">make_initializable_iterator</span><span class="p">()</span>
+
+<span class="c"># 为不同数据集构建 handle</span>
+<span class="n">training_handle</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">training_iterator</span><span class="o">.</span><span class="n">string_handle</span><span class="p">())</span>
+<span class="n">validation_handle</span> <span class="o">=</span> <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">validation_iterator</span><span class="o">.</span><span class="n">string_handle</span><span class="p">())</span>
+
+<span class="c"># 定义一个handle str </span>
+<span class="n">handle</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">placeholder</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">string</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">[])</span>
+
+<span class="c">##定义一种数据结构的 iterator</span>
+<span class="n">iterator</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Iterator</span><span class="o">.</span><span class="n">from_string_handle</span><span class="p">(</span>
+<span class="n">handle</span><span class="p">,</span> <span class="n">training_dataset</span><span class="o">.</span><span class="n">output_types</span><span class="p">,</span> <span class="n">training_dataset</span><span class="o">.</span><span class="n">output_shapes</span><span class="p">)</span>
+<span class="c"># iterator 中的 output_types 和 output_shapes可以直接定义</span>
+<span class="n">iterator</span> <span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Iterator</span><span class="o">.</span><span class="n">from_string_handle</span><span class="p">(</span>
+    <span class="n">handle</span><span class="p">,</span> <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="n">tf</span><span class="o">.</span><span class="n">Dimension</span><span class="p">(</span><span class="bp">None</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">Dimension</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">Dimension</span><span class="p">(</span><span class="mi">38</span><span class="p">)]),</span> <span class="n">tf</span><span class="o">.</span><span class="n">TensorShape</span><span class="p">([</span><span class="n">tf</span><span class="o">.</span><span class="n">Dimension</span><span class="p">(</span><span class="bp">None</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">Dimension</span><span class="p">(</span><span class="mi">5</span><span class="p">),</span> <span class="n">tf</span><span class="o">.</span><span class="n">Dimension</span><span class="p">(</span><span class="mi">1</span><span class="p">)])))</span>
+
+<span class="c"># 构建 next 操作</span>
+<span class="n">next_element</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+
+<span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">200</span><span class="p">):</span>
+            <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">next_element</span><span class="p">,</span> <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">handle</span><span class="p">:</span> <span class="n">training_handle</span><span class="p">})</span>
+
+    <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">validation_iterator</span><span class="o">.</span><span class="n">initializer</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">50</span><span class="p">):</span>
+            <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">next_element</span><span class="p">,</span> <span class="n">feed_dict</span><span class="o">=</span><span class="p">{</span><span class="n">handle</span><span class="p">:</span> <span class="n">validation_handle</span><span class="p">})</span>
+
+<span class="c">#</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Iterator</span><span class="o">.</span><span class="n">from_string_handle</span><span class="p">(</span>
+    <span class="n">string_handle</span><span class="p">,</span>
+    <span class="n">output_types</span><span class="p">,</span>
+    <span class="n">output_shapes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+    <span class="n">output_classes</span><span class="o">=</span><span class="bp">None</span>
+    <span class="p">)</span>
+</pre></div>
+
+
+<h3 id="143">1.4.3. 数据集的操作</h3>
+<ol>
+<li>map</li>
+<li>batch</li>
+<li>shuffle</li>
+<li>padded_batch</li>
+<li>repeat</li>
+</ol>
+<h4 id="1431-map">1.4.3.1. map</h4>
+<p>Dataset.map(f) 转换通过将指定函数 f 应用于输入数据集的每个元素来生成新数据集</p>
+<div class="hlcode"><pre><span class="o">&gt;&gt;&gt;</span><span class="n">Dataset</span> <span class="c">#[1,2,3,4,5,6]</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">iterator</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+<span class="mi">1</span>
+<span class="mi">2</span>
+<span class="o">...</span>
+
+<span class="o">&gt;&gt;&gt;</span><span class="n">Dataset</span> <span class="c">#[1,2,3,4,5,6]</span>
+<span class="n">Dataset</span><span class="o">=</span><span class="n">Dataset</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="c">#[11,12,13,14,15,16]</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">iterator</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+<span class="mi">11</span>
+<span class="mi">12</span>
+<span class="o">...</span>
+</pre></div>
+
+
+<h4 id="1432-batch">1.4.3.2.  batch</h4>
+<div class="hlcode"><pre><span class="o">&gt;&gt;&gt;</span><span class="n">Dataset</span> <span class="c">#[1,2,3,4,5,6]</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">iterator</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+<span class="mi">1</span>
+<span class="mi">2</span>
+<span class="o">...</span>
+
+<span class="o">&gt;&gt;&gt;</span><span class="n">Dataset</span> <span class="c">#[1,2,3,4,5,6]</span>
+<span class="n">Dataset</span><span class="o">=</span><span class="n">Dataset</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c">#[[1,2],[3,4],[5,6]]</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">iterator</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+<span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+<span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span>
+<span class="o">...</span>
+</pre></div>
+
+
+<h4 id="1433-shuffle">1.4.3.3. shuffle</h4>
+<div class="hlcode"><pre><span class="o">&gt;&gt;&gt;</span><span class="n">Dataset</span> <span class="c">#[1,2,3,4,5,6]</span>
+<span class="n">Dataset</span><span class="o">=</span><span class="n">Dataset</span><span class="o">.</span><span class="n">shuffle</span><span class="p">(</span><span class="n">shuffle_size</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="c">#</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">iterator</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+<span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+<span class="p">[</span><span class="mi">6</span><span class="p">]</span>
+</pre></div>
+
+
+<p><strong>buffer_size 的理解</strong></p>
+<p>代表將被加入緩衝器的元素的<strong>最大数量</strong>。<br />
+buffer_size 需要合理取值，然而不当的buffer size，会导致shuffle无意义。如 <code>buffer_size=1</code><br />
+需要明确的是：<br />
+1. 无论 ·<code>buffer_size</code> qqzhi</p>
+<p>No matter what buffer size you will choose, all samples will be used, it only affects the randomness of the shuffle.</p>
+<p>If buffer size is 100, it means that Tensorflow will keep a buffer of the next 100 samples, and will randomly select one those 100 samples. it then adds the next element to the buffer.</p>
+<p>so, if buffer_size = 1 there is no shuffle at all, and if buffer_size &gt; data_set_size a perfect uniform random shuffle is guaranteed.</p>
+<p>I would highly suggest to shuffle the data set before creating the TFrecords, and keep a small buffer size.</p>
+<p>154</p>
+<p>TL;DR Despite their similar names, these arguments have quite difference meanings. The buffer_size in Dataset.shuffle() can affect the randomness of your dataset, and hence the order in which elements are produced. The buffer_size in Dataset.prefetch() only affects the time it takes to produce the next element.</p>
+<p>The buffer_size argument in tf.data.Dataset.prefetch() and the output_buffer_size argument in tf.contrib.data.Dataset.map() provide a way to tune the performance of your input pipeline: both arguments tell TensorFlow to create a buffer of at most buffer_size elements, and a background thread to fill that buffer in the background. (Note that we removed the output_buffer_size argument from Dataset.map() when it moved from tf.contrib.data to tf.data. New code should use Dataset.prefetch() after map() to get the same behavior.)</p>
+<p>Adding a prefetch buffer can improve performance by overlapping the preprocessing of data with downstream computation. Typically it is most useful to add a small prefetch buffer (with perhaps just a single element) at the very end of the pipeline, but more complex pipelines can benefit from additional prefetching, especially when the time to produce a single element can vary.</p>
+<p>By contrast, the buffer_size argument to tf.data.Dataset.shuffle() affects the randomness of the transformation. We designed the Dataset.shuffle() transformation (like the tf.train.shuffle_batch() function that it replaces) to handle datasets that are too large to fit in memory. Instead of shuffling the entire dataset, it maintains a buffer of buffer_size elements, and randomly selects the next element from that buffer (replacing it with the next input element, if one is available). Changing the value of buffer_size affects how uniform the shuffling is: if buffer_size is greater than the number of elements in the dataset, you get a uniform shuffle; if it is 1 then you get no shuffling at all. For very large datasets, a typical "good enough" approach is to randomly shard the data into multiple files once before training, then shuffle the filenames uniformly, and then use a smaller shuffle buffer. However, the appropriate choice will depend on the exact nature of your training job</p>
+<p><img alt="dd" src="../../../../../attach/images/2019-07-25-10-26-19.png" /></p>
+<h4 id="1434-padded_batch">1.4.3.4. padded_batch</h4>
+<div class="hlcode"><pre><span class="n">dataset</span><span class="o">.</span><span class="n">padded_batch</span><span class="p">(</span>
+    <span class="n">batch_size</span><span class="p">,</span> <span class="n">padded_shapes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">padding_values</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">drop_remainder</span><span class="o">=</span><span class="bp">False</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<p><strong>适用场景</strong> <br />
+1. 变长度数据（常见于语音、视频、NLP等领域）</p>
+<p><strong>通用解决方案</strong></p>
+<ol>
+<li>
+<p>在把数据写入tfrecord时，先把数据pad到统一的长度再写入tfrecord；这个方法的问题在于：若是有大量数据的长度都远远小于最大长度，则会造成存储空间的大量浪费。</p>
+</li>
+<li>
+<p>使用dataset中的padded_batch方法来进行</p>
+</li>
+</ol>
+<p>可见每个batch的每个序列长度都是6，不足就补0</p>
+<div class="hlcode"><pre><span class="o">&gt;&gt;&gt;</span><span class="n">Dataset</span> <span class="c">#[1,2,3,4,5,6]</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">iterator</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+<span class="mi">1</span>
+<span class="mi">2</span>
+<span class="o">...</span>
+
+<span class="o">&gt;&gt;&gt;</span><span class="n">Dataset</span> <span class="c">#[1,2,3,4,5,6]</span>
+<span class="n">Dataset</span><span class="o">=</span><span class="n">Dataset</span><span class="o">.</span><span class="n">padded_batch</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="c">#[[1,2],[3,4],[5,6]]</span>
+<span class="o">&gt;&gt;&gt;</span><span class="n">iterator</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+<span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">]</span>
+<span class="p">[</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">]</span>
+
+
+<span class="o">...</span>
+</pre></div>
+
+
+<h4 id="1435-repeat">1.4.3.5. repeat</h4>
+<div class="hlcode"><pre><span class="n">repeat</span><span class="p">(</span><span class="n">count</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+
+
+<p>count: (Optional.) A tf.int64 scalar tf.Tensor, representing the number of times the dataset should be repeated. The default behavior (if count is None or -1) is for the dataset be repeated indefinitely.(无限复制))</p>
+<h4 id="1436-prefetch">1.4.3.6.  prefetch</h4>
+<h4 id="1437-take-skip">1.4.3.7. take skip 划分数据集</h4>
+<div class="hlcode"><pre><span class="n">train_db</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>  <span class="c"># 前1000个batch</span>
+<span class="n">test_db</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">skip</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>  <span class="c"># 跳过前1000，选取后面的</span>
+</pre></div>
+
+
+<h3 id="144">1.4.4. 在训练中使用</h3>
+<h4 id="1441-session">1.4.4.1. 在Session 模式下中使用</h4>
+<div class="hlcode"><pre><span class="n">iterator</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">make_one_shot_iterator</span><span class="p">()</span>
+<span class="n">next_example</span><span class="p">,</span> <span class="n">next_label</span> <span class="o">=</span> <span class="n">iterator</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+<span class="n">loss</span> <span class="o">=</span> <span class="n">model_function</span><span class="p">(</span><span class="n">next_example</span><span class="p">,</span> <span class="n">next_label</span><span class="p">)</span>
+<span class="n">training_op</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">AdagradOptimizer</span><span class="p">(</span><span class="o">...</span><span class="p">)</span><span class="o">.</span><span class="n">minimize</span><span class="p">(</span><span class="n">loss</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">MonitoredTrainingSession</span><span class="p">(</span><span class="o">...</span><span class="p">)</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+  <span class="k">while</span> <span class="ow">not</span> <span class="n">sess</span><span class="o">.</span><span class="n">should_stop</span><span class="p">():</span>
+    <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">training_op</span><span class="p">)</span>
+</pre></div>
+
+
+<h4 id="1442-keras-tfdata">1.4.4.2. keras 里面使用tf.data</h4>
+<div class="hlcode"><pre><span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">Dataset</span><span class="o">.</span><span class="n">from_tensor_slices</span><span class="p">((</span><span class="n">data</span><span class="p">,</span> <span class="n">labels</span><span class="p">))</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">batch</span><span class="p">(</span><span class="mi">32</span><span class="p">)</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">repeat</span><span class="p">()</span>
+
+<span class="c"># Don&#39;t forget to specify `steps_per_epoch` when calling `fit` on a dataset.</span>
+<span class="n">model</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">epochs</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">steps_per_epoch</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+
+
+<span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+
+<span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">dataset</span><span class="p">,</span> <span class="n">steps</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+</pre></div>
+
+
+<h1 id="2-io">2. I/O 问题</h1>
+<h2 id="21-io">2.1. I/O数据的存储格式</h2>
+<h3 id="211-protocol-buffer">2.1.1. Protocol Buffer</h3>
+<p>Protocol Buffers 是谷歌开放的一种轻便高效的结构化数据存储格式<br />
+特性：<br />
+1. 处理结构化数据的工具<br />
+2. 二进制流<br />
+3. 需要先定义数据格式（schema）,才能还原<br />
+4. 序列化数据比<code>.xml</code>小3-10倍，解析快20-100倍<br />
+5. 文件格式 <code>.proto</code><br />
+6. 每一个message代表了一类结构体和的数据</p>
+<h3 id="212-json">2.1.2. json</h3>
+<h2 id="22-tfrecord-io">2.2. TFRecord 格式的数据及其I/O操作</h2>
+<h3 id="221-tfrecord">2.2.1. TFRecord 是什么？</h3>
+<blockquote>
+<p>TFRecord 是谷歌推荐的一种二进制<code>文件格式</code>，理论上它可以保存任何格式的信息。</p>
+</blockquote>
+<p>TFRecord文件将数据存储为 &lt;<strong>二进制</strong>&gt; &lt;<strong>字符串</strong>&gt; &lt;<strong>序列</strong>&gt; .</p>
+<p>将数据写入TFRecord文件之<strong>前</strong>需要<strong>指定数据的结构</strong>，<br />
+Tensorflow为此提供了两个组件：<br />
+1. tf.train.Example<br />
+2. tf.train.SequenceExample。<br />
+   必须将每个数据样本存储在其中一个组件中，然后对其进行序列化并使用tf.python_io.TFRecordWriter把它写到磁盘上。</p>
+<h3 id="222">2.2.2. 什么情景下使用</h3>
+<p>从磁盘提取&lt;<strong>大量</strong>&gt;-&lt;<strong>小文件</strong>&gt;会显著影响 I/O 性能。推荐的实现最大 I/O 吞吐量的一种方法是将输入数据预处理为更大（约 100MB）的 TFRecord 文件。<br />
+1. 对于较小的数据集 (200MB-1GB)，最好的方法通常是将整个数据集加载到内存中<br />
+2. 对于较大的数据集。 将输入数据预处理为更大（约 100MB）的 TFRecord 文件。 </p>
+<h3 id="223-tfrecord-example">2.2.3. TFRecord 核心概念--Example</h3>
+<p>TFRecord文件本身是 &lt;<strong>二进制</strong>&gt; &lt;<strong>字符串</strong>&gt; &lt;<strong>序列</strong>&gt;，还原数据原本面目的<strong>核心在于说明数据的结构</strong></p>
+<h4 id="2231">2.2.3.1. 参数说明</h4>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Example</span><span class="p">(</span><span class="n">features</span><span class="p">:</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Features</span><span class="o">=</span><span class="n">xxx</span><span class="p">)</span>
+ <span class="o">|</span><span class="n">__tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Features</span><span class="p">(</span><span class="n">feature</span><span class="p">:</span><span class="nb">dict</span><span class="o">=</span><span class="n">feature_dict</span><span class="p">)</span>
+   <span class="o">|</span><span class="n">__feature_dict</span><span class="o">=</span><span class="p">{</span><span class="n">key</span><span class="p">:</span><span class="n">value</span><span class="p">}</span>
+      <span class="o">|</span><span class="n">__</span> <span class="n">value</span><span class="p">:</span><span class="n">string</span>
+      <span class="o">|</span><span class="n">__</span> <span class="n">key</span><span class="p">:</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Feature</span><span class="p">(</span><span class="n">Int64List</span><span class="o">=</span><span class="n">int_a</span><span class="p">)</span> 
+          <span class="o">|</span><span class="n">__int_a</span><span class="p">:</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">BytesList</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="p">[])</span>
+</pre></div>
+
+
+<p>tf.train.Example 是protocol buffer  协议下的<strong>消息体(message)</strong>,不是普通的python类<br />
+一个 Example <strong>消息体</strong>包含了 <strong>一系列的feature 属性</strong></p>
+<div class="hlcode"><pre><span class="n">example</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Example</span><span class="p">(</span><span class="n">features</span><span class="o">=</span><span class="n">_features</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span><span class="nb">type</span><span class="p">(</span><span class="n">_features</span><span class="p">)</span> 
+<span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Features</span>
+</pre></div>
+
+
+<p>tf.train.Features是命名特征的集合。它有一个形参 feature ，类型为一个字典，其中key是特征的名称，value是tf.train.Feature</p>
+<div class="hlcode"><pre><span class="n">_features</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Features</span><span class="p">(</span><span class="n">feature</span><span class="o">=</span><span class="n">feature_dict</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">type</span><span class="p">(</span><span class="n">feature_dict</span><span class="p">)</span>
+<span class="nb">dict</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">feature_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span><span class="n">value</span><span class="p">,}</span>
+<span class="o">&gt;&gt;&gt;</span><span class="nb">type</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+<span class="n">string</span>
+<span class="o">&gt;&gt;&gt;</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Feature</span>  <span class="c">## 注意没有s</span>
+
+<span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Feature</span><span class="p">(</span><span class="n">Int64List</span><span class="p">:</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">BytesList</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span><span class="n">FloatList</span><span class="p">:</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">FloatList</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">BytesList</span><span class="p">:</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Int64List</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+
+<span class="n">value</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Feature</span><span class="p">(</span><span class="n">Int64List</span><span class="o">=</span><span class="n">int_a</span><span class="p">)</span>
+<span class="n">value</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Feature</span><span class="p">(</span><span class="n">FloatList</span><span class="o">=</span><span class="n">float_b</span><span class="p">)</span>
+<span class="n">value</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Feature</span><span class="p">(</span><span class="n">BytesList</span><span class="o">=</span><span class="n">bytes_c</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span><span class="nb">type</span><span class="p">(</span><span class="n">int_a</span><span class="p">)</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">BytesList</span>
+<span class="o">&gt;&gt;&gt;</span><span class="nb">type</span><span class="p">(</span><span class="n">float_b</span><span class="p">)</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">FloatList</span>
+<span class="o">&gt;&gt;&gt;</span><span class="nb">type</span><span class="p">(</span><span class="n">bytes_c</span><span class="p">)</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Int64List</span>
+
+<span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">BytesList</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="nb">list</span><span class="o">=</span><span class="p">[])</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">FloatList</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="nb">list</span><span class="o">=</span><span class="p">[])</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Int64List</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="nb">list</span><span class="o">=</span><span class="p">[])</span>
+
+<span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">BytesList</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="nb">list</span><span class="o">=</span><span class="p">[</span><span class="n">b</span><span class="s">&quot;hello world&quot;</span><span class="p">])</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">FloatList</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="nb">list</span><span class="o">=</span><span class="p">[</span><span class="mf">0.1</span><span class="p">,</span><span class="mf">0.2</span><span class="p">])</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Int64List</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="nb">list</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
+</pre></div>
+
+
+<h5 id="22311">2.2.3.1.1. 方法说明</h5>
+<p><code>tf.train.Example</code>和<code>tf.train.SequenceExample``提供SerializeToString</code> 方法,进行结构化数据首先需要序列化</p>
+<div class="hlcode"><pre><span class="n">example</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">()</span>
+</pre></div>
+
+
+<h3 id="224">2.2.4. 实践</h3>
+<h4 id="2241-tfrecord">2.2.4.1. 存储为 TFrecord格式文件</h4>
+<h5 id="22411">2.2.4.1.1. 通用</h5>
+<div class="hlcode"><pre><span class="n">float_list</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Int64List</span><span class="p">(</span><span class="n">value</span><span class="p">:</span><span class="nb">list</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">])</span>
+<span class="n">feature_value</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Feature</span><span class="p">(</span><span class="n">FloatList</span><span class="o">=</span><span class="n">float_list</span><span class="p">)</span>
+<span class="n">feature_dict</span><span class="o">=</span><span class="p">{</span><span class="s">&quot;feature_key&quot;</span><span class="p">,</span><span class="n">feature_value</span><span class="p">}</span>
+<span class="n">features</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Features</span><span class="p">(</span><span class="n">feature</span><span class="p">:</span><span class="nb">dict</span><span class="o">=</span><span class="n">feature_dict</span><span class="p">)</span>
+<span class="n">example</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Example</span><span class="p">(</span><span class="n">features</span><span class="p">:</span><span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Features</span><span class="o">=</span><span class="n">features</span><span class="p">)</span>
+
+<span class="k">with</span> <span class="n">tf</span><span class="o">.</span><span class="n">python_io</span><span class="o">.</span><span class="n">TFRecordWriter</span><span class="p">(</span><span class="s">&#39;customer_1.tfrecord&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">writer</span><span class="p">:</span>
+    <span class="n">writer</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">example</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">())</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">writer</span><span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">python_io</span><span class="o">.</span><span class="n">TFRecordWriter</span><span class="p">(</span><span class="n">path</span><span class="o">=&lt;...&gt;</span><span class="p">,</span><span class="n">options</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+<span class="c"># path：TFRecord文件的存放路径；</span>
+<span class="c"># option：TFRecordOptions对象 定义TFRecord文件保存的压缩格式；</span>
+<span class="err">有三种文件压缩格式可选，分别为</span><span class="p">:</span>
+<span class="mf">1.</span> <span class="n">TFRecordCompressionType</span><span class="o">.</span><span class="n">ZLIB</span>
+<span class="mf">2.</span> <span class="n">TFRecordCompressionType</span><span class="o">.</span><span class="n">GZIP</span>
+<span class="mf">3.</span> <span class="n">TFRecordCompressionType</span><span class="o">.</span><span class="n">NONE</span>
+<span class="c"># 默认为最后一种，即不做任何压缩，定义方法如下</span>
+</pre></div>
+
+
+<h4 id="2242-tensor">2.2.4.2. 将tensor 写入</h4>
+<div class="hlcode"><pre><span class="n">import</span> <span class="n">tensorflow</span> <span class="n">as</span> <span class="n">tf</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">constant</span><span class="p">([[</span><span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">],</span>
+                 <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">9.0</span><span class="p">]],</span> <span class="n">dtype</span><span class="o">=</span><span class="err">&#39;</span><span class="n">float32</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="cp"># Write to file</span>
+<span class="n">ds</span> <span class="o">=</span> <span class="p">(</span><span class="n">tf</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">Dataset</span><span class="p">.</span><span class="n">from_tensors</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+      <span class="p">.</span><span class="n">map</span><span class="p">(</span><span class="n">tf</span><span class="p">.</span><span class="n">io</span><span class="p">.</span><span class="n">serialize_tensor</span><span class="p">))</span>
+<span class="n">writer</span> <span class="o">=</span> <span class="n">tf</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">experimental</span><span class="p">.</span><span class="n">TFRecordWriter</span><span class="p">(</span><span class="err">&#39;</span><span class="n">temp</span><span class="p">.</span><span class="n">tfrecord</span><span class="err">&#39;</span><span class="p">)</span>
+<span class="n">writer</span><span class="p">.</span><span class="n">write</span><span class="p">(</span><span class="n">ds</span><span class="p">)</span>
+<span class="cp"># Read from file</span>
+<span class="n">parse_tensor_f32</span> <span class="o">=</span> <span class="n">lambda</span> <span class="n">x</span><span class="o">:</span> <span class="n">tf</span><span class="p">.</span><span class="n">io</span><span class="p">.</span><span class="n">parse_tensor</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">tf</span><span class="p">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">ds2</span> <span class="o">=</span> <span class="p">(</span><span class="n">tf</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">TFRecordDataset</span><span class="p">(</span><span class="err">&#39;</span><span class="n">temp</span><span class="p">.</span><span class="n">tfrecord</span><span class="err">&#39;</span><span class="p">)</span>
+       <span class="p">.</span><span class="n">map</span><span class="p">(</span><span class="n">parse_tensor_f32</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">x2</span> <span class="n">in</span> <span class="n">ds2</span><span class="o">:</span>
+    <span class="n">tf</span><span class="p">.</span><span class="n">print</span><span class="p">(</span><span class="n">x2</span><span class="p">)</span>
+<span class="cp"># [[2 3 3]</span>
+<span class="cp">#  [1 5 9]]</span>
+</pre></div>
+
+
+<h4 id="2243-tensorflow">2.2.4.3. 输入到tensorflow计算图中</h4>
+<p>使用tf.data将TFrecord格式文件输入到tensorflow图中</p>
+<h5 id="22431">2.2.4.3.1. 导入</h5>
+<p>从多个tfrecord文件中导入数据到Dataset类</p>
+<div class="hlcode"><pre><span class="n">filenames</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;test.tfrecord&quot;</span><span class="p">,</span> <span class="s">&quot;test2.tfrecord&quot;</span><span class="p">]</span>
+<span class="n">dataset</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">TFRecordDataset</span><span class="p">(</span><span class="n">filenames</span><span class="p">)</span>
+</pre></div>
+
+
+<h5 id="22432">2.2.4.3.2. 序列化样本解析</h5>
+<p>tfrecord文件是序列化样本，所以我们需要对每一个样本进行解析。 具体实现 通过dataset 的map方法，如下：</p>
+<div class="hlcode"><pre><span class="n">dataset</span><span class="o">=</span><span class="n">dataset</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">parse_function</span><span class="p">)</span>
+<span class="c"># parse_function 解析函数</span>
+</pre></div>
+
+
+<p><strong>NOTE</strong><br />
+parse_function 解析函数</p>
+<p><strong>1. 输入输出</strong><br />
+输入：example_proto  也就是序列化后的样本tf_serialized<br />
+输出： parsed_example </p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">parse_function</span><span class="p">(</span><span class="n">example_proto</span><span class="p">):</span>
+    <span class="c"># 只接受一个形参：example_proto，也就是序列化后的样本tf_serialized</span>
+    <span class="n">parsed_example</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">parse_single_example</span><span class="p">(</span><span class="n">example_proto</span><span class="p">,</span> <span class="n">feature_dicts</span><span class="p">)</span>
+    <span class="c"># feature_dicts 解析字典---feature的解析方式</span>
+    <span class="c"># feature_dicts={key:value}  key为feature名，value为feature的解析方式</span>
+
+    <span class="c"># 返回所有feature</span>
+    <span class="k">return</span> <span class="n">parsed_example</span>
+</pre></div>
+
+
+<p><strong>2. feature_dicts 解析字典</strong></p>
+<div class="hlcode"><pre><span class="n">feature_dicts</span><span class="o">=</span><span class="p">{</span><span class="n">key</span><span class="p">:</span><span class="n">value</span><span class="p">}</span>
+<span class="c"># key为feature名，value为feature的解析方式</span>
+</pre></div>
+
+
+<p><strong>3. feature的解析方式</strong></p>
+<p>feature的解析方式:</p>
+<table>
+<thead>
+<tr>
+<th align="right">编号</th>
+<th align="left">解析方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">1</td>
+<td align="left">定长特征解析</td>
+</tr>
+<tr>
+<td align="right">2</td>
+<td align="left">不定长特征解析</td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li>定长特征解析：<code>tf.FixedLenFeature(shape, dtype, default_value)</code></li>
+</ol>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">FixedLenFeature</span><span class="p">(</span><span class="n">shape</span><span class="p">:</span><span class="nb">tuple</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">default_value</span><span class="o">=</span><span class="bp">None</span><span class="p">)</span>
+</pre></div>
+
+
+<table>
+<thead>
+<tr>
+<th align="right">形参</th>
+<th align="left">备注</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="right">shape</td>
+<td align="left">1. 可当reshape来用，如vector的shape从(3,)改动成了(1,3)。<br>2. 如果写入的feature使用了.tostring() 其shape就是()</td>
+</tr>
+<tr>
+<td align="right">dtype</td>
+<td align="left">必须是tf.float32， tf.int64， tf.string中的一种。</td>
+</tr>
+<tr>
+<td align="right">default_value</td>
+<td align="left">feature值缺失时所指定的值。</td>
+</tr>
+</tbody>
+</table>
+<ol>
+<li>不定长特征解析：<code>tf.VarLenFeature(dtype)</code></li>
+</ol>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">VarLenFeature</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
+<span class="c"># 注：可以不明确指定shape，但得到的tensor是SparseTensor。</span>
+</pre></div>
+
+
+<p><strong>4. 特殊 feature的 转变特征</strong></p>
+<p>得到的parsed_example也是一个字典，其中每个key是对应feature的名字，value是相应的feature解析值。如果使用了下面两种情况，则还需要对这些值进行转变。其他情况则不用。</p>
+<ol>
+<li>
+<p>string类型：<code>tf.decode_raw(parsed_feature, type)</code>来解码<br />
+注：这里type必须要和当初.tostring()化前的一致。如tensor转变前是tf.uint8，这里就需是tf.uint8；转变前是tf.float32，则tf.float32</p>
+</li>
+<li>
+<p>VarLen解析：由于得到的是SparseTensor，所以视情况需要用<code>tf.sparse_tensor_to_dense(SparseTensor)</code>来转变成DenseTensor</p>
+</li>
+</ol>
+<div class="hlcode"><pre><span class="c"># 解码字符</span>
+<span class="n">parsed_example</span><span class="p">[</span><span class="s">&#39;tensor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">decode_raw</span><span class="p">(</span><span class="n">parsed_example</span><span class="p">[</span><span class="s">&#39;tensor&#39;</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+<span class="c"># 稀疏表示 转为 密集表示</span>
+<span class="n">parsed_example</span><span class="p">[</span><span class="s">&#39;matrix&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">sparse_tensor_to_dense</span><span class="p">(</span><span class="n">parsed_example</span><span class="p">[</span><span class="s">&#39;matrix&#39;</span><span class="p">])</span>
+</pre></div>
+
+
+<p><strong>5. 改变形状</strong><br />
+到此为止得到的特征都是向量，需要根据之前存储的shape信息对每个feature进行reshape。</p>
+<div class="hlcode"><pre><span class="c"># 转变matrix形状</span>
+<span class="n">parsed_example</span><span class="p">[</span><span class="s">&#39;matrix&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">parsed_example</span><span class="p">[</span><span class="s">&#39;matrix&#39;</span><span class="p">],</span> <span class="n">parsed_example</span><span class="p">[</span><span class="s">&#39;matrix_shape&#39;</span><span class="p">])</span>
+
+<span class="c"># 转变tensor形状</span>
+<span class="n">parsed_example</span><span class="p">[</span><span class="s">&#39;tensor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">parsed_example</span><span class="p">[</span><span class="s">&#39;tensor&#39;</span><span class="p">],</span> <span class="n">parsed_example</span><span class="p">[</span><span class="s">&#39;tensor_shape&#39;</span><span class="p">])</span>
+</pre></div>
+
+
+<h5 id="22433">2.2.4.3.3. 执行解析函数</h5>
+<p>创建好解析函数后，将创建的parse_function送入dataset.map()得到新的数据集</p>
+<div class="hlcode"><pre><span class="n">new_dataset</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">parse_function</span><span class="p">)</span>
+</pre></div>
+
+
+<h5 id="22434">2.2.4.3.4. 创建迭代器</h5>
+<p>后续与其他dataset 处理一致</p>
+<div class="hlcode"><pre><span class="n">iterator</span> <span class="o">=</span> <span class="n">dataset</span><span class="o">.</span><span class="n">make_one_shot_iterator</span><span class="p">()</span>
+</pre></div>
+
+
+<h1 id="3-tensorflow">3. tensorflow 文件操作</h1>
+<h2 id="31-tfgfile">3.1. tf.gfile</h2>
+<p>tensorflow gfile文件操作详解</p>
+<p>翻译过来就是 <strong>无线程锁的文件I/O操作包装器</strong></p>
+<h3 id="311">3.1.1. 作用</h3>
+<ol>
+<li>提供了一种类似于python文件 I/O操作的API；</li>
+<li>提供了一种操作tensorflow C++文件系统的API；</li>
+<li>tensorflow c++文件操作接口支持多个文件系统实现，包括：</li>
+<li>本地文件</li>
+<li>谷歌云存储(以gs://开头)</li>
+<li>HDFS(以HDFS://开头)</li>
+</ol>
+<p>tensorflow封装这些接口到<code>tf.gfile</code>，以便我们可以使用这些接口来存储和加载检查点文件、将tensorboard log信息写到文本里以及访问训练数据(在其他用途里)。</p>
+<h3 id="312-pythonioapi">3.1.2. 与 python的I/O操作的API区别</h3>
+<blockquote>
+<p>支持远程IO操作</p>
+</blockquote>
+<p>但是，如果所有文件都放在本地，那么我们直接使用python提供的常规文本操作接口也是一样效果且毫无问题的</p>
+<p>https://zhuanlan.zhihu.com/p/31536538</p>
+<h2 id="32">3.2. 队列进阶</h2>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">read_and_decode</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="c">#根据文件名生成一个队列</span>
+    <span class="n">filename_queue</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">string_input_producer</span><span class="p">([</span><span class="n">filename</span><span class="p">])</span>
+
+    <span class="n">reader</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">TFRecordReader</span><span class="p">()</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">serialized_example</span> <span class="o">=</span> <span class="n">reader</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">filename_queue</span><span class="p">)</span>   <span class="c">#返回文件名和文件</span>
+    <span class="n">features</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">parse_single_example</span><span class="p">(</span><span class="n">serialized_example</span><span class="p">,</span>
+                                       <span class="n">features</span><span class="o">=</span><span class="p">{</span>
+                                           <span class="s">&#39;label&#39;</span><span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">FixedLenFeature</span><span class="p">([],</span> <span class="n">tf</span><span class="o">.</span><span class="n">int64</span><span class="p">),</span>
+                                           <span class="s">&#39;img_raw&#39;</span> <span class="p">:</span> <span class="n">tf</span><span class="o">.</span><span class="n">FixedLenFeature</span><span class="p">([],</span> <span class="n">tf</span><span class="o">.</span><span class="n">string</span><span class="p">),</span>
+                                       <span class="p">})</span>
+
+    <span class="n">img</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">decode_raw</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="s">&#39;img_raw&#39;</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">uint8</span><span class="p">)</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="p">[</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.</span> <span class="o">/</span> <span class="mi">255</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span>
+    <span class="n">label</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">features</span><span class="p">[</span><span class="s">&#39;label&#39;</span><span class="p">],</span> <span class="n">tf</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">img</span><span class="p">,</span> <span class="n">label</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">coord</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Coordinator</span><span class="p">()</span>
+<span class="n">threads</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">start_queue_runners</span><span class="p">(</span><span class="n">sess</span><span class="o">=</span><span class="n">sess</span><span class="p">,</span> <span class="n">coord</span><span class="o">=</span><span class="n">coord</span><span class="p">)</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="k">while</span> <span class="ow">not</span> <span class="n">coord</span><span class="o">.</span><span class="n">should_stop</span><span class="p">():</span>
+        <span class="c"># Run training steps or whatever</span>
+        <span class="n">sess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">train_op</span><span class="p">)</span>
+<span class="k">except</span> <span class="n">tf</span><span class="o">.</span><span class="n">errors</span><span class="o">.</span><span class="n">OutOfRangeError</span><span class="p">:</span>
+    <span class="k">print</span><span class="p">(</span><span class="s">&#39;Done training -- epoch limit reached&#39;</span><span class="p">)</span>
+<span class="k">finally</span><span class="p">:</span>
+    <span class="c"># When done, ask the threads to stop.</span>
+    <span class="n">coord</span><span class="o">.</span><span class="n">request_stop</span><span class="p">()</span>
+<span class="c"># Wait for threads to finish.</span>
+<span class="n">coord</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">threads</span><span class="p">)</span>
+<span class="n">sess</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+</pre></div>
+
+
+<h5 id="32001-io">3.2.0.0.1. 利用多进程 I/O 构建流水线</h5>
+<p>流水线将训练步骤的预处理和模型执行过程重叠到一起。当加速器正在执行第 N 个训练步时，CPU 正在准备第 N+1 步的数据。这样做不仅可以最大限度地缩短训练的单步用时（而不是总用时），而且可以缩短提取和转换数据所需的时间。</p>
+<p><img alt="" src="../../../../../attach/images/2019-10-12-10-07-27.png" /></p>
+<h2 id="33-tensorflowio">3.3. 多线程任务中的 TensorFlow/IO</h2>
+<h2 id="34-parse_example">3.4. parse_example</h2>
+<div class="hlcode"><pre><span class="c"># parse_example 的多种形式</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">parse_example</span><span class="p">(</span>
+    <span class="n">serialized</span><span class="p">,</span>
+    <span class="n">features_spec</span><span class="p">,</span>
+    <span class="n">example_names</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="bp">None</span>
+<span class="p">)</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">parse_example</span><span class="p">()</span>
+<span class="n">tf</span><span class="o">.</span><span class="n">parse_example</span><span class="p">()</span>
+
+<span class="c"># serialized:一个batch的序列化的example </span>
+<span class="c"># features_spec:解析example的规则 </span>
+<span class="c"># name：当前操作的名字 </span>
+<span class="c"># example_name:当前解析example的proto名称</span>
+</pre></div>
+
+
+<p>这里重点要说的是第二个参数，也就是features，features是把serialized的example中按照键值映射到三种tensor: <br />
+1. VarlenFeature <br />
+2. SparseFeature <br />
+3. FixedLenFeature <br />
+下面对这三种映射方式做一个简要的叙述：</p>
+<p>VarlenFeature</p>
+<p>是按照键值把example的value映射到SpareTensor对象，假设我们有如下的serialized数据：</p>
+<div class="hlcode"><pre> <span class="n">serialized</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="n">features</span>
+      <span class="p">{</span> <span class="n">feature</span> <span class="p">{</span> <span class="n">key</span><span class="p">:</span> <span class="s">&quot;ft&quot;</span> <span class="n">value</span> <span class="p">{</span> <span class="n">float_list</span> <span class="p">{</span> <span class="n">value</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">]</span> <span class="p">}</span> <span class="p">}</span> <span class="p">}</span> <span class="p">},</span>
+    <span class="n">features</span>
+      <span class="p">{</span> <span class="n">feature</span> <span class="p">[]},</span>
+    <span class="n">features</span>
+      <span class="p">{</span> <span class="n">feature</span> <span class="p">{</span> <span class="n">key</span><span class="p">:</span> <span class="s">&quot;ft&quot;</span> <span class="n">value</span> <span class="p">{</span> <span class="n">float_list</span> <span class="p">{</span> <span class="n">value</span><span class="p">:</span> <span class="p">[</span><span class="mf">3.0</span><span class="p">]</span> <span class="p">}</span> <span class="p">}</span> <span class="p">}</span>
+  <span class="p">]</span>
+</pre></div>
+
+
+<p>使用VarLenFeatures方法：</p>
+<div class="hlcode"><pre><span class="n">features</span><span class="o">=</span><span class="p">{</span>
+    <span class="s">&quot;ft&quot;</span><span class="p">:</span><span class="n">tf</span><span class="o">.</span><span class="n">VarLenFeature</span><span class="p">(</span><span class="n">tf</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="p">}</span>
+</pre></div>
+
+
+<p>那么我们将得到的是：</p>
+<div class="hlcode"><pre><span class="p">{</span><span class="s">&quot;ft&quot;</span><span class="p">:</span> <span class="n">SparseTensor</span><span class="p">(</span><span class="n">indices</span><span class="o">=</span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">]],</span>
+                      <span class="n">values</span><span class="o">=</span><span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">],</span>
+                      <span class="n">dense_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="p">}</span>
+</pre></div>
+
+
+<p>可见，显示的indices是ft值的索引，values是值，dense_shape是indices的shape</p>
+<p>FixedLenFeature</p>
+<p>而FixedLenFeature是按照键值对将features映射到大小为[serilized.size(),df.shape] 的矩阵，这里的FixLenFeature指的是每个键值对应的feature的size是一样的。对于上面的例子，如果使用：</p>
+<div class="hlcode"><pre><span class="err">features:</span> <span class="p">{</span>
+      <span class="nt">&quot;ft&quot;</span><span class="p">:</span> <span class="err">FixedLenFeature(</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="err">dtype=tf.float32,</span> <span class="err">default_value=-1),</span>
+  <span class="p">}</span>
+</pre></div>
+
+
+<p>那么我们将得到：</p>
+<div class="hlcode"><pre><span class="p">{</span><span class="nt">&quot;ft&quot;</span><span class="p">:</span> <span class="p">[[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">-1.0</span><span class="p">]]}</span>
+</pre></div>
+
+
+<p>可见返回的值是一个[2,2]的矩阵，如果返回的长度不足给定的长度，那么将会使用默认值去填充。 </p>
+<h1 id="4-io1">4. 提升I/O性能的方法<sup id="fnref:1"><a class="footnote-ref" href="#fn:1" rel="footnote">1</a></sup></h1>
+<h2 id="41">4.1. 硬件上任务分离</h2>
+<h3 id="411-cpu">4.1.1. CPU</h3>
+<h3 id="412-gpu">4.1.2. GPU</h3>
+<h3 id="413">4.1.3. 网络</h3>
+<p>while the CPU is preparing the data, the accelerator is sitting idle. Conversely, while the accelerator is training the model, the CPU is sitting idle. </p>
+<p>The training step time is thus the sum of both CPU pre-processing time and the accelerator training time.</p>
+<ul>
+<li>
+<p>首字节时间：与本地存储相比，从远程存储读取文件的首字节所用时间可能要多出几个数量级。</p>
+</li>
+<li>
+<p>读取吞吐量：虽然远程存储通常可提供较大的聚合带宽，但读取单个文件可能只能利用此带宽的一小部分。</p>
+</li>
+</ul>
+<h2 id="42">4.2. 并行计算</h2>
+<p>TensorFlow提供两个类帮助实现多线程，一个是<code>tf.train.Coordinator</code>，另一个是<code>tf.train.QueueRunner</code><br />
+这两个类是实现TensorFlow pipeline的基础，能够高效地并行处理数据。</p>
+<h3 id="421">4.2.1. 总结</h3>
+<p>下面简要介绍了设计输入流水线的最佳做法：</p>
+<ol>
+<li>使用 prefetch 转换可将提供方和使用方的工作重叠。我们特别建议将 prefetch(n)（其中 n 是单步训练使用的 元素数/批次数）添加到<strong>输入流水线的末尾</strong>，以便将在 CPU 上执行的转换与在加速器上执行的训练重叠。</li>
+</ol>
+<div class="hlcode"><pre><span class="n">dataset</span><span class="o">.</span><span class="n">prefetch</span><span class="p">(</span><span class="n">buffer_size</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">AUTOTUNE</span><span class="p">)</span>
+</pre></div>
+
+
+<ol>
+<li>通过设置 <code>num_parallel_calls</code> 参数并行处理 map 转换。建议您将其值设为可用 CPU 核的数量 core num。</li>
+</ol>
+<div class="hlcode"><pre><span class="n">dataset</span><span class="o">.</span><span class="n">map</span><span class="p">(</span><span class="n">map_func</span><span class="o">=</span><span class="n">func</span><span class="p">,</span> <span class="n">num_parallel_calls</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+
+
+<ol>
+<li>如果您使用 batch 转换将预处理元素组合到一个批次中，建议您使用 map_and_batch 混合转换；特别是在您使用的批次较大时。</li>
+</ol>
+<div class="hlcode"><pre><span class="n">dataset</span><span class="o">.</span><span class="n">map_and_batch</span><span class="p">(</span>
+    <span class="n">map_func</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">num_parallel_batches</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">drop_remainder</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+    <span class="n">num_parallel_calls</span><span class="o">=</span><span class="n">tf</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">AUTOTUNE</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+
+
+<ol>
+<li>
+<p>如果您要处理远程存储的数据并/或需要反序列化，建议您使用 parallel_interleave 转换来重叠从不同文件读取（和反序列化）数据的操作。</p>
+</li>
+<li>
+<p>向量化传递给 <code>map</code> 转换的低开销用户定义函数，以分摊与调度和执行相应函数相关的开销。</p>
+</li>
+<li>
+<p>如果内存可以容纳您的数据，请使用 cache 转换在第一个周期中将数据缓存在内存中，以便后续周期可以避免与读取、解析和转换该数据相关的开销。</p>
+</li>
+<li>
+<p>如果预处理操作会增加数据大小，建议您首先应用 <code></code>、<code>prefetch</code> 和 <code>shuffle</code>（如果可以）以减少内存使用量。</p>
+</li>
+<li>
+<p>建议您在应用 repeat 转换之前先应用 shuffle 转换，最好使用 <code>shuffle_and_repeat</code> 混合转换。</p>
+</li>
+</ol>
+<h1 id="5">5. 参考文献</h1>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>Better performance with tf.data<br />
+https://tensorflow.google.cn/guide/data_performance&#160;<a class="footnote-backref" href="#fnref:1" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

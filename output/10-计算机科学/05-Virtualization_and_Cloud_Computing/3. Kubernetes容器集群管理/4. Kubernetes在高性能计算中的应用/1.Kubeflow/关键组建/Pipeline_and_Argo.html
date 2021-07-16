@@ -1,0 +1,227 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>KubeFlow-Pipeline及Argo实现原理速析 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#10-计算机科学">10-计算机科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-05-Virtualization_and_Cloud_Computing">05-Virtualization_and_Cloud_Computing</a>&nbsp;»&nbsp;<a href="/Wiki/#-3. Kubernetes容器集群管理">3. Kubernetes容器集群管理</a>&nbsp;»&nbsp;<a href="/Wiki/#-4. Kubernetes在高性能计算中的应用">4. Kubernetes在高性能计算中的应用</a>&nbsp;»&nbsp;<a href="/Wiki/#-1.Kubeflow">1.Kubeflow</a>&nbsp;»&nbsp;<a href="/Wiki/#-关键组建">关键组建</a>&nbsp;»&nbsp;KubeFlow-Pipeline及Argo实现原理速析</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">KubeFlow-Pipeline及Argo实现原理速析</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#pipeline">Pipeline</a><ul>
+<li><a href="#pipelines">Pipelines设计时的目标：</a></li>
+<li><a href="#pipelines_1">pipelines的组成部分</a></li>
+</ul>
+</li>
+<li><a href="#1">1. 参考资料</a></li>
+</ul>
+</div>
+<h1 id="pipeline">Pipeline</h1>
+<h2 id="pipelines">Pipelines设计时的目标：</h2>
+<ol>
+<li>端到端编排：启用和简化端到端机器学习管道的编排</li>
+<li>简单的实验：让您轻松尝试各种想法和技术，并管理您的各种试验/实验。</li>
+<li>易于重复使用：使您能够重复使用组件和管道，快速拼凑端到端解决方案，而无需每次都重新构建。</li>
+</ol>
+<h2 id="pipelines_1">pipelines的组成部分</h2>
+<p>pipelines整个的架构可以分为五个部分，分别是:</p>
+<p>（1）ScheduledWorkflow CRD以及其 operator</p>
+<p>（2） 流水线前端</p>
+<p>（3） 流水线后端</p>
+<p>（4）Python SDK</p>
+<p>（5）persistence agent</p>
+<p>ScheduledWorkflow CRD 扩展了 argoproj/argo 的 Workflow 定义，这也是流水线项目中的核心部分，它负责真正地在 Kubernetes 上按照拓扑序创建出对应的容器完成流水线的逻辑。</p>
+<p>Python SDK 负责构造出流水线，并且根据流水线构造出 ScheduledWorkflow 的 YAML 定义，随后将其作为参数传递给流水线系统的后端服务。</p>
+<p>后端服务依赖关系存储数据库（如 MySQL）和对象存储（如 Amazon S3），处理所有流水线中的 CRUD 请求。</p>
+<p>前端负责可视化整个流水线的过程，以及获取日志，发起新的运行等</p>
+<p>Persistence agent 负责把数据从 Kubernetes Master 的 etcd 中 sync 到后端服务的关系型数据库中，其实现的方式与 CRD operator 类似，通过 informer 来监听 Kubernetes apiserver 对应资源实现。</p>
+<p>pipelines的结构图如下所示：</p>
+<p>image6</p>
+<p>3.3 piplelines中的概念<br />
+https://www.kubeflow.org/docs/guides/pipelines/pipelines-concepts/</p>
+<p>3.4 pipelines示例<br />
+https://www.kubeflow.org/docs/guides/pipelines/pipelines-overview/</p>
+<p>3.5 运行pipelines步骤<br />
+1) 定义一个Experiment（具体pipeline的运行需要一个Experiment）</p>
+<p>2) 定义一个 pipeline</p>
+<p>3) 执行该 pipeline</p>
+<p>参考：</p>
+<p>https://github.com/kubeflow/pipelines/blob/master/samples/notebooks/KubeFlow%20Pipeline%20Using%20TFX%20OSS%20Components.ipynb</p>
+<p>Argo是一个开源原生容器工作流引擎用于在Kubernetes上开发和运行应用程序。Argo Workflow流程引擎，可以编排容器流程来执行业务逻辑，在20年4月8日进入CNCF孵化器组。</p>
+<p>而KubeFlow的Pipeline子项目，由Google开源，其全面依赖Argo作为底层实现，并增强持久层来补充流程管理能力，同时通过Python-SDK来简化流程的编写。</p>
+<p>一. Argo流程引擎<br />
+Argo的步骤间可以传递信息，即下一步（容器）可以获取上一步（容器）的结果。结果传递有2种：</p>
+<ol>
+<li>
+<p>文件：上一步容器新生成的文件，会直接出现在下一步容器里面。</p>
+</li>
+<li>
+<p>信息：上一步的执行结果信息（如某文件内容），下一步也可以拿到。</p>
+</li>
+</ol>
+<p>下面我们就来解读一下，Argo怎么实现“信息”在容器间的传递的，以及它和其他的流程引擎实现传递的区别。</p>
+<p>1.1文件怎么从上一个容器跑到下一个容器里的？<br />
+Argo流程，可以指定2个步骤之间，传递结果文件（Artifact）。即假设流程为：A-&gt;B，那么A容器跑完，B容器可以取得上一个容器的输出文件。</p>
+<p>如下：A容器生成一个 /tmp/hello_world.txt 文件，Argo将这个文件，放到了B容器里面，并重命名为 /tmp/message文件。</p>
+<p>注意：流程上的每个步骤，都对应执行一个容器。 在A跑完后容器就退出了，然后才跑的B（这时候已经没有A容器在运行了）。</p>
+<p>所以Argo怎么把一个文件从A容器“拷贝”到B容器里面的？</p>
+<p>1.1.1容器间通过共享存储？（NO）<br />
+一般容器间共享文件，首先想到的都是：咱使用共享存储呀，大家都挂载同一个PVC不就行了。</p>
+<p>确实共享存储可以实现容器共享文件，但是这里Argo可以：</p>
+<p>（1）任意指定文件传递。（2）传递后文件可以改名字。</p>
+<p>这2个是共享Volume做不到的，毕竟容器挂载目录得提前设定好，然后文件名大家看到的也是一样的。所以显然文件传递，不是通过共享PVC挂载实现的。</p>
+<p>（Ps：不过Argo也在考虑这种实现方式，毕竟共享目录不需要任何额外IO，透传效率更高。见：https://github.com/argoproj/argo/issues/1349）</p>
+<p>1.1.2通过管理面中转？（YES）</p>
+<p>没有共享目录，那中转文件，只能是通过先取出来，再塞回去的方式喽。实际上Argo也确实这么做的，只是实现上还有些约束。</p>
+<p>（1）“临时中转仓库”需要引入第三方软件（Minio）</p>
+<p>（2）文件不能太大</p>
+<p>（3）需要在用户容器侧，增加“代理”帮忙上传&amp;下载文件。</p>
+<p>1.1.3中转文件具体实现（docker cp）<br />
+现在我们打开Argo看看具体怎么实现的。因为你要取一个容器里面的文件，或者把一个文件放入一个容器，也不容易实现呢。</p>
+<p>（1）小滑头Argo居给用户容器设置了一个SideCar容器，通过这个SideCar去读取用户的文件，然后上传到临时仓库。</p>
+<p>（2） 一个Pod里面的两个Container，文件系统也是独立的，并不能直接取到另一个Container的文件。所以Sidecar容器为了取另一个容器里的文件，又把主机上面的docker.sock挂载进来了。这样就相当于拿到了主机Root权限，可以任意cp主机上任意容器里面的文件。</p>
+<p>事实上，Sidecar里面取文件的实现是：</p>
+<p>docker cp -a 023ce:/tmp/hello_world.txt - | gzip &gt; /argo/outputs/artifacts/hello-art.tgz<br />
+感觉稍微有点暴力。</p>
+<p>1.1.4中转实现的其他方式<br />
+实际上，通过sidecar容器提权到root权限，然后从用户的容器里面copy任意文件（即 docker cp命令），只是Argo默认的实现。毕竟它自己也发现这样做安全上有点说不过去。</p>
+<p>所以呢，它也留了其他方式去copy用户容器里面的文件。比如：kubectl 也是可以cp容器里面的文件的嘛。其他方式可参见：</p>
+<p>https://github.com/argoproj/argo/blob/master/docs/workflow-executors.md</p>
+<p>1.2 下一步容器怎么拿到上一步容器的结果？<br />
+Argo流程，2个步骤之间，除了传递文件，还可以传递结果信息（Information）。如：A-&gt;B，那么A容器跑完，B容器可以取得上一个容器的一些Information（不是整个文件）。</p>
+<p>一般流程引擎透传信息，都是中转：</p>
+<p>不过显然Argo自己没有存储Information的临时仓库，所以它得找个地方记录这些临时待中转的information（虽然Argo找了Minio这个对象存储用来暂存中转文件，但是显然这货只能存文件，没有存Metadata元数据功能）。这里Argo又找了Pod里面的Annotation字段，当做临时中转仓库。先把信息记这里，下一步容器想要，就来这里取。</p>
+<p>相信这里应该是有更好的实现方式的，这种把信息记录到Annotation的做法，约束比较大的（特别是ETCD的单个对象不能超过1M大小）。</p>
+<p>可以考虑使用单独的Configmap来中转也可以。</p>
+<p>二. KubeFlow-Pipeline项目<br />
+KubeFlow-Pipeline项目（简称KFP），是Kubeflow社区开源的一个工作流项目，用于管理、部署端到端的机器学习工作流。KFP提供了一个流程管理方案，方便将机器学习中的应用代码按照流水线的方式编排部署，形成可重复的工作流。</p>
+<p>2.1为什么要在Argo之上重新开发一套？<br />
+部署一套Argo很简单，启动一个K8s-Controller就行。可是部署一套Kubeflow-Pipeline系统就复杂多了，总共下来有8个组件。那是Argo什么地方不足，需要新开发一套KFP，并搞这么复杂呢？主要的原因还在于Argo是基于K8s云原生这套理念，即ETCD充当“数据库”来运行的，导致约束比较大。</p>
+<p>像：流程模板，历史执行记录，这些大量的信息很明显需要一个持久化层（数据库）来记录的，单纯依赖ETCD会有单条记录不能超过1M，总记录大小不能超过8G的约束。</p>
+<p>所以一个完整的流程引擎，包含一个数据库也都是很常规的。因此KFP在这一层做了较大的增强。</p>
+<p>另外，在ML领域的用户界面层，KFP也做了较多的用户体验改进。包括可以查看每一步的训练输出结果，直接通过UI进行可视化的图形展示。</p>
+<p>https://www.kubeflow.org/docs/pipelines/sdk/output-viewer/</p>
+<p>2.2 Kubeflow-Pipeline后续演进点<br />
+见：https://github.com/kubeflow/pipelines/issues/3550</p>
+<p>Dag引擎组件的水平扩展（HPA）是其重要的一个特性，也是要成为一个成熟引擎所必要的能力。</p>
+<p>当前KFP在稳定性以及组件的水平扩展上都还有待改进，因此商业使用还需要一段时间，这将是KFP未来的一个重要目标。</p>
+<p>同时，使用权限过于高的Sidecar容器作为其实现步骤之间元数据传递的途径，也会是KFP生产级使用的一道门槛。或许在权限控制方面，KFP需要思考一下其他规避途径，至少需要稍微增强一下。</p>
+<p>概括一下：（1）水平扩展（HPA），（2）生产级可靠性，（3）安全增强。</p>
+<p>三. 流程引擎核心&amp;分层<br />
+3.1 DAG核心<br />
+一个DAG流程引擎，核心代码也就7行大概能实现了：</p>
+<p>例如下图示例：遍历发现步骤D没有依赖其他步骤，那么本次可以执行D步骤。</p>
+<p>所以一般程序员一周时间总能开发一个“还能用”的流程引擎。但是完整的流程引擎却并不轻松</p>
+<p>3.2 世界上为什么有这么多的流程引擎<br />
+DAG基础核心非常简单，同时，各个领域想要做的事情却迥然不同。即使一个简单的步骤，大数据步骤说：“这一步要执行的SQL语句是xxx”，而K8s任务步骤却说：“这一步执行需要的Docker镜像是yyy”。</p>
+<p>所以，各种各样的流程引擎就自然的出现了。</p>
+<p>举几个例子：</p>
+<p>AWS：Cloudformation编排，Batch服务，SageMaker-ML Pipeline，Data Pipeline</p>
+<p>Azure：Pipeline服务，ML Pipeline，Data Factory</p>
+<p>Aliyun：函数Pipeline服务，ROS资源编排，Batch服务，PAI-Studio</p>
+<p>大数据领域：Oozie，AirFlow</p>
+<p>软件部署：Puppet，Chef，Ansible</p>
+<p>基因分析：DNAnexus，NextFlow，Cromwell</p>
+<p>每个领域总能找出一两个流程引擎，来控制谁先干活谁后干活。</p>
+<p>总结一下：</p>
+<p>（1）DAG引擎核心很小</p>
+<p>（2）各领域步骤的描述方式不一样</p>
+<p>这就是为什么各个领域，总会有一个自己的流程引擎，而不像K8s能一统容器平台一样，出现一个能一统江湖的流程引擎。</p>
+<p>3.3 DAG引擎分层架构<br />
+成熟的流程引擎，应该有如下4层架构：</p>
+<p>第一层：用户交互层。如：模板语法规则，Console界面等</p>
+<p>第二层：API持久化层。如：模板记录，历史执行记录等</p>
+<p>第三层：引擎实例层。如：能否水平扩容，流程是否有优先级等</p>
+<p>第四层：驱动层。如：一个步骤能干什么活。跑一个容器还是跑一个Spark任务。</p>
+<p>基本比较成熟的引擎都符合这种架构，例如AirFlow流程引擎，华为云的应用编排（AOS）引擎，数据湖工厂（DLF）引擎等都是如此。</p>
+<p>目前Argo以及Kubeflow-Pipeline在引擎核心组件的水平扩展上，也即第三层引擎能力层稍有不足。同时其驱动层，目前也只能对接K8s（即只能跑容器任务）。在选型的时候需要考虑进去。</p>
+<h1 id="1">1. 参考资料</h1>
+<p>https://www.cnblogs.com/huaweiyun/p/13098319.html</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

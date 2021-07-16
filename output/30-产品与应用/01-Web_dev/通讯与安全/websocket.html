@@ -1,0 +1,292 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>websocket开发  - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#30-产品与应用">30-产品与应用</a>&nbsp;»&nbsp;<a href="/Wiki/#-01-Web_dev">01-Web_dev</a>&nbsp;»&nbsp;<a href="/Wiki/#-通讯与安全">通讯与安全</a>&nbsp;»&nbsp;websocket开发 </div>
+</div>
+<div class="clearfix"></div>
+<div id="title">websocket开发 </div>
+<div id="content">
+  <h1 id="websocket">websocket 开发</h1>
+<div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#websocket">websocket 开发</a><ul>
+<li><a href="#_1">实例</a></li>
+</ul>
+</li>
+<li><a href="#_2">参考资料</a></li>
+</ul>
+</div>
+<p>WebSocket是类似Socket的TCP长连接通讯模式。一旦WebSocket连接建立后，后续数据都以帧序列的形式传输。在客户端断开WebSocket连接或Server端中断连接前，不需要客户端和服务端重新发起连接请求。在海量并发及客户端与服务器交互负载流量大的情况下，极大的节省了网络带宽资源的消耗，有明显的性能优势，且客户端发送和接受消息是在同一个持久连接上发起，实时性优势明显。<br />
+WebSocket与HTTP轮询对比得出的结论：<br />
+<strong>WebSocket是真正的全双工方式，建立连接后客户端与服务器端是完全平等的，可以互相主动请求</strong></p>
+<p>而HTTP长连接基于HTTP，是传统的客户端对服务器发起请求的模式。</p>
+<p><img alt="" src="../../attach/images/2019-08-22-11-18-10.png" /></p>
+<h2 id="_1">实例</h2>
+<p>服务器端</p>
+<div class="hlcode"><pre><span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stdin</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">sleep</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+
+
+<span class="k">def</span> <span class="nf">send</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="c"># send string to web page</span>
+    <span class="n">time_now</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s">-%H-%M-%S&quot;</span><span class="p">)</span>
+    <span class="n">_str</span><span class="o">=</span><span class="s">&quot;S-&gt;C:{}</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">_str</span><span class="p">)</span>
+    <span class="n">stdout</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+
+<span class="c"># start a thread to receive &amp; echo back strings from web page</span>
+<span class="c"># and to change sleep time</span>
+<span class="k">def</span> <span class="nf">receive</span><span class="p">():</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">stdin</span><span class="o">.</span><span class="n">readline</span><span class="p">()</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">_str</span><span class="o">=</span><span class="s">&quot;C-&gt;S:{}</span><span class="se">\n</span><span class="s">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+                <span class="n">send</span><span class="p">(</span><span class="n">_str</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">send_stuff</span><span class="p">():</span>
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">time_now_str</span><span class="o">=</span><span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="o">.</span><span class="n">now</span><span class="p">()</span><span class="o">.</span><span class="n">strftime</span><span class="p">(</span><span class="s">&quot;%Y-%m-</span><span class="si">%d</span><span class="s">-%H-%M-%S&quot;</span><span class="p">)</span>  
+        <span class="n">__str</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="s">&quot;[{}] Test Data per 5s &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time_now_str</span><span class="p">))</span>
+        <span class="n">send</span><span class="p">(</span><span class="n">__str</span><span class="p">)</span>
+        <span class="n">sleep</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+        <span class="n">__str</span><span class="o">=</span><span class="s">&quot;&quot;</span>
+
+
+<span class="n">t0</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">receive</span><span class="p">)</span>
+<span class="n">t0</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+
+<span class="n">t1</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">send_stuff</span><span class="p">)</span>
+<span class="n">t1</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+
+<span class="c"># suspend main thread until worker threads are done</span>
+<span class="n">t0</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+<span class="n">t1</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+</pre></div>
+
+
+<p>客户端</p>
+<div class="hlcode"><pre>{% extends &quot;app/layout.html&quot; %}
+
+{% block content %}
+
+<span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span><span class="nt">&gt;</span>
+    <span class="kd">function</span> <span class="nx">WebSocketSupportTest</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// 浏览器支持 WebSocket测试</span>
+        <span class="k">if</span> <span class="p">(</span><span class="s2">&quot;WebSocket&quot;</span> <span class="k">in</span> <span class="nb">window</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">alert</span><span class="p">(</span><span class="s2">&quot;您的浏览器支持 WebSocket!&quot;</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="c1">// 浏览器不支持 WebSocket</span>
+            <span class="nx">alert</span><span class="p">(</span><span class="s2">&quot;您的浏览器不支持 WebSocket!&quot;</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nx">WebSocketConnectTest</span><span class="p">()</span> <span class="p">{</span>
+        <span class="c1">// 客户端连接WebSocket服务器测试</span>
+        <span class="kd">var</span> <span class="nx">ws</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WebSocket</span><span class="p">(</span><span class="s2">&quot;ws://47.104.96.15:8088/&quot;</span><span class="p">);</span>
+        <span class="nx">ws</span><span class="p">.</span><span class="nx">onopen</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+            <span class="nx">ws</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="s2">&quot;发送连接测试数据&quot;</span><span class="p">);</span>
+            <span class="nx">alert</span><span class="p">(</span><span class="s2">&quot;Client send test data&quot;</span><span class="p">)</span>
+
+        <span class="p">};</span>
+        <span class="nx">ws</span><span class="p">.</span><span class="nx">onmessage</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">data</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">data</span><span class="p">;</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="nx">data</span> <span class="o">==</span> <span class="s2">&quot;S-&gt;C:C-&gt;S:发送连接测试数据&quot;</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">alert</span><span class="p">(</span><span class="s2">&quot;Web Socket 已连成功接上，发送数据正确返回&quot;</span><span class="p">);</span>
+            <span class="p">};</span>
+        <span class="p">};</span>
+        <span class="nx">ws</span><span class="p">.</span><span class="nx">onclose</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+            <span class="nx">ws</span><span class="p">.</span><span class="nx">close</span><span class="p">();</span>
+            <span class="nx">alert</span><span class="p">(</span><span class="s1">&#39;ws.close &#39;</span><span class="p">);</span>
+        <span class="p">};</span>
+
+
+
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nx">WebSocketClose</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">has_not_ws</span> <span class="o">=</span> <span class="k">typeof</span> <span class="nx">ws</span> <span class="o">!=</span> <span class="s2">&quot;undefined&quot;</span> <span class="o">?</span> <span class="kc">false</span> <span class="o">:</span> <span class="kc">true</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">has_not_ws</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">alert</span><span class="p">(</span><span class="s2">&quot;没有发现WebSocket链接&quot;</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+            <span class="nx">alert</span><span class="p">(</span><span class="s2">&quot;WebSocket链接存在&quot;</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="nx">ws</span><span class="p">.</span><span class="nx">close</span><span class="p">();</span>
+        <span class="nx">alert</span><span class="p">(</span><span class="s2">&quot;连接已关闭...&quot;</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="kd">function</span> <span class="nx">ConnectStart</span><span class="p">()</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">has_not_ws</span> <span class="o">=</span> <span class="k">typeof</span> <span class="nx">ws</span> <span class="o">!=</span> <span class="s2">&quot;undefined&quot;</span> <span class="o">?</span> <span class="kc">false</span> <span class="o">:</span> <span class="kc">true</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">has_not_ws</span><span class="p">)</span> <span class="p">{</span>
+            <span class="nx">ws</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WebSocket</span><span class="p">(</span><span class="s2">&quot;ws://47.104.96.15:8088/&quot;</span><span class="p">);</span>
+            <span class="nx">alert</span><span class="p">(</span><span class="s2">&quot;WebSocket新连接 ws://47.104.96.15:8088/&quot;</span><span class="p">);</span>
+        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="nx">ws</span><span class="p">.</span><span class="nx">readyState</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">ws</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">WebSocket</span><span class="p">(</span><span class="s2">&quot;ws://47.104.96.15:8088/&quot;</span><span class="p">);</span>
+                <span class="nx">alert</span><span class="p">(</span><span class="s2">&quot;WebSocket新连接 ws://47.104.96.15:8088/&quot;</span><span class="p">);</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
+        <span class="nx">ws</span><span class="p">.</span><span class="nx">onmessage</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">(</span><span class="nx">event</span><span class="p">)</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">data</span> <span class="o">=</span> <span class="nx">event</span><span class="p">.</span><span class="nx">data</span><span class="p">;</span>
+            <span class="kd">var</span> <span class="nx">div_i</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&quot;room&quot;</span><span class="p">);</span>
+            <span class="kd">var</span> <span class="nx">html</span> <span class="o">=</span> <span class="nx">div_i</span><span class="p">.</span><span class="nx">innerHTML</span><span class="p">;</span>
+            <span class="kd">var</span> <span class="nx">insert_html</span> <span class="o">=</span> <span class="s2">&quot;&lt;p&gt;&quot;</span> <span class="o">+</span> <span class="nx">data</span> <span class="o">+</span> <span class="s2">&quot;&lt;/p&gt;&quot;</span><span class="p">;</span>
+            <span class="nx">div_i</span><span class="p">.</span><span class="nx">innerHTML</span> <span class="o">=</span> <span class="nx">html</span> <span class="o">+</span> <span class="s2">&quot;\n&quot;</span> <span class="o">+</span> <span class="nx">insert_html</span><span class="p">;</span>
+        <span class="p">};</span>
+    <span class="p">}</span>
+
+    <span class="c1">//Web Socket 已连接上，使用 send() 方法发送数据</span>
+<span class="nt">&lt;/script&gt;</span>
+
+
+
+<span class="nt">&lt;h1&gt;</span>Test WebSocket<span class="nt">&lt;/h1&gt;</span>
+
+<span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;Support_test&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;javascript:WebSocketSupportTest()&quot;</span><span class="nt">&gt;</span> 测试浏览器是否支持WebSocket<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+
+<span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;ConnectTest&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;javascript:WebSocketConnectTest()&quot;</span><span class="nt">&gt;</span> WebSocket 连接测试<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+
+
+<span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;ConnectStart&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;javascript:ConnectStart()&quot;</span><span class="nt">&gt;</span> WebSocket 开启<span class="nt">&lt;/a&gt;</span>
+    <span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;room&quot;</span><span class="nt">&gt;</span>
+        <span class="nt">&lt;p&gt;</span>接收发送信息记录<span class="nt">&lt;/p&gt;</span>
+
+    <span class="nt">&lt;/div&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+
+<span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;ConnectEnd&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;a</span> <span class="na">href=</span><span class="s">&quot;javascript:WebSocketClose()&quot;</span><span class="nt">&gt;</span> WebSocket 关闭<span class="nt">&lt;/a&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+
+<span class="nt">&lt;div</span> <span class="na">id=</span><span class="s">&quot;sse2&quot;</span><span class="nt">&gt;</span>
+    <span class="nt">&lt;h1&gt;</span>收发信息测试<span class="nt">&lt;/h1&gt;</span>
+    <span class="nt">&lt;input</span> <span class="na">id=</span><span class="s">&quot;sendTxt&quot;</span> <span class="na">type=</span><span class="s">&quot;text&quot;</span> <span class="nt">/&gt;</span>
+    <span class="nt">&lt;button</span> <span class="na">id=</span><span class="s">&quot;sendBtn&quot;</span> <span class="na">type=</span><span class="s">&quot;text&quot;</span><span class="nt">&gt;</span>发送信息<span class="nt">&lt;/button&gt;</span>
+<span class="nt">&lt;/div&gt;</span>
+
+<span class="nt">&lt;script </span><span class="na">type=</span><span class="s">&quot;text/javascript&quot;</span><span class="nt">&gt;</span>
+    <span class="c1">//Web Socket 已连接上，使用 send() 方法发送数据</span>
+    <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&quot;sendBtn&quot;</span><span class="p">).</span><span class="nx">onclick</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+
+        <span class="nx">ConnectStart</span><span class="p">()</span>
+
+        <span class="nx">ws</span><span class="p">.</span><span class="nx">onopen</span> <span class="o">=</span> <span class="kd">function</span> <span class="p">()</span> <span class="p">{</span>
+            <span class="kd">var</span> <span class="nx">data_2</span> <span class="o">=</span> <span class="nb">document</span><span class="p">.</span><span class="nx">getElementById</span><span class="p">(</span><span class="s2">&quot;sendTxt&quot;</span><span class="p">).</span><span class="nx">value</span><span class="p">;</span>
+            <span class="nx">alert</span><span class="p">(</span><span class="s2">&quot;输入框数据是&quot;</span> <span class="o">+</span> <span class="nx">data_2</span><span class="p">);</span>
+            <span class="k">if</span> <span class="p">(</span><span class="nx">data_2</span><span class="p">)</span> <span class="p">{</span>
+                <span class="nx">ws</span><span class="p">.</span><span class="nx">send</span><span class="p">(</span><span class="nx">data_2</span><span class="p">);</span>
+                <span class="nx">alert</span><span class="p">(</span><span class="s2">&quot;Web Socket 已经发送&quot;</span> <span class="o">+</span> <span class="nx">data_2</span><span class="p">);</span>
+            <span class="p">};</span>
+        <span class="p">};</span>
+        <span class="nx">ws</span><span class="p">.</span><span class="nx">onopen</span><span class="p">()</span>
+    <span class="p">};</span>
+<span class="nt">&lt;/script&gt;</span>
+
+
+
+{% endblock %}
+</pre></div>
+
+
+<h1 id="_2">参考资料</h1>
+<p><a href="https://docs.microsoft.com/zh-cn/azure/application-gateway/application-gateway-websocket">微软：应用程序网关中的 WebSocket 支持概述</a></p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

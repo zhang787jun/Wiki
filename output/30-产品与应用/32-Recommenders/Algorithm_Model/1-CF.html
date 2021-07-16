@@ -1,0 +1,280 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>1. Collaborative Filtering协同过滤 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#30-产品与应用">30-产品与应用</a>&nbsp;»&nbsp;<a href="/Wiki/#-32-Recommenders">32-Recommenders</a>&nbsp;»&nbsp;<a href="/Wiki/#-Algorithm_Model">Algorithm_Model</a>&nbsp;»&nbsp;1. Collaborative Filtering协同过滤</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">1. Collaborative Filtering协同过滤</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-overview">1. OverView</a></li>
+<li><a href="#2-categorizetion">2. Categorizetion</a><ul>
+<li><a href="#21-memory-based-cf">2.1. Memory-based CF</a><ul>
+<li><a href="#211-user-based-cf-1994">2.1.1. user-based CF (1994)</a></li>
+<li><a href="#212-item-based-cf">2.1.2. item-based CF</a></li>
+</ul>
+</li>
+<li><a href="#22-model-based-cf">2.2. Model-based  CF</a><ul>
+<li><a href="#221-baseline-predictor">2.2.1. Baseline predictor</a></li>
+<li><a href="#222-latent-factor-model">2.2.2.  Latent Factor Model(隐语义模型)</a><ul>
+<li><a href="#2221-matrix-factorization-algorithm">2.2.2.1. Matrix factorization algorithm</a><ul>
+<li><a href="#22211">2.2.2.1.1. 特征值分解</a></li>
+<li><a href="#22212-the-svd-model">2.2.2.1.2. The SVD model</a></li>
+<li><a href="#22213-stochastic-gradient-descent">2.2.2.1.3. Stochastic Gradient Descent</a></li>
+<li><a href="#22214-alternating-least-square-als">2.2.2.1.4. Alternating Least Square (ALS)</a></li>
+<li><a href="#22215-bayesian-personalized-ranking">2.2.2.1.5. Bayesian Personalized Ranking</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#223-sar-algorithm">2.2.3. SAR algorithm</a></li>
+<li><a href="#224-11-compute-item-co-occurrence-and-item-similarity">2.2.4. 1.1 Compute item co-occurrence and item similarity</a></li>
+<li><a href="#225-12-compute-user-affinity-scores">2.2.5. 1.2 Compute user affinity scores</a></li>
+<li><a href="#226-13-remove-seen-item">2.2.6. 1.3 Remove seen item</a></li>
+<li><a href="#227-14-top-k-item-calculation">2.2.7. 1.4 Top-k item calculation</a></li>
+</ul>
+</li>
+<li><a href="#23-hybrid">2.3. hybrid</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="1-overview">1. OverView</h1>
+<p>Collaborative Filtering 协同过滤</p>
+<blockquote>
+<p>Collaborative filtering is a key concept in recommendation.</p>
+</blockquote>
+<p>We start the journey with the important concept in recommender systems—collaborative filtering (CF), which was first coined by the Tapestry system [Goldberg et al., 1992], referring to “people collaborate to help one another perform the filtering process in order to handle the large amounts of email and messages posted to newsgroups”. This term has been enriched with more senses. In a broad sense, it is the process of filtering for information or patterns using techniques involving collaboration among multiple users, agents, and data sources. CF has many forms and numerous CF methods proposed since its advent.</p>
+<p><strong>缺点</strong><br />
+In general, CF only uses the user-item interaction data to make predictions and recommendations. </p>
+<p>协同过滤只是基于用户-商品之间的<strong>交互数据</strong>进行预测和推荐，而忽略了用户、商品的自身上下文信息（坐标属性）。</p>
+<p>推荐系统的头部效应较明显，处理稀疏向量的能力弱 =&gt; MF用更稠密的隐向量表示用户和物品<br />
+无法引入场景信息和更精细的用户/物品信息 =&gt; LR模型、机器学习模型</p>
+<p>On the other hand, collaborative filtering model (discussion is limited to matrix factorisation approach in this notebook) computes the latent factors of the users and items. </p>
+<h1 id="2-categorizetion">2. Categorizetion</h1>
+<p>Overall, CF techniques can be categorized into: <br />
+1. memory-based CF <br />
+2. model-based CF<br />
+3. their hybrid </p>
+<p>[Su &amp; Khoshgoftaar, 2009]. </p>
+<h2 id="21-memory-based-cf">2.1. Memory-based CF</h2>
+<p><strong>为什么叫Memory-based？</strong></p>
+<p>We have seen that memory-based CF methods infer ratings based on the <strong>memory of previous user-item interaction</strong> records.</p>
+<p>基于历史的用户-商品交互信息的记忆</p>
+<p>基于邻域方法(Neighborhood/Similarity Based Models)的假设：<strong>近朱者赤近墨者黑</strong></p>
+<p>Representative memory-based CF techniques are nearest neighbor-based CF such as user-based CF and item-based CF [Sarwar et al., 2001]. </p>
+<h3 id="211-user-based-cf-1994">2.1.1. user-based CF (1994)</h3>
+<p><strong>用户相似度计算</strong>：余弦相似度/皮尔逊相关系数/引入物品平均分<br />
+<strong>最终结果的排序</strong>：按相似度加权<br />
+<strong>特点</strong>：社交特性更强<br />
+缺点：<br />
+用户太多，在线存储系统存不下矩阵。<br />
+不适用于正反馈获取困难的应用场景（酒店预定、大件商品购买），用户历史数据向量稀疏</p>
+<h3 id="212-item-based-cf">2.1.2. item-based CF</h3>
+<p>UserCF 适合用在个性化需求不强，热点很明显的领域，比如新闻，电影推荐<br />
+ItemCF 适合用在个性化需求比较强，长尾比较长的领域，比如书，电商的推荐</p>
+<h2 id="22-model-based-cf">2.2. Model-based  CF</h2>
+<p><strong>什么叫Model-based  CF </strong><br />
+.Model-based CF methods are similar in that they make guesses based on previous interaction records. However, instead of relying on pre-computed similarity (or distance) measures, model-based methods employ various prediction models to capture the latent relationship between users and items.</p>
+<p>Model-based 协同过滤也是基于用户-商品的历史交互记录，然而Model-based CF 使用<strong>多种模型</strong>来捕捉用户-商品之间的隐含特征，而不是仅仅依赖预先设定的距离。</p>
+<p>也叫基于学习的方法，通过定义一个参数模型来描述用户和物品、用户和用户、物品和物品之间的关系，然后通过已有的用户-物品评分矩阵来优化求解得到参数。例如矩阵分解、隐语义模型LFM等.</p>
+<h3 id="221-baseline-predictor">2.2.1. Baseline predictor</h3>
+<p>In fact, we have already implemented a very simple algorithm for model-based CF, which is the baseline predictor. In general, most recommendation problems show inherent biases, which are overall tendencies that can be generalized on a dataset-level. For instance, some users are generous that they give better ratings than others on average. At the same time, some items have inherently more appealing features than others, resulting in better ratings on average. If you look at the top-100 movies in IMDb, they are rated higher than other movies among the vast majority of users.</p>
+<p>Therefore, the baseline estimator tries to guess the magnitude of individual user and item biases. The equation for the estimator is:</p>
+<p>$$b_{ui}=ave+b_u+b_i$$<br />
+- $ave$ is the average rating across** all user-item interactions (所有使用平均数)<br />
+- $b_u$,$b_i$refer to biases for user  and item ,respectively. </p>
+<p>Hence, the baseline predictor tries to quantify how the user and item of interest deviate from the overall average. This is a simple, yet very powerful, idea. </p>
+<p>In the previous posting, we have seen that it is difficult to beat the baseline predictor with k-NN without incorporating it.</p>
+<h3 id="222-latent-factor-model">2.2.2.  Latent Factor Model(隐语义模型)</h3>
+<p>在隐语义模型中，我们使用同样的维度来表征(Embedding)条目和用户。对于条目，这个表征就是条目表现出的对应维度的特征强度；对于用户，就是用户表现出的对对应维度特征的偏好强度。这样，我们让用户的表征向量乘以条目的表征向量(数量积)</p>
+<p>Latent factor models such as matrix factorization are examples of model-based CF. Memory-based CF has limitations in dealing with sparse and large-scale data since it computes the similarity values based on common items. </p>
+<p>Model-based methods become more popular with its better capability in dealing with sparsity and scalability. </p>
+<blockquote>
+<p>解决稀疏与稳定性的问题</p>
+</blockquote>
+<p>Many model-based CF approaches can be extended with <strong>neural networks</strong>, leading to more flexible and scalable models with the computation acceleration in deep learning [Zhang et al., 2019].</p>
+<h4 id="2221-matrix-factorization-algorithm">2.2.2.1. Matrix factorization algorithm</h4>
+<p>Matrix factorization algorithm 矩阵分解<br />
+用户和物品的隐向量通过分解协同过滤生成的共现矩阵得到<br />
+矩阵分解的方法：特征值分解（方阵，不适用）；SVD（计算量大、要求稠密）；梯度下降法</p>
+<p><strong>优点</strong><br />
+矩阵分解可加入偏差向量<br />
+泛化能力强<br />
+空间复杂度低<br />
+更好的扩展性和灵活性<br />
+<strong>缺点</strong><br />
+同样不方便加入场景信息和更精细的用户/物品信息</p>
+<h5 id="22211">2.2.2.1.1. 特征值分解</h5>
+<p>（方阵，不适用）</p>
+<h5 id="22212-the-svd-model">2.2.2.1.2. The SVD model</h5>
+<p>The SVD model algorithm is very similar to the ALS algorithm .The two differences between the two approaches are:</p>
+<ul>
+<li>SVD additionally models the user and item biases (also called baselines in the litterature) from users and items.</li>
+<li>The optimization technique in ALS is Alternating Least Squares (hence the name), while SVD uses stochastic gradient descent.</li>
+</ul>
+<p>In ALS, the ratings are modeled as follows:</p>
+<p>$$\hat r_{u,i} = q_{i}^{T}p_{u}$$</p>
+<p>SVD introduces two new scalar variables: the user biases $b_u$ and the item biases $b_i$. The user biases are supposed to capture the tendency of some users to rate items higher (or lower) than the average. The same goes for items: some items are usually rated higher than some others. The model is SVD is then as follows:</p>
+<p>$$\hat r_{u,i} = \mu + b_u + b_i + q_{i}^{T}p_{u}$$</p>
+<p>Where $\mu$ is the global average of all the ratings in the dataset. The regularised optimization problem naturally becomes:</p>
+<p>$$ \sum(r_{u,i} - (\mu + b_u + b_i + q_{i}^{T}p_{u}))^2 +     \lambda(b_i^2 + b_u^2 + ||q_i||^2 + ||p_u||^2)$$</p>
+<p>where $\lambda$ is a the regularization parameter.<br />
+<img alt="" src="https://miro.medium.com/max/875/0*byI0QOv2JeoTU95K" /></p>
+<h5 id="22213-stochastic-gradient-descent">2.2.2.1.3. Stochastic Gradient Descent</h5>
+<p>Stochastic Gradient Descent (SGD) is a very common algorithm for optimization where the parameters (here the biases and the factor vectors) are iteratively incremented with the negative gradients w.r.t the optimization function. The algorithm essentially performs the following steps for a given number of iterations:</p>
+<p>$$b_u \leftarrow b_u + \gamma (e_{ui} - \lambda b_u)$$<br />
+$$b_i \leftarrow b_i + \gamma (e_{ui} - \lambda b_i)$$<br />
+$$p_u \leftarrow p_u + \gamma (e_{ui} \cdot q_i - \lambda p_u)$$<br />
+$$q_i \leftarrow q_i + \gamma (e_{ui} \cdot p_u - \lambda q_i)$$</p>
+<p>where $\gamma$ is the learning rate and $e_{ui} =  r_{ui} - \hat r_{u,i} = r_{u,i} - (\mu + b_u + b_i + q_{i}^{T}p_{u})$ is the error made by the model for the pair $(u, i)$.</p>
+<p>用户和物品的隐向量通过分解协同过滤生成的共现矩阵得到<br />
+矩阵分解的方法：特征值分解（方阵，不适用）；SVD（计算量大、要求稠密）；梯度下降法<br />
+矩阵分解可加入偏差向量<br />
+优点：<br />
+泛化能力强<br />
+空间复杂度低<br />
+更好的扩展性和灵活性<br />
+缺点<br />
+同样不方便加入场景信息和更精细的用户/物品信息</p>
+<h5 id="22214-alternating-least-square-als">2.2.2.1.4. Alternating Least Square (ALS)</h5>
+<p>Owing to the term of $q_{i}^{T}p_{u}$ the loss function is non-convex. Gradient descent method can be applied but this will incur expensive computations. An Alternating Least Square (ALS) algorithm was therefore developed to overcome this issue. </p>
+<p>The basic idea of ALS is to learn one of $q$ and $p$ at a time for optimization while keeping the other as constant. This makes the objective at each iteration convex and solvable. The alternating between $q$ and $p$ stops when there is convergence to the optimal. It is worth noting that this iterative computation can be parallelised and/or distributed, which makes the algorithm desirable for use cases where the dataset is large and thus the user-item rating matrix is super sparse (as is typical in recommendation scenarios). A comprehensive discussion of ALS and its distributed computation can be found <a href="http://stanford.edu/~rezab/classes/cme323/S15/notes/lec14.pdf">here</a>.</p>
+<h5 id="22215-bayesian-personalized-ranking">2.2.2.1.5. Bayesian Personalized Ranking</h5>
+<p>BPR即Bayesian Personalized Ranking，中文名称为贝叶斯个性化排序，是当下推荐系统中常用的一种推荐算法。与其他的基于用户评分矩阵的方法不同的是BPR主要采用用户的隐式反馈（如点击、收藏等），通过对问题进行贝叶斯分析得到的最大后验概率来对item进行排序，进而产生推荐。</p>
+<h3 id="223-sar-algorithm">2.2.3. SAR algorithm</h3>
+<p>SAR Single Node on MovieLens (Python, CPU)</p>
+<p>In this example, we will walk through each step of the Simple Algorithm for Recommendation (SAR) algorithm using a Python single-node implementation.</p>
+<p>SAR is a fast, scalable, adaptive algorithm for personalized recommendations based on user transaction history. It is powered by understanding the similarity between items, and recommending similar items to those a user has an existing affinity for.</p>
+<p>The following figure presents a high-level architecture of SAR. </p>
+<p>At a very high level, two intermediate matrices are created and used to generate a set of recommendation scores:</p>
+<ul>
+<li>An item similarity matrix $S$ estimates item-item relationships.</li>
+<li>An affinity matrix $A$ estimates user-item relationships.</li>
+</ul>
+<p>Recommendation scores are then created by computing the matrix multiplication $A\times S$.</p>
+<p>Optional steps (e.g. "time decay" and "remove seen items") are described in the details below.</p>
+<p><img src="https://recodatasets.z20.web.core.windows.net/images/sar_schema.svg?sanitize=true"></p>
+<h3 id="224-11-compute-item-co-occurrence-and-item-similarity">2.2.4. 1.1 Compute item co-occurrence and item similarity</h3>
+<p>SAR defines similarity based on item-to-item co-occurrence data. Co-occurrence is defined as the number of times two items appear together for a given user. We can represent the co-occurrence of all items as a $m\times m$ matrix $C$, where $c_{i,j}$ is the number of times item $i$ occurred with item $j$, and $m$ is the total number of items.</p>
+<p>The co-occurence matric $C$ has the following properties:</p>
+<ul>
+<li>It is symmetric, so $c_{i,j} = c_{j,i}$</li>
+<li>It is nonnegative: $c_{i,j} \geq 0$</li>
+<li>The occurrences are at least as large as the co-occurrences. I.e., the largest element for each row (and column) is on the main diagonal: $\forall(i,j) C_{i,i},C_{j,j} \geq C_{i,j}$.</li>
+</ul>
+<p>Once we have a co-occurrence matrix, an item similarity matrix $S$ can be obtained by rescaling the co-occurrences according to a given metric. Options for the metric include <code>Jaccard</code>, <code>lift</code>, and <code>counts</code> (meaning no rescaling).</p>
+<p>If $c_{ii}$ and $c_{jj}$ are the $i$th and $j$th diagonal elements of $C$, the rescaling options are:</p>
+<ul>
+<li><code>Jaccard</code>: $s_{ij}=\frac{c_{ij}}{(c_{ii}+c_{jj}-c_{ij})}$</li>
+<li><code>lift</code>: $s_{ij}=\frac{c_{ij}}{(c_{ii} \times c_{jj})}$</li>
+<li><code>counts</code>: $s_{ij}=c_{ij}$</li>
+</ul>
+<p>In general, using <code>counts</code> as a similarity metric favours predictability, meaning that the most popular items will be recommended most of the time. <code>lift</code> by contrast favours discoverability/serendipity: an item that is less popular overall but highly favoured by a small subset of users is more likely to be recommended. <code>Jaccard</code> is a compromise between the two.</p>
+<h3 id="225-12-compute-user-affinity-scores">2.2.5. 1.2 Compute user affinity scores</h3>
+<p>The affinity matrix in SAR captures the strength of the relationship between each individual user and the items that user has already interacted with. SAR incorporates two factors that can impact users' affinities: </p>
+<ul>
+<li>It can consider information about the <strong>type</strong> of user-item interaction through differential weighting of different events (e.g. it may weigh events in which a user rated a particular item more heavily than events in which a user viewed the item).</li>
+<li>It can consider information about <strong>when</strong> a user-item event occurred (e.g. it may discount the value of events that take place in the distant past.</li>
+</ul>
+<p>Formalizing these factors produces us an expression for user-item affinity:</p>
+<p>$$a_{ij}=\sum_k w_k \left(\frac{1}{2}\right)^{\frac{t_0-t_k}{T}} $$</p>
+<p>where the affinity $a_{ij}$ for user $i$ and item $j$ is the weighted sum of all $k$ events involving user $i$ and item $j$. $w_k$ represents the weight of a particular event, and the power of 2 term reflects the temporally-discounted event. The $(\frac{1}{2})^n$ scaling factor causes the parameter $T$ to serve as a half-life: events $T$ units before $t_0$ will be given half the weight as those taking place at $t_0$.</p>
+<p>Repeating this computation for all $n$ users and $m$ items results in an $n\times m$ matrix $A$. Simplifications of the above expression can be obtained by setting all the weights equal to 1 (effectively ignoring event types), or by setting the half-life parameter $T$ to infinity (ignoring transaction times).</p>
+<h3 id="226-13-remove-seen-item">2.2.6. 1.3 Remove seen item</h3>
+<p>Optionally we remove items which have already been seen in the training set, i.e. don't recommend items which have been previously bought by the user again.</p>
+<h3 id="227-14-top-k-item-calculation">2.2.7. 1.4 Top-k item calculation</h3>
+<p>The personalized recommendations for a set of users can then be obtained by multiplying the affinity matrix ($A$) by the similarity matrix ($S$). The result is a recommendation score matrix, where each row corresponds to a user, each column corresponds to an item, and each entry corresponds to a user / item pair. Higher scores correspond to more strongly recommended items.</p>
+<p>It is worth noting that the complexity of recommending operation depends on the data size. SAR algorithm itself has $O(n^3)$ complexity. Therefore the single-node implementation is not supposed to handle large dataset in a scalable manner. Whenever one uses the algorithm, it is recommended to run with sufficiently large memory. </p>
+<h2 id="23-hybrid">2.3. hybrid</h2>
+<p>In general, CF only uses the user-item interaction data to make predictions and recommendations. Besides CF, content-based and context-based recommender systems are also useful in incorporating the content descriptions of items/users and contextual signals such as timestamps and locations. </p>
+<p>Obviously, we may need to adjust the model types/structures when different input data is available.</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

@@ -1,0 +1,124 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>自动化测试 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#40-战略、文化与管理">40-战略、文化与管理</a>&nbsp;»&nbsp;<a href="/Wiki/#-数字化产品生产管理">数字化产品生产管理</a>&nbsp;»&nbsp;<a href="/Wiki/#-代码管理">代码管理</a>&nbsp;»&nbsp;<a href="/Wiki/#-01_代码质量与测试">01_代码质量与测试</a>&nbsp;»&nbsp;自动化测试</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">自动化测试</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 自动化测试</a><ul>
+<li><a href="#11">1.1. 单元测试</a></li>
+<li><a href="#12">1.2. 冒烟测试</a></li>
+<li><a href="#13">1.3. 集成测试</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 案例</a></li>
+</ul>
+</div>
+<h1 id="1">1. 自动化测试</h1>
+<h2 id="11">1.1. 单元测试</h2>
+<p>代码检查、编译和单元测试（Unit Test）。这一步还属于代码层面的行为活动，代码库特定分支上的变动，触发这一行为，只有在这样的执行成功以后，后面的步骤才能得到机会运行。单元测试通常都是是 dev 写的，即便是在有独立的测试团队的环境中。因为单元测试重要的一个因素就是要保证它能够做到白盒覆盖。单元测试要求易于执行，由于需要反复执行和根据结果修改代码，快速的反馈是非常重要的，几十秒内必须得到结果。我见过有一些团队的单元测试跑一遍要十分钟以上，那么这种情况就要保证能够跑增量的测试，换言之，改动了什么内容，能够重跑改动的那一部分，而不是所有的测试集合。</p>
+<h2 id="12">1.2. 冒烟测试</h2>
+<p>冒烟测试（Smoke Testing）。冒烟测试最关心的不是功能的覆盖，而是对重要功能，或者核心功能的保障。到了这一步，通常在线上部署完成后，为了进一步确保它是一次成功的部署，需要有快速而易于执行的测试来覆盖核心测试用例。这就像每年的常规体检，不可能事无巨细地做各种各样侵入性强的检查，而是通过快速的几项，比如血常规、心跳、血压等等来执行核心的几项检查。在某些公司，冒烟测试还被称作“Sanity Test”，从字面意思也可以得知，测试的目的仅仅是保证系统“没有发疯”。除了功能上的快速冒烟覆盖，在某些系统中，性能是一个尤其重要的关注点，那么还会划分出 Soak Testing 这样的针对性能的测试来，当然，它对系统的影响可能较大，有时候不会部署在生产环境，而是在前面提到的镜像环境中。</p>
+<h2 id="13">1.3. 集成测试</h2>
+<p>集成测试（Integration Test）。这一步最主要的事情，就是自动部署代码到一个拟真的环境，之行端到端的测试。比如说，发布的产品是远程的 API，UT 关注的是功能单元，测试的对象是具体的类和方法；而在 IT 中，更关心暴露的远程接口，既包括功能，也包括性能。集成测试的成熟程度，往往是一个项目质量的一个非常好的体现。在某些团队中，集成测试通过几个不同的环境来完成，比如α环境、β环境、γ环境等等，依次递进，越来越接近生产环境。比如α环境是部署在开发机上的，而γ环境则是线上环境的拷贝，连数据库的数据都是从线上定期同步而来的。</p>
+<h1 id="2">2. 案例</h1>
+<div class="hlcode"><pre><span class="n">Tests</span>
+<span class="n">This</span> <span class="n">project</span> <span class="n">uses</span> <span class="n">unit</span><span class="p">,</span> <span class="n">smoke</span> <span class="n">and</span> <span class="n">integration</span> <span class="n">tests</span> <span class="n">with</span> <span class="n">Python</span> <span class="n">files</span> <span class="n">and</span> <span class="n">notebooks</span><span class="o">:</span>
+
+<span class="n">In</span> <span class="n">the</span> <span class="n">unit</span> <span class="n">tests</span> <span class="n">we</span> <span class="n">just</span> <span class="n">make</span> <span class="n">sure</span> <span class="n">the</span> <span class="n">utilities</span> <span class="n">and</span> <span class="n">notebooks</span> <span class="n">run</span><span class="p">.</span>
+
+<span class="n">In</span> <span class="n">the</span> <span class="n">smoke</span> <span class="n">tests</span><span class="p">,</span> <span class="n">we</span> <span class="n">run</span> <span class="n">them</span> <span class="n">with</span> <span class="n">a</span> <span class="n">small</span> <span class="n">dataset</span> <span class="n">or</span> <span class="n">a</span> <span class="n">small</span> <span class="n">number</span> <span class="n">of</span> <span class="n">epochs</span> <span class="n">to</span> <span class="n">make</span> <span class="n">sure</span> <span class="n">that</span><span class="p">,</span> <span class="n">apart</span> <span class="n">from</span> <span class="n">running</span><span class="p">,</span> <span class="n">they</span> <span class="n">provide</span> <span class="n">reasonable</span> <span class="n">metrics</span><span class="p">.</span>
+
+<span class="n">In</span> <span class="n">the</span> <span class="n">integration</span> <span class="n">tests</span> <span class="n">we</span> <span class="n">use</span> <span class="n">a</span> <span class="n">bigger</span> <span class="n">dataset</span> <span class="k">for</span> <span class="n">more</span> <span class="n">epochs</span> <span class="n">and</span> <span class="n">we</span> <span class="n">test</span> <span class="n">that</span> <span class="n">the</span> <span class="n">metrics</span> <span class="n">are</span> <span class="n">what</span> <span class="n">we</span> <span class="n">expect</span><span class="p">.</span>
+</pre></div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

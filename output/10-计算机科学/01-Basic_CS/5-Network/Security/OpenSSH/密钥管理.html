@@ -1,0 +1,250 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>[应用] 基于OpenSSH的密钥管理 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#10-计算机科学">10-计算机科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-01-Basic_CS">01-Basic_CS</a>&nbsp;»&nbsp;<a href="/Wiki/#-5-Network">5-Network</a>&nbsp;»&nbsp;<a href="/Wiki/#-Security">Security</a>&nbsp;»&nbsp;<a href="/Wiki/#-OpenSSH">OpenSSH</a>&nbsp;»&nbsp;[应用] 基于OpenSSH的密钥管理</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">[应用] 基于OpenSSH的密钥管理</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 关于密钥对</a></li>
+<li><a href="#2-ssh-agent-">2. ssh-agent--生成密钥对</a></li>
+<li><a href="#3">3. 私钥管理</a><ul>
+<li><a href="#_1">启动服务</a></li>
+<li><a href="#_2">添加密钥</a></li>
+<li><a href="#_3">列出密钥</a></li>
+</ul>
+</li>
+<li><a href="#4">4. 部署公钥</a></li>
+</ul>
+</div>
+<p>OpenSSH 提供了工具来帮助支持密钥管理，具体如下：</p>
+<ol>
+<li><code>ssh-keygen</code> ，用于生成安全的密钥</li>
+<li><code>ssh-agent</code> 和 <code>ssh-add</code> ，用于安全地存储私钥</li>
+<li><code>scp</code> 和 <code>sftp</code> ，在首次使用服务器时安全地复制公钥文件</li>
+</ol>
+<p>本文档概述了如何在 Windows 上使用这些工具开始使用 SSH 进行密钥身份验证。 如果你不熟悉 SSH 密钥管理，我们强烈建议你查看 NIST 文档 IR 7966，标题为“使用安全外壳 (SSH) 的交互和自动化访问管理的安全性”。</p>
+<h1 id="1">1. 关于密钥对</h1>
+<p>Windows 环境中的大多数身份验证都是使用<strong>用户名-密码对</strong>完成的。 这适用于共享公共域的系统。 跨域工作时（例如在本地和云托管的系统之间），很容易受到暴力攻击入侵。</p>
+<p>相比之下，Linux 环境通常使用<strong>公钥-私钥对</strong>来驱动身份验证，这不要求使用可推测的密码。 </p>
+<p>密钥对指的是由特定的身份验证协议使用的<strong>公钥</strong>和<strong>私钥</strong>文件。<br />
+SSH 公钥身份验证使用不对称加密算法来生成两个密钥文件 – 一个为“私钥”文件，一个为“公钥”文件。 私钥文件等效于密码，在所有情况下都应当保护它们。 如果有人获取了你的私钥，则他们可以像你一样登录到你有权登录的任何 SSH 服务器。 公钥放置在 SSH 服务器上，并且可以共享，不会危害私钥的安全。<br />
+将密钥身份验证用于 SSH 服务器时，SSH 服务器和客户端会依据私钥来比较所提供的用户名的公钥。 如果无法依据客户端私钥验证服务器端公钥，则身份验证失败。<br />
+可以通过在生成密钥对时要求提供密码来通过密钥对实现多重身份验证（参见下文的密钥生成）。 在身份验证期间，会提示用户输入密码，将使用该密码以及 SSH 客户端上的私钥来对用户进行身份验证。</p>
+<h1 id="2-ssh-agent-">2. ssh-agent--生成密钥对</h1>
+<p>公钥具有特定的 ACL 要求，在 Windows 上，这些要求等同于仅允许管理员和 System 进行访问。 为使此更加简单，<br />
+已创建了 OpenSSHUtils PowerShell 模块来正确设置密钥 ACL，并且应当将该模块安装在服务器上<br />
+首次使用 sshd 时，将自动生成主机的密钥对。 如果 ssh-agent 正在运行，则密钥将自动添加到本地存储中。<br />
+若要使用 SSH 服务器轻松进行密钥身份验证，请在权限提升的 PowerShell 提示符下运行以下命令：</p>
+<div class="hlcode"><pre><span class="c"># Install the OpenSSHUtils module to the server. This will be valuable when deploying user keys.</span>
+<span class="n">Install-Module</span> <span class="n">-Force</span> <span class="n">OpenSSHUtils</span> <span class="n">-Scope</span> <span class="n">AllUsers</span>
+
+<span class="c"># By default the ssh-agent service is disabled. Allow it to be manually started for the next step to work.</span>
+<span class="nb">Get-Service</span> <span class="n">-Name</span> <span class="n">ssh-agent</span> <span class="p">|</span> <span class="nb">Set-Service</span> <span class="n">-StartupType</span> <span class="n">Manual</span>
+
+<span class="c"># Start the ssh-agent service to preserve the server keys</span>
+<span class="nb">Start-Service</span> <span class="n">ssh-agent</span>
+
+<span class="c"># Now start the sshd service</span>
+<span class="nb">Start-Service</span> <span class="n">sshd</span>
+</pre></div>
+
+
+<p>由于没有与 sshd 服务关联的用户，因此主机密钥存储在 \ProgramData\ssh 下。</p>
+<p>若要使用基于密钥的身份验证，首先需要为客户端生成一些公钥/私钥对。 通过 PowerShell 或 cmd，使用 ssh-keygen 生成一些密钥文件。</p>
+<div class="hlcode"><pre><span class="n">cd</span> <span class="o">~</span><span class="err">\</span><span class="p">.</span><span class="n">ssh</span>\
+<span class="n">ssh</span><span class="o">-</span><span class="n">keygen</span>
+</pre></div>
+
+
+<p>这应当会显示如下某些内容（其中，“username”将替代为你的用户名）</p>
+<p>复制</p>
+<div class="hlcode"><pre><span class="n">Generating</span> <span class="n">public</span><span class="o">/</span><span class="n">private</span> <span class="n">ed25519</span> <span class="n">key</span> <span class="n">pair</span><span class="p">.</span>
+<span class="n">Enter</span> <span class="n">file</span> <span class="n">in</span> <span class="n">which</span> <span class="n">to</span> <span class="n">save</span> <span class="n">the</span> <span class="n">key</span> <span class="p">(</span><span class="n">C</span><span class="o">:</span><span class="err">\</span><span class="n">Users</span><span class="err">\</span><span class="n">username</span><span class="err">\</span><span class="p">.</span><span class="n">ssh</span><span class="err">\</span><span class="n">id_ed25519</span><span class="p">)</span><span class="o">:</span>
+</pre></div>
+
+
+<p>你可以按 Enter 来接受默认值，或指定要在其中生成密钥的路径。 此时，系统会提示你使用密码来加密你的私钥文件。 密码与密钥文件一起工作来提供双重身份验证。 在此示例中，我们将密码留空。</p>
+<div class="hlcode"><pre><span class="n">Enter</span> <span class="n">passphrase</span> <span class="p">(</span><span class="n">empty</span> <span class="k">for</span> <span class="n">no</span> <span class="n">passphrase</span><span class="p">)</span><span class="o">:</span>
+<span class="n">Enter</span> <span class="n">same</span> <span class="n">passphrase</span> <span class="n">again</span><span class="o">:</span>
+<span class="n">Your</span> <span class="n">identification</span> <span class="n">has</span> <span class="n">been</span> <span class="n">saved</span> <span class="n">in</span> <span class="n">C</span><span class="o">:</span><span class="err">\</span><span class="n">Users</span><span class="err">\</span><span class="n">username</span><span class="err">\</span><span class="p">.</span><span class="n">ssh</span><span class="err">\</span><span class="n">id_ed25519</span><span class="p">.</span>
+<span class="n">Your</span> <span class="n">public</span> <span class="n">key</span> <span class="n">has</span> <span class="n">been</span> <span class="n">saved</span> <span class="n">in</span> <span class="n">C</span><span class="o">:</span><span class="err">\</span><span class="n">Users</span><span class="err">\</span><span class="n">username</span><span class="err">\</span><span class="p">.</span><span class="n">ssh</span><span class="err">\</span><span class="n">id_ed25519</span><span class="p">.</span><span class="n">pub</span><span class="p">.</span>
+<span class="n">The</span> <span class="n">key</span> <span class="n">fingerprint</span> <span class="n">is</span><span class="o">:</span>
+<span class="nl">SHA256:</span><span class="n">OIzc1yE7joL2Bzy8</span><span class="o">!</span><span class="n">gS0j8eGK7bYaH1FmF3sDuMeSj8</span> <span class="n">username</span><span class="err">@</span><span class="n">server</span><span class="err">@</span><span class="n">LOCAL</span><span class="o">-</span><span class="n">HOSTNAME</span>
+
+<span class="n">The</span> <span class="n">key</span><span class="err">&#39;</span><span class="n">s</span> <span class="n">randomart</span> <span class="n">image</span> <span class="n">is</span><span class="o">:</span>
+<span class="o">+--</span><span class="p">[</span><span class="n">ED25519</span> <span class="mi">256</span><span class="p">]</span><span class="o">--+</span>
+<span class="o">|</span>        <span class="p">.</span>        <span class="o">|</span>
+<span class="o">|</span>         <span class="n">o</span>       <span class="o">|</span>
+<span class="o">|</span>    <span class="p">.</span> <span class="o">+</span> <span class="o">+</span> <span class="p">.</span>      <span class="o">|</span>
+<span class="o">|</span>   <span class="n">o</span> <span class="n">B</span> <span class="o">*</span> <span class="o">=</span> <span class="p">.</span>     <span class="o">|</span>
+<span class="o">|</span>   <span class="n">o</span><span class="o">=</span> <span class="n">B</span> <span class="n">S</span> <span class="p">.</span>      <span class="o">|</span>
+<span class="o">|</span>   <span class="p">.</span><span class="o">=</span><span class="n">B</span> <span class="n">O</span> <span class="n">o</span>       <span class="o">|</span>
+<span class="o">|</span>  <span class="o">+</span> <span class="o">=+%</span> <span class="n">o</span>        <span class="o">|</span>
+<span class="o">|</span> <span class="o">*</span><span class="n">oo</span><span class="p">.</span><span class="n">O</span><span class="p">.</span><span class="n">E</span>         <span class="o">|</span>
+<span class="o">|+</span><span class="p">.</span><span class="n">o</span><span class="o">+=</span><span class="n">o</span><span class="p">.</span> <span class="p">.</span>        <span class="o">|</span>
+<span class="o">+----</span><span class="p">[</span><span class="n">SHA256</span><span class="p">]</span><span class="o">-----+</span>
+</pre></div>
+
+
+<p>现在，你有了一个公钥/私钥 ED25519 密钥对（.pub 文件是公钥，其余的是私钥）：</p>
+<p>复制</p>
+<div class="hlcode"><pre>Mode                LastWriteTime         Length Name
+----                -------------         ------ ----
+-a----        9/28/2018  11:09 AM           1679 id_ed25519
+-a----        9/28/2018  11:09 AM            414 id_ed25519.pub
+</pre></div>
+
+
+<h1 id="3">3. 私钥管理</h1>
+<p>请记住，私钥文件等效于密码，应当采用<strong>与保护密码相同的方式</strong>来保护它。 </p>
+<p>为了实现此目的，请使用 ssh-agent 来将私钥安全地存储在本地操作系统中。</p>
+<p>每当从此客户端进行身份验证需要使用私钥时，ssh-agent 都会自动检索本地私钥，并将其传递到你的 SSH 客户端。</p>
+<p><strong>Windows中</strong><br />
+ssh-agent 来将私钥安全地存储在与你的 Windows 登录关联的 Windows 安全上下文中。</p>
+<h2 id="_1">启动服务</h2>
+<p><strong>Windows</strong></p>
+<div class="hlcode"><pre><span class="cp"># 请以管理员身份启动 ssh-agent 服务</span>
+<span class="cp"># Make sure you&#39;re running as an Administrator</span>
+<span class="n">Start</span><span class="o">-</span><span class="n">Service</span> <span class="n">ssh</span><span class="o">-</span><span class="n">agent</span>
+
+<span class="cp"># This should return a status of Running</span>
+<span class="n">Get</span><span class="o">-</span><span class="n">Service</span> <span class="n">ssh</span><span class="o">-</span><span class="n">agent</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cp"># 服务启动</span>
+<span class="n">ssh</span><span class="o">-</span><span class="n">agent</span> <span class="n">bash</span>
+</pre></div>
+
+
+<h2 id="_2">添加密钥</h2>
+<p>使用 ssh-add 来存储私钥</p>
+<div class="hlcode"><pre><span class="err">#</span> <span class="nx">load</span> <span class="nx">your</span> <span class="nb">key</span> <span class="nx">files</span> <span class="k">into</span> <span class="n">ssh</span><span class="na">-agent</span>
+<span class="nx">ssh</span><span class="na">-add</span> <span class="o">&lt;</span><span class="nx">私钥路径</span><span class="o">&gt;</span>
+<span class="nx">ssh</span><span class="na">-add</span> <span class="err">~</span><span class="o">\</span><span class="bp">.</span><span class="nx">ssh</span><span class="o">\</span><span class="nx">id_rsa</span>
+</pre></div>
+
+
+<h2 id="_3">列出密钥</h2>
+<div class="hlcode"><pre><span class="n">ssh</span><span class="o">-</span><span class="n">add</span> <span class="o">-</span><span class="n">l</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="cp"># 没有。ssh-agent 里面没有储存密钥则显示</span>
+<span class="n">The</span> <span class="n">agent</span> <span class="n">has</span> <span class="n">no</span> <span class="n">identities</span><span class="p">.</span>
+
+<span class="cp"># 有。 ssh-agent 里有储存密钥则显示</span>
+<span class="mi">1024</span> <span class="mi">24</span><span class="o">:</span><span class="n">b3</span><span class="o">:</span><span class="mi">6</span><span class="n">e</span><span class="o">:</span><span class="mi">48</span><span class="o">:</span><span class="n">ef</span><span class="o">:</span><span class="mi">14</span><span class="o">:</span><span class="mi">4</span><span class="n">d</span><span class="o">:</span><span class="n">a4</span><span class="o">:</span><span class="mi">28</span><span class="o">:</span><span class="mi">67</span><span class="o">:</span><span class="mi">84</span><span class="o">:</span><span class="mi">3</span><span class="n">d</span><span class="o">:</span><span class="mi">22</span><span class="o">:</span><span class="mi">98</span><span class="o">:</span><span class="mi">76</span><span class="o">:</span><span class="mi">80</span>
+</pre></div>
+
+
+<blockquote>
+<p><strong>备注</strong><br />
+强烈建议你将私钥备份到一个安全位置，将其添加到 ssh-agent，然后将其<strong>从本地系统中删除</strong>。 无法从代理中检索私钥。 如果你失去了对私钥的访问权限，则必须在你与之交互的所有系统上创建一个新的密钥对并更新公钥。</p>
+</blockquote>
+<h1 id="4">4. 部署公钥</h1>
+<p>若要使用上面创建的用户密钥，需要将公钥放置在服务器上的一个文本文件中，该文件名为 <code>authorized_keys</code>，位于 <code>users\username\.ssh\</code> 下。 </p>
+<p>OpenSSH 工具包括了 scp 来帮助实现此目的，这是一个安全的文件传输实用工具。<br />
+将公钥 (<code>~.ssh\id_ed25519.pub</code>) 的内容移动到服务器/主机上 <code>~.ssh</code>中名为 <code>authorized_keys</code> 的文本文件中。<br />
+此示例使用了之前在上面的说明中在主机上安装的 OpenSSHUtils 模块中的 Repair-AuthorizedKeyPermissions 函数。</p>
+<div class="hlcode"><pre><span class="cp"># Make sure that the .ssh directory exists in your server&#39;s home folder</span>
+<span class="n">ssh</span> <span class="n">user1</span><span class="err">@</span><span class="n">domain1</span><span class="err">@</span><span class="n">contoso</span><span class="p">.</span><span class="n">com</span> <span class="n">mkdir</span> <span class="n">C</span><span class="o">:</span><span class="err">\</span><span class="n">users</span><span class="err">\</span><span class="n">user1</span><span class="err">\</span><span class="p">.</span><span class="n">ssh</span>\
+
+<span class="cp"># Use scp to copy the public key file generated previously to authorized_keys on your server</span>
+<span class="n">scp</span> <span class="n">C</span><span class="o">:</span><span class="err">\</span><span class="n">Users</span><span class="err">\</span><span class="n">user1</span><span class="err">\</span><span class="p">.</span><span class="n">ssh</span><span class="err">\</span><span class="n">id_ed25519</span><span class="p">.</span><span class="n">pub</span> <span class="n">user1</span><span class="err">@</span><span class="n">domain1</span><span class="err">@</span><span class="n">contoso</span><span class="p">.</span><span class="n">com</span><span class="o">:</span><span class="n">C</span><span class="o">:</span><span class="err">\</span><span class="n">Users</span><span class="err">\</span><span class="n">user1</span><span class="err">\</span><span class="p">.</span><span class="n">ssh</span><span class="err">\</span><span class="n">authorized_keys</span>
+
+<span class="cp"># Appropriately ACL the authorized_keys file on your server</span>
+<span class="n">ssh</span> <span class="o">--%</span> <span class="n">user1</span><span class="err">@</span><span class="n">domain1</span><span class="err">@</span><span class="n">contoso</span><span class="p">.</span><span class="n">com</span> <span class="n">powershell</span> <span class="o">-</span><span class="n">c</span> <span class="err">$</span><span class="n">ConfirmPreference</span> <span class="o">=</span> <span class="err">&#39;</span><span class="n">None</span><span class="err">&#39;</span><span class="p">;</span> <span class="n">Repair</span><span class="o">-</span><span class="n">AuthorizedKeyPermission</span> <span class="n">C</span><span class="o">:</span><span class="err">\</span><span class="n">Users</span><span class="err">\</span><span class="n">user1</span><span class="err">\</span><span class="p">.</span><span class="n">ssh</span><span class="err">\</span><span class="n">authorized_keys</span>
+</pre></div>
+
+
+<p>这些步骤完成了对 Windows 上的 SSH 使用基于密钥的身份验证所需的配置。 完成此项后，用户可以从具有私钥的任何客户端连接到 sshd 主机。</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

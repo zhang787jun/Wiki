@@ -1,0 +1,306 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>图机器学习 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#20-数据科学">20-数据科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-Algorithm">Algorithm</a>&nbsp;»&nbsp;<a href="/Wiki/#-04-图学习">04-图学习</a>&nbsp;»&nbsp;<a href="/Wiki/#-02_图机器学习">02_图机器学习</a>&nbsp;»&nbsp;图机器学习</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">图机器学习</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 图游走类算法</a><ul>
+<li><a href="#11-npl">1.1. npl背景</a><ul>
+<li><a href="#111-word2vec">1.1.1. word2vec</a><ul>
+<li><a href="#1111-skip-gram">1.1.1.1. Skip Gram</a></li>
+<li><a href="#1112-cbow">1.1.1.2. CBOW</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#12">1.2. 同构图</a><ul>
+<li><a href="#121-deepwalk">1.2.1. DeepWalk</a><ul>
+<li><a href="#1211-a">1.2.1.1. A.随机游走</a><ul>
+<li><a href="#12111">1.2.1.1.1. 优劣势</a></li>
+</ul>
+</li>
+<li><a href="#1212-bskip-gram">1.2.1.2. B.Skip Gram</a></li>
+<li><a href="#1213-c">1.2.1.3. C.负采样</a></li>
+</ul>
+</li>
+<li><a href="#122-node2vec">1.2.2. node2vec</a><ul>
+<li><a href="#1221-a">1.2.2.1. A. 偏执随机游走</a></li>
+</ul>
+</li>
+<li><a href="#123">1.2.3. 特点</a></li>
+</ul>
+</li>
+<li><a href="#13">1.3. 异构图</a><ul>
+<li><a href="#131-metapath2vec">1.3.1. Metapath2Vec</a></li>
+<li><a href="#132-multi-metapath2vec">1.3.2. multi-Metapath2Vec ++</a></li>
+</ul>
+</li>
+<li><a href="#14">1.4. 特点与优势</a></li>
+</ul>
+</li>
+<li><a href="#2">2. 图采样</a><ul>
+<li><a href="#21">2.1. 遍历</a></li>
+<li><a href="#22">2.2. 邻域</a><ul>
+<li><a href="#221-graphsage">2.2.1. GraphSAGE</a><ul>
+<li><a href="#2211">2.2.1.1. 特点</a></li>
+</ul>
+</li>
+<li><a href="#222-pingsage">2.2.2. PingSAGE</a></li>
+</ul>
+</li>
+<li><a href="#23">2.3. 负采样</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 邻居聚合</a><ul>
+<li><a href="#31">3.1. 评估聚合表达能力的</a></li>
+<li><a href="#32">3.2. 常见</a><ul>
+<li><a href="#321-mean">3.2.1. Mean</a></li>
+<li><a href="#322-max">3.2.2. Max</a></li>
+<li><a href="#323-sum">3.2.3. Sum</a></li>
+</ul>
+</li>
+<li><a href="#33-gin">3.3. GIN</a></li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="1">1. 图游走类算法</h1>
+<p>DeepWalk、word2vec、node2vec<br />
+<img alt="" src="https://ai-studio-static-online.cdn.bcebos.com/801d3a2ab83847b6990c47bccbca29f9c8745f4b664c407c9fd159e85208ceee" /></p>
+<h2 id="11-npl">1.1. npl背景</h2>
+<h3 id="111-word2vec">1.1.1. word2vec</h3>
+<h4 id="1111-skip-gram">1.1.1.1. Skip Gram</h4>
+<h4 id="1112-cbow">1.1.1.2. CBOW</h4>
+<h2 id="12">1.2. 同构图</h2>
+<h3 id="121-deepwalk">1.2.1. DeepWalk</h3>
+<p>算法流程：<img alt="" src="https://ai-studio-static-online.cdn.bcebos.com/ec753c6aa8f84a989cd55fad03e32d69a7a57c3f0cc64ee88c5b5815492383db" /> 【其中使用skip-gram模型是为了利用梯度的方法对参数进行更新训练】</p>
+<div class="hlcode"><pre><span class="n">digraph</span> <span class="n">a</span> <span class="p">{</span>
+    <span class="s">&quot;Graph&quot;</span> <span class="o">-&gt;</span> <span class="s">&quot;Ramdowm walk&quot;</span><span class="o">-&gt;</span><span class="s">&quot;Skip graph&quot;</span> <span class="o">-&gt;</span><span class="s">&quot;Node embading&quot;</span><span class="o">-&gt;</span><span class="s">&quot;DownStream Task&quot;</span>
+
+<span class="p">}</span>
+</pre></div>
+
+
+<h4 id="1211-a">1.2.1.1. A.随机游走</h4>
+<p>从今天的课堂上,我们知道, 对于给定的节点，DeepWalk会等概率的选取下一个相邻节点加入路径，直至达到最大路径长度，或者没有下一个节点可选。</p>
+<p><img src="https://ai-studio-static-online.cdn.bcebos.com/159e470f09bb4e12bae080a4733d46d0861a08e812e643d5b8b7f080b16f2e38" width="85%" height="85%" /></p>
+<p>因此, 假如我们想要得到一条walk, 我们需要输入一个graph, 起始节点ID, 游走的深度walk_len。</p>
+<h5 id="12111">1.2.1.1.1. 优劣势</h5>
+<p>随机的深度优先搜索</p>
+<h4 id="1212-bskip-gram">1.2.1.2. B.Skip Gram</h4>
+<h4 id="1213-c">1.2.1.3. C.负采样</h4>
+<h3 id="122-node2vec">1.2.2. node2vec</h3>
+<h4 id="1221-a">1.2.2.1. A. 偏执随机游走</h4>
+<p>bias ramdom walk</p>
+<div class="hlcode"><pre><span class="k">def</span> <span class="nf">node2vec_sample</span><span class="p">(</span><span class="n">succ</span><span class="p">,</span> <span class="n">prev_succ</span><span class="p">,</span> <span class="n">prev_node</span><span class="p">,</span> <span class="n">p</span><span class="p">,</span> <span class="n">q</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    输入：succ - 当前节点的下一个相邻节点id列表 list (num_neighbors,)</span>
+<span class="sd">        prev_succ - 前一个节点的下一个相邻节点id列表 list (num_neighbors,)</span>
+<span class="sd">        prev_node - 前一个节点id int</span>
+<span class="sd">        p - 控制回到上一节点的概率 float</span>
+<span class="sd">        q - 控制偏向DFS还是BFS float</span>
+<span class="sd">    输出：下一个节点id int</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c">##################################</span>
+    <span class="c"># 请在此实现node2vec的节点采样函数</span>
+    <span class="c"># 节点参数信息</span>
+    <span class="n">succ_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">succ</span><span class="p">)</span>                <span class="c"># 获取相邻节点id列表节点长度（相对当前）</span>
+    <span class="n">prev_succ_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prev_succ</span><span class="p">)</span>      <span class="c"># 获取相邻节点id列表节点长度（相对前一个节点）</span>
+    <span class="n">prev_succ_set</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">([])</span>   <span class="c"># 前一节点的相邻节点id列表</span>
+
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">prev_succ_len</span><span class="p">):</span>     <span class="c"># 遍历得到前一节点的相邻节点id列表的新list——prev_succ_set，用于后边概率的讨论</span>
+        <span class="c"># 将前一节点list，依次押入新的list中</span>
+        <span class="n">prev_succ_set</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prev_succ_set</span><span class="p">,</span><span class="n">prev_succ</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>  <span class="c"># ? prev_succ_set.insert(prev_succ[i])</span>
+
+    <span class="c"># 概率参数信息</span>
+    <span class="n">probs</span> <span class="o">=</span> <span class="p">[]</span>     <span class="c"># 保存每一个待前往的概率</span>
+    <span class="n">prob</span> <span class="o">=</span> <span class="mi">0</span>   <span class="c"># 记录当前讨论的节点概率</span>
+    <span class="n">prob_sum</span> <span class="o">=</span> <span class="mf">0.</span>  <span class="c"># 所有待前往的节点的概率之和</span>
+
+    <span class="c"># 遍历当前节点的相邻节点</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">succ_len</span><span class="p">):</span>    <span class="c"># 遍历每一个当前节点前往的概率</span>
+        <span class="k">if</span> <span class="n">succ</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">==</span> <span class="n">prev_node</span><span class="p">:</span>  <span class="c"># case 1 ： 采样节点与前一节点一致，那么概率为--1/q（原地）</span>
+            <span class="n">prob</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">p</span>
+        <span class="c"># case 2 完整的应该是： np.where(prev_succ_set==succ[i]) and np.where(succ==succ[i])</span>
+        <span class="c"># 但是因为succ本身就是采样集，所以np.where(succ==succ[i])总成立，故而忽略，不考虑</span>
+        <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">prev_succ_set</span><span class="o">==</span><span class="n">succ</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>   <span class="c"># case 2  ： 采样节点在前一节点list内，那么概率为--1   ?cpython中的代码： prev_succ_set.find(succ[i]) != prev_succ_set.end()</span>
+            <span class="n">prob</span> <span class="o">=</span> <span class="mf">1.</span>
+        <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">prev_succ_set</span><span class="o">!=</span><span class="n">succ</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>   <span class="c"># case 3  ： 采样节点不在前一节点list内，那么概率为--1/q</span>
+            <span class="n">prob</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">q</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">prob</span> <span class="o">=</span> <span class="mf">0.</span>       <span class="c"># case 4 ： other</span>
+
+        <span class="n">probs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span>  <span class="c"># 将待前往的每一个节点的概率押入保存</span>
+        <span class="n">prob_sum</span> <span class="o">+=</span> <span class="n">prob</span>    <span class="c"># 计算所有节点的概率之和</span>
+
+    <span class="n">RAND_MAX</span> <span class="o">=</span> <span class="mi">65535</span>   <span class="c"># 这是一个随机数的最值，用于计算随机值的--根据C/C++标准，最小在30000+，这里取2^16次方</span>
+    <span class="n">rand_num</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">RAND_MAX</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span> <span class="o">/</span> <span class="n">RAND_MAX</span> <span class="o">*</span> <span class="n">prob_sum</span>  <span class="c"># 计算一个随机概率:0~prob_sum. ?cpython中的代码: float(rand())/RAND_MAX * prob_sum</span>
+
+    <span class="n">sampled_succ</span> <span class="o">=</span> <span class="mf">0.</span>   <span class="c"># 当前节点的相邻节点中确定的采样点</span>
+
+    <span class="c"># rand_num =&gt; 是0~prob_num的一个值，表示我们的截取概率阈值--即当遍历了n个节点时，若已遍历的节点的概率之和已经超过了rand_num</span>
+    <span class="c"># 我们取刚好满足已遍历的节点的概率之和已经超过了rand_num的最近一个节点作为我们的采样节点</span>
+    <span class="c"># 比如: 遍历到第5个节点时，权重概率和大于等于rand_num,此时第5个节点就是对应的采样的节点了</span>
+    <span class="c"># 为了方便实现：这里利用循环递减--判断条件就变成了————当rand_num减到&lt;=0时，开始采样节点</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">succ_len</span><span class="p">):</span>   <span class="c"># 遍历当前节点的所有相邻节点</span>
+        <span class="n">rand_num</span> <span class="o">-=</span> <span class="n">probs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>    <span class="c"># 利用rand_num这个随机获得的概率值作为依据，进行一个循环概率检验</span>
+        <span class="k">if</span> <span class="n">rand_num</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>   <span class="c"># 当遇到第一次使得rand_num减到&lt;=0后，说明到这个节点为止, 遍历应该终止了，此时的节点即未所求的节点，【停止检验条件】</span>
+            <span class="n">sampled_succ</span> <span class="o">=</span> <span class="n">succ</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>   <span class="c"># 并把当前节点作为确定的节点</span>
+            <span class="k">return</span> <span class="n">sampled_succ</span>   <span class="c"># 返回待采样的节点--节点一定在succ中</span>
+</pre></div>
+
+
+<h3 id="123">1.2.3. 特点</h3>
+<p>不考虑节点类型的异构随机游走，缺点<br />
+1. 偏向于出现频率高的节点类型<br />
+2. 偏向于相对集中的节点(即度数高的节点)</p>
+<h2 id="13">1.3. 异构图</h2>
+<p>$$G=(V,E,T)$$</p>
+<h3 id="131-metapath2vec">1.3.1. Metapath2Vec</h3>
+<p>metapath2vec: Scalable Representation Learning for Heterogeneous Networks<br />
+<strong>元路径</strong><br />
+在图中选取的由节点类型构成的组合路径</p>
+<p>一般元路径是对称的。<br />
+元路径的选择一般由人工（专家）选取，使得元路径有物理意义</p>
+<p>A-P-A</p>
+<p>负采样的时候没有考虑节点类型</p>
+<h3 id="132-multi-metapath2vec">1.3.2. multi-Metapath2Vec ++</h3>
+<h2 id="14">1.4. 特点与优势</h2>
+<p>这类方法受限于：<br />
+1. 灵活性不足、<br />
+2. 表达能力不足<br />
+3. 工程量过大的问题，<br />
+首先就是节点编码中权重未共享，导致权重数量随着节点增多而线性增大<br />
+另外就是直接嵌入方法缺乏泛化能力，意味着无法处理动态图以及泛化到新的图</p>
+<h1 id="2">2. 图采样</h1>
+<p>图采样是子图采样，不是随机采样</p>
+<p>通过对现有 GNN 模型的调研，我们抽象出三种不同的采样器，即遍历、邻域、负采样。<br />
+1. 遍历（TRAVERSE）：用于从整个分区图中，采样一批顶点或边。<br />
+2. 邻域（NEIGHBORHOOD）：将生成顶点的上下文。该顶点的上下文可以是一个或多个 hop 邻居，用于对该顶点进行编码。<br />
+3. 负采样（NEGATIV）：用于生成负样本以加速训练过程的收敛。</p>
+<h2 id="21">2.1. 遍历</h2>
+<h2 id="22">2.2. 邻域</h2>
+<h3 id="221-graphsage">2.2.1. GraphSAGE</h3>
+<p>SAGE（SAmple&amp; aggreGatE）<br />
+参考资料：http://snap.stanford.edu/graphsage/<br />
+基本步骤：<br />
+1. 邻居采样<br />
+    1阶采样、2阶采样、...<br />
+    由顶向外<br />
+2. 邻居聚会<br />
+   由外向内，消息传递<br />
+3. 节点预测</p>
+<h4 id="2211">2.2.1.1. 特点</h4>
+<p><strong>优点</strong><br />
+1. 减少计算量<br />
+2. 允许泛化到其他关系</p>
+<h3 id="222-pingsage">2.2.2. PingSAGE</h3>
+<p>采样时只能选取真实的邻居节点吗<br />
+通过多次随机游走，按游走经过的频率选取邻居</p>
+<h2 id="23">2.3. 负采样</h2>
+<p>负采样就是给定源节点，返回和它不相连的目标节点。负采样同时支持本地和全局负采样，对于一个batch的样本要采样其负样本时，可以按照一定的概率分布选择一个server，然后在该server上采样。如果选择本地负采样，则只在本机进行负采样。目前built-in的负采样算子包括以下几种：<br />
+• random：随机采样和给定源节点不相连的目的节点。<br />
+• in_degree：按照目的节点的入度分布，返回与源节点不相连的目的节点。</p>
+<p>按照入度分布的in_degree负采样实现上采用AliasMethod[5]，会在首次采样前提前构建好Alias Table，因此采样是常数时间复杂度。此外负采样我们默认是严格负采样，但是出于性能和极端情形的考虑，我们支持用户端设置一个阈值来控制严格程度。负采样可能对算法效果也会产生很大影响，因此负采样算子如何和图划分结合，如何高效负采样，以及按何种分布负采样都是值得探索和研究的地方。</p>
+<h1 id="3">3. 邻居聚合</h1>
+<h2 id="31">3.1. 评估聚合表达能力的</h2>
+<p>评估聚合表达能力的指标单射(一对一映射)</p>
+<h2 id="32">3.2. 常见</h2>
+<h3 id="321-mean">3.2.1. Mean</h3>
+<h3 id="322-max">3.2.2. Max</h3>
+<h3 id="323-sum">3.2.3. Sum</h3>
+<h2 id="33-gin">3.3. GIN</h2>
+<p>基于单射的Graph Isomorphism Net (GIN)模型</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

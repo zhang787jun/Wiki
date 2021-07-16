@@ -1,0 +1,143 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>00-集群管理概述 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#10-计算机科学">10-计算机科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-04-Distributed_System">04-Distributed_System</a>&nbsp;»&nbsp;<a href="/Wiki/#-07-资源调度管理">07-资源调度管理</a>&nbsp;»&nbsp;00-集群管理概述</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">00-集群管理概述</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#_1">集群管理概述</a></li>
+<li><a href="#_2">规划集群</a></li>
+<li><a href="#_3">管理集群</a></li>
+<li><a href="#_4">集群安全</a></li>
+<li><a href="#_5">可选集群服务</a></li>
+</ul>
+</div>
+<h1 id="_1">集群管理概述</h1>
+<p>集群管理概述面向任何创建和管理 Kubernetes 集群的读者人群。 我们假设你对用户指南中的概念大概了解。<br />
+1. 规划集群<br />
+2. 管理集群<br />
+3. 集群安全<br />
+4. 可选集群服务</p>
+<h1 id="_2">规划集群</h1>
+<p>查阅 安装 中的指导，获取如何规划、建立以及配置 Kubernetes 集群的示例。本文所列的文章称为发行版 。</p>
+<p>在选择一个指南前，有一些因素需要考虑：</p>
+<p>你是打算在你的电脑上尝试 Kubernetes，还是要构建一个高可用的多节点集群？请选择最适合你需求的发行版。<br />
+如果你正在设计一个高可用集群，请了解在多个 zones 中配置集群。<br />
+您正在使用 类似 Google Kubernetes Engine 这样的被托管的Kubernetes集群, 还是管理您自己的集群?<br />
+你的集群是在本地还是云（IaaS）上？ Kubernetes 不能直接支持混合集群。作为代替，你可以建立多个集群。<br />
+如果你在本地配置 Kubernetes，需要考虑哪种网络模型最适合。<br />
+你的 Kubernetes 在 裸金属硬件 还是 虚拟机（VMs）上运行？<br />
+你只想运行一个集群，还是打算活动开发 Kubernetes 项目代码？如果是后者，请选择一个活动开发的发行版。某些发行版只提供二进制发布版，但提供更多的选择。<br />
+让你自己熟悉运行一个集群所需的组件 。<br />
+请注意：不是所有的发行版都被积极维护着。请选择测试过最近版本的 Kubernetes 的发行版。</p>
+<h1 id="_3">管理集群</h1>
+<p>管理集群叙述了和集群生命周期相关的几个主题：创建一个新集群、升级集群的 master 和 worker 节点、执行节点维护（例如内核升级）以及升级活动集群的 Kubernetes API 版本。</p>
+<p>学习如何 管理节点.</p>
+<p>学习如何设定和管理集群共享的 资源配额 。</p>
+<h1 id="_4">集群安全</h1>
+<p>Certificates 描述了使用不同的工具链生成证书的步骤。</p>
+<p>Kubernetes 容器环境 描述了 Kubernetes 节点上由 Kubelet 管理的容器的环境。</p>
+<p>控制到 Kubernetes API 的访问描述了如何为用户和 service accounts 建立权限许可。</p>
+<p>用户认证阐述了 Kubernetes 中的认证功能，包括许多认证选项。</p>
+<p>授权从认证中分离出来，用于控制如何处理 HTTP 请求。</p>
+<p>使用 Admission Controllers 阐述了在认证和授权之后拦截到 Kubernetes API 服务的请求的插件。</p>
+<p>在 Kubernetes Cluster 中使用 Sysctls 描述了管理员如何使用 sysctl 命令行工具来设置内核参数。</p>
+<p>审计描述了如何与 Kubernetes 的审计日志交互。</p>
+<p>保护 kubelet<br />
+Master 节点通信<br />
+TLS 引导<br />
+Kubelet 认证/授权</p>
+<h1 id="_5">可选集群服务</h1>
+<p>DNS 与 SkyDNS 集成描述了如何将一个 DNS 名解析到一个 Kubernetes service。</p>
+<p>记录和监控集群活动阐述了 Kubernetes 的日志如何工作以及怎样实现。</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

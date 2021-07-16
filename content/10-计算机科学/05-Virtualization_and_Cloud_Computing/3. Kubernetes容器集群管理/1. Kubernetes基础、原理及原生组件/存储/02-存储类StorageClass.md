@@ -103,7 +103,7 @@ StorageOS|✓|StorageOS
 
 # 3. StorageClass 操作
 
-## 3.1. 创建 SC
+## 3.1. 创建SC
 
 
 1. azure-file

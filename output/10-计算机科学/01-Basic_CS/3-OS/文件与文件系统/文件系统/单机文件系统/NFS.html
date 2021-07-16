@@ -1,0 +1,298 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>NFS - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#10-计算机科学">10-计算机科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-01-Basic_CS">01-Basic_CS</a>&nbsp;»&nbsp;<a href="/Wiki/#-3-OS">3-OS</a>&nbsp;»&nbsp;<a href="/Wiki/#-文件与文件系统">文件与文件系统</a>&nbsp;»&nbsp;<a href="/Wiki/#-文件系统">文件系统</a>&nbsp;»&nbsp;<a href="/Wiki/#-单机文件系统">单机文件系统</a>&nbsp;»&nbsp;NFS</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">NFS</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 参考资料</a></li>
+<li><a href="#2-nfs">2. NFS基础</a><ul>
+<li><a href="#21-nfs">2.1. NFS 是什么</a></li>
+<li><a href="#22-rpc">2.2. rpc简介</a></li>
+<li><a href="#23-rpcnfs">2.3. rpc和nfs通讯</a></li>
+<li><a href="#24">2.4. 安装与配置</a><ul>
+<li><a href="#241-nfs-service">2.4.1. nfs-service</a></li>
+<li><a href="#242-nfs">2.4.2. 检验nfs服务</a></li>
+<li><a href="#243-nfs-client">2.4.3. nfs-client</a><ul>
+<li><a href="#2431-nfs">2.4.3.1. nfs 服务端共享配置</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="1">1. 参考资料</h1>
+<p>http://linux.vbird.org/linux_server/0330nfs.php#nfssecure</p>
+<h1 id="2-nfs">2. NFS基础</h1>
+<h2 id="21-nfs">2.1. NFS 是什么</h2>
+<p>网络文件系统（Network File System，NFS），是由SUN公司研制的UNIX表示层协议(presentation layer protocol)。<br />
+<strong>效果</strong><br />
+能让使用者像在使用自己的计算机一样访问网络上别处的文件。</p>
+<p><strong>实现</strong><br />
+NFS基于RPC(Remote Procedure Call)远程过程调用实现，其允许一个系统在网络上与它人共享目录和文件。通过使用NFS，用户和程序就可以像访问本地文件一样访问远端系统上的文件。<br />
+<strong>效果与评价</strong><br />
+NFS是一个非常稳定的，可移植的网络文件系统。具备可扩展和高性能等特性，达到了企业级应用质量标准。由于网络速度的增加和延迟的降低，NFS系统一直是通过网络提供文件系统服务的有竞争力的选择 。</p>
+<p><strong>应用</strong><br />
+NFS与Samba服务类似，但一般Samba服务常用于办公局域网共享，而NFS常用于<strong>互联网中小型网站集群架构后端的数据共享</strong>。</p>
+<h2 id="22-rpc">2.2. rpc简介</h2>
+<p>RPC（Remote Procedure Call Protocol）远程过程调用协议。它是一种通过网络从远程计算机程序上请求服务，而不需要了解底层网络技术的协议。<br />
+在NFS服务端和NFS客户端之间，RPC服务扮演一个中介角色，NFS客户端通过RPC服务得知NFS服务端使用的端口，从而双方可以进行数据通信。</p>
+<h2 id="23-rpcnfs">2.3. rpc和nfs通讯</h2>
+<p>当NFS服务端启动服务时会随机取用若干端口，并主动向RPC服务注册取用相关端口及功能信息，这样，RPC服务就知道NFS每个端口对应的的NFS功能了，然后RPC服务使用固定的111端口来监听NFS客户端提交的请求，并将正确的NFS端口信息回复给请求的NFS客户端。这样，NFS客户就可以与NFS服务端进行数据传输了</p>
+<h2 id="24">2.4. 安装与配置</h2>
+<h3 id="241-nfs-service">2.4.1. nfs-service</h3>
+<p><strong>方案1</strong> --在1个节点启动nfs-service 服务</p>
+<div class="hlcode"><pre><span class="err">#</span> <span class="nx">安装</span> <span class="nx">nfs</span> <span class="nx">server</span> <span class="nx">端应用</span>
+<span class="nx">sudo</span> <span class="nx">apt</span><span class="na">-get</span> <span class="nb">install</span> <span class="na">-y</span> <span class="nx">nfs</span><span class="na">-kernel-server</span>
+<span class="err">#</span> <span class="nx">配置</span> <span class="nx">nfs</span> <span class="nx">目录和读写权限相关配置</span><span class="err">。</span>
+<span class="nx">export</span> <span class="n">nfs_dir</span><span class="o">=</span><span class="p">/</span><span class="nb">data</span><span class="p">/</span><span class="nx">nfs_data</span>
+<span class="nx">sudo</span> <span class="nx">mkdir</span> <span class="na">-p</span> <span class="nv">$nfs_dir</span>
+<span class="nx">sudo</span> <span class="nx">vim</span> <span class="p">/</span><span class="nx">etc</span><span class="p">/</span><span class="nx">exports</span>
+<span class="nx">将下列内容添加进最后一行</span><span class="err">：</span>
+<span class="o">&lt;</span><span class="nx">nfs_dir</span><span class="o">&gt;</span> <span class="o">*</span><span class="p">(</span><span class="nx">rw</span><span class="p">,</span><span class="nx">sync</span><span class="p">,</span><span class="nx">no_root_squash</span><span class="p">,</span><span class="nx">no_subtree_check</span><span class="p">)</span>
+<span class="nx">例如</span>
+<span class="p">/</span><span class="nb">data</span><span class="p">/</span><span class="nx">nfs_data</span> <span class="o">*</span><span class="p">(</span><span class="nx">rw</span><span class="p">,</span><span class="nx">sync</span><span class="p">,</span><span class="nx">no_root_squash</span><span class="p">,</span><span class="nx">no_subtree_check</span><span class="p">)</span>
+<span class="err">#</span> <span class="nx">重启服务</span>
+
+<span class="nx">sudo</span> <span class="nx">systemctl</span> <span class="nb">restart</span> <span class="nx">rpcbind</span>
+<span class="nx">sudo</span> <span class="nx">systemctl</span> <span class="nb">restart</span> <span class="nx">nfs</span><span class="na">-kernel-server</span>
+<span class="err">#</span> <span class="nx">检查验证服务</span>
+<span class="nx">sudo</span> <span class="nx">systemctl</span> <span class="nb">status</span> <span class="nx">nfs</span><span class="na">-kernel-server</span>
+<span class="nx">sudo</span> <span class="nx">systemctl</span> <span class="nb">status</span> <span class="nx">rpcbind</span>
+<span class="nx">sudo</span> <span class="nx">rpcinfo</span> <span class="na">-p</span> <span class="nx">localhost</span> <span class="o">|</span><span class="nx">grep</span> <span class="nx">nfs</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cp"># CentOS</span>
+<span class="n">yum</span> <span class="o">-</span><span class="n">y</span> <span class="n">install</span> <span class="n">nfs</span><span class="o">-</span><span class="n">utils</span> <span class="n">rpcbind</span>
+<span class="cp"># 启动服务</span>
+<span class="n">systemctl</span> <span class="n">start</span> <span class="n">rpcbind</span>
+<span class="n">systemctl</span> <span class="n">enable</span> <span class="n">rpcbind</span>
+
+<span class="n">systemctl</span> <span class="n">start</span> <span class="n">nfs</span><span class="err">（或者</span><span class="n">systemctl</span> <span class="n">start</span> <span class="n">nfs</span><span class="o">-</span><span class="n">server</span><span class="err">）</span>
+<span class="n">sytemctl</span> <span class="n">enable</span> <span class="n">nfs</span>
+</pre></div>
+
+
+<p><strong>方案2</strong>--在1个docker容器启动nfs-service 服务</p>
+<div class="hlcode"><pre><span class="cp"># </span>
+<span class="n">docker</span> <span class="n">run</span> <span class="o">-</span><span class="n">d</span>  <span class="o">--</span><span class="n">name</span> <span class="n">nfs</span> <span class="o">--</span><span class="n">privileged</span> \
+<span class="o">-</span><span class="n">p</span> <span class="mi">2049</span><span class="o">:</span><span class="mi">2049</span> <span class="o">-</span><span class="n">v</span> <span class="o">/</span><span class="n">data</span><span class="o">/</span><span class="n">zhangj414</span><span class="o">/</span><span class="n">plate_char_recognition_lprnet</span><span class="o">:/</span><span class="n">nfsshare</span> \
+<span class="o">-</span><span class="n">e</span> <span class="n">SHARED_DIRECTORY</span><span class="o">=/</span><span class="n">nfsshare</span> \
+<span class="n">itsthenetwork</span><span class="o">/</span><span class="n">nfs</span><span class="o">-</span><span class="n">server</span><span class="o">-</span><span class="n">alpine</span><span class="o">:</span><span class="n">latest</span>
+</pre></div>
+
+
+<p><strong>参数说明</strong><br />
+<code>-e</code>环境变量SHARED_DIRECTORY指定的任何目录<br />
+<code>--net=host</code> 或<code>-p 2049:2049</code>通过主机网络堆栈从外部访问共享。<br />
+<code>-v /tmp/test</code> 共享的文件路径<br />
+<code>-e READ_ONLY=true</code>将导致导出文件包含ro而不是rw仅允许客户端进行读取访问。<br />
+<code>-e SYNC=true</code>将导致导出文件包含sync而不是async启用同步模式</p>
+<h3 id="242-nfs">2.4.2. 检验nfs服务</h3>
+<div class="hlcode"><pre><span class="n">rpcinfo</span> <span class="o">-</span><span class="n">p</span> <span class="n">localhost</span>
+
+<span class="cp"># 或者是通过公网测试服务端的nfs服务是否可用。</span>
+
+<span class="err">显示如下即正常</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">program</span> <span class="n">vers</span> <span class="n">proto</span>   <span class="n">port</span>  <span class="n">service</span>
+<span class="mi">100000</span>    <span class="mi">4</span>   <span class="n">tcp</span>    <span class="mi">111</span>  <span class="n">portmapper</span>
+<span class="mi">100000</span>    <span class="mi">3</span>   <span class="n">tcp</span>    <span class="mi">111</span>  <span class="n">portmapper</span>
+<span class="mi">100000</span>    <span class="mi">2</span>   <span class="n">tcp</span>    <span class="mi">111</span>  <span class="n">portmapper</span>
+<span class="mi">100000</span>    <span class="mi">4</span>   <span class="n">udp</span>    <span class="mi">111</span>  <span class="n">portmapper</span>
+<span class="mi">100000</span>    <span class="mi">3</span>   <span class="n">udp</span>    <span class="mi">111</span>  <span class="n">portmapper</span>
+<span class="mi">100000</span>    <span class="mi">2</span>   <span class="n">udp</span>    <span class="mi">111</span>  <span class="n">portmapper</span>
+<span class="mi">100024</span>    <span class="mi">1</span>   <span class="n">udp</span>  <span class="mi">45993</span>  <span class="n">status</span>
+<span class="mi">100024</span>    <span class="mi">1</span>   <span class="n">tcp</span>  <span class="mi">39431</span>  <span class="n">status</span>
+<span class="mi">100005</span>    <span class="mi">1</span>   <span class="n">udp</span>  <span class="mi">20048</span>  <span class="n">mountd</span>
+<span class="mi">100005</span>    <span class="mi">1</span>   <span class="n">tcp</span>  <span class="mi">20048</span>  <span class="n">mountd</span>
+<span class="mi">100005</span>    <span class="mi">2</span>   <span class="n">udp</span>  <span class="mi">20048</span>  <span class="n">mountd</span>
+<span class="mi">100005</span>    <span class="mi">2</span>   <span class="n">tcp</span>  <span class="mi">20048</span>  <span class="n">mountd</span>
+<span class="mi">100005</span>    <span class="mi">3</span>   <span class="n">udp</span>  <span class="mi">20048</span>  <span class="n">mountd</span>
+<span class="mi">100005</span>    <span class="mi">3</span>   <span class="n">tcp</span>  <span class="mi">20048</span>  <span class="n">mountd</span>
+<span class="mi">100003</span>    <span class="mi">3</span>   <span class="n">tcp</span>   <span class="mi">2049</span>  <span class="n">nfs</span>
+<span class="mi">100003</span>    <span class="mi">4</span>   <span class="n">tcp</span>   <span class="mi">2049</span>  <span class="n">nfs</span>
+<span class="mi">100227</span>    <span class="mi">3</span>   <span class="n">tcp</span>   <span class="mi">2049</span>  <span class="n">nfs_acl</span>
+<span class="mi">100003</span>    <span class="mi">3</span>   <span class="n">udp</span>   <span class="mi">2049</span>  <span class="n">nfs</span>
+<span class="mi">100003</span>    <span class="mi">4</span>   <span class="n">udp</span>   <span class="mi">2049</span>  <span class="n">nfs</span>
+<span class="mi">100227</span>    <span class="mi">3</span>   <span class="n">udp</span>   <span class="mi">2049</span>  <span class="n">nfs_acl</span>
+<span class="mi">100021</span>    <span class="mi">1</span>   <span class="n">udp</span>  <span class="mi">43258</span>  <span class="n">nlockmgr</span>
+<span class="mi">100021</span>    <span class="mi">3</span>   <span class="n">udp</span>  <span class="mi">43258</span>  <span class="n">nlockmgr</span>
+<span class="mi">100021</span>    <span class="mi">4</span>   <span class="n">udp</span>  <span class="mi">43258</span>  <span class="n">nlockmgr</span>
+<span class="mi">100021</span>    <span class="mi">1</span>   <span class="n">tcp</span>  <span class="mi">33941</span>  <span class="n">nlockmgr</span>
+<span class="mi">100021</span>    <span class="mi">3</span>   <span class="n">tcp</span>  <span class="mi">33941</span>  <span class="n">nlockmgr</span>
+<span class="mi">100021</span>    <span class="mi">4</span>   <span class="n">tcp</span>  <span class="mi">33941</span>  <span class="n">nlockmgr</span>
+</pre></div>
+
+
+<p>可以看到如上有3个主要进程</p>
+<ol>
+<li><code>portmap</code> ：主要功能是进行<strong>端口映射</strong>工作。当客户端尝试连接并使用RPC服务器提供的服务（如NFS服务）时，portmap会将所管理的与服务对应的端口提供给客户端，从而使客户可以通过该端口向服务器请求服务。该进程就是rpc服务的进程，该服务使用111端口来件套nfs客户端提交的请求，并将正确的nfs端口信息回复给请求的nfs客户端。</li>
+<li><code>mountd</code>：它是RPC安装守护进程，主要功能是<strong>管理NFS的文件系统</strong>。当客户端顺利通过nfsd登录NFS服务器后，在使用NFS服务所提供的文件前，还必须通过文件使用权限的验证。它会读取NFS的配置文件/etc/exports来对比客户端权限。</li>
+<li><code>nfs</code>：它是基本的NFS守护进程，主要功能是管理客户端是否能够登录服务器；nfs服务的端口默认是2049，客户端使用mount命令挂载报time out时，可能原因就是该进程的端口未暴露。</li>
+</ol>
+<h3 id="243-nfs-client">2.4.3. nfs-client</h3>
+<div class="hlcode"><pre><span class="err">#</span> <span class="nx">Ubuntu</span>
+<span class="err">#</span> <span class="nx">安装</span> 
+<span class="nx">sudo</span> <span class="nx">apt</span><span class="na">-get</span> <span class="nb">install</span> <span class="na">-y</span> <span class="nx">nfs</span><span class="na">-common</span>
+
+<span class="err">#</span> <span class="nx">检验</span><span class="p">/</span><span class="nx">显示</span> <span class="nx">nfs</span> <span class="nx">server</span> <span class="nx">配置</span>
+<span class="nx">showmount</span> <span class="na">-e</span> <span class="o">&lt;</span><span class="nx">nfs</span> <span class="nx">server</span> <span class="nx">IP</span><span class="o">&gt;</span>
+
+<span class="nx">showmount</span> <span class="na">-e</span> <span class="mf">10.0.77.98</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="nx">Export</span> <span class="nb">list</span> <span class="nb">for</span> <span class="mf">10.0.77.98</span><span class="p">:</span>
+<span class="p">/</span><span class="nb">data</span><span class="p">/</span><span class="nx">nfs_data</span> <span class="o">*</span>
+
+<span class="err">#</span> <span class="nx">检验</span><span class="p">/</span><span class="nx">显示</span> <span class="nx">nfs</span> <span class="nx">server</span> <span class="nx">配置</span>
+<span class="nx">rpcinfo</span> <span class="na">-p</span>  <span class="o">&lt;</span><span class="nx">ip</span><span class="o">&gt;</span>
+<span class="nx">rpcinfo</span> <span class="na">-p</span>  <span class="mf">47.96.156.20</span>
+
+
+<span class="err">#</span> <span class="na">-d</span><span class="p">:</span><span class="nx">仅显示已被NFS客户端加载的目录</span>
+<span class="err">#</span> <span class="na">-e</span><span class="p">:</span><span class="nx">显示NFS服务器上所有的共享目录</span>
+
+<span class="err">#</span> <span class="nx">挂载</span> <span class="nx">nfs</span> <span class="nx">server</span> 
+
+<span class="nx">sudo</span> <span class="nx">mount</span> <span class="na">-t</span> <span class="o">&lt;</span><span class="k">type</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="nx">ip</span><span class="o">&gt;</span><span class="p">:</span><span class="o">&lt;</span><span class="nx">server_dir</span><span class="o">&gt;</span> <span class="o">&lt;</span><span class="nx">local_dir</span><span class="o">&gt;</span>
+
+<span class="nx">sudo</span> <span class="nx">mount</span> <span class="na">-t</span> <span class="nx">nfs</span> <span class="mf">10.0.77.98</span><span class="p">:/</span><span class="nb">data</span><span class="p">/</span><span class="nx">nfs_data</span> <span class="p">/</span><span class="nb">data</span><span class="p">/</span><span class="nx">nfs_data</span>
+
+
+<span class="err">#</span> <span class="nx">检验挂载</span>
+<span class="nx">df</span> <span class="na">-h</span> <span class="o">|</span><span class="nx">grep</span> <span class="nx">nfs</span>
+
+<span class="err">#</span> <span class="nx">取消挂载</span>
+<span class="nx">sudo</span> <span class="nx">umount</span> <span class="o">&lt;</span><span class="nx">local_dir</span><span class="o">&gt;</span>
+
+<span class="nx">sudo</span> <span class="nx">umount</span> <span class="p">/</span><span class="nb">data</span><span class="p">/</span><span class="nx">nfs_data</span>
+
+<span class="err">#</span> <span class="nx">强制取消挂载</span>
+<span class="nx">sudo</span> <span class="nx">umount</span> <span class="na">-lf</span> <span class="p">/</span><span class="nx">usr</span><span class="p">/</span><span class="nx">geoc</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="cp"># CentOS</span>
+<span class="cp"># 安装nfs-utils</span>
+<span class="n">yum</span> <span class="n">install</span> <span class="n">nfs</span><span class="o">-</span><span class="n">utils</span> <span class="n">rpcbind</span> <span class="o">-</span><span class="n">y</span>
+<span class="cp"># 启动服务</span>
+<span class="n">systemctl</span> <span class="n">start</span> <span class="n">rpcbind</span>
+<span class="n">systemctl</span> <span class="n">enable</span> <span class="n">rpcbind</span>
+
+<span class="n">systemctl</span> <span class="n">start</span> <span class="n">nfs</span><span class="err">（或者使</span><span class="n">systemctl</span> <span class="n">start</span> <span class="n">nfs</span><span class="o">-</span><span class="n">server</span><span class="err">）</span>
+<span class="n">sytemctl</span> <span class="n">enable</span> <span class="n">nfs</span>
+</pre></div>
+
+
+<h4 id="2431-nfs">2.4.3.1. nfs 服务端共享配置</h4>
+<p>在NFS服务器端的主要配置文件为<code>/etc/exports</code>，通过此配置文件可以设置服务端的共享文件目录。每条配置记录由NFS共享目录、NFS客户端地址和参数这3部分组成，格式如下</p>
+<div class="hlcode"><pre><span class="k">[NFS共享目录] [NFS客户端地址1(参数1,参数2,参数3……)] [客户端地址2(参数1,参数2,参数3……)]</span>
+
+<span class="err">/nfs-share</span> <span class="err">*(rw,async,no_root_squash)</span>
+</pre></div>
+
+
+<div class="hlcode"><pre><span class="n">echo</span> <span class="s">&quot;/nfs-share *(rw,async,no_root_squash)&quot;</span> <span class="o">&gt;&gt;</span> <span class="o">/</span><span class="n">etc</span><span class="o">/</span><span class="n">exports</span>
+</pre></div>
+
+
+<p>要保证/nfs-share目录已经存在节点上，然后输入以下命令使共享目录生效。</p>
+<div class="hlcode"><pre><span class="n">exportfs</span> <span class="o">-</span><span class="n">r</span>
+<span class="cp"># 重新启动服务</span>
+<span class="n">systemctl</span> <span class="n">restart</span> <span class="n">rpcbind</span>
+<span class="n">systemctl</span> <span class="n">restart</span> <span class="n">nfs</span><span class="err">（或者</span><span class="n">systemctl</span> <span class="n">restart</span> <span class="n">nfs</span><span class="o">-</span><span class="n">server</span><span class="err">）</span>
+</pre></div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

@@ -1,0 +1,463 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Tensorflow的硬件基础及安装 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#20-数据科学">20-数据科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-04-Tensorflow 1.x">04-Tensorflow 1.x</a>&nbsp;»&nbsp;<a href="/Wiki/#-安装">安装</a>&nbsp;»&nbsp;Tensorflow的硬件基础及安装</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Tensorflow的硬件基础及安装</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 硬件基础</a><ul>
+<li><a href="#11-cpu">1.1. CPU</a><ul>
+<li><a href="#111">1.1.1. 指令集问题</a></li>
+<li><a href="#112">1.1.2. 虚拟化问题</a></li>
+<li><a href="#113-cpu">1.1.3. CPU硬件识别</a></li>
+</ul>
+</li>
+<li><a href="#12-gpu">1.2. GPU</a><ul>
+<li><a href="#121-nvidia">1.2.1. NVIDIA独立显卡</a><ul>
+<li><a href="#1211">1.2.1.1. 显卡驱动</a></li>
+<li><a href="#1212-cuda">1.2.1.2. CUDA</a><ul>
+<li><a href="#12121-cudagpu">1.2.1.2.1. 支持CUDA平台的GPU硬件型号</a></li>
+<li><a href="#12122-cuda-cuda-toolkit">1.2.1.2.2. CUDA 核心工具包(CUDA Toolkit)</a></li>
+<li><a href="#12123-cudacudnn">1.2.1.2.3. CUDA深度神经网络库(cuDNN)</a></li>
+</ul>
+</li>
+<li><a href="#1213">1.2.1.3. 性能监控</a></li>
+</ul>
+</li>
+<li><a href="#122-amd">1.2.2. AMD 独立显卡</a><ul>
+<li><a href="#1221">1.2.2.1. 显卡驱动</a></li>
+<li><a href="#1222-rocm">1.2.2.2. ROCm 平台</a></li>
+<li><a href="#1223">1.2.2.3. 性能监控</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#13-3">1.3. 3 网络通信层</a><ul>
+<li><a href="#131-1-grpc">1.3.1. 1 gRPC</a><ul>
+<li><a href="#1311-rpc">1.3.1.1. RPC 系统</a><ul>
+<li><a href="#13111">1.3.1.1.1. 系统组成</a></li>
+<li><a href="#13112-rpc">1.3.1.1.2. rpc 过程</a></li>
+<li><a href="#13113">1.3.1.1.3. 服务开启</a></li>
+</ul>
+</li>
+<li><a href="#1312-grpc">1.3.1.2. gRPC 系统</a></li>
+</ul>
+</li>
+<li><a href="#132-rdma">1.3.2. RDMA</a></li>
+</ul>
+</li>
+<li><a href="#14">1.4. 通讯 官方参考示例</a></li>
+</ul>
+</li>
+<li><a href="#2-tensorflow">2. Tensorflow 安装</a><ul>
+<li><a href="#21">2.1. 安装准备</a><ul>
+<li><a href="#211-python">2.1.1. python 安装</a></li>
+</ul>
+</li>
+<li><a href="#22">2.2. 版本选择</a></li>
+<li><a href="#23-whl">2.3. 通过whl安装包</a><ul>
+<li><a href="#2311-pypi">2.3.1.1. pypi 源下载</a></li>
+<li><a href="#anaconda">Anaconda 仓库安装</a></li>
+<li><a href="#232">2.3.2. 离线安装</a></li>
+</ul>
+</li>
+<li><a href="#24-docker">2.4. docker 安装</a><ul>
+<li><a href="#241-cpu">2.4.1. CPU版本</a></li>
+<li><a href="#242-gpu">2.4.2. GPU版本</a></li>
+</ul>
+</li>
+<li><a href="#25">2.5. 集群中安装</a></li>
+</ul>
+</li>
+<li><a href="#3">3. 检验</a></li>
+<li><a href="#_1">参考资料</a></li>
+</ul>
+</div>
+<h1 id="1">1. 硬件基础</h1>
+<h2 id="11-cpu">1.1. CPU</h2>
+<h3 id="111">1.1.1. 指令集问题</h3>
+<blockquote>
+<p><strong>背景</strong><br />
+<code>指令集</code>是存储在CPU内部，对CPU运算进行指导和优化的硬程序。拥有这些指令集，CPU就可以更高效地运行。</p>
+</blockquote>
+<p>Intel主要有 [x86，EM64T，MMX，SSE，SSE2，SSE3，SSSE3 (Super SSE3)，SSE4A，SSE4.1，SSE4.2，AVX，AVX2，AVX-512，VMX] <strong>（时间排序）</strong> 等指令集。</p>
+<p>AMD主要是x86，x86-64，3D-Now!指令集。</p>
+<blockquote>
+<p><strong>为兼容低版本CPU,从pip 源 安装的 tensorlfow 默认不适用高级指令集，使得运算没有充分利用硬件</strong></p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th align="left">厂家</th>
+<th align="left">指令集</th>
+<th align="left">说明</th>
+<th align="left"></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Intel</td>
+<td align="left">SSE2</td>
+<td align="left">Streaming SIMD Extensions</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="left">Intel</td>
+<td align="left">AVX</td>
+<td align="left">高级矢量扩展,Intel Advanced Vector Extensions (Intel AVX)</td>
+<td align="left">AVX引入了融合乘法累加（FMA）运算，加速了线性代数计算，即点积，矩阵乘法，卷积</td>
+</tr>
+</tbody>
+</table>
+<h3 id="112">1.1.2. 虚拟化问题</h3>
+<p><strong><code>虚拟化</code></strong> 就是由位于下层的软件模块，根据上层的软件模块的期待，抽象（虚拟）出一个虚拟的软件或硬件模块，使上一层软件直接运行在这个与自己期待完全一致的虚拟环境上。</p>
+<p>CPU 虚拟化 主要指 intel 的 VT-x 和 AMD 的 AMD-V 为主的硬件辅助的 CPU 虚拟化技术<br />
+其中，Intel VT 包括 VT-x （支持 CPU 虚拟化）、EPT（支持内存虚拟化）和 VT-d（支持 I/O 虚拟化）</p>
+<p>VMM 全称是 Virtual Machine Monitor，虚拟机监控系统，也叫 Hypervisor，是虚拟化层的具体实现。主要是<strong><code>以软件的方式，实现一套和物理主机环境完全一样的虚拟环境</code></strong>，物理主机有的所有资源，包括 CPU、内存、网络 IO、设备 IO等等</p>
+<p>KVM 是一种硬件辅助的虚拟化技术，支持 Intel VT-x 和 AMD-v 技术，怎么知道 CPU 是否支持 KVM 虚拟化呢？可以通过如下命令查看：</p>
+<p>CPU 是否支持虚拟化关系到是否能使用docker 等虚拟化工具 </p>
+<h3 id="113-cpu">1.1.3. CPU硬件识别</h3>
+<p>使用 <strong>英特尔® 处理器识别实用程序</strong> 产看 intel 系列 CPU 数据</p>
+<p>https://www.intel.cn/content/www/cn/zh/support/products/5982/processors/processor-utilities-and-programs/intel-processor-identification-utility.html</p>
+<h2 id="12-gpu">1.2. GPU</h2>
+<p>集成显卡: 是指集成在CPU内部的GPU模块<br />
+独立显卡: 独立于cpu的显卡，为本节讨论内容</p>
+<p>查看设备GPU情况<br />
+<strong>For window：</strong>  </p>
+<blockquote>
+<p>设备管理器-&gt;显示适配器</p>
+</blockquote>
+<p><strong>For Linux</strong></p>
+<div class="hlcode"><pre><span class="n">nvidia</span><span class="o">-</span><span class="n">smi</span>
+
+<span class="n">lspci</span>  <span class="o">|</span> <span class="n">grep</span> <span class="o">-</span><span class="n">i</span> <span class="n">vga</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="mo">01</span><span class="o">:</span><span class="mf">00.0</span> <span class="n">VGA</span> <span class="n">compatible</span> <span class="n">controller</span><span class="o">:</span> <span class="n">nVidia</span> <span class="n">Corporation</span> <span class="n">Device</span> <span class="mi">1081</span> <span class="p">(</span><span class="n">rev</span> <span class="n">a1</span><span class="p">)</span>
+<span class="mo">02</span><span class="o">:</span><span class="mf">00.0</span> <span class="n">VGA</span> <span class="n">compatible</span> <span class="n">controller</span><span class="o">:</span> <span class="n">nVidia</span> <span class="n">Corporation</span> <span class="n">GT215</span> <span class="p">[</span><span class="n">GeForce</span> <span class="n">GT</span> <span class="mi">240</span><span class="p">]</span> <span class="p">(</span><span class="n">rev</span> <span class="n">a2</span><span class="p">)</span>
+<span class="mi">08</span><span class="o">:</span><span class="mf">05.0</span> <span class="n">VGA</span> <span class="n">compatible</span> <span class="n">controller</span><span class="o">:</span> <span class="n">ASPEED</span> <span class="n">Technology</span><span class="p">,</span> <span class="n">Inc</span><span class="p">.</span> <span class="n">ASPEED</span> <span class="n">Graphics</span> <span class="n">Family</span> <span class="p">(</span><span class="n">rev</span> <span class="mi">10</span><span class="p">)</span>
+
+<span class="n">lspci</span> <span class="o">-</span><span class="n">v</span> <span class="o">-</span><span class="n">s</span> <span class="mo">02</span><span class="o">:</span><span class="mf">00.0</span>
+</pre></div>
+
+
+<h3 id="121-nvidia">1.2.1. NVIDIA独立显卡</h3>
+<h4 id="1211">1.2.1.1. 显卡驱动</h4>
+<p>下载地址：<br />
+https://www.nvidia.cn/Download/index.aspx?lang=cn</p>
+<h4 id="1212-cuda">1.2.1.2. CUDA</h4>
+<p>CUDA（Compute Unified Device Architecture）是显卡厂商NVIDIA推出的运算平台。</p>
+<h5 id="12121-cudagpu">1.2.1.2.1. 支持CUDA平台的GPU硬件型号</h5>
+<p>https://developer.nvidia.com/cuda-gpus</p>
+<h5 id="12122-cuda-cuda-toolkit">1.2.1.2.2. CUDA 核心工具包(CUDA Toolkit)</h5>
+<p>下载地址：<br />
+https://developer.nvidia.com/cuda-downloads<br />
+* 注意平台及版本号，最新版本的cuda 工具包未必能和最新的tensorflow 对应上</p>
+<p>Windows 平台下安装指南<br />
+https://docs.nvidia.com/cuda/cuda-installation-guide-microsoft-windows/index.html<br />
+其他平台安装指南<br />
+https://docs.nvidia.com/cuda/cuda-quick-start-guide/index.html</p>
+<p>安装要求</p>
+<ol>
+<li>A CUDA-capable GPU(硬件)</li>
+<li>A supported version of Microsoft Windows（操作系统）</li>
+<li>A supported version of Microsoft Visual Studio（注意非常重要!）</li>
+<li>the NVIDIA CUDA Toolkit （安装包）</li>
+</ol>
+<p>安装成功检验：<br />
+Fro windows:</p>
+<div class="hlcode"><pre><span class="n">nvcc</span> <span class="o">--</span><span class="n">version</span> <span class="err">#</span> <span class="err">产看版本号</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="nl">nvcc:</span> <span class="n">NVIDIA</span> <span class="p">(</span><span class="n">R</span><span class="p">)</span> <span class="n">Cuda</span> <span class="n">compiler</span> <span class="n">driver</span>
+<span class="n">Copyright</span> <span class="p">(</span><span class="n">c</span><span class="p">)</span> <span class="mi">2005</span><span class="o">-</span><span class="mi">2017</span> <span class="n">NVIDIA</span> <span class="n">Corporation</span>
+
+<span class="n">Built</span> <span class="n">on</span> <span class="n">Fri_Sep__1_21</span><span class="o">:</span><span class="mi">08</span><span class="o">:</span><span class="mi">32</span><span class="n">_Central_Daylight_Time_2017</span>
+<span class="n">Cuda</span> <span class="n">compilation</span> <span class="n">tools</span><span class="p">,</span> <span class="n">release</span> <span class="mf">9.0</span><span class="p">,</span> <span class="n">V9</span><span class="mf">.0.176</span>
+</pre></div>
+
+
+<p>For Linux:</p>
+<div class="hlcode"><pre><span class="n">cat</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">cuda</span><span class="o">/</span><span class="n">version</span><span class="p">.</span><span class="n">txt</span>
+</pre></div>
+
+
+<h5 id="12123-cudacudnn">1.2.1.2.3. CUDA深度神经网络库(cuDNN)</h5>
+<p>The NVIDIA CUDA® Deep Neural Network library (cuDNN) 是主要适用于深度神经网络的GPU加速器， cuDNN 为一些标准的神经网络（如前反馈、后反馈、卷积、池化、活化等 ） 提供了高适应性的基础设施。<br />
+下载地址：<br />
+https://developer.nvidia.com/cudnn （官网，需要注册开发者账户）</p>
+<p>conda 镜像里面有无需注册<br />
+https://mirrors.tuna.tsinghua.edu.cn/anaconda/pkgs/main/win-64/</p>
+<p>For Linux</p>
+<div class="hlcode"><pre><span class="n">cat</span> <span class="o">/</span><span class="n">usr</span><span class="o">/</span><span class="n">local</span><span class="o">/</span><span class="n">cuda</span><span class="o">/</span><span class="n">include</span><span class="o">/</span><span class="n">cudnn</span><span class="p">.</span><span class="n">h</span> <span class="o">|</span> <span class="n">grep</span> <span class="n">CUDNN_MAJOR</span> <span class="o">-</span><span class="n">A</span> <span class="mi">2</span>
+</pre></div>
+
+
+<h4 id="1213">1.2.1.3. 性能监控</h4>
+<p>nvidia-smi简称NVSMI，提供监控GPU使用情况和更改GPU状态的功能，是一个跨平台工具，它支持所有标准的NVIDIA驱动程序支持的Linux发行版以及从WindowsServer 2008 R2开始的64位的系统。该工具是NVIDIA显卡卡驱动附带的，只要安装好驱动后就会有它。</p>
+<div class="hlcode"><pre><span class="n">nvidia</span><span class="o">-</span><span class="n">smi</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="n">Sun</span> <span class="n">Jun</span> <span class="mi">09</span> <span class="mi">17</span><span class="o">:</span><span class="mi">19</span><span class="o">:</span><span class="mi">48</span> <span class="mi">2019</span>
+<span class="o">+-----------------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">NVIDIA</span><span class="o">-</span><span class="n">SMI</span> <span class="mf">385.54</span>                 <span class="n">Driver</span> <span class="n">Version</span><span class="o">:</span> <span class="mf">385.54</span>                    <span class="o">|</span>
+<span class="o">|-------------------------------+----------------------+----------------------+</span>
+<span class="o">|</span> <span class="n">GPU</span>  <span class="n">Name</span>            <span class="n">TCC</span><span class="o">/</span><span class="n">WDDM</span> <span class="o">|</span> <span class="n">Bus</span><span class="o">-</span><span class="n">Id</span>        <span class="n">Disp</span><span class="p">.</span><span class="n">A</span> <span class="o">|</span> <span class="n">Volatile</span> <span class="n">Uncorr</span><span class="p">.</span> <span class="n">ECC</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">Fan</span>  <span class="n">Temp</span>  <span class="n">Perf</span>  <span class="n">Pwr</span><span class="o">:</span><span class="n">Usage</span><span class="o">/</span><span class="n">Cap</span><span class="o">|</span>         <span class="n">Memory</span><span class="o">-</span><span class="n">Usage</span> <span class="o">|</span> <span class="n">GPU</span><span class="o">-</span><span class="n">Util</span>  <span class="n">Compute</span> <span class="n">M</span><span class="p">.</span> <span class="o">|</span>
+<span class="o">|===============================+======================+======================|</span>
+<span class="o">|</span>   <span class="mi">0</span>  <span class="n">GeForce</span> <span class="mi">940</span><span class="n">MX</span>      <span class="n">WDDM</span>  <span class="o">|</span> <span class="mo">00000000</span><span class="o">:</span><span class="mo">01</span><span class="o">:</span><span class="mf">00.0</span> <span class="n">Off</span> <span class="o">|</span>                  <span class="n">N</span><span class="o">/</span><span class="n">A</span> <span class="o">|</span>
+<span class="o">|</span> <span class="n">N</span><span class="o">/</span><span class="n">A</span>   <span class="mi">49</span><span class="n">C</span>    <span class="n">P8</span>    <span class="n">N</span><span class="o">/</span><span class="n">A</span> <span class="o">/</span>  <span class="n">N</span><span class="o">/</span><span class="n">A</span> <span class="o">|</span>     <span class="mi">26</span><span class="n">MiB</span> <span class="o">/</span>  <span class="mi">1024</span><span class="n">MiB</span> <span class="o">|</span>      <span class="mi">0</span><span class="o">%</span>      <span class="n">Default</span> <span class="o">|</span>
+<span class="o">+-------------------------------+----------------------+----------------------+</span>
+
+<span class="o">+-----------------------------------------------------------------------------+</span>
+<span class="o">|</span> <span class="n">Processes</span><span class="o">:</span>                                                       <span class="n">GPU</span> <span class="n">Memory</span> <span class="o">|</span>
+<span class="o">|</span>  <span class="n">GPU</span>       <span class="n">PID</span>   <span class="n">Type</span>   <span class="n">Process</span> <span class="n">name</span>                             <span class="n">Usage</span>      <span class="o">|</span>
+<span class="o">|=============================================================================|</span>
+<span class="o">|</span>  <span class="n">No</span> <span class="n">running</span> <span class="n">processes</span> <span class="n">found</span>                                                 <span class="o">|</span>
+<span class="o">+-----------------------------------------------------------------------------+</span>
+</pre></div>
+
+
+<p>gpustat：基于nvidia-smi的监控GPU 小工具</p>
+<div class="hlcode"><pre><span class="n">pip</span> <span class="n">install</span> <span class="n">gpustat</span> <span class="err">#</span> <span class="err">通过</span><span class="n">pip</span><span class="err">源安装</span>
+<span class="n">watch</span> <span class="o">--</span><span class="n">color</span> <span class="o">-</span><span class="n">n1</span> <span class="n">gpustat</span> <span class="o">-</span><span class="n">cpu</span> <span class="err">#</span> <span class="n">Linux</span> <span class="n">only</span>
+</pre></div>
+
+
+<h3 id="122-amd">1.2.2. AMD 独立显卡</h3>
+<h4 id="1221">1.2.2.1. 显卡驱动</h4>
+<h4 id="1222-rocm">1.2.2.2. ROCm 平台</h4>
+<h4 id="1223">1.2.2.3. 性能监控</h4>
+<h2 id="13-3">1.3. 3 网络通信层</h2>
+<p>（无需额外操作）<br />
+Tensorflow 的网络通信层：基于GRPC和RDMA两种通信方式，实现组件间数据通信。</p>
+<h3 id="131-1-grpc">1.3.1. 1 gRPC</h3>
+<p>grpc 是由 google 开发，是一款语言中立、平台中立、开源的远程过程调用(RPC)系统。</p>
+<h4 id="1311-rpc">1.3.1.1. RPC 系统</h4>
+<p>RPC 的全称是 Remote Procedure Call 是一种进程间通信方式。它<code>允许程序调用另一个地址空间（通常是共享网络的另一台机器上）的过程或函数</code>，而不用程序员显式编码这个远程调用的细节。</p>
+<p><strong>即程序员无论是调用本地的还是远程的，本质上编写的调用代码基本相同。</strong></p>
+<h5 id="13111">1.3.1.1.1. 系统组成</h5>
+<div class="hlcode"><pre><span class="n">rpc</span><span class="err">系统包括</span><span class="mi">5</span><span class="err">部分</span><span class="o">:</span>
+    <span class="mi">1</span><span class="o">.</span> <span class="n">User</span>
+    <span class="mi">2</span><span class="o">.</span> <span class="n">User</span><span class="o">-</span><span class="n">stub</span>
+    <span class="mi">3</span><span class="o">.</span> <span class="n">RPCRuntime</span>
+    <span class="mi">4</span><span class="o">.</span> <span class="n">Server</span><span class="o">-</span><span class="n">stub</span>
+    <span class="mi">5</span><span class="o">.</span> <span class="n">Server</span>
+</pre></div>
+
+
+<p>这里 user 就是 client 端，当 user 想发起一个远程调用时，它实际是通过本地调用 user-stub。user-stub 负责将调用的接口、方法和参数通过约定的协议规范进行编码并通过本地的 RPCRuntime 实例传输到远端的实例。远端 RPCRuntime 实例收到请求后交给 server-stub 进行解码后发起本地端调用，调用结果再返回给 user 端。</p>
+<h5 id="13112-rpc">1.3.1.1.2. rpc 过程</h5>
+<h5 id="13113">1.3.1.1.3. 服务开启</h5>
+<p>在windows 系统中：<br />
+"开始"→"设置"→"控制面板"-&gt;"管理工具"→"服务"-&gt;"remote procedure call (rpc)"，开启rpc服务</p>
+<h4 id="1312-grpc">1.3.1.2. gRPC 系统</h4>
+<p>理念：<br />
+定义一个服务，指定其能够被远程调用的方法（包含参数和返回类型）。在服务端实现这个接口，并运行一个 gRPC 服务器来处理客户端调用。在客户端拥有一个存根能够像服务端一样的方法。</p>
+<p>特性：<br />
+1. 基于HTTP/2 <br />
+HTTP/2 提供了连接多路复用、双向流、服务器推送、请求优先级、首部压缩等机制。可以节省带宽、降低TCP链接次数、节省CPU，帮助移动设备延长电池寿命等。gRPC 的协议设计上使用了HTTP2 现有的语义，请求和响应的数据使用HTTP Body 发送，其他的控制信息则用Header 表示。<br />
+2. IDL使用ProtoBuf <br />
+gRPC使用ProtoBuf来定义服务，ProtoBuf是由Google开发的一种数据序列化协议（类似于XML、JSON、hessian）。ProtoBuf能够将数据进行序列化，并广泛应用在数据存储、通信协议等方面。压缩和传输效率高，语法简单，表达力强。<br />
+3. 多语言支持（C, C++, Python, PHP, Nodejs, C#, Objective-C、Golang、Java） <br />
+gRPC支持多种语言，并能够基于语言自动生成客户端和服务端功能库。目前已提供了C版本grpc、Java版本grpc-java 和 Go版本grpc-go，其它语言的版本正在积极开发中，其中，grpc支持C、C++、Node.js、Python、Ruby、Objective-C、PHP和C#等语言，grpc-java已经支持Android开发。<br />
+远程过程调用系统（rpc）</p>
+<p>TensorFlow Servering C/S通信约束<br />
+TensorFlow Serving以Server方式提供模型能力服务，作为服务的使用者（Client）可以通过gRPC和RESTfull API两种方式来获取模型能力。虽然TensorFlow对C/S的通信约束做了说明，但感觉介绍的并不是特别的清晰易用，需要自己根据使用示例，并结合文档进行梳理和总结。</p>
+<h3 id="132-rdma">1.3.2. RDMA</h3>
+<p>RDMA是一个远程通讯技术，它通过Kernel bypass等方式降低数据传输中的延迟和CPU消耗。<br />
+在分布式训练中，由于多个Worker之间或者Worker和Paramater Server 之间需要大量传输模型变量。当GPU到达一定数量后，受制于网络带宽以及TCP协议的延迟，通讯往往会成为计算性能的瓶颈，而在分布式训练中使用RDMA技术能够非常明显地提高训练速度。</p>
+<p>Tensorflow是谷歌开源的深度学习框架，它有丰富的平台支持和API，也可以非常轻松地构建分布式模型训练。<br />
+Tensorflow 在实现里支持RDMA作为其分布式场景的通讯协议，但是官方镜像默认没有支持RDMA。需要重新构建tensorflow，并开启RDMA相关的构建参数。 Tensorflow 对 RDMA的支持和实现协议</p>
+<h2 id="14">1.4. 通讯 官方参考示例</h2>
+<p>在文档中提到了两个参考示例，一个用于gRPC通信约束测试，一个用于RESTfull API通信约束测试。</p>
+<div class="hlcode"><pre><span class="n">server</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">train</span><span class="o">.</span><span class="n">Server</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span> <span class="n">job_name</span><span class="o">=</span><span class="s">&quot;local&quot;</span><span class="p">,</span> <span class="n">task_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">protocol</span><span class="o">=</span><span class="s">&#39;grpc+verbs&#39;</span><span class="p">)</span> <span class="c"># default protocol is &#39;grpc&#39;</span>
+</pre></div>
+
+
+<h1 id="2-tensorflow">2. Tensorflow 安装</h1>
+<h2 id="21">2.1. 安装准备</h2>
+<h3 id="211-python">2.1.1. python 安装</h3>
+<p>python的版本由很多，但tensorflow是的操作可以简单认为由python驱动调用底层c++进行计算，对jit版本的python对Tensorflow程序的运行没有明显的影响。Anaconda版本的python 和原生的Cpython 都对Tensorflow 由很好的支持。</p>
+<h2 id="22">2.2. 版本选择</h2>
+<p><strong>官方版本</strong> <br />
+| 版本           | 描述    |<br />
+| -------------- | ------- |<br />
+| tensorflow     | CPU版本 |<br />
+| tensorflow-gpu | GPU版本 |<br />
+| tf-nightly     | 开发版  |</p>
+<p><strong>非官方版本</strong><br />
+非官方版本大多基于Tensorflow 开源代码进行编译，并对硬件框架进行结合预编译。</p>
+<ol>
+<li>Intel 优化的Tensorflow </li>
+<li>硬件结合。基于Intel CPU框架 对AVX2等指令集进行优化</li>
+<li>软件算法优化。使用 intel MKL 对数学运算进行优化</li>
+</ol>
+<h2 id="23-whl">2.3. 通过whl安装包</h2>
+<h3 id="2311-pypi">2.3.1.1. pypi 源下载</h3>
+<p>为兼容低版本CPU,从pip 源 安装的 tensorlfow 默认不适用高级指令集，使得运算没有充分利用硬件<br />
+1. 从pip官方源下载 安装</p>
+<div class="hlcode"><pre><span class="n">pip</span> <span class="n">install</span> <span class="n">tensorflow</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">tensorflow</span><span class="o">==</span><span class="mf">2.0.0</span><span class="o">-</span><span class="n">alpha0</span>
+<span class="n">pip</span> <span class="n">install</span> <span class="n">tf</span><span class="o">-</span><span class="n">nightly</span>
+</pre></div>
+
+
+<ol>
+<li>国内pip源加速<br />
+在境内地区的国际站点的网络连接速度通常较慢，pip  可通过国内镜像加速</li>
+</ol>
+<p>清华：https://pypi.tuna.tsinghua.edu.cn/simple<br />
+阿里云：http://mirrors.aliyun.com/pypi/simple/<br />
+中国科技大学 https://pypi.mirrors.ustc.edu.cn/simple/<br />
+华中理工大学：http://pypi.hustunique.com/<br />
+山东理工大学：http://pypi.sdutlinux.org/ <br />
+豆瓣：http://pypi.douban.com/simple/</p>
+<div class="hlcode"><pre><span class="err">#</span> <span class="nx">一次性使用</span><span class="err">，</span><span class="nx">在pip</span> <span class="nx">后添加</span> <span class="na">-i</span> <span class="o">&lt;</span><span class="nx">pip</span> <span class="nx">源地址</span><span class="o">&gt;</span><span class="p">:</span>
+<span class="err">#</span> <span class="nx">pip</span> <span class="nb">install</span> <span class="o">&lt;</span><span class="nx">package</span><span class="na">-name</span><span class="o">&gt;</span> <span class="na">-i</span> <span class="o">&lt;</span><span class="nx">url_address</span><span class="o">&gt;</span> 
+<span class="nx">pip</span> <span class="nb">install</span> <span class="nx">tensorflow</span> <span class="na">-i</span> <span class="nx">https</span><span class="p">:</span><span class="c1">//pypi.tuna.tsinghua.edu.cn/simple</span>
+<span class="err">#</span> <span class="ow">or</span>
+<span class="nx">pip</span> <span class="nx">config</span> <span class="nb">set</span> <span class="bp">global.</span><span class="nb">index</span><span class="na">-url</span> <span class="nx">https</span><span class="p">:</span><span class="c1">//pypi.tuna.tsinghua.edu.cn/simple</span>
+</pre></div>
+
+
+<h3 id="anaconda">Anaconda 仓库安装</h3>
+<p>Anaconda 仓库 里面的 tensorflow 是 intel 优化过的tensorflow 包</p>
+<h3 id="232">2.3.2. 离线安装</h3>
+<p>本地whl包 安装</p>
+<div class="hlcode"><pre><span class="n">pip</span> <span class="n">install</span> <span class="n">xxx</span><span class="p">.</span><span class="n">whl</span>
+</pre></div>
+
+
+<p>在windows 环境下推荐 使用编译好的二进制文件进行安装<br />
+参考 https://github.com/fo40225/tensorflow-windows-wheel (网址)[https://github.com/fo40225/tensorflow-windows-wheel]</p>
+<h2 id="24-docker">2.4. docker 安装</h2>
+<p>参考：https://tensorflow.google.cn/install/docker</p>
+<h3 id="241-cpu">2.4.1. CPU版本</h3>
+<div class="hlcode"><pre><span class="n">docker</span> <span class="n">pull</span> <span class="n">tensorflow</span><span class="o">/</span><span class="n">tensorflow</span><span class="o">:</span><span class="n">latest</span><span class="o">-</span><span class="n">devel</span><span class="o">-</span><span class="n">gpu</span><span class="o">-</span><span class="n">py3</span> 
+</pre></div>
+
+
+<h3 id="242-gpu">2.4.2. GPU版本</h3>
+<p>Docker 是在 GPU 上运行 TensorFlow 的最简单方法，因为主机只需安装 NVIDIA® 驱动程序（无需安装 NVIDIA® CUDA® 工具包）。</p>
+<p>检测nvidia GPU是否可用 </p>
+<div class="hlcode"><pre><span class="n">lspci</span> <span class="o">|</span> <span class="n">grep</span> <span class="o">-</span><span class="n">i</span> <span class="n">nvidia</span>
+</pre></div>
+
+
+<p>若显卡驱动可用 </p>
+<div class="hlcode"><pre><span class="n">docker</span> <span class="n">run</span> <span class="o">--</span><span class="n">runtime</span><span class="o">=</span><span class="n">nvidia</span> <span class="o">-</span><span class="n">it</span> <span class="o">-</span><span class="n">p</span> <span class="mi">8888</span><span class="o">:</span><span class="mi">8888</span> <span class="o">-</span><span class="n">p</span> <span class="mi">6001</span><span class="o">:</span><span class="mi">6001</span> <span class="o">-</span><span class="n">v</span> <span class="o">/</span><span class="n">home</span><span class="o">/</span><span class="n">notebooks</span><span class="o">:/</span><span class="n">notebooks</span> <span class="o">--</span><span class="n">rm</span> <span class="n">tensorflow</span><span class="o">/</span><span class="n">tensorflow</span><span class="o">:</span><span class="n">latest</span><span class="o">-</span><span class="n">gpu</span><span class="o">-</span><span class="n">py3</span>
+</pre></div>
+
+
+<h2 id="25">2.5. 集群中安装</h2>
+<div class="hlcode"><pre>
+</pre></div>
+
+
+<h1 id="3">3. 检验</h1>
+<div class="hlcode"><pre><span class="n">tf</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">is_gpu_available</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="bp">True</span><span class="o">/</span><span class="bp">False</span>
+
+<span class="n">tf</span><span class="o">.</span><span class="n">test</span><span class="o">.</span><span class="n">is_built_with_cuda</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="bp">True</span><span class="o">/</span><span class="bp">False</span>
+</pre></div>
+
+
+<h1 id="_1">参考资料</h1>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:1">
+<p>Install TensorFlow 2 :https://www.tensorflow.org/install&#160;<a class="footnote-backref" href="#fnref:1" rev="footnote" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

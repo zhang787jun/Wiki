@@ -1,8 +1,0 @@
----
-title: "AI 系统"
-layout: page
-date: 2099-06-02 00:00
----
-
-[TOC]
-https://github.com/microsoft/AI-System.git

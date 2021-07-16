@@ -1,0 +1,170 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>01.图神经网络模型 - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#20-数据科学">20-数据科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-Algorithm">Algorithm</a>&nbsp;»&nbsp;<a href="/Wiki/#-04-图学习">04-图学习</a>&nbsp;»&nbsp;<a href="/Wiki/#-03_图深度学习">03_图深度学习</a>&nbsp;»&nbsp;01.图神经网络模型</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">01.图神经网络模型</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1-gnn">1. GNN简介</a><ul>
+<li><a href="#11-gcns-s">1.1. GCNs 图卷积网络s</a><ul>
+<li><a href="#111-gcn">1.1.1. 基于谱的GCN</a><ul>
+<li><a href="#graphsage">GraphSage</a></li>
+</ul>
+</li>
+<li><a href="#112">1.1.2. 非基于谱的方法</a><ul>
+<li><a href="#_1"></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#12-gat">1.2. GAT 图注意力网络</a><ul>
+<li><a href="#121-message-passing">1.2.1. Message Passing 消息传递机制</a></li>
+<li><a href="#122-gate">1.2.2. Gate 门机制机制</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="1-gnn">1. GNN简介</h1>
+<p>图卷积神经网络(Graph Neural Networks)</p>
+<p>图神经网络的概念第一次在<a href="https://persagen.com/files/misc/scarselli2009graph.pdf">论文</a>中提出，该论文将现存的神经网络模型扩展到处理图领域的数据。在一个图结构中，<strong>每一个节点由它自身的特征以及与其相连的节点特征来定义该节点</strong>。</p>
+<p><img alt="" src="https://pic4.zhimg.com/v2-95f73c5719cb222cc86eb1342640655f_r.jpg" /><br />
+依据<strong>更新方式</strong>分类</p>
+<ol>
+<li>图卷积网络(GCN)</li>
+<li>基于注意力更新的图网络(GAT)</li>
+<li>基于门控的更新的图网络</li>
+<li>具有跳边的图网络</li>
+</ol>
+<p>论文对GNN模型分类如下：</p>
+<ol>
+<li>图卷积网络(Graph convolutional networks)和图注意力网络(graph attention networks)，因为涉及到传播步骤(propagation step)。</li>
+<li>图的空域网络(spatial-temporal networks)，因为该模型通常用在动态图(dynamic graph)上。</li>
+<li>图的自编码(auto-encoder)，因为该模型通常使用无监督学习(unsupervised)的方式。</li>
+<li>图生成网络(generative networks)，因为是生成式网络。</li>
+</ol>
+<h2 id="11-gcns-s">1.1. GCNs 图卷积网络s</h2>
+<p>图卷积网络(Graph convolutional networks) GCN的边权重：<br />
+1. 与节点的度相关<br />
+2. 不可学习</p>
+<h3 id="111-gcn">1.1.1. 基于谱的GCN</h3>
+<p>传播(propagation)指的是汇集从邻居节点和连接的边的信息</p>
+<h4 id="graphsage">GraphSage</h4>
+<p>原始的GCN方法每个节点的表示依赖于图中所有的其他节点，计算复杂度过大，且由于依赖于拉普拉斯矩阵训练的网络不惧泛化性。</p>
+<p>GraphSAGE对于每个节点的计算不涉及整张图，所以效率更加高，不过为了缓解深度加深感受野指数爆炸的现象，GraphSAGE每次信息计算通过采样只使用部分邻居。</p>
+<p>FastGCN对GraphSAGE的随机采样加以改进，针对每个节点连接其他节点个数的不同给定不同的重要性。</p>
+<p>[公式]</p>
+<p>还有一些限制感受野的其他方法，咱也不懂.</p>
+<p>采样函数实现</p>
+<p>GraphSage的作者提出了采样算法来使得模型能够以Mini-batch的方式进行训练，算法伪代码见论文附录A。</p>
+<p>假设我们要利用中心节点的k阶邻居信息，则在聚合的时候，需要从第k阶邻居传递信息到k-1阶邻居，并依次传递到中心节点。<br />
+采样的过程刚好与此相反，在构造第t轮训练的Mini-batch时，我们从中心节点出发，在前序节点集合中采样NtN_tNt​个邻居节点加入采样集合。<br />
+接着将邻居节点作为新的中心节点继续进行第t-1轮训练的节点采样，以此类推。<br />
+最后将采样到的节点和边一起构造得到子图。</p>
+<h3 id="112">1.1.2. 非基于谱的方法</h3>
+<h4 id="_1"></h4>
+<h2 id="12-gat">1.2. GAT 图注意力网络</h2>
+<p>图注意力网络(Graph Attention Network)</p>
+<h3 id="121-message-passing">1.2.1. Message Passing 消息传递机制</h3>
+<h3 id="122-gate">1.2.2. Gate 门机制机制</h3>
+<p>门机制(Gate)：目前在信息传播步骤中使用的门机制类似于GRU和LSTM模型，这种机制可以减小原始GNN模型的约束，并提升在图结构中的长期的信息传播</p>
+<p>3.GAT 总结</p>
+<p>GAT 的时间复杂度为 O(|V|FF'+|E|F')，其中 |V|FF' 是计算所有节点特征向量变换的时间复杂度 (即 Wh)，|E|F' 是计算 Attention 的时间复杂度。GAT 不依赖于完整的图结构，只依赖于边，因此可以用于 inductive 任务。GAT 可用于有向图。采用 Attention 机制，可以为不同的邻居节点分配不同的权重。4.参考文献</p>
+<p>SEMI-SUPERVISED CLASSIFICATION WITH GRAPH CONVOLUTIONAL NETWORKS</p>
+<p>相比于传统的网络，GNN的深度一般更浅，原因是GNN的感受野随着深度的增加指数增大在信息传递过程中会引入大量噪声。所以在GNN中也有人尝试加入skip connection来缓解这个问题。下面是一个用Highway的方法的例子：</p>
+<p>[公式]</p>
+<p>当前的输出还有一部分来自于上层的输出。</p>
+<p>为了方便读者更好地理解图神经网络的原理，我们花费了较长篇幅介绍图神经网络的思想和发展。总的来说，它由图信号理论和谱域图卷积发展而来，目前更多聚焦在空间域上的卷积方式，即将邻居节点的特征聚合给中心节点的方式来更新节点特征。</p>
+<p>GCN、GraphSAGE和GAT是三种具有代表性的图神经网络。GCN仅适用于转导学习和无向图，即在未来有新节点加入时需要重新训练模型才能进行预测；GraphSAGE和GAT分别通过聚合器和注意力机制的方式将其扩展到归纳式学习，可用于新节点的预测，这对动态的股票市场来说是富有意义的。</p>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>

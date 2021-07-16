@@ -1,0 +1,276 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/style.css">
+    <link rel="Stylesheet" type="text/css" href="/Wiki/static/css/tango.css">
+    <link rel="shortcut icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/Wiki/favicon.ico" type="image/x-icon">
+    <title>Pytorch - Jun's personal knowledge wiki</title>
+    <meta name="keywords" content="Technology, MachineLearning, DataMining, Wiki" />
+    <meta name="description" content="A wiki website" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script type="text/x-mathjax-config">
+        MathJax.Hub.Config({
+            tex2jax: {
+                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
+            }
+        });
+    </script>
+    <script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+        </script>
+</head>
+
+<body>
+
+    <div id="container">
+        
+<div id="header">
+  <div id="post-nav"><a href="/Wiki/">Home</a>&nbsp;»&nbsp;<a href="/Wiki/#20-数据科学">20-数据科学</a>&nbsp;»&nbsp;<a href="/Wiki/#-Library_Platform">Library_Platform</a>&nbsp;»&nbsp;<a href="/Wiki/#-06-Pytorch">06-Pytorch</a>&nbsp;»&nbsp;Pytorch</div>
+</div>
+<div class="clearfix"></div>
+<div id="title">Pytorch</div>
+<div id="content">
+  <div class="toc"><span class="toctitle">Table of Contents</span><ul>
+<li><a href="#1">1. 数据类型与内存大小</a></li>
+<li><a href="#2">2. 张量的基本操作</a><ul>
+<li><a href="#21">2.1. 创建张量</a></li>
+<li><a href="#22">2.2. 数学运算</a><ul>
+<li><a href="#221">2.2.1. 基础运算</a></li>
+<li><a href="#222">2.2.2. 求梯度</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<h1 id="1">1. 数据类型与内存大小</h1>
+<table>
+<thead>
+<tr>
+<th>Data type</th>
+<th>dtype</th>
+<th>CPU tensor</th>
+<th>GPU tensor</th>
+<th>Size/bytes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>32-bit floating</td>
+<td>torch.float32 or torch.float</td>
+<td>torch.FloatTensor</td>
+<td>torch.cuda.FloatTensor</td>
+<td>4</td>
+</tr>
+<tr>
+<td>64-bit floating</td>
+<td>torch.float64 or torch.double</td>
+<td>torch.DoubleTensor</td>
+<td>torch.cuda.DoubleTensor</td>
+<td>8</td>
+</tr>
+<tr>
+<td>16-bit floating</td>
+<td>torch.float16or torch.half</td>
+<td>torch.HalfTensor</td>
+<td>torch.cuda.HalfTensor</td>
+<td>-</td>
+</tr>
+<tr>
+<td>8-bit integer (unsigned)</td>
+<td>torch.uint8</td>
+<td>torch.ByteTensor</td>
+<td>torch.cuda.ByteTensor</td>
+<td>1</td>
+</tr>
+<tr>
+<td>8-bit integer (signed)</td>
+<td>torch.int8</td>
+<td>torch.CharTensor</td>
+<td>torch.cuda.CharTensor</td>
+<td>-</td>
+</tr>
+<tr>
+<td>16-bit integer (signed)</td>
+<td>torch.int16or torch.short</td>
+<td>torch.ShortTensor</td>
+<td>torch.cuda.ShortTensor</td>
+<td>2</td>
+</tr>
+<tr>
+<td>32-bit integer (signed)</td>
+<td>torch.int32 or torch.int</td>
+<td>torch.IntTensor</td>
+<td>torch.cuda.IntTensor</td>
+<td>4</td>
+</tr>
+<tr>
+<td>64-bit integer (signed)</td>
+<td>torch.int64 or torch.long</td>
+<td>torch.LongTensor</td>
+<td>torch.cuda.LongTensor</td>
+<td>8</td>
+</tr>
+</tbody>
+</table>
+<h1 id="2">2. 张量的基本操作</h1>
+<h2 id="21">2.1. 创建张量</h2>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">torch</span>
+
+<span class="c"># 1. 未初始化，都是0</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="c"># 2. 随机初始化</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+
+<span class="c"># 3. 传递参数初始化</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+
+
+<span class="c"># 4. 通过Numpy初始化</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+
+
+
+
+<span class="c"># 5. 获取size，返回一个tuple [5, 3]</span>
+<span class="k">print</span> <span class="n">x</span><span class="o">.</span><span class="n">size</span><span class="p">()</span>
+</pre></div>
+
+
+<h2 id="22">2.2. 数学运算</h2>
+<h3 id="221">2.2.1. 基础运算</h3>
+<div class="hlcode"><pre><span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+
+<span class="c"># 1. 直接相加</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span>
+<span class="c"># 2. torch相加</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="c"># 3. 传递参数返回结果</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">out</span> <span class="o">=</span> <span class="n">result</span><span class="p">)</span>
+<span class="c"># 4. 加到自身去，自身y会改变</span>
+<span class="n">y</span><span class="o">.</span><span class="n">add_</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="c"># 平均</span>
+<span class="n">x</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="c"># 范数</span>
+<span class="n">x</span><span class="o">.</span><span class="n">norm</span><span class="p">()</span>
+</pre></div>
+
+
+<h3 id="222">2.2.2. 求梯度</h3>
+<p>$$z = 2x + 3y + 4$$</p>
+<p>求<br />
+$$\frac{\partial z}{\partial x},\frac{\partial z}{\partial y}$$</p>
+<div class="hlcode"><pre><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.autograd</span> <span class="kn">import</span> <span class="n">Variable</span>
+<span class="c"># 1. 准备式子</span>
+<span class="c"># 默认求导是false</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="mi">2</span><span class="p">]),</span> <span class="n">requires_grad</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="mi">3</span><span class="p">]),</span> <span class="n">requires_grad</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">z</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">y</span> <span class="o">+</span> <span class="mi">4</span>
+<span class="c"># 2. z对x和y进行求导</span>
+<span class="n">z</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+<span class="c"># 3. 获得z对x和y的导数</span>
+<span class="k">print</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>     
+<span class="o">&gt;&gt;&gt;</span>
+<span class="c"># tensor([2.])</span>
+<span class="k">print</span> <span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="c"># tensor([3.])</span>
+</pre></div>
+
+
+<p>复杂计算<br />
+$$y=x+2,z=y<em>y</em>3,o=avg(z),求\frac{\partial z}{\partial x}$$</p>
+<div class="hlcode"><pre><span class="n">x</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">requires_grad</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">2</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">y</span> <span class="o">*</span> <span class="n">y</span> <span class="o">*</span> <span class="mi">3</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">z</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+<span class="n">out</span><span class="o">.</span><span class="n">backward</span><span class="p">()</span>
+<span class="c"># d(out)/dx</span>
+<span class="k">print</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">grad</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span>
+<span class="c">#tensor([[4.5000, 4.5000],</span>
+<span class="c">#        [4.5000, 4.5000]])</span>
+</pre></div>
+
+
+<p>传递梯度</p>
+<div class="hlcode"><pre><span class="n">x</span> <span class="o">=</span> <span class="n">Variable</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">([</span><span class="mi">2</span><span class="p">,</span><span class="mi">1</span><span class="p">]),</span> <span class="n">requires_grad</span> <span class="o">=</span> <span class="bp">True</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">2</span>
+<span class="n">gradients</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">FloatTensor</span><span class="p">([</span><span class="mf">0.01</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">])</span>
+<span class="n">y</span><span class="o">.</span><span class="n">backward</span><span class="p">(</span><span class="n">gradients</span><span class="p">)</span>
+<span class="k">print</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">grad</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span>
+<span class="c">#tensor([0.0100, 0.1000])</span>
+</pre></div>
+</div>
+<div id="renote">
+  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
+  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
+  <img src="/Wiki/static/images/pay.jpg" width="25%">
+</div>
+
+    </div>
+    <div id="footer">
+        <span>
+            Copyright © 2021 zhang787jun.
+            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
+        </span>
+    </div>
+
+    
+</body>
+<script>
+    function changeImgurl(site_root_url) {
+        var images = document.images;
+        var site_root = site_root_url;
+        for (i = 0, len = images.length; i < len; i++) {
+            image = images[i];
+            image_src = image.src;
+            if (image_src.search("attach") >= 0) {
+                re_image_src = image_src.slice(image_src.search("attach"));
+                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
+                    re_image_src;
+                image.src = abs_image_src;
+            }
+        }
+    }
+    var site_root_url = "/Wiki";
+    changeImgurl(site_root_url);
+    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
+    const initMathjaxConfig = () => {
+        if (!window.MathJax) {
+            return;
+        }
+        window.MathJax.Hub.Config({
+            showProcessingMessages: false, //关闭js加载过程信息
+            messageStyle: "none", //不显示信息
+            jax: ["input/TeX", "output/HTML-CSS"],
+            tex2jax: {
+                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
+                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
+                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
+            },
+            "HTML-CSS": {
+                availableFonts: ["STIX", "TeX"], //可选字体
+                showMathMenu: false //关闭右击菜单显示
+            }
+        });
+        isMathjaxConfig = true; //
+    };
+    if (isMathjaxConfig === false) {
+        // 如果：没有配置MathJax
+        initMathjaxConfig();
+    };
+</script>
+
+</html>
