@@ -6,11 +6,11 @@ keywords: Technology, MachineLearning, DataMining, Wiki
 description: A wiki website
 author: zhang787jun
 root: /Wiki
-theme: simple
+theme: themes/simple
 debug: True
 destination: output
 source: content
 attach: attach
 default_ext: md
-pygments: true
+highlighter: rouge
 # theme add MathJax.js
