@@ -1,11 +1,25 @@
-language: shell
+language: python
+python:
+  - "3.8"
+
 env:
   global:
+    # Keep the existing GH_REF, it might be used by ghp-import or for reference
     - GH_REF: github.com/zhang787jun/Wiki.git
-    - secure: "... entrypted data ..."
-sudo: required
-before_install:
-  - sudo pip install ghp-import
-  - git remote add my_origin https://${gh_token}@${GH_REF}
+    # The existing secure token for gh_token needs to be preserved EXACTLY.
+    - secure: "... entrypted data ..." # Preserved from original
+
+install:
+  - pip install simiki ghp-import
+  - pip install --upgrade pytz tzlocal watchdog
+
 script:
-  - ghp-import -f -p -m "Update output documentation" -r my_origin -b gh-pages output
+  # Generate the site using Simiki
+  - simiki g
+  # Deploy the 'output' directory to the 'gh-pages' branch
+  # The GITHUB_TOKEN (from the secure env) should allow ghp-import to push
+  # to the same repository (origin) by default.
+  - ghp-import -n -p -f -m "Update documentation from Travis CI" -r https://${gh_token}@${GH_REF} -b gh-pages output
+
+notifications:
+  email: false # Optional: disable email notifications
