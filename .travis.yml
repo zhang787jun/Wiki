@@ -16,6 +16,8 @@ install:
 script:
   # Generate the site using Simiki
   - simiki g
+  # Create .nojekyll file for GitHub Pages
+  - touch output/.nojekyll
   # Deploy the 'output' directory to the 'gh-pages' branch
   # The GITHUB_TOKEN (from the secure env) should allow ghp-import to push
   # to the same repository (origin) by default.
