@@ -134,3 +134,6 @@ dmypy.json
 
 # pb2.py files
 *_pb2.py
+
+# Simiki output
+output/
