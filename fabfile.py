@@ -136,7 +136,7 @@ def deploy(type=None):
     done = False
 
     for deploy_item in deploy_configs:
-        deploy_type = deploy_item.pop('type')
+        deploy_type = deploy_item.get('type')
         if type and deploy_type != type:
             continue
         func_name = 'deploy_{0}'.format(deploy_type)
