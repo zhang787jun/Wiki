@@ -108,8 +108,8 @@ def deploy_ftp(deploy_configs):
         rel_root = os.path.relpath(root, output_dir)
         for fn in files:
             store_fn = os.path.join(ftp_dir, rel_root, fn)
-            ftp.storbinary('STOR %s' % store_fn,
-                           open(os.path.join(root, fn), 'rb'))
+            with open(os.path.join(root, fn), 'rb') as upload_file:
+                ftp.storbinary('STOR %s' % store_fn, upload_file)
 
     ftp.close()
 
@@ -142,7 +142,7 @@ def deploy(type=None):
         func_name = 'deploy_{0}'.format(deploy_type)
         func = globals().get(func_name)
         if not func:
-            do_exit('Warning: not supprt {0} deploy method'
+            do_exit('Warning: not support {0} deploy method'
                     .format(deploy_type))
         func(deploy_item)
         done = True
