@@ -1,34 +1,18 @@
 {% extends "base.html" %}
-
-{% block title %}{{ page.title }} - {{ site.title }}{% endblock %}
-
+{% block title %}{{ page.title|e }} · Jim{% endblock %}
+{% block head %}
+<script type="text/x-mathjax-config">MathJax.Hub.Config({showProcessingMessages:false,messageStyle:'none',tex2jax:{inlineMath:[['$','$'],['\\(','\\)']],displayMath:[['$$','$$'],['\\[','\\]']],skipTags:['script','noscript','style','textarea','pre','code']}});</script>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+{% endblock %}
 {% block container %}
-<div id="header">
-  <div id="post-nav">
-    {%- if not default_home_page -%}
-    <a href="{{ site.root }}/">Home</a>
-    {%- if page.category -%}
-    {%- for c in page.category.split("/") -%}
-    {%- if loop.index == 1 -%}
-    {%- set id = c -%}
-    {%- else -%}
-    {% set id = id ~ "-" ~ c -%}
-    {%- endif -%}
-    &nbsp;»&nbsp;<a href="{{ site.root }}/#{{ id }}">{{ c }}</a>
-    {%- endfor -%}
-    {%- endif -%}
-    &nbsp;»&nbsp;{{ page.title }}
-    {%- endif -%}
-  </div>
-</div>
-<div class="clearfix"></div>
-<div id="title">{{ page.title }}</div>
-<div id="content">
-  {{ page.content }}
-</div>
-<div id="renote">
-  <HR style=" FILTER: alpha (opacity = 100, finishopacity =0 , style= 3 )" width="80%" color=#987 cb 9 SIZE=3>
-  <p>如果你觉得这篇文章对你有帮助，不妨请我喝杯咖啡，鼓励我创造更多!</p>
-  <img src="{{ site.root }}/static/images/pay.jpg" width="25%">
+<div class="reading-progress" aria-hidden="true"><span></span></div>
+<div class="reader-layout wrap">
+  <article class="reader">
+    <nav class="breadcrumbs" aria-label="面包屑"><a href="{{ site.root }}/">知识库</a>{% if page.category %}<span aria-hidden="true">/</span><a href="{{ site.root }}/#{{ page.category.split('/')[0]|e }}">{{ page.category.split('/')[0].split('-', 1)[-1]|e }}</a>{% endif %}</nav>
+    <header class="article-header"><p class="eyebrow">NOTES & EXPLORATIONS</p><h1 id="title">{{ page.title|e }}</h1><p class="article-meta">Jim Zhang <span>·</span> <span data-reading-time>学习笔记</span></p></header>
+    <div id="content" class="prose">{{ page.content }}</div>
+    <div class="article-end"><span class="end-mark" aria-hidden="true">✳</span><p>一个问题，通向下一个问题。</p><a href="{{ site.root }}/" class="text-link">继续探索知识库 <span>→</span></a></div>
+  </article>
+  <aside class="toc-sidebar" aria-label="本页目录" hidden><p class="eyebrow">ON THIS PAGE</p><nav id="article-toc"></nav><a class="back-top" href="#main">回到顶部 ↑</a></aside>
 </div>
 {% endblock %}
