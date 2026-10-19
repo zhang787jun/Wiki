@@ -2,7 +2,7 @@
 # tested compatibility set with: pip install --no-deps -r requirements-build.txt
 simiki==1.6.2.3
 Markdown==3.8.2
-Pygments==2.19.2
+Pygments==2.20.0
 Jinja2==3.1.6
 MarkupSafe==3.0.3
 PyYAML==6.0.3
