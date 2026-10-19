@@ -1,86 +1,35 @@
-<!DOCTYPE HTML>
-<html>
-
+<!doctype html>
+<html lang="zh-CN">
 <head>
-    <link rel="Stylesheet" type="text/css" href="{{ site.root }}/static/css/style.css">
-    <link rel="Stylesheet" type="text/css" href="{{ site.root }}/static/css/tango.css">
-    <link rel="shortcut icon" href="{{ site.root }}/favicon.ico" type="image/x-icon">
-    <link rel="icon" href="{{ site.root }}/favicon.ico" type="image/x-icon">
-    <title>{% block title %}{{ site.title }}{% endblock %}</title>
-    <meta name="keywords" content="{{ site.keywords }}" />
-    <meta name="description" content="{{ site.description }}" />
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <script type="text/x-mathjax-config">
-        MathJax.Hub.Config({
-            tex2jax: {
-                inlineMath: [ ['$','$'], ["\\(","\\)"] ],
-                displayMath: [ ['$$','$$'], ["\\[","\\]"] ]
-            }
-        });
-    </script>
-    <script type="text/javascript" async
-        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
-        </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>{% block title %}Jim · 知识与实践{% endblock %}</title>
+  <meta name="description" content="Jim 的个人知识空间。关于计算机科学、数据科学、产品与应用，以及战略和管理的长期笔记。">
+  <link rel="icon" href="{{ site.root }}/static/images/mark.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ site.root }}/static/css/style.css?v=20261019">
+  <link rel="stylesheet" href="{{ site.root }}/static/css/tango.css">
+  <script src="{{ site.root }}/static/js/theme.js?v=20261019"></script>
+  <script defer src="{{ site.root }}/static/js/search-core.js?v=20261019"></script>
+  <script defer src="{{ site.root }}/static/js/space.js?v=20261019"></script>
+  {% block head %}{% endblock %}
 </head>
-
-<body>
-
-    <div id="container">
-        {% block container %}
-        {{ page.content }}
-        {% endblock %}
+<body data-search-index="{{ site.root }}/static/data/search-index.json">
+  <a class="skip-link" href="#main">跳至正文</a>
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="wordmark" href="https://zhang787jun.github.io/" aria-label="Jim 首页">Jim<span>.</span></a>
+      <nav aria-label="主导航" class="main-nav">
+        <a href="{{ site.root }}/" aria-current="page">知识库</a>
+        <a href="https://zhang787jun.github.io/#projects">作品</a>
+        <a href="https://zhang787jun.github.io/#about">关于</a>
+      </nav>
+      <div class="nav-tools"><button class="search-trigger" data-search-open aria-label="搜索知识库"><span class="search-icon" aria-hidden="true"></span><span class="search-label">搜索</span><kbd>⌘ K</kbd></button><button class="icon-button theme-toggle" data-theme-toggle aria-label="切换深浅主题" title="切换深浅主题">◐</button></div>
     </div>
-    <div id="footer">
-        <span>
-            Copyright © {{ site.time.strftime("%Y") }} {{ site.author }}.
-            Powered by <a href="http://simiki.org/" target="_blank">Simiki</a>.
-        </span>
-    </div>
-
-    {% include "stat.html" %}
+  </header>
+  <main id="main">{% block container %}{{ page.content }}{% endblock %}</main>
+  <footer class="site-footer wrap"><a class="wordmark" href="https://zhang787jun.github.io/">Jim<span>.</span></a><p>持续学习，认真记录。</p><div><a href="https://github.com/zhang787jun">GitHub ↗</a><a href="mailto:zhang787jun@gmail.com">联系我 ↗</a></div></footer>
+  {% include "search.html" %}
+  <div class="sr-only" id="announcement" aria-live="polite"></div>
 </body>
-<script>
-    function changeImgurl(site_root_url) {
-        var images = document.images;
-        var site_root = site_root_url;
-        for (i = 0, len = images.length; i < len; i++) {
-            image = images[i];
-            image_src = image.src;
-            if (image_src.search("attach") >= 0) {
-                re_image_src = image_src.slice(image_src.search("attach"));
-                abs_image_src = (site_root.endsWith("/")) ? site_root + re_image_src : site_root + "/" +
-                    re_image_src;
-                image.src = abs_image_src;
-            }
-        }
-    }
-    var site_root_url = "{{ site.root }}";
-    changeImgurl(site_root_url);
-    let isMathjaxConfig = false; // 防止重复调用Config，造成性能损耗
-    const initMathjaxConfig = () => {
-        if (!window.MathJax) {
-            return;
-        }
-        window.MathJax.Hub.Config({
-            showProcessingMessages: false, //关闭js加载过程信息
-            messageStyle: "none", //不显示信息
-            jax: ["input/TeX", "output/HTML-CSS"],
-            tex2jax: {
-                inlineMath: [["$", "$"], ["\\(", "\\)"]], //行内公式选择符
-                displayMath: [["$$", "$$"], ["\\[", "\\]"]], //段内公式选择符
-                skipTags: ["script", "noscript", "style", "textarea", "pre", "code", "a"] //避开某些标签
-            },
-            "HTML-CSS": {
-                availableFonts: ["STIX", "TeX"], //可选字体
-                showMathMenu: false //关闭右击菜单显示
-            }
-        });
-        isMathjaxConfig = true; //
-    };
-    if (isMathjaxConfig === false) {
-        // 如果：没有配置MathJax
-        initMathjaxConfig();
-    };
-</script>
-
 </html>

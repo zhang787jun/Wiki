@@ -1,36 +1,35 @@
 {% extends "base.html" %}
-
 {% macro list_page(pages, parent_url, parent_id) -%}
-      <ul>
-        {%- for page_k, page_v in pages.items() %}
-          {% if site.default_ext in page_k %}
-        <li class="pagelist">
-          <a href="{{ parent_url }}/{{ page_v.name }}.html">{{ page_v.title }}</a>
-        </li>
-          {% else %}
-        {% set id = parent_id ~ "-" ~ page_k %}
-        <li class="pagelist" id="{{ id }}">{{ page_k }}</li>
-            {% set url = parent_url ~ "/" ~ page_k %}
-            {{ list_page(page_v, url, id) }}
-          {% endif %}
-        {%- endfor %}
-      </ul>
+<ul class="catalog-tree">
+  {%- for page_k, page_v in pages.items() %}
+  {% if page_k.endswith('.' ~ site.default_ext) %}
+  <li class="catalog-entry"><a href="{{ parent_url|e }}/{{ page_v.name|e }}.html">{{ page_v.title|e }}<span aria-hidden="true">↗</span></a></li>
+  {% else %}
+  {% set id = parent_id ~ "-" ~ page_k %}
+  <li class="catalog-folder" id="{{ id|e }}"><details open><summary>{{ page_k|e }}</summary>{{ list_page(page_v, parent_url ~ "/" ~ page_k, id) }}</details></li>
+  {% endif %}
+  {%- endfor %}
+</ul>
 {%- endmacro %}
-
-{% block title %}{{ site.title }}{% endblock %}
-
+{% block title %}知识库 · Jim{% endblock %}
 {% block container %}
-    <div id="wiki_title">{{ site.title }}</div>
-
-    <div id="index">
-  {% for category_name, pages in site.structure.items() %}
-    {# Top-level wiki pages not display in index #}
-    {% if site.default_ext not in category_name %}
-    <h2 id="{{ category_name }}">{{ category_name }}</h2>
-      {% set url = "./" ~ category_name %}
-      {{ list_page(pages, url, category_name) }}
-    <div class="clearfix"></div>
-    {% endif %}
-    {% endfor %}
-    </div>
+<section class="library-hero wrap">
+  <p class="eyebrow"><span class="status-dot"></span> A GROWING COLLECTION</p>
+  <h1>知识，常读常新。</h1>
+  <p class="section-intro">从一个问题出发，沿着线索深入。<br>这里收录关于技术、产品与管理的学习笔记。</p>
+  <button class="library-search" data-search-open><span class="search-icon" aria-hidden="true"></span><span>搜索一个概念、一项技术或一个问题</span><kbd>⌘ K</kbd></button>
+  <div class="popular-searches"><span>试试</span><button data-query="Python">Python</button><button data-query="机器学习">机器学习</button><button data-query="Kubernetes">Kubernetes</button><button data-query="产品">产品</button></div>
+</section>
+<div class="catalog-layout wrap">
+  <aside class="catalog-sidebar"><p class="eyebrow">EXPLORE BY TOPIC</p><nav aria-label="知识专题">
+    {% for category_name, pages in site.structure.items() %}{% if not category_name.endswith('.' ~ site.default_ext) %}<a href="#{{ category_name|e }}">{{ category_name.split('-', 1)[-1]|e }}<span>↗</span></a>{% endif %}{% endfor %}
+  </nav><p class="sidebar-note">笔记保留写作时的上下文。<br>技术版本与适用条件，请结合正文判断。</p></aside>
+  <div class="catalog-main" id="index">
+  {% for category_name, pages in site.structure.items() %}{% if not category_name.endswith('.' ~ site.default_ext) %}
+  <section class="catalog-section" id="{{ category_name|e }}"><div class="catalog-heading"><div><p class="eyebrow">{{ category_name.split('-')[0]|e }} / KNOWLEDGE</p><h2>{{ category_name.split('-', 1)[-1]|e }}</h2></div><button class="text-button collapse-topic" hidden>收起目录</button></div>
+    {{ list_page(pages, site.root ~ "/" ~ category_name, category_name) }}
+  </section>
+  {% endif %}{% endfor %}
+  </div>
+</div>
 {% endblock %}
