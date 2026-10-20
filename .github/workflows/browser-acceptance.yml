@@ -1,0 +1,38 @@
+name: Live browser acceptance
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/browser-acceptance.yml'
+      - 'scripts/browser-qa/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  live-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated browser test dependencies
+        run: |
+          npm install --prefix /tmp/jim-browser-qa --no-package-lock --ignore-scripts playwright@1.56.1
+          /tmp/jim-browser-qa/node_modules/.bin/playwright install --with-deps chromium webkit
+          sudo apt-get update
+          sudo apt-get install -y fonts-noto-cjk
+      - name: Test deployed Pages in Chromium and WebKit
+        env:
+          NODE_PATH: /tmp/jim-browser-qa/node_modules
+        run: node scripts/browser-qa/acceptance.cjs
+      - name: Keep screenshots and machine-readable results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-browser-evidence
+          path: browser-qa-results/
+          retention-days: 30
