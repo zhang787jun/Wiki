@@ -38,6 +38,17 @@ def main():
     config = yaml.safe_load(Path("_config.yml").read_text(encoding="utf-8"))
     output = Path(config.get("destination", "output"))
     root = config.get("root", "").rstrip("/")
+    recovery_html = (output / "404.html").read_text(encoding="utf-8")
+    recovery = Page()
+    recovery.feed(recovery_html)
+    assert recovery.viewport and recovery.language and recovery.main
+    recovery_links = CatalogLinks()
+    recovery_links.feed(recovery_html)
+    assert root + "/" in recovery_links.urls, "404 must link back to the catalog"
+    for asset in recovery.assets:
+        path = urlsplit(asset).path
+        assert path.startswith(root + "/"), f"404 asset outside Wiki root: {asset}"
+        assert (output / path[len(root) + 1:]).is_file(), f"Missing 404 asset: {asset}"
     data = json.loads((output / "static/data/search-index.json").read_text())
     assert data["version"] == 1
     indexed = set()
