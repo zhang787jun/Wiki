@@ -1,0 +1,84 @@
+{
+  "upstream": "https://github.com/PaddlePaddle/PaddleClas",
+  "commit": "4e6d13e35f6c8f327b4670c1c0766bd6afade7fa",
+  "files": [
+    {
+      "name": "gridmask-0.png",
+      "sha256": "96adfffd9a851519a01ee2e5c4f53008a06859db1bfeb1cf153f4e339ab4edc6",
+      "bytes": 295837,
+      "source": "https://raw.githubusercontent.com/PaddlePaddle/PaddleClas/4e6d13e35f6c8f327b4670c1c0766bd6afade7fa/docs/images/image_aug/gridmask-0.png"
+    },
+    {
+      "name": "hide-and-seek-visual.png",
+      "sha256": "7bda356180152c9c4b9401aa1927e162bb07c816ddd6551044c2e3181793c95d",
+      "bytes": 344515,
+      "source": "https://raw.githubusercontent.com/PaddlePaddle/PaddleClas/4e6d13e35f6c8f327b4670c1c0766bd6afade7fa/docs/images/image_aug/hide-and-seek-visual.png"
+    },
+    {
+      "name": "image_aug_samples_s.jpg",
+      "sha256": "f968557774586b9b36ba4392a5f24e14003f2b0d7b7c02e74bc86066dec68e4a",
+      "bytes": 89033,
+      "source": "https://raw.githubusercontent.com/PaddlePaddle/PaddleClas/4e6d13e35f6c8f327b4670c1c0766bd6afade7fa/docs/images/image_aug/image_aug_samples_s.jpg"
+    },
+    {
+      "name": "main_image_aug.png",
+      "sha256": "a0175bf03d984f7c7fb878b52d901ebcbd892996ac65a5a7ecb4de509e4b55c3",
+      "bytes": 108884,
+      "source": "https://raw.githubusercontent.com/PaddlePaddle/PaddleClas/4e6d13e35f6c8f327b4670c1c0766bd6afade7fa/docs/images/image_aug/main_image_aug.png"
+    },
+    {
+      "name": "test_autoaugment.jpeg",
+      "sha256": "8062ed526e45325e345917863e3a0be6d77728454f285d99f48b64af290a545c",
+      "bytes": 338017,
+      "source": "https://raw.githubusercontent.com/PaddlePaddle/PaddleClas/4e6d13e35f6c8f327b4670c1c0766bd6afade7fa/docs/images/image_aug/test_autoaugment.jpeg"
+    },
+    {
+      "name": "test_baseline.jpeg",
+      "sha256": "5ae41c186ac16b94b3d31950f957180dfc43b4e951b0724a8fc0ec24ba192965",
+      "bytes": 280874,
+      "source": "https://raw.githubusercontent.com/PaddlePaddle/PaddleClas/4e6d13e35f6c8f327b4670c1c0766bd6afade7fa/docs/images/image_aug/test_baseline.jpeg"
+    },
+    {
+      "name": "test_cutmix.png",
+      "sha256": "ccf3b8cf79de511f186e06324879051077a8d75d02e05ab1d43189102051ef68",
+      "bytes": 996155,
+      "source": "https://raw.githubusercontent.com/PaddlePaddle/PaddleClas/4e6d13e35f6c8f327b4670c1c0766bd6afade7fa/docs/images/image_aug/test_cutmix.png"
+    },
+    {
+      "name": "test_cutout.jpeg",
+      "sha256": "7682680300f33cf7228a49e1edcb8c3cac5c4a997921eae0cd9c4b6d60935988",
+      "bytes": 240362,
+      "source": "https://raw.githubusercontent.com/PaddlePaddle/PaddleClas/4e6d13e35f6c8f327b4670c1c0766bd6afade7fa/docs/images/image_aug/test_cutout.jpeg"
+    },
+    {
+      "name": "test_gridmask.jpeg",
+      "sha256": "9c11f0aba9fd2875cd6c254ce926d4d1cb5bad975aa8a85c08c093ac6d42d265",
+      "bytes": 270150,
+      "source": "https://raw.githubusercontent.com/PaddlePaddle/PaddleClas/4e6d13e35f6c8f327b4670c1c0766bd6afade7fa/docs/images/image_aug/test_gridmask.jpeg"
+    },
+    {
+      "name": "test_hideandseek.jpeg",
+      "sha256": "a24c310790d319e2e903c824800e4942f017250ae959bbf562baca3d557910c2",
+      "bytes": 201429,
+      "source": "https://raw.githubusercontent.com/PaddlePaddle/PaddleClas/4e6d13e35f6c8f327b4670c1c0766bd6afade7fa/docs/images/image_aug/test_hideandseek.jpeg"
+    },
+    {
+      "name": "test_mixup.png",
+      "sha256": "0535536e6b42c6ddbe5956c5a51f665849a4009affd89a26b24d3e2d92086655",
+      "bytes": 980884,
+      "source": "https://raw.githubusercontent.com/PaddlePaddle/PaddleClas/4e6d13e35f6c8f327b4670c1c0766bd6afade7fa/docs/images/image_aug/test_mixup.png"
+    },
+    {
+      "name": "test_randaugment.jpeg",
+      "sha256": "39fd67dde1e2db8a6b83c0e26f17cd8bf935d5f80d4fb29584aa86d8ae67d5ae",
+      "bytes": 294937,
+      "source": "https://raw.githubusercontent.com/PaddlePaddle/PaddleClas/4e6d13e35f6c8f327b4670c1c0766bd6afade7fa/docs/images/image_aug/test_randaugment.jpeg"
+    },
+    {
+      "name": "test_randomerassing.jpeg",
+      "sha256": "0affa07c897de9ac76ccc8835889bafb2e484092b0e1064b3e572be778643019",
+      "bytes": 260999,
+      "source": "https://raw.githubusercontent.com/PaddlePaddle/PaddleClas/4e6d13e35f6c8f327b4670c1c0766bd6afade7fa/docs/images/image_aug/test_randomerassing.jpeg"
+    }
+  ]
+}
