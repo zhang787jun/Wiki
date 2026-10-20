@@ -16,6 +16,7 @@ All articles and directory links work without JavaScript. Optional scripts impro
 python -m pip install --no-deps -r requirements-build.txt
 simiki g
 cp favicon.ico output/favicon.ico
+cp 404.html output/404.html
 touch output/.nojekyll
 python scripts/build_search_index.py
 python scripts/check_pages_build.py

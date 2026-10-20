@@ -96,7 +96,10 @@
     if ((event.key.toLowerCase() === 'k' && (event.metaKey || event.ctrlKey)) || (event.key === '/' && !typing && !dialog?.open)) { event.preventDefault(); openSearch(); }
   });
   dialog?.addEventListener('keydown', event => {
-    if (!['ArrowDown', 'ArrowUp', 'Enter'].includes(event.key) || event.isComposing) return;
+    if (event.isComposing) return;
+    // Search inputs otherwise consume the first Escape to clear their value.
+    if (event.key === 'Escape') { event.preventDefault(); dialog.close(); return; }
+    if (!['ArrowDown', 'ArrowUp', 'Enter'].includes(event.key)) return;
     const results = $$('.search-result', dialog); if (!results.length) return;
     const focused = results.indexOf(document.activeElement);
     if (event.key === 'Enter') { if (document.activeElement === input) { event.preventDefault(); results[Math.max(0, selected)].click(); } return; }
