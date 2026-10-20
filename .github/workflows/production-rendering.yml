@@ -1,0 +1,35 @@
+name: Production rendering acceptance
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/production-rendering.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  production-browsers:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install isolated test dependencies
+        run: |
+          npm install --prefix /tmp/jim-production-qa --no-package-lock --ignore-scripts playwright@1.64.1 pngjs@7.0.0
+          /tmp/jim-production-qa/node_modules/.bin/playwright install --with-deps chromium webkit
+          sudo apt-get install -y fonts-noto-cjk
+      - name: Test actual production Pages URLs
+        env:
+          NODE_PATH: /tmp/jim-production-qa/node_modules
+          TEST_ORIGIN: https://zhang787jun.github.io
+        run: |
+          curl --fail --location --retry 2 https://raw.githubusercontent.com/zhang787jun/zhang787jun.github.io/78f4218c9bdef3c5edfe91afbcc1795598448535/scripts/rendering-check.cjs -o /tmp/rendering-production.cjs
+          node /tmp/rendering-production.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: production-rendering-evidence
+          path: rendering-evidence/
+          retention-days: 30
