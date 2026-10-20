@@ -90,6 +90,11 @@ async function runCase(browser, engine, width, scheme) {
       await page.locator('#search-input').fill('Python'); await page.locator('#search-status').filter({ hasText: '找到 105 篇' }).waitFor();
       await page.locator('[data-filter="40-"]').click(); await page.getByText('找到 4 篇相关笔记', { exact: true }).waitFor();
       await page.locator('#search-input').fill('QA-no-results-20261020'); await page.getByText('找到 0 篇相关笔记', { exact: true }).waitFor();
+      for (let i = 0; i < 10; i++) {
+        await page.keyboard.press(i < 5 ? 'Tab' : 'Shift+Tab');
+        assert(await page.evaluate(() => document.querySelector('.search-dialog').contains(document.activeElement)), 'Modal retains keyboard focus');
+      }
+      await page.locator('#search-input').focus();
       await closeSearch(page);
       await page.locator('.catalog-folder summary').filter({ hasText: '02-Programming_Language' }).first().press('Enter');
       assert.equal(await page.locator('.catalog-folder summary').filter({ hasText: '02-Programming_Language' }).first().evaluate(el => el.parentElement.open), true);
@@ -113,6 +118,18 @@ async function runCase(browser, engine, width, scheme) {
       if (engine === 'chromium') { const actual = await page.evaluate(() => navigator.clipboard.readText()); assert.equal(actual, expected); result.clipboard = { bytesVerified: true, characters: actual.length }; }
       else result.clipboard = { bytesVerified: false, reason: 'WebKit clipboard-read permission not exposed; feedback only' };
       await screenshot(page, `${prefix}-code.png`);
+    });
+    await check('Image augmentation illustrations and wide tables fit mobile reading', async () => {
+      await page.goto(origin + '/Wiki/30-%E4%BA%A7%E5%93%81%E4%B8%8E%E5%BA%94%E7%94%A8/33-Computer_Vision/Tools/%E5%9B%BE%E5%83%8F%E5%A2%9E%E5%B9%BF.html', { waitUntil: 'networkidle' });
+      await noOverflow(page);
+      result.illustrations = await page.locator('.prose img').evaluateAll(images => images.map(i => ({ src: i.currentSrc, width: i.naturalWidth, complete: i.complete, displayed: i.getBoundingClientRect().width })));
+      assert.equal(result.illustrations.length, 13);
+      assert(result.illustrations.every(i => i.complete && i.width > 0 && i.displayed <= width), 'All 13 original images load within viewport');
+      result.tables = await page.locator('.prose table').evaluateAll(tables => tables.map(t => ({ client: t.clientWidth, scroll: t.scrollWidth, overflow: getComputedStyle(t).overflowX })));
+      assert(result.tables.length > 0);
+      assert(result.tables.every(t => t.client <= width && (t.scroll <= t.client + 1 || ['auto', 'scroll'].includes(t.overflow))), 'Wide tables provide an internal scroll area');
+      await page.locator('.prose table').first().scrollIntoViewIfNeeded();
+      await page.screenshot({ path: path.join(output, `${prefix}-illustrations.png`), animations: 'disabled' });
     });
     assert.deepEqual(result.pageErrors, [], 'No uncaught page JavaScript errors'); result.passed = true;
   } catch (error) { result.passed = false; result.errors.push(error.stack || error.message); await screenshot(page, `${prefix}-failure.png`).catch(() => {}); }
