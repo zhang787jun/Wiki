@@ -26,3 +26,6 @@ body>#container{max-width:860px;margin:65px auto;padding:0 28px;overflow-wrap:an
 @keyframes paper-arrives{from{opacity:0;translate:0 16px}to{opacity:1;translate:0 0}}
 @media(prefers-reduced-motion:no-preference){.knowledge-object{animation:paper-arrives .85s cubic-bezier(.2,.7,.2,1) both}.hero h1{animation:paper-arrives .6s ease both}}
 @media(max-width:380px){.nav-shell{gap:18px}.main-nav{gap:14px}.search-trigger{padding:6px}.icon-button{width:28px}}
+/* Long legacy MathJax equations scroll locally instead of widening the reader. */
+.prose .MathJax_CHTML,.prose .MathJax{max-width:100%;overflow-x:auto;overflow-y:hidden;vertical-align:middle}
+.prose .MJXc-display,.prose .MathJax_Display{max-width:100%;overflow-x:auto;overflow-y:hidden}
