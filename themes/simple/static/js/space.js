@@ -125,6 +125,13 @@
   revealHash(); window.addEventListener('hashchange', revealHash);
   const content = $('.prose');
   if (content) {
+    const seenDirectories = new Set();
+    $$('.toc', content).forEach(directory => {
+      const signature = JSON.stringify($$('a', directory).map(link => [link.getAttribute('href'), link.textContent.trim()]));
+      if (signature === '[]') return;
+      if (seenDirectories.has(signature)) directory.hidden = true;
+      else seenDirectories.add(signature);
+    });
     const readingTime = $('[data-reading-time]');
     if (readingTime) readingTime.textContent = `约 ${Math.max(1, Math.ceil(content.textContent.replace(/\s/g, '').length / 500))} 分钟阅读`;
     $$('img', content).forEach(image => {

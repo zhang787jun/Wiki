@@ -7,7 +7,7 @@ if(blocks.length){
     await document.fonts.ready;
     blocks.forEach((block,i)=>{
       const figure=document.createElement('figure');figure.className='pele-diagram';
-      const chart=document.createElement('div');chart.className='pele-chart';chart.setAttribute('role','img');chart.setAttribute('aria-label','流程图；完整节点与连接见下方图表源代码');
+      const chart=document.createElement('div');chart.className='pele-chart';chart.tabIndex=0;chart.setAttribute('role','img');chart.setAttribute('aria-label','流程图，可横向滚动；完整节点与连接见下方图表源代码');
       const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent='查看图表源代码';details.append(summary);
       const code=block.querySelector('pre').cloneNode(true);
       code.querySelectorAll('button').forEach(button=>button.remove());
