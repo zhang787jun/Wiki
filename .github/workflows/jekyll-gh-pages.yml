@@ -46,6 +46,7 @@ jobs:
           cp favicon.ico output/favicon.ico
           cp 404.html output/404.html
           touch output/.nojekyll
+          python scripts/copy_legacy_assets.py
           python scripts/build_search_index.py
           python scripts/check_pages_build.py
           python scripts/check_redesign.py
