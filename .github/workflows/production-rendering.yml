@@ -27,6 +27,10 @@ jobs:
         run: |
           curl --fail --location --retry 2 https://raw.githubusercontent.com/zhang787jun/zhang787jun.github.io/78f4218c9bdef3c5edfe91afbcc1795598448535/scripts/rendering-check.cjs -o /tmp/rendering-production.cjs
           node /tmp/rendering-production.cjs
+          mkdir -p assets/provenance
+          curl --fail --location --retry 2 https://raw.githubusercontent.com/zhang787jun/zhang787jun.github.io/e72e3ff650c927a9871f47406cd81803f6afee10/assets/provenance/gnn-images.json -o assets/provenance/gnn-images.json
+          curl --fail --location --retry 2 https://raw.githubusercontent.com/zhang787jun/zhang787jun.github.io/e72e3ff650c927a9871f47406cd81803f6afee10/scripts/legacy-images-check.cjs -o /tmp/legacy-images-check.cjs
+          node /tmp/legacy-images-check.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

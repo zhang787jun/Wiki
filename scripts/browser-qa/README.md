@@ -33,3 +33,5 @@ and screenshots even on failure. A nonzero exit means at least one browser
 case or published article/local-image URL needs investigation. HTTP/network
 failures are recorded as observations rather than automatically attributed to
 site code.
+
+2026-10-20 image recovery: rerun the complete live audit after homepage PR #4 restores 38 original GNN image URLs. Keep the remaining eight IoT image 404s visible in the failure output.
